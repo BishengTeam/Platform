@@ -1,0 +1,36 @@
+.header {
+  height: 176px;
+  padding-top: 88px;
+  padding-left: 32px;
+  padding-right: 32px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 36px;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 10;
+}
+
+.btn {
+  padding: 4px;
+  margin-left: -4px;
+  transition: all 0.15s ease-out;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+}
+
+.placeholder {
+  width: 20px;
+}

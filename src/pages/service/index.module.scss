@@ -1,0 +1,122 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F5F5F5;
+}
+
+.header {
+  height: 176px;
+  padding-top: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 36px;
+  color: #333333;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 10;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 96px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 48px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar {
+  width: 128px;
+  height: 128px;
+  background: #1677FF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 36px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 4px;
+}
+
+.cardSubtitle {
+  font-size: 28px;
+  color: #999999;
+  margin-bottom: 24px;
+}
+
+.contacts {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #F5F5F5;
+  border-radius: 8px;
+
+  &:active {
+    background: #E5E5E5;
+  }
+}
+
+.contactLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contactIcon {
+  width: 64px;
+  height: 64px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contactLabel {
+  font-size: 28px;
+  color: #333333;
+}
+
+.contactValue {
+  font-size: 24px;
+  color: #999999;
+}
+
+.contactAction {
+  font-size: 24px;
+  color: #1677FF;
+  border: 1px solid #1677FF;
+  padding: 4px 16px;
+  border-radius: 9999px;
+}

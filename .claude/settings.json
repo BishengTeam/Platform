@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//e/Work/project/小程序平台/frontend/src/app/components/**)",
+      "Read(//e/Work/project/小程序平台/frontend/src/app/components/figma/**)",
+      "Read(//e/Work/project/小程序平台/frontend/src/app/components/ui/**)",
+      "Read(//e/Work/project/小程序平台/frontend/src/styles/**)",
+      "Read(//e/Work/project/小程序平台/frontend/**)",
+      "Bash(npx taro *)"
+    ]
+  }
+}

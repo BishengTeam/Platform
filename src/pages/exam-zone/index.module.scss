@@ -1,0 +1,136 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F5F5F5;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+
+.swiperWrap {
+  padding: 32px 32px 48px;
+}
+
+.swiper {
+  width: 100%;
+  height: 320px;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.slide {
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.slideContent {
+  position: relative;
+  z-index: 10;
+  padding-right: 80px;
+}
+
+.slideTitle {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 48px;
+  line-height: 64px;
+  margin-bottom: 8px;
+  display: block;
+  white-space: nowrap;
+}
+
+.slideDesc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 28px;
+  line-height: 44px;
+  margin-bottom: 16px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slideBtn {
+  background: #ffffff;
+  font-size: 24px;
+  font-weight: 500;
+  padding: 12px 32px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.slideIcon {
+  position: absolute;
+  right: -32px;
+  bottom: -32px;
+  opacity: 0.2;
+  transform: rotate(12deg);
+}
+
+.content {
+  padding: 0 32px 48px;
+}
+
+.tagRow {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+  white-space: nowrap;
+}
+
+.tag {
+  font-size: 24px;
+  font-weight: 500;
+  padding: 8px 24px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  background: #F0F5FF;
+}
+
+.tagActive {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sectionLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 36px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.sectionCount {
+  font-size: 24px;
+  color: #999999;
+}
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

@@ -1,0 +1,77 @@
+// Colors
+$color-bg: #F0F5FF;
+$color-bg-secondary: #F5F5F5;
+$color-bg-tertiary: #F5F7FA;
+$color-primary: #1677FF;
+$color-primary-light: #69B1FF;
+$color-primary-dark: #1890FF;
+$color-primary-gradient: linear-gradient(135deg, #1677FF, #4096FF);
+$color-text: #333333;
+$color-text-secondary: #666666;
+$color-text-tertiary: #999999;
+$color-white: #ffffff;
+$color-border: #E5E5E5;
+$color-price: #FF4D4F;
+$color-success: #07C160;
+$color-warning: #FA8C16;
+$color-purple: #722ED1;
+$color-teal: #13C2C2;
+
+// Zone-specific colors
+$color-exam-blue: #1677FF;
+$color-study-green: #52C41A;
+$color-competition-orange: #FA8C16;
+$color-activity-purple: #722ED1;
+$color-employment-teal: #13C2C2;
+
+// Background tints (for inactive tag filters)
+$color-blue-tint: #F0F5FF;
+$color-red-tint: #FFF2F0;
+$color-green-tint: #F6FFED;
+$color-orange-tint: #FFF7E6;
+$color-purple-tint: #F9F0FF;
+$color-teal-tint: #E6FFFB;
+
+// Spacing (doubled from 375px source)
+$spacing-xs: 8px;
+$spacing-sm: 16px;
+$spacing-md: 24px;
+$spacing-lg: 32px;
+$spacing-xl: 48px;
+
+// Radii (doubled from 375px source)
+$radius-sm: 8px;
+$radius-md: 16px;
+$radius-lg: 24px;
+$radius-xl: 32px;
+$radius-full: 9999px;
+
+// Font sizes (doubled from 375px source)
+$font-xs: 20px;
+$font-sm: 24px;
+$font-base: 28px;
+$font-lg: 32px;
+$font-xl: 36px;
+$font-2xl: 40px;
+$font-3xl: 48px;
+
+// Component heights (doubled from 375px source)
+$header-height: 176px;
+$tab-bar-height: 128px;
+$nav-title-height: 88px;
+
+// Shadows
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 2px 12px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.10);
+$shadow-xl: 0 4px 16px rgba(0, 0, 0, 0.10);
+$shadow-bottom: 0 -2px 10px rgba(0, 0, 0, 0.05);
+
+// Gradients
+$gradient-blue: linear-gradient(to right, #1677FF, #4096FF);
+$gradient-green: linear-gradient(to right, #52C41A, #73D13D);
+$gradient-orange: linear-gradient(to right, #FA8C16, #FFC53D);
+$gradient-purple: linear-gradient(to right, #722ED1, #9254DE);
+$gradient-teal: linear-gradient(to right, #13C2C2, #36CFC9);
+$gradient-red: linear-gradient(to right, #FF4D4F, #FF7875);
+$gradient-gray: linear-gradient(to right, #999999, #BFBFBF);

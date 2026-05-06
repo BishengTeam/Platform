@@ -1,0 +1,139 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F5F5F5;
+}
+
+.header {
+  height: 176px;
+  padding-top: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 36px;
+  color: #333333;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 10;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 96px;
+}
+
+.banner {
+  width: 100%;
+  height: 240px;
+  background: linear-gradient(to right, #1677FF, #4096FF);
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.bannerContent {
+  position: relative;
+  z-index: 10;
+}
+
+.bannerTitle {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 40px;
+  margin-bottom: 4px;
+}
+
+.bannerDesc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.bannerBtn {
+  background: #ffffff;
+  color: #1677FF;
+  font-size: 24px;
+  font-weight: 500;
+  padding: 6px 32px;
+  border-radius: 9999px;
+  display: inline-flex;
+  transition: all 0.1s;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.bannerIcon {
+  position: absolute;
+  right: -32px;
+  bottom: -32px;
+  transform: rotate(12deg);
+}
+
+.gridCard {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.gridTitle {
+  font-size: 32px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.gridItem {
+  width: calc(50% - 8px);
+  height: 160px;
+  background: #F0F5FF;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  &:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+  }
+}
+
+.gridItemText {
+  font-size: 28px;
+  font-weight: 500;
+  color: #1677FF;
+  position: relative;
+  z-index: 10;
+}
+
+.gridItemSub {
+  font-size: 20px;
+  color: #999999;
+  margin-top: 4px;
+  position: relative;
+  z-index: 10;
+}
