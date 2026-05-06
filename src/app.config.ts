@@ -33,6 +33,18 @@ export default defineAppConfig({
       pages: ['index'],
     },
   ],
+  preloadRule: {
+    'pages/zones/index': {
+      network: 'all',
+      packages: [
+        'pages/exam-zone',
+        'pages/study-zone',
+        'pages/competition-zone',
+        'pages/activity-zone',
+        'pages/employment-zone',
+      ],
+    },
+  },
   tabBar: {
     custom: true,
     color: '#999999',
