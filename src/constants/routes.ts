@@ -1,4 +1,5 @@
 export const ROUTES = {
+  AUTH: 'pages/auth/index',
   INDEX: 'pages/index/index',
   ZONES: 'pages/zones/index',
   SERVICE: 'pages/service/index',
