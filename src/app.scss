@@ -9,6 +9,14 @@
   --gradient-teal: linear-gradient(to right, #13C2C2, #36CFC9);
   --gradient-red: linear-gradient(to right, #FF4D4F, #FF7875);
   --gradient-gray: linear-gradient(to right, #999999, #BFBFBF);
+
+  // NutUI theme variables
+  --nutui-brand-color: #1677FF;
+  --nutui-brand-start-color: #1677FF;
+  --nutui-brand-end-color: #4096FF;
+  --nutui-color-primary: #1677FF;
+  --nutui-color-primary-end: #4096FF;
+  --nutui-border-radius: 24px;
 }
 
 page {

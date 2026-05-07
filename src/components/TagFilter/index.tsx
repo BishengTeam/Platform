@@ -1,4 +1,5 @@
 import { ScrollView, View } from '@tarojs/components'
+import { Tag } from '@nutui/nutui-react-taro'
 import styles from './index.module.scss'
 
 export interface TagFilterItem {
@@ -21,17 +22,15 @@ export function TagFilter({ tags, activeTag, onChange }: TagFilterProps) {
         {tags.map((item) => {
           const isActive = activeTag === item.label
           return (
-            <View
+            <Tag
               key={item.label}
-              className={`${styles.tag} ${isActive ? styles.active : ''}`}
-              style={isActive
-                ? `background: ${item.activeBg}; color: ${item.activeText}`
-                : `color: ${item.activeColor}`
-              }
+              className={styles.tag}
+              background={isActive ? item.activeBg : undefined}
+              color={isActive ? item.activeText : item.activeColor}
               onClick={() => onChange(item.label)}
             >
               {item.label}
-            </View>
+            </Tag>
           )
         })}
       </View>

@@ -6,7 +6,10 @@
       "Read(//e/Work/project/小程序平台/frontend/src/app/components/ui/**)",
       "Read(//e/Work/project/小程序平台/frontend/src/styles/**)",
       "Read(//e/Work/project/小程序平台/frontend/**)",
-      "Bash(npx taro *)"
+      "Bash(npx taro *)",
+      "Bash(awk -F: '{print $2}')",
+      "Bash(npm ls *)",
+      "Bash(wd /home/bisheng/work/Platform/node_modules/@nutui/nutui-react-taro/dist/es/types/index.d.ts)"
     ]
   }
 }

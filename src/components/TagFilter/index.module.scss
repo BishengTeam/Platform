@@ -12,12 +12,6 @@
   font-size: 24px;
   font-weight: 500;
   padding: 8px 24px;
-  border-radius: 9999px;
-  white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.2s;
-}
-
-.active {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

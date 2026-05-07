@@ -1,6 +1,5 @@
-import { View } from '@tarojs/components'
+import { Button as NutButton } from '@nutui/nutui-react-taro'
 import type { ReactNode } from 'react'
-import styles from './index.module.scss'
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'gradient'
@@ -11,6 +10,12 @@ interface ButtonProps {
   style?: Record<string, string>
 }
 
+const SIZE_MAP: Record<string, 'small' | 'normal' | 'large'> = {
+  sm: 'small',
+  md: 'normal',
+  lg: 'large',
+}
+
 export function Button({
   variant = 'primary',
   size = 'md',
@@ -19,11 +24,29 @@ export function Button({
   children,
   style,
 }: ButtonProps) {
-  const cls = `${styles.base} ${styles[variant] || styles.primary} ${styles[size] || styles.md} ${className}`
+  if (variant === 'gradient') {
+    return (
+      <NutButton
+        className={className}
+        size={SIZE_MAP[size] || 'normal'}
+        color="linear-gradient(135deg, #1677FF, #4096FF)"
+        onClick={onClick}
+        style={style}
+      >
+        {children}
+      </NutButton>
+    )
+  }
 
   return (
-    <View className={cls} onClick={onClick} style={style}>
+    <NutButton
+      className={className}
+      type={variant === 'primary' ? 'primary' : 'default'}
+      size={SIZE_MAP[size] || 'normal'}
+      onClick={onClick}
+      style={style}
+    >
       {children}
-    </View>
+    </NutButton>
   )
 }

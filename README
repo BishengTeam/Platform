@@ -2,6 +2,12 @@
 
 - 项目正在开发，示意微信开发者工具浏览页面
 
+## 安装依赖
+```
+npm install --legacy-peer-deps
+
+```
+
 ## 构建命令
 ```
 npx taro build --type weapp
