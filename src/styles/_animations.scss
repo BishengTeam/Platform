@@ -1,7 +1,9 @@
+@use './variables' as *;
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY($anim-offset-lg);
   }
   to {
     opacity: 1;
@@ -12,7 +14,7 @@
 @keyframes fadeInUpSmall {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY($anim-offset-sm);
   }
   to {
     opacity: 1;
@@ -27,14 +29,14 @@
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  50% { transform: translateX(10px); }
-  75% { transform: translateX(-10px); }
+  25% { transform: translateX(-$anim-offset-sm); }
+  50% { transform: translateX($anim-offset-sm); }
+  75% { transform: translateX(-$anim-offset-sm); }
 }
 
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-16px); }
+  30% { transform: translateY(-$anim-offset-md); }
 }
 
 .fade-in-up {

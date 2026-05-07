@@ -1,8 +1,11 @@
+@use '../../styles/variables' as *;
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #ffffff;
+  height: 100dvh;
+  background: $color-white;
   position: relative;
 }
 
@@ -11,8 +14,8 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 600px;
-  background: linear-gradient(to bottom, #E6F0FF, #ffffff);
+  min-height: 60vh;
+  background: linear-gradient(to bottom, #E6F0FF, $color-white);
   pointer-events: none;
   z-index: 0;
 }
@@ -22,57 +25,57 @@
   display: flex;
   flex-direction: column;
   padding-top: 256px;
-  padding-left: 64px;
-  padding-right: 64px;
+  padding-left: $spacing-3xl;
+  padding-right: $spacing-3xl;
   position: relative;
   z-index: 10;
 }
 
 .logo {
-  width: 176px;
+  width: $logo-size;
   max-width: 100%;
-  height: 176px;
+  height: $logo-size;
   background: linear-gradient(to top right, #1677FF, #4096FF);
-  border-radius: 48px;
+  border-radius: $spacing-xl;
   box-shadow: 0 4px 16px rgba(22, 119, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px;
+  margin: 0 auto $spacing-md;
 }
 
 .appName {
-  font-size: 48px;
+  font-size: $font-3xl;
   font-weight: bold;
-  color: #333333;
+  color: $color-text;
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: $spacing-xs;
 }
 
 .appDesc {
-  font-size: 28px;
-  color: #999999;
+  font-size: $font-base;
+  color: $color-text-tertiary;
   text-align: center;
 }
 
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-sm;
   margin-top: auto;
-  margin-bottom: 32px;
+  margin-bottom: $spacing-lg;
 }
 
 .wechatBtn {
   width: 100%;
-  height: 100px;
-  background: #07C160;
-  color: #ffffff;
-  border-radius: 24px;
+  height: $button-height;
+  background: $color-success;
+  color: $color-white;
+  border-radius: $radius-lg;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: $spacing-xs;
   box-shadow: 0 4px 12px rgba(7, 193, 96, 0.2);
 
   &:active {
@@ -82,20 +85,20 @@
 }
 
 .wechatBtnText {
-  font-size: 32px;
+  font-size: $font-lg;
   font-weight: 500;
 }
 
 .phoneBtn {
   width: 100%;
-  height: 100px;
-  background: #F5F5F5;
-  color: #333333;
-  border-radius: 24px;
+  height: $button-height;
+  background: $color-bg-secondary;
+  color: $color-text;
+  border-radius: $radius-lg;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: $spacing-xs;
 
   &:active {
     transform: scale(0.95);
@@ -104,15 +107,15 @@
 }
 
 .phoneBtnText {
-  font-size: 32px;
+  font-size: $font-lg;
   font-weight: 500;
 }
 
 .agreement {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 48px;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-xl;
 }
 
 .checkbox {
@@ -121,11 +124,11 @@
 }
 
 .agreementText {
-  font-size: 24px;
+  font-size: $font-sm;
   line-height: 36px;
-  color: #999999;
+  color: $color-text-tertiary;
 }
 
 .link {
-  color: #1677FF;
+  color: $color-primary;
 }

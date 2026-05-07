@@ -1,3 +1,5 @@
+@use '../../styles/variables' as *;
+
 .bar {
   flex-shrink: 0;
   --nutui-tabbar-border-top: 1px solid #eeeeee;
@@ -5,6 +7,6 @@
 }
 
 .label {
-  font-size: 20px;
+  font-size: $font-xs;
   line-height: 1;
 }

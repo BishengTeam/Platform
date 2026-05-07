@@ -1,0 +1,23 @@
+// Breakpoints (device-width based, 750 design-width)
+$breakpoint-xs: 320px;
+$breakpoint-sm: 375px;
+$breakpoint-md: 414px;
+$breakpoint-lg: 768px;
+
+@mixin respond-to($bp) {
+  @if $bp == xs {
+    @media (max-width: 319px) { @content; }
+  }
+  @if $bp == sm {
+    @media (min-width: 320px) { @content; }
+  }
+  @if $bp == md {
+    @media (min-width: 375px) { @content; }
+  }
+  @if $bp == lg {
+    @media (min-width: 414px) { @content; }
+  }
+  @if $bp == xl {
+    @media (min-width: 768px) { @content; }
+  }
+}

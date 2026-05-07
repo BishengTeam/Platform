@@ -1,20 +1,24 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F5F5F5;
+  height: 100dvh;
+  background: $color-bg-secondary;
 }
 
 .header {
-  height: 240px;
-  padding-top: 88px;
-  padding-left: 48px;
-  padding-right: 48px;
+  height: $header-height-profile;
+  padding-top: $nav-title-height;
+  padding-left: $spacing-xl;
+  padding-right: $spacing-xl;
   background: linear-gradient(to bottom right, #1677FF, #4096FF);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: $shadow-xs;
   position: relative;
   z-index: 10;
 }
@@ -22,30 +26,30 @@
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $spacing-sm;
 }
 
 .avatar {
-  width: 128px;
-  height: 128px;
-  background: #ffffff;
+  width: $avatar-xl;
+  height: $avatar-xl;
+  background: $color-white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: $shadow-lg-alt;
 }
 
 .name {
-  font-size: 40px;
+  font-size: $font-2xl;
   font-weight: bold;
-  color: #ffffff;
+  color: $color-white;
 }
 
 .status {
-  font-size: 24px;
+  font-size: $font-sm;
   color: rgba(255, 255, 255, 0.8);
-  margin-top: 4px;
+  margin-top: $spacing-2xs;
 }
 
 .body {
@@ -53,21 +57,21 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 32px;
+  padding: $spacing-lg;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: -16px;
+  gap: $spacing-sm;
+  margin-top: -$spacing-sm;
   position: relative;
   z-index: 20;
-  padding-bottom: 96px;
+  padding-bottom: calc(#{$spacing-5xl} + #{$safe-bottom});
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 32px;
-  padding: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: $color-white;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
   overflow: hidden;
 }
 
@@ -75,20 +79,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #F5F5F5;
-  padding-bottom: 8px;
+  margin-bottom: $spacing-sm;
+  border-bottom: $border-thin solid $color-bg-secondary;
+  padding-bottom: $spacing-xs;
 }
 
 .cardTitle {
-  font-size: 32px;
+  font-size: $font-lg;
   font-weight: 600;
-  color: #333333;
+  color: $color-text;
 }
 
 .cardMore {
-  font-size: 24px;
-  color: #999999;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
   display: flex;
   align-items: center;
 }
@@ -102,7 +106,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-xs;
 
   &:active {
     transform: scale(0.95);
@@ -111,9 +115,9 @@
 }
 
 .orderIcon {
-  width: 80px;
-  height: 80px;
-  background: #F0F5FF;
+  width: $icon-lg;
+  height: $icon-lg;
+  background: $color-blue-tint;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -123,40 +127,40 @@
 
 .orderBadge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  background: #FF4D4F;
-  color: #ffffff;
-  font-size: 20px;
-  width: 32px;
-  height: 32px;
+  top: -$spacing-2xs;
+  right: -$spacing-2xs;
+  background: $color-price;
+  color: $color-white;
+  font-size: $font-xs;
+  width: $icon-sm;
+  height: $icon-sm;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ffffff;
+  border: 2px solid $color-white;
 }
 
 .orderLabel {
-  font-size: 24px;
-  color: #333333;
+  font-size: $font-sm;
+  color: $color-text;
 }
 
 .funcItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 0;
+  padding: $spacing-md 0;
 
   &:active {
-    background: #F5F5F5;
-    margin: 0 -32px;
-    padding: 24px 32px;
+    background: $color-bg-secondary;
+    margin: 0 -$spacing-lg;
+    padding: $spacing-md $spacing-lg;
   }
 }
 
 .funcBorder {
-  border-top: 1px solid #F5F5F5;
+  border-top: $border-thin solid $color-bg-secondary;
 }
 
 .funcLeft {
@@ -166,22 +170,29 @@
 }
 
 .funcLabel {
-  font-size: 28px;
-  color: #333333;
+  font-size: $font-base;
+  color: $color-text;
 }
 
 .funcRight {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #999999;
+  gap: $spacing-xs;
+  color: $color-text-tertiary;
 }
 
 .funcValue {
-  font-size: 24px;
+  font-size: $font-sm;
 }
 
 .logoutText {
-  font-size: 28px;
-  color: #FF4D4F;
+  font-size: $font-base;
+  color: $color-price;
+}
+
+@include respond-to(xl) {
+  .orders {
+    justify-content: flex-start;
+    gap: $spacing-xl;
+  }
 }

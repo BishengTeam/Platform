@@ -18,7 +18,13 @@
       "Bash(sort -t'r' -k1 -n -r)",
       "Bash(sort -t':' -k2 -t'r' -k1 -n -r)",
       "Bash(sort -t':' -k2 -t'p' -k1 -n -r)",
-      "Bash(awk -F'px' '{if \\($1+0 >= 100\\) print}')"
+      "Bash(awk -F'px' '{if \\($1+0 >= 100\\) print}')",
+      "Bash(grep -rnP '^\\\\s*\\\\$\\\\w+.*\\\\d+px' /home/bisheng/work/Platform/src/styles/_variables.scss)",
+      "Bash(grep -rnP '--[\\\\w-]+:\\\\s*\\\\d+px' /home/bisheng/work/Platform/src --include=\"*.css\" --include=\"*.scss\" --include=\"*.sass\" --include=\"*.less\")",
+      "Bash(grep -rnP '^\\\\s*\\\\$[\\\\w-]+:\\\\s*\\\\K\\\\d+px' /home/bisheng/work/Platform/src/styles/_variables.scss)",
+      "Bash(grep -vP '^\\\\$\\\\w+:')",
+      "Bash(grep -vP '^\\\\s*\\\\$[\\\\w-]+:')",
+      "Bash(grep -vP '^0px$')"
     ]
   }
 }

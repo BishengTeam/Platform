@@ -1,3 +1,5 @@
+@use '../../styles/variables' as *;
+
 .header {
   --nutui-navbar-background: #ffffff;
   --nutui-navbar-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -12,8 +14,8 @@
 }
 
 .btn {
-  padding: 4px;
-  margin-left: -4px;
+  padding: $spacing-2xs;
+  margin-left: -$spacing-2xs;
   transition: all 0.15s ease-out;
 
   &:active {
@@ -24,7 +26,7 @@
 
 .title {
   font-weight: 600;
-  font-size: 36px;
+  font-size: $font-xl;
   color: #333;
 }
 

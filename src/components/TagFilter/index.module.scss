@@ -1,17 +1,19 @@
+@use '../../styles/variables' as *;
+
 .scroll {
   white-space: nowrap;
-  margin-bottom: 24px;
+  margin-bottom: $spacing-md;
 }
 
 .row {
   display: flex;
-  gap: 16px;
+  gap: $spacing-sm;
 }
 
 .tag {
-  font-size: 24px;
+  font-size: $font-sm;
   font-weight: 500;
-  padding: 8px 24px;
+  padding: $spacing-xs $spacing-md;
   flex-shrink: 0;
   transition: all 0.2s;
 }

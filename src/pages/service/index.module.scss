@@ -1,21 +1,24 @@
+@use '../../styles/variables' as *;
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F5F5F5;
+  height: 100dvh;
+  background: $color-bg-secondary;
 }
 
 .header {
-  height: 176px;
-  padding-top: 88px;
+  height: $header-height;
+  padding-top: $nav-title-height;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 36px;
-  color: #333333;
-  background: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: $font-xl;
+  color: $color-text;
+  background: $color-white;
+  box-shadow: $shadow-xs;
   position: relative;
   z-index: 10;
 }
@@ -25,48 +28,48 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 32px;
+  padding: $spacing-lg;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 96px;
+  gap: $spacing-sm;
+  padding-bottom: calc(#{$spacing-5xl} + #{$safe-bottom});
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 32px;
-  padding: 48px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: $color-white;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-sm;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .avatar {
-  width: 128px;
-  height: 128px;
-  background: #1677FF;
+  width: $avatar-xl;
+  height: $avatar-xl;
+  background: $color-primary;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: $color-white;
   font-weight: bold;
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: $font-3xl;
+  margin-bottom: $spacing-sm;
 }
 
 .cardTitle {
-  font-size: 36px;
+  font-size: $font-xl;
   font-weight: 600;
-  color: #333333;
-  margin-bottom: 4px;
+  color: $color-text;
+  margin-bottom: $spacing-2xs;
 }
 
 .cardSubtitle {
-  font-size: 28px;
-  color: #999999;
-  margin-bottom: 24px;
+  font-size: $font-base;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-md;
 }
 
 .contacts {
@@ -80,12 +83,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  background: #F5F5F5;
-  border-radius: 8px;
+  padding: $spacing-sm;
+  background: $color-bg-secondary;
+  border-radius: $radius-sm;
 
   &:active {
-    background: #E5E5E5;
+    background: $color-border;
   }
 }
 
@@ -96,9 +99,9 @@
 }
 
 .contactIcon {
-  width: 64px;
-  height: 64px;
-  background: #ffffff;
+  width: $avatar-sm;
+  height: $avatar-sm;
+  background: $color-white;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -106,19 +109,19 @@
 }
 
 .contactLabel {
-  font-size: 28px;
-  color: #333333;
+  font-size: $font-base;
+  color: $color-text;
 }
 
 .contactValue {
-  font-size: 24px;
-  color: #999999;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
 }
 
 .contactAction {
-  font-size: 24px;
-  color: #1677FF;
-  border: 1px solid #1677FF;
-  padding: 4px 16px;
-  border-radius: 9999px;
+  font-size: $font-sm;
+  color: $color-primary;
+  border: $border-thin solid $color-primary;
+  padding: $spacing-2xs $spacing-sm;
+  border-radius: $radius-full;
 }

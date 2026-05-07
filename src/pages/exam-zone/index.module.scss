@@ -1,8 +1,12 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F5F5F5;
+  height: 100dvh;
+  background: $color-bg-secondary;
 }
 
 .body {
@@ -10,25 +14,25 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 32px;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
 .swiperWrap {
-  padding: 32px 32px 48px;
+  padding: $spacing-lg $spacing-lg $spacing-xl;
 }
 
 .swiper {
   width: 100%;
-  height: 320px;
-  border-radius: 24px;
+  height: $swiper-height;
+  border-radius: $radius-lg;
   overflow: hidden;
 }
 
 .slide {
   width: 100%;
   height: 100%;
-  border-radius: 24px;
-  padding: 48px;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -39,15 +43,15 @@
 .slideContent {
   position: relative;
   z-index: 10;
-  padding-right: 80px;
+  padding-right: $spacing-4xl;
 }
 
 .slideTitle {
-  color: #ffffff;
+  color: $color-white;
   font-weight: bold;
-  font-size: 48px;
+  font-size: $font-3xl;
   line-height: 64px;
-  margin-bottom: 8px;
+  margin-bottom: $spacing-xs;
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -56,9 +60,9 @@
 
 .slideDesc {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 28px;
+  font-size: $font-base;
   line-height: 44px;
-  margin-bottom: 16px;
+  margin-bottom: $spacing-sm;
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -66,43 +70,43 @@
 }
 
 .slideBtn {
-  background: #ffffff;
-  font-size: 24px;
+  background: $color-white;
+  font-size: $font-sm;
   font-weight: 500;
-  padding: 12px 32px;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 12px $spacing-lg;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
 }
 
 .slideIcon {
   position: absolute;
-  right: -32px;
-  bottom: -32px;
+  right: -$spacing-lg;
+  bottom: -$spacing-lg;
   opacity: 0.2;
   transform: rotate(12deg);
 }
 
 .content {
-  padding: 0 32px 48px;
+  padding: 0 $spacing-lg $spacing-xl;
 }
 
 .tagRow {
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  margin-bottom: 24px;
+  margin-bottom: $spacing-md;
   white-space: nowrap;
 }
 
 .tag {
-  font-size: 24px;
+  font-size: $font-sm;
   font-weight: 500;
-  padding: 8px 24px;
-  border-radius: 9999px;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-full;
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.2s;
-  background: #F0F5FF;
+  background: $color-blue-tint;
 }
 
 .tagActive {
@@ -113,28 +117,41 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: $spacing-sm;
 }
 
 .sectionLeft {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $spacing-xs;
 }
 
 .sectionTitle {
-  font-size: 36px;
+  font-size: $font-xl;
   font-weight: 600;
-  color: #333333;
+  color: $color-text;
 }
 
 .sectionCount {
-  font-size: 24px;
-  color: #999999;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
 }
 
 .cardList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-sm;
+}
+
+@include respond-to(xs) {
+  .slideDesc {
+    display: none;
+  }
+}
+
+@include respond-to(xl) {
+  .cardList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

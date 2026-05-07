@@ -1,9 +1,11 @@
+@use '../../styles/variables' as *;
+
 .card {
   width: 100%;
-  border-radius: 24px;
-  padding: 24px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  background: $color-white;
+  box-shadow: $shadow-sm;
   transition: all 0.15s ease-out;
 
   &:active {
@@ -17,36 +19,36 @@
 }
 
 .title {
-  font-size: 32px;
+  font-size: $font-lg;
   font-weight: bold;
-  color: #333333;
+  color: $color-text;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .subtitle {
-  font-size: 24px;
-  color: #666666;
+  font-size: $font-sm;
+  color: $color-text-secondary;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-top: 4px;
+  margin-top: $spacing-2xs;
 }
 
 .tags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: $spacing-xs;
+  margin-top: $spacing-xs;
 }
 
 .tag {
-  background: #F5F7FA;
-  color: #666666;
-  font-size: 20px;
-  padding: 2px 8px;
+  background: $color-bg-tertiary;
+  color: $color-text-secondary;
+  font-size: $font-xs;
+  padding: 2px $spacing-xs;
   border-radius: 4px;
 }
 
@@ -63,21 +65,21 @@
 }
 
 .price {
-  font-size: 40px;
+  font-size: $font-2xl;
   font-weight: bold;
-  color: #FF4D4F;
+  color: $color-price;
 }
 
 .originalPrice {
-  font-size: 24px;
-  color: #999999;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
   text-decoration: line-through;
-  margin-left: 4px;
+  margin-left: $spacing-2xs;
 }
 
 .btn {
-  height: 64px;
-  padding: 0 24px;
-  font-size: 24px;
-  border-radius: 9999px;
+  height: $avatar-sm;
+  padding: 0 $spacing-md;
+  font-size: $font-sm;
+  border-radius: $radius-full;
 }

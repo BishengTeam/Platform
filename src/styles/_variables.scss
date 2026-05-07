@@ -33,11 +33,15 @@ $color-purple-tint: #F9F0FF;
 $color-teal-tint: #E6FFFB;
 
 // Spacing (doubled from 375px source)
+$spacing-2xs: 4px;
 $spacing-xs: 8px;
 $spacing-sm: 16px;
 $spacing-md: 24px;
 $spacing-lg: 32px;
 $spacing-xl: 48px;
+$spacing-3xl: 64px;
+$spacing-4xl: 80px;
+$spacing-5xl: 96px;
 
 // Radii (doubled from 375px source)
 $radius-sm: 8px;
@@ -47,6 +51,7 @@ $radius-xl: 32px;
 $radius-full: 9999px;
 
 // Font sizes (doubled from 375px source)
+$font-2xs: 12px;
 $font-xs: 20px;
 $font-sm: 24px;
 $font-base: 28px;
@@ -55,16 +60,38 @@ $font-xl: 36px;
 $font-2xl: 40px;
 $font-3xl: 48px;
 
-// Component heights (doubled from 375px source)
+// Component sizes (doubled from 375px source)
 $header-height: 176px;
+$header-height-profile: 240px;
 $tab-bar-height: 128px;
 $nav-title-height: 88px;
+$button-height: 100px;
+$swiper-height: 320px;
+$banner-height: 240px;
+$grid-item-height: 160px;
+$logo-size: 176px;
+
+// Avatar sizes
+$avatar-sm: 64px;
+$avatar-md: 72px;
+$avatar-lg: 96px;
+$avatar-xl: 128px;
+
+// Icon sizes
+$icon-sm: 32px;
+$icon-md: 64px;
+$icon-lg: 80px;
+
+// Touch target
+$touch-min: 44px;
 
 // Shadows
+$shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.06);
 $shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
 $shadow-md: 0 2px 12px rgba(0, 0, 0, 0.08);
 $shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.10);
 $shadow-xl: 0 4px 16px rgba(0, 0, 0, 0.10);
+$shadow-lg-alt: 0 4px 12px rgba(0, 0, 0, 0.10);
 $shadow-bottom: 0 -2px 10px rgba(0, 0, 0, 0.05);
 
 // Gradients
@@ -75,3 +102,15 @@ $gradient-purple: linear-gradient(to right, #722ED1, #9254DE);
 $gradient-teal: linear-gradient(to right, #13C2C2, #36CFC9);
 $gradient-red: linear-gradient(to right, #FF4D4F, #FF7875);
 $gradient-gray: linear-gradient(to right, #999999, #BFBFBF);
+
+// Border (uppercase PX to prevent Taro from converting to rpx)
+$border-thin: 1PX;
+
+// Safe area
+$safe-bottom: env(safe-area-inset-bottom, 0px);
+$safe-top: env(safe-area-inset-top, 0px);
+
+// Animation offsets
+$anim-offset-sm: 10px;
+$anim-offset-md: 16px;
+$anim-offset-lg: 20px;
