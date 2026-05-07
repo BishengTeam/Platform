@@ -7,10 +7,10 @@ export const ROUTES = {
 } as const
 
 export const TAB_BAR_CONFIG = [
-  { key: 'pages/index/index', label: '问答', icon: 'message-square' },
-  { key: 'pages/zones/index', label: '专区', icon: 'grid' },
-  { key: 'pages/service/index', label: '客服', icon: 'headphones' },
-  { key: 'pages/profile/index', label: '我的', icon: 'user' },
+  { key: 'pages/index/index', label: '首页', icon: 'home' },
+  { key: 'pages/zones/index', label: '专区', icon: 'zones' },
+  { key: 'pages/service/index', label: '客服', icon: 'headset' },
+  { key: 'pages/profile/index', label: '我的', icon: 'profile' },
 ]
 
 export const ZONE_ROUTES: Record<string, string> = {
