@@ -8,7 +8,7 @@ export const STRINGS = {
   // ---- Index Page ----
   INDEX_NAV_TITLE: '智能助手',
   INDEX_WELCOME_TITLE: '欢迎来到数字世界！',
-  INDEX_WELCOME_SUB: '您可以直接向我提问，或者探索下方专区获取最新资讯。',
+  INDEX_WELCOME_SUB: '您可以直接向我提问，或者探索下方专区。',
   INDEX_PLACEHOLDER: '问我任何问题...',
   INDEX_COPY_WECHAT: '复制微信号',
   INDEX_LABEL_WECHAT: '微信号',

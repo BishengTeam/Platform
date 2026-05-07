@@ -1,0 +1,59 @@
+@use '../../styles/variables' as *;
+
+.card {
+  background: $color-white;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
+  margin-top: $spacing-md;
+}
+
+.title {
+  font-size: $font-xl;
+  font-weight: 600;
+  color: $color-text;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-base;
+  color: $color-text-tertiary;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.zoneRow {
+  white-space: nowrap;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.zoneItem {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-right: $spacing-md;
+
+  &:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+  }
+}
+
+.zoneIcon {
+  width: $avatar-lg;
+  height: $avatar-lg;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoneName {
+  font-size: $font-sm;
+  color: $color-text;
+}

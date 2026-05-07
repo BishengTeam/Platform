@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { View, Text, Input, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+
 import { AuthGuard } from '@/components/AuthGuard'
 import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import TabBar from '@/components/TabBar'
-import { ZONE_ROUTES } from '@/constants/routes'
+import { WelcomeCard } from '@/components/WelcomeCard'
 import { STRINGS } from '@/constants/strings'
-import { getZoneIcons, getQuickQuestions, getInitialMessages } from '@/services/dataService'
+import { getQuickQuestions, getInitialMessages } from '@/services/dataService'
 import type { Message } from '@/types'
 import styles from './index.module.scss'
 
@@ -58,32 +58,15 @@ export default function IndexPage() {
     setInputValue(q)
   }
 
-  const handleZoneNavigate = (route: string) => {
-    Taro.navigateTo({ url: route })
-  }
-
   return (
     <AuthGuard>
     <View className={styles.page}>
       <PageHeader title={STRINGS.INDEX_NAV_TITLE} />
 
       <ScrollView className={styles.body} scrollY scrollWithAnimation>
-        {messages.length === 1 && (
-          <View className={`${styles.welcomeCard} fade-in-up`}>
-            <Text className={styles.welcomeTitle}>{STRINGS.INDEX_WELCOME_TITLE}</Text>
-            <Text className={styles.welcomeSub}>{STRINGS.INDEX_WELCOME_SUB}</Text>
-            <ScrollView scrollX className={styles.zoneRow}>
-              {getZoneIcons().map((zone) => (
-                <View key={zone.id} className={styles.zoneItem} onClick={() => handleZoneNavigate(ZONE_ROUTES[zone.name])}>
-                  <View className={styles.zoneIcon} style={{ backgroundColor: zone.bg }}>
-                    <Icon name={zone.icon} size={24} color={zone.color} />
-                  </View>
-                  <Text className={styles.zoneName}>{zone.name}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+        {messages.length === 1 && 
+          <WelcomeCard />
+        }
 
         <View className={styles.chatList}>
           {messages.map((msg) => (

@@ -15,65 +15,10 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0 $spacing-lg calc(#{$spacing-sm} + #{$safe-bottom});
-}
-
-.welcomeCard {
-  background: $color-white;
-  border-radius: $radius-xl;
-  padding: $spacing-lg;
-  box-shadow: $shadow-sm;
-  margin-top: $spacing-md;
-}
-
-.welcomeTitle {
-  font-size: $font-xl;
-  font-weight: 600;
-  color: $color-text;
-  display: block;
-  margin-bottom: $spacing-xs;
-}
-
-.welcomeSub {
-  font-size: $font-base;
-  color: $color-text-tertiary;
-  display: block;
-  margin-bottom: $spacing-sm;
-}
-
-.zoneRow {
-  white-space: nowrap;
-
-  ::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.zoneItem {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $spacing-xs;
-  margin-right: 24px;
-
-  &:active {
-    transform: scale(0.95);
-    transition: transform 0.1s;
-  }
-}
-
-.zoneIcon {
-  width: $avatar-lg;
-  height: $avatar-lg;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.zoneName {
-  font-size: $font-sm;
-  color: $color-text;
+  
+  padding-left: $spacing-lg;
+  padding-right: $spacing-lg;
+  padding-bottom: calc(#{$spacing-sm} + #{$safe-bottom});
 }
 
 .chatList {
@@ -328,10 +273,6 @@
 @include respond-to(xs) {
   .bubbleContent {
     max-width: 90%;
-  }
-
-  .welcomeSub {
-    display: none;
   }
 
   .teacherRow:nth-child(2),
