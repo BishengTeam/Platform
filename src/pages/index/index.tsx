@@ -70,7 +70,11 @@ export default function IndexPage() {
 
         <View className={styles.chatList}>
           {messages.map((msg) => (
-            <View key={msg.id} className={`${styles.chatBubble} ${msg.type === 'user' ? styles.userBubble : styles.aiBubble}`}>
+            <View
+              key={msg.id}
+              className={`${styles.chatBubble} ${msg.type === 'user' ? styles.userBubble : styles.aiBubble} fade-in-up-sm`}
+              style={{ animationDelay: `${(messages.indexOf(msg) - 1) * 0.05}s` }}
+            >
               {msg.type === 'ai' && (
                 <View className={styles.aiAvatar}>
                   <Icon name='sparkles' size={18} color='#ffffff' />
@@ -113,7 +117,7 @@ export default function IndexPage() {
           ))}
 
           {isTyping && (
-            <View className={`${styles.chatBubble} ${styles.aiBubble} fade-in`}>
+            <View className={`${styles.chatBubble} ${styles.aiBubble} fade-in-up-sm`}>
               <View className={styles.aiAvatar}>
                 <Icon name='sparkles' size={18} color='#ffffff' />
               </View>

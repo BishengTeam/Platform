@@ -1,6 +1,8 @@
 @use '../../styles/variables' as *;
 @use '../../styles/mixins' as *;
 
+// ========== Page shell + decorative blobs ==========
+
 .page {
   display: flex;
   flex-direction: column;
@@ -8,24 +10,153 @@
   height: 100dvh;
   background: $color-bg;
   position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    left: -80px;
+    width: 300px;
+    height: 200px;
+    background: $gradient-blue;
+    opacity: 0.08;
+    border-radius: 50%;
+    filter: blur(60px);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -60px;
+    width: 180px;
+    height: 140px;
+    background: $gradient-purple;
+    opacity: 0.05;
+    border-radius: 50%;
+    filter: blur(50px);
+    z-index: 0;
+    pointer-events: none;
+  }
 }
+
+// ========== Scroll body ==========
 
 .body {
   flex: 1;
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+<<<<<<< HEAD
   
   padding-left: $spacing-lg;
   padding-right: $spacing-lg;
   padding-bottom: calc(#{$spacing-sm} + #{$safe-bottom});
+=======
+  padding: 0 $spacing-lg calc(#{$spacing-sm} + #{$safe-bottom});
 }
+
+// ========== Welcome card ==========
+
+.welcomeCard {
+  position: relative;
+  background: $color-white;
+  border-radius: $radius-xl;
+  padding: $spacing-xl $spacing-lg $spacing-lg;
+  box-shadow: $shadow-md;
+  margin-top: $spacing-md;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: $gradient-blue;
+  }
+}
+
+.welcomeTitle {
+  font-size: 40px;
+  font-weight: 700;
+  color: $color-text;
+  display: block;
+  margin-bottom: $spacing-sm;
+  letter-spacing: 1px;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    margin-top: $spacing-xs;
+    background: $gradient-blue;
+    border-radius: $radius-full;
+  }
+}
+
+.welcomeSub {
+  font-size: $font-base;
+  color: $color-text-secondary;
+  display: block;
+  margin-bottom: $spacing-lg;
+  line-height: 44px;
+}
+
+.zoneRow {
+  white-space: nowrap;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.zoneItem {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  margin-right: $spacing-sm;
+  background: $color-bg-tertiary;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: $shadow-xs;
+  }
+}
+
+.zoneIcon {
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-sm;
+}
+
+.zoneName {
+  font-size: $font-sm;
+  font-weight: 500;
+  color: $color-text;
+>>>>>>> a22ac27658506a82dae6418a8771c56ce571a597
+}
+
+// ========== Chat list & bubbles ==========
 
 .chatList {
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
-  padding-top: $spacing-sm;
+  gap: $spacing-md;
+  padding-top: $spacing-md;
 }
 
 .chatBubble {
@@ -44,13 +175,14 @@
   width: $avatar-md;
   height: $avatar-md;
   border-radius: 50%;
-  background: linear-gradient(to bottom right, #1677FF, #4096FF);
+  background: $gradient-blue;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: $spacing-xs;
   flex-shrink: 0;
-  box-shadow: $shadow-xs;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.25);
+  border: 2PX solid rgba(255, 255, 255, 0.6);
 }
 
 .bubbleContent {
@@ -69,24 +201,27 @@
 }
 
 .bubble {
-  padding: $spacing-md;
+  padding: $spacing-sm $spacing-md;
   border-radius: $radius-lg;
 }
 
 .userBubbleBg {
-  background: $color-primary;
+  background: $gradient-blue;
   border-top-right-radius: $radius-sm;
+  border-bottom-right-radius: $radius-sm;
+  box-shadow: 0 2px 10px rgba(22, 119, 255, 0.2);
 }
 
 .aiBubbleBg {
   background: $color-white;
   border-top-left-radius: $radius-sm;
-  box-shadow: $shadow-sm;
+  border-bottom-left-radius: $radius-sm;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .bubbleText {
   font-size: $font-lg;
-  line-height: 48px;
+  line-height: 1.6;
   color: $color-text;
 }
 
@@ -94,22 +229,55 @@
   color: $color-white;
 }
 
+// ========== Message group separator ==========
+
+.userBubble + .aiBubble {
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1PX;
+    background: linear-gradient(to right, transparent, $color-border, transparent);
+  }
+}
+
+// ========== Teacher card ==========
+
 .teacherCard {
+  position: relative;
   background: $color-white;
   border-radius: $radius-lg;
   padding: $spacing-lg;
   box-shadow: $shadow-md;
-  border: $border-thin solid $color-border;
   width: 100%;
   align-self: flex-start;
-  margin-top: $spacing-2xs;
+  margin-top: $spacing-xs;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    bottom: 16px;
+    width: 4px;
+    background: $gradient-blue;
+    border-radius: 0 $radius-full $radius-full 0;
+  }
 }
 
 .teacherHead {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: $spacing-sm;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  padding-left: $spacing-xs;
 }
 
 .teacherAvatar {
@@ -120,6 +288,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.12);
+  border: 2PX solid rgba(22, 119, 255, 0.1);
 }
 
 .teacherName {
@@ -139,8 +309,11 @@
 .teacherInfo {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
-  margin-bottom: $spacing-sm;
+  gap: 2px;
+  margin-bottom: $spacing-md;
+  background: $color-bg-tertiary;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
 }
 
 .teacherRow {
@@ -161,54 +334,64 @@
 
 .teacherBtn {
   width: 100%;
-  background: $color-primary;
+  background: $gradient-blue;
   padding: $spacing-sm;
   border-radius: $radius-sm;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.2);
+  transition: transform 0.15s, opacity 0.15s;
 
   &:active {
-    transform: scale(0.95);
-    transition: transform 0.1s;
+    transform: scale(0.97);
+    opacity: 0.9;
   }
 }
 
 .teacherBtnText {
   color: $color-white;
   font-size: $font-base;
-  font-weight: 500;
+  font-weight: 600;
 }
+
+// ========== Typing indicator ==========
 
 .typingDots {
   background: $color-white;
   border-radius: $radius-lg;
   border-top-left-radius: $radius-sm;
-  padding: $spacing-md;
+  border-bottom-left-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
   box-shadow: $shadow-sm;
   display: flex;
   align-items: center;
-  gap: $spacing-2xs;
+  gap: 6px;
 }
 
 .typingDot {
-  width: 12px;
-  height: 12px;
-  background: $color-text-tertiary;
+  width: 10px;
+  height: 10px;
+  background: $gradient-blue;
   border-radius: 50%;
-  animation: bounce 1s infinite;
+  opacity: 0.5;
+  animation: bounce 1.2s infinite ease-in-out;
 
-  &:nth-child(2) { animation-delay: 0.2s; }
-  &:nth-child(3) { animation-delay: 0.4s; }
+  &:nth-child(2) { animation-delay: 0.15s; opacity: 0.65; }
+  &:nth-child(3) { animation-delay: 0.3s; opacity: 0.8; }
 }
+
+// ========== Input area ==========
 
 .inputArea {
   background: $color-white;
-  box-shadow: $shadow-bottom;
-  padding: $spacing-sm $spacing-lg;
+  box-shadow:
+    0 -1px 3px rgba(0, 0, 0, 0.04),
+    0 -4px 12px rgba(0, 0, 0, 0.05);
+  padding: $spacing-sm $spacing-lg calc(#{$spacing-sm} + #{$safe-bottom});
   z-index: 20;
 }
 
 .quickRow {
   white-space: nowrap;
-  margin-bottom: 12px;
+  margin-bottom: $spacing-sm;
 
   ::-webkit-scrollbar {
     display: none;
@@ -218,12 +401,15 @@
 .quickTag {
   position: relative;
   display: inline-block;
-  background: $color-bg-secondary;
-  color: $color-text;
+  background: $color-blue-tint;
+  color: $color-primary;
   font-size: $font-sm;
-  padding: 6px $spacing-md;
+  font-weight: 500;
+  padding: $spacing-xs $spacing-md;
   border-radius: $radius-full;
   margin-right: $spacing-xs;
+  border: 1PX solid rgba(22, 119, 255, 0.1);
+  transition: background 0.15s, transform 0.15s;
 
   &::before {
     content: '';
@@ -235,7 +421,8 @@
   }
 
   &:active {
-    background: $color-border;
+    background: rgba(22, 119, 255, 0.12);
+    transform: scale(0.96);
   }
 }
 
@@ -245,7 +432,10 @@
   gap: $spacing-xs;
   background: $color-bg-secondary;
   border-radius: $radius-full;
-  padding: $spacing-xs $spacing-lg;
+  padding: $spacing-sm $spacing-lg;
+  border: 2PX solid transparent;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .inputField {
@@ -259,24 +449,60 @@
 .sendBtn {
   width: $icon-md;
   height: $icon-md;
-  background: $color-primary;
+  background: $gradient-blue;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
+    box-shadow: 0 1px 4px rgba(22, 119, 255, 0.2);
   }
 }
 
+// ========== Responsive ==========
+
 @include respond-to(xs) {
   .bubbleContent {
-    max-width: 90%;
+    max-width: 88%;
   }
 
+  .welcomeCard {
+    padding: $spacing-lg $spacing-md;
+    margin-top: $spacing-sm;
+  }
+
+  .welcomeTitle {
+    font-size: $font-xl;
+  }
+
+<<<<<<< HEAD
+=======
+  .welcomeSub {
+    display: none;
+  }
+
+  .zoneItem {
+    padding: $spacing-xs $spacing-sm;
+    margin-right: $spacing-xs;
+  }
+
+  .zoneIcon {
+    width: 88px;
+    height: 88px;
+    border-radius: 22px;
+  }
+
+>>>>>>> a22ac27658506a82dae6418a8771c56ce571a597
   .teacherRow:nth-child(2),
   .teacherRow:nth-child(3) {
     display: none;
+  }
+
+  .inputRow {
+    padding: $spacing-xs $spacing-md;
   }
 }
