@@ -44,11 +44,11 @@
 }
 
 page {
-  position: static !important;
-  display: block !important;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   margin: 0;
-  align-items: stretch !important;
+  overflow-x: hidden;
 
   font-family: PingFang SC, system-ui, -apple-system, sans-serif;
   background-color: #F0F5FF;
