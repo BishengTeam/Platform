@@ -20,6 +20,13 @@
 }
 
 page {
+  // 覆盖 NutUI 全局样式对 page 的破坏性设置
+  // NutUI 注入了 position: fixed + display: flex，与 Taro 滚动机制冲突导致溢出
+  position: static;
+  display: block;
+  width: 100%;
+  margin: 0;
+
   font-family: PingFang SC, system-ui, -apple-system, sans-serif;
   background-color: #F0F5FF;
   color: #333333;
