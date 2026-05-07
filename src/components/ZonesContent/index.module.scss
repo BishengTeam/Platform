@@ -1,0 +1,64 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.gridCard {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
+}
+
+.gridTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.gridItem {
+  width: calc(50% - #{$spacing-xs});
+  min-height: $grid-item-height;
+  height: auto;
+  background: $color-blue-tint;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  &:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+  }
+}
+
+.gridItemText {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-primary;
+  position: relative;
+  z-index: 10;
+}
+
+.gridItemSub {
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-2xs;
+  position: relative;
+  z-index: 10;
+}
+
+@include respond-to(xl) {
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

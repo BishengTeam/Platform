@@ -1,0 +1,68 @@
+@use '../../styles/variables' as *;
+
+.banner {
+  width: 100%;
+  height: $banner-height;
+  background: linear-gradient(to right, #1677FF, #4096FF);
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  padding: $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+}
+
+.title {
+  color: $color-white;
+  font-weight: bold;
+  font-size: $font-2xl;
+  margin-bottom: $spacing-2xs;
+}
+
+.desc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: $font-sm;
+  margin-bottom: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn {
+  position: relative;
+  background: $color-white;
+  color: $color-primary;
+  font-size: $font-sm;
+  font-weight: 500;
+  padding: 6px $spacing-lg;
+  border-radius: $radius-full;
+  display: inline-flex;
+  transition: all 0.1s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    left: -10px;
+    right: -10px;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.icon {
+  position: absolute;
+  right: -$spacing-lg;
+  bottom: -$spacing-lg;
+  transform: rotate(12deg);
+}

@@ -4,6 +4,16 @@ import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
 import styles from './index.module.scss'
 
+const GRADIENTS: Record<string, string> = {
+  'gradient-blue': 'linear-gradient(to right, #1677FF, #4096FF)',
+  'gradient-green': 'linear-gradient(to right, #52C41A, #73D13D)',
+  'gradient-orange': 'linear-gradient(to right, #FA8C16, #FFC53D)',
+  'gradient-purple': 'linear-gradient(to right, #722ED1, #9254DE)',
+  'gradient-teal': 'linear-gradient(to right, #13C2C2, #36CFC9)',
+  'gradient-red': 'linear-gradient(to right, #FF4D4F, #FF7875)',
+  'gradient-gray': 'linear-gradient(to right, #999999, #BFBFBF)',
+}
+
 export interface ZoneBannerItem {
   id: string | number
   title: string
@@ -30,7 +40,7 @@ export function ZoneBanner({ items }: ZoneBannerProps) {
           <SwiperItem key={item.id}>
             <View
               className={styles.slide}
-              style={{ background: `var(--${item.gradient}, var(--gradient-blue))` }}
+              style={{ background: GRADIENTS[item.gradient] || GRADIENTS['gradient-blue'] }}
             >
               <View className={styles.content}>
                 <View className={styles.title}>{item.title}</View>

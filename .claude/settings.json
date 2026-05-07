@@ -29,7 +29,24 @@
       "Bash(curl -s http://localhost:10086/)",
       "Bash(curl -s http://localhost:10086/js/app.db641084-legacy.js)",
       "Bash(pkill -f \"taro build\")",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(ls src/constants/mock/)",
+      "Bash(find src/constants -name \"mock*\")",
+      "Bash(grep -o 'jsxRuntimeExports[^,;]{0,30}' dist/vendors.js)",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/vendors.js','utf8'\\);const m=c.match\\(/jsxRuntimeExports[^,;]{0,50}/g\\);console.log\\(m?.slice\\(0,5\\).join\\('\\\\n---\\\\n'\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/vendors.js','utf8'\\);const idx=c.indexOf\\('jsxRuntimeExports'\\);console.log\\(c.substring\\(Math.max\\(0,idx-200\\),idx+50\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/vendors.js','utf8'\\);console.log\\(c.substring\\(0,200\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/vendors.js','utf8'\\);const re=/[^.]jsx\\\\\\(/g;let m,found=[];while\\(\\(m=re.exec\\(c\\)\\)!==null\\){const before=c.substring\\(Math.max\\(0,m.index-30\\),m.index+10\\);found.push\\(before\\)}console.log\\(found.slice\\(0,10\\).join\\('\\\\n---\\\\n'\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/pages/zones/index.js','utf8'\\);console.log\\(c.substring\\(0,300\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/pages/zones/index.js','utf8'\\);const idx=c.indexOf\\('function ZonesPage'\\);console.log\\(c.substring\\(idx, idx+300\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);const idx=c.search\\(/exports\\\\.jsx[^R]/\\);console.log\\(c.substring\\(Math.max\\(0,idx-10\\),idx+40\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);const idx=c.lastIndexOf\\('var jsx ='\\);if\\(idx===-1\\) console.log\\('not found'\\);else console.log\\(c.substring\\(idx,idx+200\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);const idx=c.indexOf\\('function q\\('\\);if\\(idx===-1\\){const idx2=c.indexOf\\('var q='\\);console.log\\(idx2!==-1?c.substring\\(idx2,idx2+100\\):'not found'\\)}else{console.log\\(c.substring\\(idx,idx+100\\)\\)}\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);const lines=c.split\\('\\\\n'\\);const exportLines=lines.filter\\(l=>l.includes\\('exports.jsx'\\)\\);console.log\\(exportLines.join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);const jsxVar=c.indexOf\\('var jsx ='\\);const jsxExport=c.indexOf\\('exports.jsx ='\\);console.log\\('var jsx = at position:',jsxVar,'exports.jsx = at position:',jsxExport,'diff:',jsxExport-jsxVar\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/pages/zones/index.js','utf8'\\);const idx=c.indexOf\\('function ZonesPage'\\);console.log\\(c.substring\\(idx, idx+250\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);console.log\\(c.includes\\('exports.jsx = jsx'\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);console.log\\('File size:',c.length\\);console.log\\('Has exports.jsxRuntimeExports:',c.includes\\('exports.jsxRuntimeExports'\\)\\);const idx1=c.indexOf\\('exports.jsx ='\\);const idx2=c.indexOf\\('exports.jsxs ='\\);console.log\\('exports.jsx = at:',idx1,'exports.jsxs = at:',idx2\\)\")"
     ]
   }
 }
