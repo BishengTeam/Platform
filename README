@@ -5,7 +5,6 @@
 ## 安装依赖
 ```
 npm install --legacy-peer-deps
-
 ```
 
 ## 构建命令
