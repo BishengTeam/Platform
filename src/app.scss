@@ -16,6 +16,24 @@
   --gradient-red: linear-gradient(to right, #FF4D4F, #FF7875);
   --gradient-gray: linear-gradient(to right, #999999, #BFBFBF);
 
+  // Color tokens (for runtime theme switching / dark mode)
+  --color-primary: #1677FF;
+  --color-primary-light: #69B1FF;
+  --color-primary-dark: #1890FF;
+  --color-bg: #F0F5FF;
+  --color-bg-secondary: #F5F5F5;
+  --color-bg-tertiary: #F5F7FA;
+  --color-text: #333333;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-white: #ffffff;
+  --color-border: #E5E5E5;
+  --color-price: #FF4D4F;
+  --color-success: #07C160;
+  --color-warning: #FA8C16;
+  --color-purple: #722ED1;
+  --color-teal: #13C2C2;
+
   // NutUI theme variables
   --nutui-brand-color: #1677FF;
   --nutui-brand-start-color: #1677FF;
