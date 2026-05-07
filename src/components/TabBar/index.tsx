@@ -37,7 +37,7 @@ export default function CustomTabBar() {
       {tabs.map(tab => (
         <TabbarItem
           key={tab.key}
-          icon={<Icon name={tab.icon} size={44} color='currentColor' />}
+          icon={<Icon name={tab.icon} size={32} color='currentColor' />}
           title={<span className={styles.label}>{tab.label}</span>}
         />
       ))}

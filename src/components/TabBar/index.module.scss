@@ -2,11 +2,13 @@
 
 .bar {
   flex-shrink: 0;
+  padding-bottom: 34px;
   --nutui-tabbar-border-top: 1px solid #eeeeee;
-  --nutui-tabbar-text-font-size: 20px;
+  --nutui-tabbar-text-font-size: 22px;
+  --nutui-tabbar-text-margin-top: 2px;
 }
 
 .label {
-  font-size: $font-xs;
-  line-height: 1;
+  font-size: 22px;
+  line-height: 1.2;
 }

@@ -5,7 +5,7 @@
   box-shadow:
     0 -1px 3px rgba(0, 0, 0, 0.04),
     0 -4px 12px rgba(0, 0, 0, 0.05);
-  padding: $spacing-sm $spacing-lg calc(#{$spacing-sm} + #{$safe-bottom});
+  padding: $spacing-sm $spacing-lg $safe-bottom;
   z-index: 20;
 }
 
