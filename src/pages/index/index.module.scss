@@ -42,15 +42,19 @@
 }
 
 .zoneRow {
-  display: flex;
-  justify-content: space-between;
+  white-space: nowrap;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .zoneItem {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: $spacing-xs;
+  margin-right: 24px;
 
   &:active {
     transform: scale(0.95);

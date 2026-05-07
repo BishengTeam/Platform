@@ -72,7 +72,7 @@ export default function IndexPage() {
           <View className={`${styles.welcomeCard} fade-in-up`}>
             <Text className={styles.welcomeTitle}>{STRINGS.INDEX_WELCOME_TITLE}</Text>
             <Text className={styles.welcomeSub}>{STRINGS.INDEX_WELCOME_SUB}</Text>
-            <View className={styles.zoneRow}>
+            <ScrollView scrollX className={styles.zoneRow}>
               {getZoneIcons().map((zone) => (
                 <View key={zone.id} className={styles.zoneItem} onClick={() => handleZoneNavigate(ZONE_ROUTES[zone.name])}>
                   <View className={styles.zoneIcon} style={{ backgroundColor: zone.bg }}>
@@ -81,7 +81,7 @@ export default function IndexPage() {
                   <Text className={styles.zoneName}>{zone.name}</Text>
                 </View>
               ))}
-            </View>
+            </ScrollView>
           </View>
         )}
 
