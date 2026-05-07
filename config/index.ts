@@ -39,7 +39,9 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
         pxtransform: {
           enable: true,
           config: {
-
+            // NutUI 按 375 设计稿编写，其 px 值不应被 750 基准转换。
+            // 排除后 NutUI 的 px 保留为 CSS px，在真机上渲染尺寸接近原始设计。
+            exclude: (filename: string) => /node_modules/.test(filename),
           }
         },
         cssModules: {

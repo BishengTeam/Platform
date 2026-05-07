@@ -10,7 +10,8 @@
       "Bash(awk -F: '{print $2}')",
       "Bash(npm ls *)",
       "Bash(wd /home/bisheng/work/Platform/node_modules/@nutui/nutui-react-taro/dist/es/types/index.d.ts)",
-      "Bash(sort -t: -k2 -n)"
+      "Bash(sort -t: -k2 -n)",
+      "Bash(sort -t'r' -k1 -n)"
     ]
   }
 }
