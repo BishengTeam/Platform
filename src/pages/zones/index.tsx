@@ -1,7 +1,8 @@
-import { View, Text } from '@tarojs/components'
+import { View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Icon } from '@/components/Icon'
+import { PageHeader } from '@/components/PageHeader'
 import TabBar from '@/components/TabBar'
 import { ZONE_ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
@@ -18,9 +19,7 @@ export default function ZonesPage() {
   return (
     <AuthGuard>
     <View className={styles.page}>
-      <View className={styles.header}>
-        <Text>{STRINGS.ZONES_HEADER}</Text>
-      </View>
+      <PageHeader title={STRINGS.ZONES_HEADER} />
 
       <View className={styles.body}>
         <View className={styles.banner}>
