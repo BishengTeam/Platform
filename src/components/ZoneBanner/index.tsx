@@ -1,5 +1,4 @@
-import { View } from '@tarojs/components'
-import { Swiper, SwiperItem } from '@nutui/nutui-react-taro'
+import { View, Swiper, SwiperItem } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
 import styles from './index.module.scss'
@@ -33,8 +32,9 @@ export function ZoneBanner({ items }: ZoneBannerProps) {
     <View className={styles.container}>
       <Swiper
         className={styles.swiper}
-        loop
-        autoplay={3000}
+        circular
+        autoplay
+        interval={3000}
       >
         {items.map((item) => (
           <SwiperItem key={item.id}>
