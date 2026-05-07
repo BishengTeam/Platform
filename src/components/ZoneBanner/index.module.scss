@@ -33,6 +33,8 @@
   font-size: 48px;
   line-height: 64px;
   margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

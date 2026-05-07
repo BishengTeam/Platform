@@ -47,6 +47,8 @@
   line-height: 64px;
   margin-bottom: 8px;
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

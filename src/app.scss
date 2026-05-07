@@ -1,6 +1,12 @@
 @use './styles/variables' as *;
 @use './styles/animations';
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   --gradient-blue: linear-gradient(to right, #1677FF, #4096FF);
   --gradient-green: linear-gradient(to right, #52C41A, #73D13D);
@@ -20,12 +26,11 @@
 }
 
 page {
-  // 覆盖 NutUI 全局样式对 page 的破坏性设置
-  // NutUI 注入了 position: fixed + display: flex，与 Taro 滚动机制冲突导致溢出
-  position: static;
-  display: block;
+  position: static !important;
+  display: block !important;
   width: 100%;
   margin: 0;
+  align-items: stretch !important;
 
   font-family: PingFang SC, system-ui, -apple-system, sans-serif;
   background-color: #F0F5FF;
