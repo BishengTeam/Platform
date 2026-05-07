@@ -56,6 +56,10 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
     h5: {
       publicPath: '/',
       staticDirectory: 'static',
+      devServer: {
+        port: 10086,
+        host: '0.0.0.0',
+      },
 
       miniCssExtractPluginOption: {
         ignoreOrder: true,
@@ -85,8 +89,6 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
       }
     }
   }
-
-  process.env.BROWSERSLIST_ENV = process.env.NODE_ENV
 
   if (process.env.NODE_ENV === 'development') {
     // 本地开发构建配置（不混淆压缩）

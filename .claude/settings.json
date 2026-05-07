@@ -24,7 +24,11 @@
       "Bash(grep -rnP '^\\\\s*\\\\$[\\\\w-]+:\\\\s*\\\\K\\\\d+px' /home/bisheng/work/Platform/src/styles/_variables.scss)",
       "Bash(grep -vP '^\\\\$\\\\w+:')",
       "Bash(grep -vP '^\\\\s*\\\\$[\\\\w-]+:')",
-      "Bash(grep -vP '^0px$')"
+      "Bash(grep -vP '^0px$')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:10086/)",
+      "Bash(curl -s http://localhost:10086/)",
+      "Bash(curl -s http://localhost:10086/js/app.db641084-legacy.js)",
+      "Bash(pkill -f \"taro build\")"
     ]
   }
 }
