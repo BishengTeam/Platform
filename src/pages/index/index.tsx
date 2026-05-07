@@ -3,6 +3,7 @@ import { View, Text, Input, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Icon } from '@/components/Icon'
+import { PageHeader } from '@/components/PageHeader'
 import TabBar from '@/components/TabBar'
 import { ZONE_ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
@@ -64,9 +65,7 @@ export default function IndexPage() {
   return (
     <AuthGuard>
     <View className={styles.page}>
-      <View className={styles.nav}>
-        <Text className={styles.navTitle}>{STRINGS.INDEX_NAV_TITLE}</Text>
-      </View>
+      <PageHeader title={STRINGS.INDEX_NAV_TITLE} />
 
       <ScrollView className={styles.body} scrollY scrollWithAnimation>
         {messages.length === 1 && (

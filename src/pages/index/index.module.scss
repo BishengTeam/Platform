@@ -10,27 +10,6 @@
   position: relative;
 }
 
-.nav {
-  padding-top: $nav-title-height;
-  padding-bottom: $spacing-sm;
-  padding-left: $spacing-lg;
-  padding-right: $spacing-lg;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  background: rgba(240, 245, 255, 0.8);
-  backdrop-filter: blur(12px);
-  z-index: 10;
-}
-
-.navTitle {
-  font-size: $font-xl;
-  font-weight: 600;
-  color: $color-text;
-}
-
 .body {
   flex: 1;
   width: 100%;

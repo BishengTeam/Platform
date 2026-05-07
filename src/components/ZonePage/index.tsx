@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react'
 import { View } from '@tarojs/components'
 import { AuthGuard } from '@/components/AuthGuard'
-import { ZoneHeader } from '@/components/ZoneHeader'
+import { PageHeader } from '@/components/PageHeader'
 import { ZoneBanner, type ZoneBannerItem } from '@/components/ZoneBanner'
 import { TagFilter, type TagFilterItem } from '@/components/TagFilter'
 import styles from './index.module.scss'
@@ -28,7 +28,7 @@ export function ZonePage({
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <ZoneHeader title={title} />
+        <PageHeader title={title} showBack />
         <View className={styles.body}>
           <ZoneBanner items={bannerItems} />
           <View className={styles.content}>

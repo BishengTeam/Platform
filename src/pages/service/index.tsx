@@ -1,6 +1,7 @@
-import { View, Text } from '@tarojs/components'
+import { View } from '@tarojs/components'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Icon } from '@/components/Icon'
+import { PageHeader } from '@/components/PageHeader'
 import TabBar from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { getContactList } from '@/services/dataService'
@@ -10,9 +11,7 @@ export default function ServicePage() {
   return (
     <AuthGuard>
     <View className={styles.page}>
-      <View className={styles.header}>
-        <Text>{STRINGS.SERVICE_HEADER}</Text>
-      </View>
+      <PageHeader title={STRINGS.SERVICE_HEADER} />
 
       <View className={styles.body}>
         <View className={styles.card}>
