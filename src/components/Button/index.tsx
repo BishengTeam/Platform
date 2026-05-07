@@ -29,7 +29,7 @@ export function Button({
       <NutButton
         className={className}
         size={SIZE_MAP[size] || 'normal'}
-        color="linear-gradient(135deg, #1677FF, #4096FF)"
+        color='linear-gradient(135deg, #1677FF, #4096FF)'
         onClick={onClick}
         style={style}
       >

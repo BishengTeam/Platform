@@ -29,15 +29,15 @@ export default function CustomTabBar() {
     <Tabbar
       className={styles.bar}
       value={active}
-      activeColor="#1677FF"
-      inactiveColor="#999999"
+      activeColor='#1677FF'
+      inactiveColor='#999999'
       onSwitch={handleSwitch}
       fixed={false}
     >
       {tabs.map(tab => (
         <TabbarItem
           key={tab.key}
-          icon={<Icon name={tab.icon} size={44} color="currentColor" />}
+          icon={<Icon name={tab.icon} size={44} color='currentColor' />}
           title={<span className={styles.label}>{tab.label}</span>}
         />
       ))}

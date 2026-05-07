@@ -25,7 +25,7 @@ export function PageHeader({ title, showBack = false, onBack, rightContent }: Pa
       <View className={styles.side}>
         {showBack && (
           <View className={styles.backBtn} onClick={handleBack}>
-            <Icon name="chevron-left" size={20} color="#333333" />
+            <Icon name='chevron-left' size={20} color='#333333' />
           </View>
         )}
       </View>

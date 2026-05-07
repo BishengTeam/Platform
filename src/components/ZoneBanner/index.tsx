@@ -36,17 +36,17 @@ export function ZoneBanner({ items }: ZoneBannerProps) {
                 <View className={styles.title}>{item.title}</View>
                 <View className={styles.desc}>{item.description}</View>
                 <Button
-                  size="sm"
+                  size='sm'
                   className={styles.bannerBtn}
                   style={{ color: item.buttonColor }}
-                  variant="secondary"
+                  variant='secondary'
                 >
                   {item.buttonText}
                 </Button>
               </View>
               {item.icon && (
                 <View className={styles.iconWrap}>
-                  <Icon name={item.icon} size={80} color="rgba(255,255,255,0.2)" />
+                  <Icon name={item.icon} size={80} color='rgba(255,255,255,0.2)' />
                 </View>
               )}
             </View>
