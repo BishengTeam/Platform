@@ -16,5 +16,5 @@ export const quickQuestions: string[] = [
 ]
 
 export const initialMessages: Message[] = [
-  { id: 1, type: 'ai', text: '你好！我是你的智能助手，有什么我可以帮你的吗？' },
+  { id: 1, type: 'ai', text: '你你你你好！我是你的智能助手，有什么我可以帮你的吗？' },
 ]
