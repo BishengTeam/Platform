@@ -1,0 +1,84 @@
+@use '../../styles/variables' as *;
+
+.bar {
+  background: $color-white;
+  box-shadow:
+    0 -1px 3px rgba(0, 0, 0, 0.04),
+    0 -4px 12px rgba(0, 0, 0, 0.05);
+  padding: $spacing-sm $spacing-lg calc(#{$spacing-sm} + #{$safe-bottom});
+  z-index: 20;
+}
+
+.quickRow {
+  white-space: nowrap;
+  margin-bottom: $spacing-sm;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.quickTag {
+  position: relative;
+  display: inline-block;
+  background: $color-blue-tint;
+  color: $color-primary;
+  font-size: $font-sm;
+  font-weight: 500;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-full;
+  margin-right: $spacing-xs;
+  border: 1PX solid rgba(22, 119, 255, 0.1);
+  transition: background 0.15s, transform 0.15s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    left: -10px;
+    right: -10px;
+  }
+
+  &:active {
+    background: rgba(22, 119, 255, 0.12);
+    transform: scale(0.96);
+  }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  background: $color-bg-secondary;
+  border-radius: $radius-full;
+  padding: $spacing-sm $spacing-lg;
+  border: 2PX solid transparent;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field {
+  flex: 1;
+  background: transparent;
+  font-size: $font-lg;
+  color: $color-text;
+  min-width: 0;
+}
+
+.sendBtn {
+  width: $icon-md;
+  height: $icon-md;
+  background: $gradient-blue;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active {
+    transform: scale(0.92);
+    box-shadow: 0 1px 4px rgba(22, 119, 255, 0.2);
+  }
+}

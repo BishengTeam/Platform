@@ -10,5 +10,5 @@ npm install --legacy-peer-deps
 
 ## 构建命令
 ```
-npx taro build --type weapp
+npm run dev:weapp
 ```

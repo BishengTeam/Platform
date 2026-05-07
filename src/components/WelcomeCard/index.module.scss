@@ -1,26 +1,52 @@
 @use '../../styles/variables' as *;
 
 .card {
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
   background: $color-white;
   border-radius: $radius-xl;
-  padding: $spacing-lg;
-  box-shadow: $shadow-sm;
+  padding: $spacing-xl $spacing-lg $spacing-lg;
+  box-shadow: $shadow-md;
   margin-top: $spacing-md;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: $gradient-blue;
+  }
 }
 
 .title {
-  font-size: $font-xl;
-  font-weight: 600;
+  font-size: 40px;
+  font-weight: 700;
   color: $color-text;
   display: block;
-  margin-bottom: $spacing-xs;
+  margin-bottom: $spacing-sm;
+  letter-spacing: 1px;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    margin-top: $spacing-xs;
+    background: $gradient-blue;
+    border-radius: $radius-full;
+  }
 }
 
 .subtitle {
   font-size: $font-base;
-  color: $color-text-tertiary;
+  color: $color-text-secondary;
   display: block;
-  margin-bottom: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  line-height: 44px;
 }
 
 .zoneRow {
@@ -35,25 +61,31 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: $spacing-xs;
-  margin-right: $spacing-md;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  margin-right: $spacing-sm;
+  background: $color-bg-tertiary;
+  transition: transform 0.15s, box-shadow 0.15s;
 
   &:active {
-    transform: scale(0.95);
-    transition: transform 0.1s;
+    transform: scale(0.96);
+    box-shadow: $shadow-xs;
   }
 }
 
 .zoneIcon {
-  width: $avatar-lg;
-  height: $avatar-lg;
-  border-radius: 50%;
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: $shadow-sm;
 }
 
 .zoneName {
   font-size: $font-sm;
+  font-weight: 500;
   color: $color-text;
 }

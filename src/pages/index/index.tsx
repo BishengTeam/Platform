@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { View, Text, Input, ScrollView } from '@tarojs/components'
+import { View, ScrollView } from '@tarojs/components'
 
 import { AuthGuard } from '@/components/AuthGuard'
-import { Icon } from '@/components/Icon'
+import { ChatArea } from '@/components/ChatArea'
+import { ChatInput } from '@/components/ChatInput'
 import { PageHeader } from '@/components/PageHeader'
 import TabBar from '@/components/TabBar'
 import { WelcomeCard } from '@/components/WelcomeCard'
 import { STRINGS } from '@/constants/strings'
-import { getQuickQuestions, getInitialMessages } from '@/services/dataService'
+import { getInitialMessages } from '@/services/dataService'
 import type { Message } from '@/types'
 import styles from './index.module.scss'
 
@@ -54,10 +55,6 @@ export default function IndexPage() {
     }, 1500)
   }
 
-  const handleQuickQuestion = (q: string) => {
-    setInputValue(q)
-  }
-
   return (
     <AuthGuard>
     <View className={styles.page}>
@@ -68,100 +65,15 @@ export default function IndexPage() {
           <WelcomeCard />
         }
 
-        <View className={styles.chatList}>
-          {messages.map((msg) => (
-            <View
-              key={msg.id}
-              className={`${styles.chatBubble} ${msg.type === 'user' ? styles.userBubble : styles.aiBubble} fade-in-up-sm`}
-              style={{ animationDelay: `${(messages.indexOf(msg) - 1) * 0.05}s` }}
-            >
-              {msg.type === 'ai' && (
-                <View className={styles.aiAvatar}>
-                  <Icon name='sparkles' size={18} color='#ffffff' />
-                </View>
-              )}
-
-              <View className={`${styles.bubbleContent} ${msg.type === 'user' ? styles.userContent : styles.aiContent}`}>
-                <View className={`${styles.bubble} ${msg.type === 'user' ? styles.userBubbleBg : styles.aiBubbleBg}`}>
-                  <Text className={styles.bubbleText}>{msg.text}</Text>
-                </View>
-
-                {msg.card && msg.card.type === 'teacher' && (
-                  <View className={styles.teacherCard}>
-                    <View className={styles.teacherHead}>
-                      <View className={styles.teacherAvatar}>
-                        <Icon name='user' size={24} color='#1677FF' />
-                      </View>
-                      <View>
-                        <Text className={styles.teacherName}>{msg.card.name}</Text>
-                        <Text className={styles.teacherTitle}>{msg.card.title}</Text>
-                      </View>
-                    </View>
-                    <View className={styles.teacherInfo}>
-                      <View className={styles.teacherRow}>
-                        <Text className={styles.teacherLabel}>{STRINGS.INDEX_LABEL_WECHAT}</Text>
-                        <Text className={styles.teacherValue}>{msg.card.wechat}</Text>
-                      </View>
-                      <View className={styles.teacherRow}>
-                        <Text className={styles.teacherLabel}>{STRINGS.INDEX_LABEL_PHONE}</Text>
-                        <Text className={styles.teacherValue}>{msg.card.phone}</Text>
-                      </View>
-                    </View>
-                    <View className={styles.teacherBtn}>
-                      <Text className={styles.teacherBtnText}>{STRINGS.INDEX_COPY_WECHAT}</Text>
-                    </View>
-                  </View>
-                )}
-              </View>
-            </View>
-          ))}
-
-          {isTyping && (
-            <View className={`${styles.chatBubble} ${styles.aiBubble} fade-in-up-sm`}>
-              <View className={styles.aiAvatar}>
-                <Icon name='sparkles' size={18} color='#ffffff' />
-              </View>
-              <View className={styles.typingDots}>
-                <View className={styles.typingDot} />
-                <View className={styles.typingDot} />
-                <View className={styles.typingDot} />
-              </View>
-            </View>
-          )}
-        </View>
+        <ChatArea messages={messages} isTyping={isTyping} />
       </ScrollView>
 
-      <View className={styles.inputArea}>
-        {messages.length === 1 && (
-          <ScrollView scrollX className={styles.quickRow}>
-            {getQuickQuestions().map((q, idx) => (
-              <View key={idx} className={styles.quickTag} onClick={() => handleQuickQuestion(q)}>
-                <Text>{q}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        )}
-
-        <View className={styles.inputRow}>
-          <Icon name='image' size={24} color='#999999' />
-          <Input
-            className={styles.inputField}
-            type='text'
-            placeholder={STRINGS.INDEX_PLACEHOLDER}
-            value={inputValue}
-            onInput={(e) => setInputValue(e.detail.value)}
-            onConfirm={handleSend}
-            confirmType='send'
-          />
-          {inputValue.trim() ? (
-            <View className={styles.sendBtn} onClick={handleSend}>
-              <Icon name='send' size={16} color='#ffffff' />
-            </View>
-          ) : (
-            <Icon name='mic' size={24} color='#999999' />
-          )}
-        </View>
-      </View>
+      <ChatInput
+        value={inputValue}
+        showQuickQuestions={messages.length === 1}
+        onInput={setInputValue}
+        onSend={handleSend}
+      />
       <TabBar />
     </View>
     </AuthGuard>
