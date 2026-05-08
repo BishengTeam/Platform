@@ -8,6 +8,10 @@ export const ROUTES = {
   CERTIFICATES: 'pages/certificates/index',
   FEEDBACK: 'pages/feedback/index',
   NOTIFICATIONS: 'pages/notifications/index',
+  REGISTRATION_INDEX: 'pages/registration/index',
+  REGISTRATION_FORM: 'pages/registration/form',
+  REGISTRATION_CONFIRM: 'pages/registration/confirm',
+  PAYMENT_RESULT: 'pages/payment/result',
 } as const
 
 export const TAB_BAR_CONFIG = [

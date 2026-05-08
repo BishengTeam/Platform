@@ -27,6 +27,8 @@ import {
   orders,
   certificates,
   notifications,
+  certifications,
+  registrationTagFilters,
 } from '@/constants/mock'
 
 // ===== Home Page =====
@@ -78,3 +80,7 @@ export function getCertificates() { return certificates }
 
 // ===== Notifications Page =====
 export function getNotifications() { return notifications }
+
+// ===== Registration =====
+export function getCertifications() { return certifications }
+export function getRegistrationTagFilters() { return registrationTagFilters }

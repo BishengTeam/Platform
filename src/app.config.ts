@@ -48,6 +48,14 @@ export default defineAppConfig({
       root: 'pages/notifications',
       pages: ['index'],
     },
+    {
+      root: 'pages/registration',
+      pages: ['index', 'form', 'confirm'],
+    },
+    {
+      root: 'pages/payment',
+      pages: ['result'],
+    },
   ],
   preloadRule: {
     'pages/zones/index': {
