@@ -80,24 +80,6 @@
   color: #ffffff;
 }
 
-// ========== Message group separator ==========
-
-.userBubble + .aiBubble {
-  margin-top: $spacing-sm;
-  padding-top: $spacing-sm;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 10%;
-    right: 10%;
-    height: 1PX;
-    background: linear-gradient(to right, transparent, $color-border, transparent);
-  }
-}
-
 // ========== Teacher card ==========
 
 .teacherCard {

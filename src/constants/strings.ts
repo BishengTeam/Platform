@@ -26,7 +26,7 @@ export const STRINGS = {
   ZONE_NAMES: ['考试专区', '学习专区', '竞赛专区', '活动专区', '就业专区'] as const,
 
   // ---- Service Page ----
-  SERVICE_HEADER: '客服中心',
+  SERVICE_HEADER: '人工客服',
   SERVICE_CARD_TITLE: '官方客服助理',
   SERVICE_CARD_SUBTITLE: '在线时间: 09:00 - 18:00',
 

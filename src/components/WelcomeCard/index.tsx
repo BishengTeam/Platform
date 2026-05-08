@@ -12,7 +12,7 @@ export function WelcomeCard() {
   }
 
   return (
-    <View className={`${styles.card} fade-in-up`}>
+    <View className={styles.card}>
       <Text className={styles.title}>{STRINGS.INDEX_WELCOME_TITLE}</Text>
       <Text className={styles.subtitle}>{STRINGS.INDEX_WELCOME_SUB}</Text>
       <ScrollView scrollX className={styles.zoneRow}>
