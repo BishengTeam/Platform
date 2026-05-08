@@ -17,9 +17,9 @@ export const courseList: Course[] = [
 ]
 
 export const studyTagFilters: StudyTagFilter[] = [
-  { label: '全部课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff' },
-  { label: '基础课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff' },
-  { label: '进阶课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff' },
-  { label: '实战课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff' },
-  { label: '认证课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff' },
+  { label: '全部课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: '基础课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: '进阶课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: '实战课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: '认证课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
 ]

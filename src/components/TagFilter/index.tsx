@@ -7,6 +7,7 @@ export interface TagFilterItem {
   activeColor: string
   activeBg: string
   activeText: string
+  inactiveBg: string
 }
 
 interface TagFilterProps {
@@ -25,7 +26,7 @@ export function TagFilter({ tags, activeTag, onChange }: TagFilterProps) {
             <Tag
               key={item.label}
               className={styles.tag}
-              background={isActive ? item.activeBg : undefined}
+              background={isActive ? item.activeBg : item.inactiveBg}
               color={isActive ? item.activeText : item.activeColor}
               onClick={() => onChange(item.label)}
             >

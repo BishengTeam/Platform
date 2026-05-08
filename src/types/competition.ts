@@ -23,4 +23,5 @@ export interface CompetitionTagFilter {
   activeColor: string
   activeBg: string
   activeText: string
+  inactiveBg: string
 }

@@ -24,7 +24,7 @@ export const endedActivities: Activity[] = [
 ]
 
 export const activityTagFilters: ActivityTagFilter[] = [
-  { label: '进行中', activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff' },
-  { label: '即将开始', activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff' },
-  { label: '已结束', activeColor: '#999999', activeBg: '#999999', activeText: '#ffffff' },
+  { label: '进行中', activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
+  { label: '即将开始', activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
+  { label: '已结束', activeColor: '#999999', activeBg: '#999999', activeText: '#ffffff', inactiveBg: '#F5F5F5' },
 ]

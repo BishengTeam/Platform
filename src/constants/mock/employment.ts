@@ -17,8 +17,8 @@ export const jobList: Job[] = [
 ]
 
 export const employmentTagFilters: EmploymentTagFilter[] = [
-  { label: '推荐职位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff' },
-  { label: '实习岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff' },
-  { label: '全职岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff' },
-  { label: '远程岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff' },
+  { label: '推荐职位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { label: '实习岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { label: '全职岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { label: '远程岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
 ]

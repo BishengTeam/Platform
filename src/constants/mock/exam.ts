@@ -16,9 +16,9 @@ export const examCards: ExamCard[] = [
 ]
 
 export const examTagFilters: ExamTagFilter[] = [
-  { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff' },
-  { label: '新华三', activeColor: '#FF4D4F', activeBg: '#FF4D4F', activeText: '#ffffff' },
-  { label: '华为', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff' },
-  { label: '深信服', activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff' },
-  { label: '软考', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff' },
+  { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { label: '新华三', activeColor: '#FF4D4F', activeBg: '#FF4D4F', activeText: '#ffffff', inactiveBg: '#FFF2F0' },
+  { label: '华为', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+  { label: '深信服', activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
+  { label: '软考', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
 ]
