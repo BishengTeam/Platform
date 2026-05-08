@@ -9,7 +9,7 @@ import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { mockFormData } from '@/constants/mock'
 import type { RegistrationFormData } from '@/types/registration'
-import styles from './index.module.scss'
+import styles from './confirm.module.scss'
 
 const STORAGE_KEY = 'registration_form_data'
 

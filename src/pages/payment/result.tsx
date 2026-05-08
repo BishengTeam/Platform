@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import styles from './index.module.scss'
+import styles from './result.module.scss'
 
 export default function ResultPage() {
   const [orderId, setOrderId] = useState('')

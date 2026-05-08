@@ -9,7 +9,7 @@ import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
 import { getCertifications } from '@/services/dataService'
 import { validateName, validatePhone, validateIdCard, type ValidationResult } from '@/utils/validator'
-import styles from './index.module.scss'
+import styles from './form.module.scss'
 
 const STORAGE_KEY = 'registration_form_data'
 
