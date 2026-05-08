@@ -1,0 +1,37 @@
+@use '../../styles/variables' as *;
+@use '../../styles/animations' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-4xl $spacing-lg;
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.icon {
+  margin-bottom: $spacing-md;
+}
+
+.title {
+  font-size: $font-base;
+  color: $color-text;
+  font-weight: 500;
+  text-align: center;
+}
+
+.desc {
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-xl;
+  width: 100%;
+}

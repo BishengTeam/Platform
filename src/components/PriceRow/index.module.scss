@@ -1,0 +1,37 @@
+@use '../../styles/variables' as *;
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+}
+
+.rowTotal {
+  padding-top: $spacing-sm;
+  border-top: $border-thin solid $color-border;
+  margin-top: $spacing-xs;
+}
+
+.label {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+.value {
+  font-size: $font-sm;
+  color: $color-text;
+  font-weight: 500;
+}
+
+.rowTotal .label {
+  font-size: $font-base;
+  color: $color-text;
+  font-weight: 600;
+}
+
+.rowTotal .value {
+  font-size: $font-lg;
+  color: $color-price;
+  font-weight: 700;
+}

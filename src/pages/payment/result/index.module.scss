@@ -1,0 +1,78 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/animations' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-4xl $spacing-lg;
+}
+
+.iconWrap {
+  margin-bottom: $spacing-xl;
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.successIcon {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: $color-success;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.failIcon {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: $color-price;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkmark,
+.cross {
+  font-size: 64px;
+  color: $color-white;
+  font-weight: 700;
+}
+
+.title {
+  font-size: $font-xl;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+}
+
+.desc {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-lg;
+  text-align: center;
+}
+
+.orderId {
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-3xl;
+}
+
+.actions {
+  margin-top: $spacing-4xl;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.actionBtn {
+  width: 100%;
+}

@@ -1,0 +1,161 @@
+@use '../../../styles/variables' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 200px;
+  background: $color-bg;
+}
+
+.body {
+  padding: 0 $spacing-sm;
+}
+
+.section {
+  margin-top: $spacing-sm;
+}
+
+.sectionTitle {
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+  padding: 0 $spacing-xs;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+
+  &:not(:last-child) {
+    border-bottom: $border-thin solid $color-border;
+  }
+}
+
+.infoLabel {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+.infoValue {
+  font-size: $font-sm;
+  color: $color-text;
+}
+
+.discountRow .value {
+  color: $color-success;
+}
+
+// Payment method
+.paymentCard {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.paymentLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.wechatIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-sm;
+  background: $color-success;
+  color: $color-white;
+  font-size: $font-sm;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paymentLabel {
+  font-size: $font-sm;
+  color: $color-text;
+}
+
+.radioOuter {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid $color-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radioInner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: $color-primary;
+}
+
+// Bottom bar
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-white;
+  padding: $spacing-sm $spacing-md;
+  padding-bottom: calc($spacing-sm + $safe-bottom);
+  box-shadow: $shadow-bottom;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.agreement {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.checkbox {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  border: 2px solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkboxChecked {
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.checkIcon {
+  color: $color-white;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.agreementText {
+  font-size: $font-2xs;
+  color: $color-text-tertiary;
+}
+
+.link {
+  color: $color-primary;
+}
+
+.payBtn {
+  width: 100%;
+}
