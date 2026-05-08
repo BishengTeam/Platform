@@ -1,3 +1,4 @@
+import type { TagFilterItem } from '@/components/TagFilter'
 import type { Certification, RegistrationFormData } from '@/types/registration'
 
 export const certifications: Certification[] = [
@@ -75,11 +76,11 @@ export const certifications: Certification[] = [
   },
 ]
 
-export const registrationTagFilters = [
-  { label: '全部', category: '' },
-  { label: 'H3CNE', category: 'h3cne' },
-  { label: 'H3CSE', category: 'h3cse' },
-  { label: 'H3CIE', category: 'h3cie' },
+export const registrationTagFilters: TagFilterItem[] = [
+  { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { label: 'H3CNE', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { label: 'H3CSE', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: 'H3CIE', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
 ]
 
 export const mockFormData: RegistrationFormData = {

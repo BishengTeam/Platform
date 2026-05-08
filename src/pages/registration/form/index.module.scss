@@ -1,0 +1,183 @@
+@use '../../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-tertiary;
+  font-size: $font-base;
+}
+
+.section {
+  padding: $spacing-md $spacing-lg 0;
+}
+
+.sectionTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+// ---- 认证摘要 ----
+.summaryCard {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.certName {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.certMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.metaItem {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  background: $color-blue-tint;
+  padding: 4px $spacing-sm;
+  border-radius: $radius-sm;
+}
+
+// ---- 身份切换 ----
+.identityRow {
+  margin-bottom: $spacing-md;
+}
+
+.identityLabel {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.asterisk {
+  color: $color-price;
+  margin-right: 4px;
+}
+
+.identityToggle {
+  display: flex;
+  background: $color-bg-tertiary;
+  border-radius: $radius-sm;
+  padding: 4px;
+  gap: 4px;
+}
+
+.identityOption {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-sm;
+  border-radius: 6px;
+  font-size: $font-base;
+  color: $color-text-secondary;
+  transition: all 0.2s;
+}
+
+.identityActive {
+  background: $color-white;
+  color: $color-primary;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+// ---- 考试券 ----
+.couponCard {
+  background: linear-gradient(135deg, #FFF7E6, #FFF2F0);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.couponRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.couponLabel {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.couponToggle {
+  width: 48px;
+  height: 28px;
+  background: $color-border;
+  border-radius: 14px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.couponToggleActive {
+  background: $color-primary;
+}
+
+.couponDot {
+  width: 22px;
+  height: 22px;
+  background: $color-white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+}
+
+.couponDotActive {
+  transform: translateX(20px);
+}
+
+.couponTip {
+  font-size: $font-sm;
+  color: $color-warning;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+// ---- 费用明细 ----
+.priceCard {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.divider {
+  height: 1px;
+  background: $color-border;
+  margin: $spacing-xs 0;
+}
+
+// ---- 提交按钮 ----
+.btnWrap {
+  padding: $spacing-xl $spacing-lg;
+}

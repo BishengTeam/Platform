@@ -4,7 +4,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: $spacing-sm 0;
+  padding: $spacing-xs 0;
 }
 
 .rowTotal {
@@ -24,14 +24,14 @@
   font-weight: 500;
 }
 
-.rowTotal .label {
-  font-size: $font-base;
-  color: $color-text;
-  font-weight: 600;
-}
-
-.rowTotal .value {
+.valueTotal {
   font-size: $font-lg;
   color: $color-price;
   font-weight: 700;
+}
+
+.strikethrough {
+  text-decoration: line-through;
+  color: $color-text-tertiary;
+  font-weight: 400;
 }
