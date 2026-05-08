@@ -1,7 +1,7 @@
 @use '../../styles/variables' as *;
 
 .card {
-  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   position: relative;
   background: $color-white;
