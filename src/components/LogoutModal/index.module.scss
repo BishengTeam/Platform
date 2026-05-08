@@ -1,0 +1,71 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.box {
+  width: 560px;
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.title {
+  display: block;
+  text-align: center;
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  padding: 48px 0 24px;
+}
+
+.content {
+  display: block;
+  text-align: center;
+  font-size: $font-base;
+  color: $color-text-secondary;
+  padding: 0 40px 40px;
+}
+
+.buttons {
+  display: flex;
+  border-top: 1px solid #f0f0f0;
+}
+
+.cancelBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0;
+  border-right: 1px solid #f0f0f0;
+}
+
+.cancelBtnText {
+  font-size: $font-base;
+  color: $color-text-secondary;
+}
+
+.confirmBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0;
+}
+
+.confirmBtnText {
+  font-size: $font-base;
+  color: #FF4D4F;
+  font-weight: 500;
+}

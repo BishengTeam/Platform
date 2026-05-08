@@ -13,8 +13,8 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: $spacing-lg;
-  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  padding: 0;
+  // padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
 .list {
