@@ -25,7 +25,6 @@ export function ChatInput({ value, showQuickQuestions, onInput, onSend }: ChatIn
       )}
 
       <View className={styles.row}>
-        <Icon name='image' size={24} color='#999999' />
         <Input
           className={styles.field}
           type='text'
@@ -35,12 +34,10 @@ export function ChatInput({ value, showQuickQuestions, onInput, onSend }: ChatIn
           onConfirm={onSend}
           confirmType='send'
         />
-        {value.trim() ? (
+        {value.trim() && (
           <View className={styles.sendBtn} onClick={onSend}>
             <Icon name='send' size={16} color='#ffffff' />
           </View>
-        ) : (
-          <Icon name='mic' size={24} color='#999999' />
         )}
       </View>
     </View>
