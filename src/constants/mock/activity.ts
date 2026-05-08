@@ -1,10 +1,10 @@
 import type { ActivityBannerItem, Activity, ActivityTagFilter } from '@/types'
 
 export const activityBannerItems: ActivityBannerItem[] = [
-  { id: 'profile', title: '精彩活动 福利不断', description: '参与各类活动，获取更多优惠和惊喜', gradient: 'gradient-purple', icon: 'gift', buttonText: '我的奖品', buttonColor: '#722ED1' },
-  { id: 1, title: '五一学习狂欢节', description: '全场课程5折起，报名认证考试立减200元，还有机会赢取iPad大奖', gradient: 'gradient-red', icon: 'gift', buttonText: '立即参与', buttonColor: '#FF4D4F' },
-  { id: 2, title: '邀请好友得现金红包', description: '邀请好友注册并购买课程，双方都可获得¥50现金红包，多邀多得上不封顶', gradient: 'gradient-green', icon: 'gift', buttonText: '立即参与', buttonColor: '#52C41A' },
-  { id: 3, title: '学习打卡赢奖学金', description: '连续学习打卡30天，即可获得¥100奖学金，可用于购买任意课程', gradient: 'gradient-blue', icon: 'gift', buttonText: '立即参与', buttonColor: '#1677FF' },
+  { id: 'profile', title: '精彩活动 福利不断', description: '参与各类活动，获取更多优惠和惊喜', gradient: 'gradient-purple', icon: 'gift', buttonText: '我的奖品', buttonColor: '#ffffff' },
+  { id: 1, title: '五一学习狂欢节', description: '全场课程5折起，报名认证考试立减200元，还有机会赢取iPad大奖', gradient: 'gradient-red', icon: 'gift', buttonText: '立即参与', buttonColor: '#ffffff' },
+  { id: 2, title: '邀请好友得现金红包', description: '邀请好友注册并购买课程，双方都可获得¥50现金红包，多邀多得上不封顶', gradient: 'gradient-green', icon: 'gift', buttonText: '立即参与', buttonColor: '#ffffff' },
+  { id: 3, title: '学习打卡赢奖学金', description: '连续学习打卡30天，即可获得¥100奖学金，可用于购买任意课程', gradient: 'gradient-blue', icon: 'gift', buttonText: '立即参与', buttonColor: '#ffffff' },
 ]
 
 export const ongoingActivities: Activity[] = [

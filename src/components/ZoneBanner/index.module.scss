@@ -15,7 +15,7 @@
   width: 100%;
   height: 100%;
   border-radius: $radius-lg;
-  padding: $spacing-xl;
+  padding: 0 $spacing-xl;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -62,8 +62,7 @@
 
 .iconWrap {
   position: absolute;
-  right: -$spacing-lg;
-  bottom: -$spacing-lg;
-  opacity: 0.2;
+  right: 80px;
+  bottom: -22px;
   transform: rotate(12deg);
 }

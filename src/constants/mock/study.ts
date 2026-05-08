@@ -1,10 +1,10 @@
 import type { StudyBannerItem, Course, StudyTagFilter } from '@/types'
 
 export const studyBannerItems: StudyBannerItem[] = [
-  { id: 'profile', title: '学习成就未来', description: '海量优质课程，助你成为网络技术专家', gradient: 'gradient-green', icon: 'book-open', buttonText: '查看我的学习', buttonColor: '#52C41A' },
-  { id: 1, title: '网络工程师入门到精通', description: '零基础学习网络基础知识，TCP/IP协议，路由交换技术', gradient: 'gradient-red', icon: 'book-open', buttonText: '立即学习', buttonColor: '#FF4D4F' },
-  { id: 2, title: 'H3CNE认证全程班', description: '针对华三认证考试的全套课程，包含题库和模拟考试', gradient: 'gradient-blue', icon: 'book-open', buttonText: '立即学习', buttonColor: '#1677FF' },
-  { id: 3, title: '华为HCIA认证培训', description: '华为官方认证课程，讲师均为华为认证HCIE专家', gradient: 'gradient-orange', icon: 'book-open', buttonText: '立即学习', buttonColor: '#FA8C16' },
+  { id: 'profile', title: '学习成就未来', description: '海量优质课程，助你成为网络技术专家', gradient: 'gradient-green', icon: 'book-open', buttonText: '查看我的学习', buttonColor: '#ffffff' },
+  { id: 1, title: '网络工程师入门到精通', description: '零基础学习网络基础知识，TCP/IP协议，路由交换技术', gradient: 'gradient-red', icon: 'book-open', buttonText: '立即学习', buttonColor: '#ffffff' },
+  { id: 2, title: 'H3CNE认证全程班', description: '针对华三认证考试的全套课程，包含题库和模拟考试', gradient: 'gradient-blue', icon: 'book-open', buttonText: '立即学习', buttonColor: '#ffffff' },
+  { id: 3, title: '华为HCIA认证培训', description: '华为官方认证课程，讲师均为华为认证HCIE专家', gradient: 'gradient-orange', icon: 'book-open', buttonText: '立即学习', buttonColor: '#ffffff' },
 ]
 
 export const courseList: Course[] = [

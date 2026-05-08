@@ -1,10 +1,10 @@
 import type { CompetitionBannerItem, Competition, CompetitionTagFilter } from '@/types'
 
 export const competitionBannerItems: CompetitionBannerItem[] = [
-  { id: 'profile', title: '以赛促学 技创未来', description: '参与技术竞赛，展示你的实力，赢取丰厚奖励', gradient: 'gradient-orange', icon: 'trophy', buttonText: '查看我的竞赛', buttonColor: '#FA8C16' },
-  { id: 1, title: '2024全国大学生网络技术大赛', description: '面向全国大学生的网络技术竞赛，展示技术实力，赢取丰厚奖金', gradient: 'gradient-red', icon: 'trophy', buttonText: '立即报名', buttonColor: '#FF4D4F' },
-  { id: 2, title: '华为ICT大赛2024', description: '华为官方举办的全球性ICT技术竞赛，获奖可获得华为就业绿色通道', gradient: 'gradient-blue', icon: 'trophy', buttonText: '立即报名', buttonColor: '#1677FF' },
-  { id: 3, title: '网络安全攻防大赛', description: '实战型网络安全竞赛，考验真实攻防能力', gradient: 'gradient-purple', icon: 'trophy', buttonText: '进入赛场', buttonColor: '#722ED1' },
+  { id: 'profile', title: '以赛促学 技创未来', description: '参与技术竞赛，展示你的实力，赢取丰厚奖励', gradient: 'gradient-orange', icon: 'trophy', buttonText: '查看我的竞赛', buttonColor: '#ffffff' },
+  { id: 1, title: '2024全国大学生网络技术大赛', description: '面向全国大学生的网络技术竞赛，展示技术实力，赢取丰厚奖金', gradient: 'gradient-red', icon: 'trophy', buttonText: '立即报名', buttonColor: '#ffffff' },
+  { id: 2, title: '华为ICT大赛2024', description: '华为官方举办的全球性ICT技术竞赛，获奖可获得华为就业绿色通道', gradient: 'gradient-blue', icon: 'trophy', buttonText: '立即报名', buttonColor: '#ffffff' },
+  { id: 3, title: '网络安全攻防大赛', description: '实战型网络安全竞赛，考验真实攻防能力', gradient: 'gradient-purple', icon: 'trophy', buttonText: '进入赛场', buttonColor: '#ffffff' },
 ]
 
 export const ongoingCompetitions: Competition[] = [
