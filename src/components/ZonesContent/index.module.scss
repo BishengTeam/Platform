@@ -18,11 +18,11 @@
 .grid {
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-sm;
+  gap: $spacing-xs;
 }
 
 .gridItem {
-  width: calc(50% - #{$spacing-xs});
+  width: 48%;
   min-height: $grid-item-height;
   height: auto;
   background: $color-blue-tint;
