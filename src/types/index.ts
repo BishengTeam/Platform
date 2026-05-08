@@ -7,3 +7,6 @@ export type { ActivityBannerItem, Activity, ActivityTagFilter } from './activity
 export type { EmploymentBannerItem, Job, EmploymentTagFilter } from './employment'
 export type { ContactItem } from './service'
 export type { OrderItem, ProfileFunction } from './profile'
+export type { Order } from './orders'
+export type { Certificate } from './certificates'
+export type { Notification } from './notifications'

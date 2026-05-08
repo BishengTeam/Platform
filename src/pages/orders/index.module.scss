@@ -1,0 +1,123 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg-secondary;
+}
+
+.body {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.tabs {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.tab {
+  padding: $spacing-xs $spacing-md;
+  position: relative;
+  transition: all 0.15s ease-out;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.tabText {
+  font-size: $font-base;
+  font-weight: 500;
+}
+
+.tabIndicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: $color-primary;
+  border-radius: 2px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-xl;
+  padding: $spacing-md;
+  box-shadow: $shadow-sm;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+    transition: all 0.15s ease-out;
+  }
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-sm;
+}
+
+.cardInfo {
+  flex: 1;
+  margin-right: $spacing-sm;
+}
+
+.cardTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  display: block;
+  margin-bottom: $spacing-2xs;
+}
+
+.cardDesc {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+  display: block;
+}
+
+.cardAmount {
+  font-size: $font-xl;
+  font-weight: 600;
+  color: $color-price;
+  white-space: nowrap;
+}
+
+.cardBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardDate {
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+}
+
+.badge {
+  padding: 4px $spacing-sm;
+  border-radius: $radius-full;
+}
+
+.badgeText {
+  font-size: $font-xs;
+  font-weight: 500;
+}

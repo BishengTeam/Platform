@@ -4,6 +4,10 @@ export const ROUTES = {
   ZONES: 'pages/zones/index',
   SERVICE: 'pages/service/index',
   PROFILE: 'pages/profile/index',
+  ORDERS: 'pages/orders/index',
+  CERTIFICATES: 'pages/certificates/index',
+  FEEDBACK: 'pages/feedback/index',
+  NOTIFICATIONS: 'pages/notifications/index',
 } as const
 
 export const TAB_BAR_CONFIG = [

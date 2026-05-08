@@ -32,6 +32,22 @@ export default defineAppConfig({
       root: 'pages/employment-zone',
       pages: ['index'],
     },
+    {
+      root: 'pages/orders',
+      pages: ['index'],
+    },
+    {
+      root: 'pages/certificates',
+      pages: ['index'],
+    },
+    {
+      root: 'pages/feedback',
+      pages: ['index'],
+    },
+    {
+      root: 'pages/notifications',
+      pages: ['index'],
+    },
   ],
   preloadRule: {
     'pages/zones/index': {

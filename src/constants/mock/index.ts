@@ -6,3 +6,6 @@ export { activityBannerItems, ongoingActivities, upcomingActivities, endedActivi
 export { employmentBannerItems, jobList, employmentTagFilters } from './employment'
 export { contactList } from './service'
 export { orderItems, profileFunctions } from './profile'
+export { orders } from './orders'
+export { certificates } from './certificates'
+export { notifications } from './notifications'

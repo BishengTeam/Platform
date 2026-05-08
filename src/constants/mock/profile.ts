@@ -8,6 +8,6 @@ export const orderItems: OrderItem[] = [
 
 export const profileFunctions: ProfileFunction[] = [
   { icon: 'file-text', label: '证书中心', value: '2本' },
+  { icon: 'message-square', label: '问题反馈', value: '' },
   { icon: 'bell', label: '消息通知', value: '' },
-  { icon: 'settings', label: '系统设置', value: '' },
 ]

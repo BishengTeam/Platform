@@ -24,4 +24,7 @@ export {
   contactList,
   orderItems,
   profileFunctions,
+  orders,
+  certificates,
+  notifications,
 } from './mock'

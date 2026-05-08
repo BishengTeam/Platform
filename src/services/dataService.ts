@@ -24,6 +24,9 @@ import {
   contactList,
   orderItems,
   profileFunctions,
+  orders,
+  certificates,
+  notifications,
 } from '@/constants/mock'
 
 // ===== Home Page =====
@@ -66,3 +69,12 @@ export function getContactList() { return contactList }
 // ===== Profile Page =====
 export function getOrderItems() { return orderItems }
 export function getProfileFunctions() { return profileFunctions }
+
+// ===== Orders Page =====
+export function getOrders() { return orders }
+
+// ===== Certificates Page =====
+export function getCertificates() { return certificates }
+
+// ===== Notifications Page =====
+export function getNotifications() { return notifications }

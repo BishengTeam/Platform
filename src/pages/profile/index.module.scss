@@ -189,6 +189,76 @@
   color: $color-price;
 }
 
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  width: 560px;
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.modalTitle {
+  display: block;
+  text-align: center;
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  padding: 48px 0 24px;
+}
+
+.modalContent {
+  display: block;
+  text-align: center;
+  font-size: $font-base;
+  color: $color-text-secondary;
+  padding: 0 40px 40px;
+}
+
+.modalButtons {
+  display: flex;
+  border-top: 1px solid #f0f0f0;
+}
+
+.modalCancel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0;
+  border-right: 1px solid #f0f0f0;
+}
+
+.modalCancelText {
+  font-size: $font-base;
+  color: $color-text-secondary;
+}
+
+.modalConfirm {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0;
+}
+
+.modalConfirmText {
+  font-size: $font-base;
+  color: #FF4D4F;
+  font-weight: 500;
+}
+
 @include respond-to(xl) {
   .orders {
     justify-content: flex-start;

@@ -35,6 +35,30 @@ export const STRINGS = {
   PROFILE_ALL_ORDERS: '全部订单',
   PROFILE_LOGOUT: '退出登录',
 
+  // ---- Orders Page ----
+  ORDERS_TITLE: '我的订单',
+  ORDERS_TAG_ALL: '全部',
+  ORDERS_TAG_PENDING: '待付款',
+  ORDERS_TAG_ENROLLED: '已报名',
+  ORDERS_TAG_CANCELLED: '已取消',
+
+  // ---- Certificates Page ----
+  CERTIFICATES_TITLE: '证书中心',
+  CERTIFICATES_ISSUE_DATE: '发证日期',
+  CERTIFICATES_AUTHORITY: '发证机构',
+
+  // ---- Feedback Page ----
+  FEEDBACK_TITLE: '问题反馈',
+  FEEDBACK_DESC_LABEL: '问题描述',
+  FEEDBACK_DESC_PLACEHOLDER: '请详细描述您遇到的问题...',
+  FEEDBACK_CONTACT_LABEL: '联系方式（选填）',
+  FEEDBACK_CONTACT_PLACEHOLDER: '请输入手机号或微信号',
+  FEEDBACK_SUBMIT: '提交反馈',
+  FEEDBACK_SUCCESS: '感谢您的反馈，我们会尽快处理！',
+
+  // ---- Notifications Page ----
+  NOTIFICATIONS_TITLE: '消息通知',
+
   // ---- Auth Page ----
   AUTH_APP_NAME: 'H3CNE 数字世界',
   AUTH_APP_DESC: '开启您的网络工程师认证之旅',
