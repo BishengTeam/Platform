@@ -55,5 +55,31 @@
   // padding-bottom: calc(#{$spacing-sm} + #{$safe-bottom});
 }
 
+// ========== Input area + floating button ==========
+
+.inputArea {
+  position: relative;
+}
+
+.floatingService {
+  position: absolute;
+  right: $spacing-lg;
+  bottom: calc(100% + 80px);
+  z-index: 50;
+  width: $avatar-lg;
+  height: $avatar-lg;
+  background: $color-white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-md;
+
+  &:active {
+    transform: scale(0.92);
+    opacity: 0.85;
+  }
+}
+
 
 
