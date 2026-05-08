@@ -9,12 +9,12 @@ export const zoneIcons: ZoneIcon[] = [
 ]
 
 export const quickQuestions: string[] = [
-  '如何报名参加认证？',
-  'H3CNE考试费用是多少？',
-  '最近有哪些热门竞赛？',
-  '如何获取学习资料？',
+  '如何报名 H3CNE 认证？',
+  '有哪些学习课程推荐？',
+  '最近有什么竞赛？',
+  '帮我推荐就业方向',
 ]
 
 export const initialMessages: Message[] = [
-  { id: 1, type: 'ai', text: '你你你你好！我是你的智能助手，有什么我可以帮你的吗？' },
+  { id: 1, type: 'ai', text: '您好！我是智天远智能助手 👋\n\n我可以帮您查询考试认证、推荐学习课程、了解竞赛活动、对接就业岗位。您可以直接向我提问，也可以点击下方专区入口快速浏览。\n\n请问有什么可以帮您的？' },
 ]

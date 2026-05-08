@@ -14,7 +14,12 @@ export const STRINGS = {
   INDEX_LABEL_WECHAT: '微信号',
   INDEX_LABEL_PHONE: '电话',
   INDEX_AI_TEACHER: '为您找到以下 H3CNE 认证讲师的联系方式，您可以直接添加微信进行咨询。',
-  INDEX_AI_DEFAULT: (query: string) => `这是一个模拟的AI回复关于 "${query}" 的内容。基于您的需求，我推荐您查看以下信息。`,
+  INDEX_AI_EXAM: 'H3CNE 认证考试是新华三集团推出的网络工程师认证。报名流程：\n\n1️⃣ 确认报考条件（无学历/经验限制）\n2️⃣ 选择考试中心（全国 200+ 考点）\n3️⃣ 在线缴纳考试费\n4️⃣ 预约考试时间并参加考试\n\n以下是近期可报名的考试：',
+  INDEX_AI_COURSE: '根据 H3CNE 考试大纲，为您精选以下学习课程。建议先从基础课程开始，再逐步深入：',
+  INDEX_AI_COMPETITION: '为您查询到近期竞赛信息。当前有多个竞赛正在进行或即将开始，参与竞赛可获得实践经验和证书加分：',
+  INDEX_AI_ACTIVITY: '近期平台有以下精彩活动，涵盖线上直播、线下沙龙和技术分享会：',
+  INDEX_AI_EMPLOYMENT: '根据您的技能背景，为您匹配以下就业岗位。H3CNE 认证持有者在网络工程师岗位中优势明显：',
+  INDEX_AI_DEFAULT: '收到您的问题，我正在为您整理相关信息。\n\n您也可以直接访问下方专区获取更详细的内容，或继续向我提问。',
 
   // ---- Zones Page ----
   ZONES_HEADER: '专区',

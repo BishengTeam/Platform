@@ -3,15 +3,16 @@ import { Avatar } from '@nutui/nutui-react-taro'
 import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import type { Message } from '@/types'
+import type { Message, ChatZoneCard } from '@/types'
 import styles from './index.module.scss'
 
 interface ChatAreaProps {
   messages: Message[]
   isTyping: boolean
+  onCardTap?: (zoneKey: string) => void
 }
 
-export function ChatArea({ messages, isTyping }: ChatAreaProps) {
+export function ChatArea({ messages, isTyping, onCardTap }: ChatAreaProps) {
   return (
     <View className={styles.chatList}>
       {messages.map((msg) => (
@@ -34,7 +35,7 @@ export function ChatArea({ messages, isTyping }: ChatAreaProps) {
             </View>
 
             {msg.card && msg.card.type === 'teacher' && (
-              <View className={styles.teacherCard}>
+              <View className={styles.richCard}>
                 <View className={styles.teacherHead}>
                   <Avatar
                     size='48'
@@ -59,10 +60,63 @@ export function ChatArea({ messages, isTyping }: ChatAreaProps) {
                 <Button
                   variant='gradient'
                   size='sm'
-                  className={styles.teacherBtn}
+                  className={styles.cardBtn}
                 >
                   {STRINGS.INDEX_COPY_WECHAT}
                 </Button>
+              </View>
+            )}
+
+            {msg.card && msg.card.type === 'exam' && (
+              <View className={styles.richCard} onClick={() => onCardTap?.('考试专区')}>
+                <View className={styles.cardHeader}>
+                  <Icon name='book-open' size={18} color='#1677FF' />
+                  <View className={styles.cardTitleWrap}>
+                    <View className={styles.cardTitle}>{msg.card.title}</View>
+                  </View>
+                </View>
+                <View className={styles.cardDesc}>{msg.card.description}</View>
+                <View className={styles.cardMeta}>
+                  <View className={styles.cardTag}>{msg.card.tag}</View>
+                  <View className={styles.cardPrice}>{msg.card.price}</View>
+                </View>
+                <View className={styles.cardAction}>
+                  <View className={styles.cardActionText}>查看详情 →</View>
+                </View>
+              </View>
+            )}
+
+            {msg.card && msg.card.type === 'course' && (
+              <View className={styles.richCard} onClick={() => onCardTap?.('学习专区')}>
+                <View className={styles.cardHeader}>
+                  <Icon name='layout-template' size={18} color='#597EF7' />
+                  <View className={styles.cardTitleWrap}>
+                    <View className={styles.cardTitle}>{msg.card.title}</View>
+                  </View>
+                </View>
+                <View className={styles.cardDesc}>{msg.card.description}</View>
+                <View className={styles.cardMeta}>
+                  <View className={styles.cardTag}>{msg.card.tag}</View>
+                  <View className={styles.cardDuration}>{msg.card.duration}</View>
+                </View>
+                <View className={styles.cardAction}>
+                  <View className={styles.cardActionText}>查看详情 →</View>
+                </View>
+              </View>
+            )}
+
+            {msg.card && msg.card.type === 'zone_link' && (
+              <View className={styles.richCard} onClick={() => onCardTap?.((msg.card as ChatZoneCard).zoneKey)}>
+                <View className={styles.cardHeader}>
+                  <Icon name='map-pin' size={18} color='#722ED1' />
+                  <View className={styles.cardTitleWrap}>
+                    <View className={styles.cardTitle}>{msg.card.zoneName}</View>
+                  </View>
+                </View>
+                <View className={styles.cardDesc}>{msg.card.description}</View>
+                <View className={styles.cardAction}>
+                  <View className={styles.cardActionText}>进入专区 →</View>
+                </View>
               </View>
             )}
           </View>

@@ -9,15 +9,20 @@ interface ChatInputProps {
   showQuickQuestions: boolean
   onInput: (value: string) => void
   onSend: () => void
+  onQuickTap?: (q: string) => void
 }
 
-export function ChatInput({ value, showQuickQuestions, onInput, onSend }: ChatInputProps) {
+export function ChatInput({ value, showQuickQuestions, onInput, onSend, onQuickTap }: ChatInputProps) {
   return (
     <View className={styles.bar}>
       {showQuickQuestions && (
         <ScrollView scrollX className={styles.quickRow}>
           {getQuickQuestions().map((q, idx) => (
-            <View key={idx} className={styles.quickTag} onClick={() => onInput(q)}>
+            <View
+              key={idx}
+              className={styles.quickTag}
+              onClick={() => onQuickTap ? onQuickTap(q) : onInput(q)}
+            >
               <Text>{q}</Text>
             </View>
           ))}

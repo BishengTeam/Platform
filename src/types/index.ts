@@ -1,4 +1,4 @@
-export type { Message, TeacherCard } from './message'
+export type { Message, TeacherCard, ChatExamCard, ChatCourseCard, ChatZoneCard, ChatCard } from './message'
 export type { ZoneIcon, QuickQuestion } from './home'
 export type { ExamBannerItem, ExamCard, ExamTagFilter } from './exam'
 export type { StudyBannerItem, Course, StudyTagFilter } from './study'
