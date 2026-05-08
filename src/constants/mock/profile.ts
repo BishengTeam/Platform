@@ -1,7 +1,7 @@
 import type { OrderItem, ProfileFunction } from '@/types'
 
 export const orderItems: OrderItem[] = [
-  { icon: 'file-text', label: '待付款', badge: 1 },
+  { icon: 'file-text', label: '待付款', badge: 0 },
   { icon: 'map-pin', label: '已报名', badge: 0 },
   { icon: 'bell', label: '已取消', badge: 0 },
 ]
