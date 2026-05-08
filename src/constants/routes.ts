@@ -7,9 +7,8 @@ export const ROUTES = {
 } as const
 
 export const TAB_BAR_CONFIG = [
-  { key: 'pages/index/index', label: '首页', icon: 'home' },
+  { key: 'pages/index/index', label: '对话', icon: 'message-square' },
   { key: 'pages/zones/index', label: '专区', icon: 'zones' },
-  { key: 'pages/service/index', label: '客服', icon: 'headset' },
   { key: 'pages/profile/index', label: '我的', icon: 'profile' },
 ]
 
