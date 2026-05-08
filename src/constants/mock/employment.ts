@@ -1,10 +1,10 @@
 import type { EmploymentBannerItem, Job, EmploymentTagFilter } from '@/types'
 
 export const employmentBannerItems: EmploymentBannerItem[] = [
-  { id: 'profile', title: '好工作 好未来', description: '海量优质岗位，专业就业指导，助你找到心仪工作', gradient: 'gradient-teal', icon: 'briefcase', buttonText: '我的求职', buttonColor: '#13C2C2' },
-  { id: 1, title: '网络工程师', description: '华为技术有限公司 · 深圳 · 1-3年经验', gradient: 'gradient-red', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#FF4D4F' },
-  { id: 2, title: '网络安全工程师', description: '阿里巴巴集团 · 杭州 · 3-5年经验', gradient: 'gradient-orange', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#FA8C16' },
-  { id: 3, title: '网络安全顾问', description: '奇安信科技集团 · 北京 · 5-10年经验', gradient: 'gradient-purple', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#722ED1' },
+  { id: 'profile', title: '好工作 好未来', description: '海量优质岗位，专业就业指导，助你找到心仪工作', gradient: 'gradient-teal', icon: 'briefcase', buttonText: '我的求职', buttonColor: '#ffffff' },
+  { id: 1, title: '网络工程师', description: '华为技术有限公司 · 深圳 · 1-3年经验', gradient: 'gradient-red', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#ffffff' },
+  { id: 2, title: '网络安全工程师', description: '阿里巴巴集团 · 杭州 · 3-5年经验', gradient: 'gradient-orange', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#ffffff' },
+  { id: 3, title: '网络安全顾问', description: '奇安信科技集团 · 北京 · 5-10年经验', gradient: 'gradient-purple', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#ffffff' },
 ]
 
 export const jobList: Job[] = [
