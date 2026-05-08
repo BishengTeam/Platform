@@ -23,4 +23,5 @@ export interface EmploymentTagFilter {
   activeColor: string
   activeBg: string
   activeText: string
+  inactiveBg: string
 }

@@ -23,4 +23,5 @@ export interface StudyTagFilter {
   activeColor: string
   activeBg: string
   activeText: string
+  inactiveBg: string
 }

@@ -26,4 +26,5 @@ export interface ExamTagFilter {
   activeColor: string
   activeBg: string
   activeText: string
+  inactiveBg: string
 }

@@ -23,4 +23,5 @@ export interface ActivityTagFilter {
   activeColor: string
   activeBg: string
   activeText: string
+  inactiveBg: string
 }

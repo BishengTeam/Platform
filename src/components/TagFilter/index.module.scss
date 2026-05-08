@@ -11,9 +11,10 @@
 }
 
 .tag {
-  font-size: $font-sm;
+  font-size: $font-2xl !important;
   font-weight: 500;
-  padding: $spacing-xs $spacing-md;
+  padding: 12px $spacing-lg !important;
+  border-radius: $radius-full !important;
   flex-shrink: 0;
   transition: all 0.2s;
 }

@@ -24,7 +24,7 @@ export const endedCompetitions: Competition[] = [
 ]
 
 export const competitionTagFilters: CompetitionTagFilter[] = [
-  { label: '进行中', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff' },
-  { label: '即将开始', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff' },
-  { label: '已结束', activeColor: '#999999', activeBg: '#999999', activeText: '#ffffff' },
+  { label: '进行中', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+  { label: '即将开始', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+  { label: '已结束', activeColor: '#999999', activeBg: '#999999', activeText: '#ffffff', inactiveBg: '#F5F5F5' },
 ]
