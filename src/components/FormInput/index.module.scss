@@ -1,0 +1,56 @@
+@use '../../styles/variables' as *;
+
+.wrap {
+  margin-bottom: $spacing-md;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+}
+
+.asterisk {
+  color: $color-price;
+  font-size: $font-base;
+  margin-right: 4px;
+}
+
+.label {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.input {
+  width: 100%;
+  height: 80px;
+  background: $color-bg-tertiary;
+  border-radius: $radius-sm;
+  padding: 0 $spacing-sm;
+  font-size: $font-base;
+  color: $color-text;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: $color-primary;
+    background: $color-white;
+  }
+
+  &::placeholder {
+    color: $color-text-tertiary;
+  }
+}
+
+.inputError {
+  border-color: $color-price;
+}
+
+.error {
+  font-size: $font-sm;
+  color: $color-price;
+  margin-top: $spacing-2xs;
+  display: block;
+}
