@@ -1,15 +1,12 @@
 import { useState } from 'react'
 import { View, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
-
 import { AuthGuard } from '@/components/AuthGuard'
 import { ChatArea } from '@/components/ChatArea'
 import { ChatInput } from '@/components/ChatInput'
-import { Icon } from '@/components/Icon'
+import { FloatingService } from '@/components/FloatingService'
 import { PageHeader } from '@/components/PageHeader'
 import TabBar from '@/components/TabBar'
 import { WelcomeCard } from '@/components/WelcomeCard'
-import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { getInitialMessages } from '@/services/dataService'
 import type { Message } from '@/types'
@@ -72,9 +69,7 @@ export default function IndexPage() {
       </ScrollView>
 
       <View className={styles.inputArea}>
-        <View className={styles.floatingService} onClick={() => Taro.switchTab({ url: `/${ROUTES.SERVICE}` })}>
-          <Icon name='headset' size={32} color='#1677FF' />
-        </View>
+        <FloatingService />
         <ChatInput
           value={inputValue}
           showQuickQuestions={messages.length === 1}

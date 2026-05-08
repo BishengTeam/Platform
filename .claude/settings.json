@@ -46,7 +46,9 @@
       "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);const jsxVar=c.indexOf\\('var jsx ='\\);const jsxExport=c.indexOf\\('exports.jsx ='\\);console.log\\('var jsx = at position:',jsxVar,'exports.jsx = at position:',jsxExport,'diff:',jsxExport-jsxVar\\)\")",
       "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/pages/zones/index.js','utf8'\\);const idx=c.indexOf\\('function ZonesPage'\\);console.log\\(c.substring\\(idx, idx+250\\)\\)\")",
       "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);console.log\\(c.includes\\('exports.jsx = jsx'\\)\\)\")",
-      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);console.log\\('File size:',c.length\\);console.log\\('Has exports.jsxRuntimeExports:',c.includes\\('exports.jsxRuntimeExports'\\)\\);const idx1=c.indexOf\\('exports.jsx ='\\);const idx2=c.indexOf\\('exports.jsxs ='\\);console.log\\('exports.jsx = at:',idx1,'exports.jsxs = at:',idx2\\)\")"
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('dist/taro.js','utf8'\\);console.log\\('File size:',c.length\\);console.log\\('Has exports.jsxRuntimeExports:',c.includes\\('exports.jsxRuntimeExports'\\)\\);const idx1=c.indexOf\\('exports.jsx ='\\);const idx2=c.indexOf\\('exports.jsxs ='\\);console.log\\('exports.jsx = at:',idx1,'exports.jsxs = at:',idx2\\)\")",
+      "Bash(ls node_modules/.vite)",
+      "Bash(ls node_modules/.cache)"
     ]
   }
 }

@@ -2,7 +2,7 @@
 
 .bar {
   flex-shrink: 0;
-  padding-bottom: 34px;
+  padding-bottom: $safe-bottom;
   --nutui-tabbar-border-top: 1px solid #eeeeee;
   --nutui-tabbar-text-font-size: 22px;
   --nutui-tabbar-text-margin-top: 2px;
