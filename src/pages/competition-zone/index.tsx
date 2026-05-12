@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import Taro from '@tarojs/taro'
 import { ZonePage } from '@/components/ZonePage'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
+import { ROUTES } from '@/constants/routes'
 import {
   getCompetitionTagFilters, getCompetitionBannerItems,
   getOngoingCompetitions, getUpcomingCompetitions, getEndedCompetitions,
@@ -37,6 +39,9 @@ export default function CompetitionZonePage() {
             : STRINGS.COMPETITION_ENTER}
           buttonVariant={activeTag === STRINGS.COMPETITION_ENDED ? 'secondary' : 'primary'}
           faded={activeTag === STRINGS.COMPETITION_ENDED}
+          onButtonClick={comp.status === '报名中'
+            ? () => Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
+            : undefined}
         />
       ))}
     </ZonePage>

@@ -25,9 +25,10 @@ export interface ZoneBannerItem {
 
 interface ZoneBannerProps {
   items: ZoneBannerItem[]
+  onButtonClick?: (item: ZoneBannerItem) => void
 }
 
-export function ZoneBanner({ items }: ZoneBannerProps) {
+export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
   return (
     <View className={styles.container}>
       <Swiper
@@ -50,6 +51,7 @@ export function ZoneBanner({ items }: ZoneBannerProps) {
                   className={styles.bannerBtn}
                   style={{ color: item.buttonColor }}
                   variant='secondary'
+                  onClick={onButtonClick ? () => onButtonClick(item) : undefined}
                 >
                   {item.buttonText}
                 </Button>

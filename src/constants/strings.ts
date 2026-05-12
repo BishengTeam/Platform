@@ -28,7 +28,7 @@ export const STRINGS = {
   ZONES_BANNER_BTN: '立即报名',
   ZONES_GRID_TITLE: '全部专区',
   ZONES_GRID_DETAIL: '查看详情',
-  ZONE_NAMES: ['考试专区', '学习专区', '竞赛专区', '活动专区', '就业专区'] as const,
+  ZONE_NAMES: ['认证专区', '学习专区', '竞赛专区', '活动专区', '就业专区'] as const,
 
   // ---- Service Page ----
   SERVICE_HEADER: '人工客服',
@@ -112,7 +112,7 @@ export const STRINGS = {
   EMPLOYMENT_APPLY: '立即投递',
 
   // ---- Registration Zone ----
-  REGISTRATION_TITLE: '报名专区',
+  REGISTRATION_TITLE: '认证专区',
   REGISTRATION_SEARCH_PLACEHOLDER: '搜索认证项目',
   REGISTRATION_TAG_ALL: '全部',
 

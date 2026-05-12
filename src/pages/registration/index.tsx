@@ -10,7 +10,7 @@ import { getCertifications, getRegistrationTagFilters } from '@/services/dataSer
 import styles from './index.module.scss'
 
 export default function RegistrationIndexPage() {
-  const [activeTag, setActiveTag] = useState(STRINGS.REGISTRATION_TAG_ALL)
+  const [activeTag, setActiveTag] = useState<string>(STRINGS.REGISTRATION_TAG_ALL)
   const [keyword, setKeyword] = useState('')
 
   const certifications = getCertifications()

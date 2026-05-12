@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { ZonePage } from '@/components/ZonePage'
 import { Icon } from '@/components/Icon'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
+import { ROUTES } from '@/constants/routes'
 import { getExamBannerItems, getExamCards, getExamTagFilters } from '@/services/dataService'
 import styles from './index.module.scss'
 
@@ -42,6 +44,7 @@ export default function ExamZonePage() {
           price={exam.price}
           originalPrice={exam.originalPrice}
           buttonText={STRINGS.EXAM_SIGNUP}
+          onButtonClick={() => Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })}
         />
       ))}
     </ZonePage>

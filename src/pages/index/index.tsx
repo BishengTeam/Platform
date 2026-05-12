@@ -53,18 +53,17 @@ function buildAiResponse(id: number, query: string): Message {
     }
   }
 
-  // Course / study
-  if (matchAny(query, ['课程', '学习', '培训', '资料', '教学', '推荐'])) {
+  // Employment (before course — "推荐就业" shouldn't match course)
+  if (matchAny(query, ['就业', '工作', '招聘', '实习', '岗位'])) {
     return {
       id,
       type: 'ai',
-      text: STRINGS.INDEX_AI_COURSE,
+      text: STRINGS.INDEX_AI_EMPLOYMENT,
       card: {
-        type: 'course',
-        title: 'H3CNE 网络基础精讲',
-        description: '从零基础到认证通关，含实验实操',
-        duration: '48课时',
-        tag: '基础课程',
+        type: 'zone_link',
+        zoneName: '就业专区',
+        zoneKey: '就业专区',
+        description: '热门网络工程师岗位推荐',
       },
     }
   }
@@ -99,17 +98,18 @@ function buildAiResponse(id: number, query: string): Message {
     }
   }
 
-  // Employment
-  if (matchAny(query, ['就业', '工作', '招聘', '实习', '岗位'])) {
+  // Course / study
+  if (matchAny(query, ['课程', '学习', '培训', '资料', '教学', '推荐'])) {
     return {
       id,
       type: 'ai',
-      text: STRINGS.INDEX_AI_EMPLOYMENT,
+      text: STRINGS.INDEX_AI_COURSE,
       card: {
-        type: 'zone_link',
-        zoneName: '就业专区',
-        zoneKey: '就业专区',
-        description: '热门网络工程师岗位推荐',
+        type: 'course',
+        title: 'H3CNE 网络基础精讲',
+        description: '从零基础到认证通关，含实验实操',
+        duration: '48课时',
+        tag: '基础课程',
       },
     }
   }

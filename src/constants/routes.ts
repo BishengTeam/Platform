@@ -21,7 +21,7 @@ export const TAB_BAR_CONFIG = [
 ]
 
 export const ZONE_ROUTES: Record<string, string> = {
-  '考试专区': '/pages/exam-zone/index',
+  '认证专区': '/pages/registration/index',
   '学习专区': '/pages/study-zone/index',
   '竞赛专区': '/pages/competition-zone/index',
   '活动专区': '/pages/activity-zone/index',

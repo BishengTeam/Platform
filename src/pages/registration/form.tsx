@@ -67,8 +67,8 @@ export default function RegistrationFormPage() {
     Taro.navigateTo({ url: '/pages/registration/confirm' })
   }
 
-  const couponDiscount = useCoupon ? -cert?.price || 0 : 0
-  const totalPrice = (cert?.price || 0) + couponDiscount
+  const couponDiscount = useCoupon && cert ? -cert.price : 0
+  const totalPrice = cert ? cert.price + couponDiscount : 0
 
   const handleBlur = (field: string) => {
     if (!errors[field]) return

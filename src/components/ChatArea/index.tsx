@@ -68,7 +68,7 @@ export function ChatArea({ messages, isTyping, onCardTap }: ChatAreaProps) {
             )}
 
             {msg.card && msg.card.type === 'exam' && (
-              <View className={styles.richCard} onClick={() => onCardTap?.('考试专区')}>
+              <View className={styles.richCard} onClick={() => onCardTap?.('认证专区')}>
                 <View className={styles.cardHeader}>
                   <Icon name='book-open' size={18} color='#1677FF' />
                   <View className={styles.cardTitleWrap}>
