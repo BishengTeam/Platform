@@ -1,4 +1,4 @@
-export { zoneIcons, quickQuestions, initialMessages } from './home'
+export { zoneIcons, quickQuestions, initialMessages, homeCourses, homeActivities } from './home'
 export { examBannerItems, examCards, examTagFilters } from './exam'
 export { studyBannerItems, courseList, studyTagFilters } from './study'
 export { competitionBannerItems, ongoingCompetitions, upcomingCompetitions, endedCompetitions, competitionTagFilters } from './competition'

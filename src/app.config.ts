@@ -3,7 +3,8 @@ import { ROUTES, TAB_BAR_CONFIG } from './constants/routes'
 export default defineAppConfig({
   pages: [
     ROUTES.INDEX,
-    ROUTES.ACTIVITY,
+    'pages/study-zone/index',
+    'pages/zones/index',
     ROUTES.PROFILE,
   ],
   subPackages: [
@@ -12,11 +13,11 @@ export default defineAppConfig({
       pages: ['index'],
     },
     {
-      root: 'pages/exam-zone',
+      root: 'pages/activity-zone',
       pages: ['index'],
     },
     {
-      root: 'pages/study-zone',
+      root: 'pages/exam-zone',
       pages: ['index'],
     },
     {

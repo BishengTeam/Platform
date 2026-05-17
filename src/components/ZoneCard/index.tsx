@@ -2,7 +2,7 @@ import { View } from '@tarojs/components'
 import { Button } from '@/components/Button'
 import styles from './index.module.scss'
 
-export interface ZoneCardProps {
+interface ZoneCardProps {
   title: string
   subtitle?: string
   tags?: string[]
@@ -12,7 +12,7 @@ export interface ZoneCardProps {
   buttonVariant?: 'primary' | 'secondary' | 'gradient'
   onButtonClick?: () => void
   onCardClick?: () => void
-  faded?: boolean
+  isFaded?: boolean
   className?: string
 }
 
@@ -26,13 +26,13 @@ export function ZoneCard({
   buttonVariant = 'primary',
   onButtonClick,
   onCardClick,
-  faded = false,
+  isFaded = false,
   className = '',
 }: ZoneCardProps) {
   return (
     <View
       onClick={onCardClick}
-      className={`${styles.card} ${faded ? styles.faded : ''} ${className}`}
+      className={`${styles.card} ${isFaded ? styles.faded : ''} ${className}`}
     >
       <View className={styles.title}>{title}</View>
       {subtitle && <View className={styles.subtitle}>{subtitle}</View>}

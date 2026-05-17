@@ -20,7 +20,7 @@ export default function ResultPage() {
   const isSuccess = status === 'success'
 
   const handleViewOrder = () => {
-    Taro.navigateTo({ url: `/${ROUTES.ORDERS}?status=待付款` })
+    Taro.navigateTo({ url: `/${ROUTES.ORDERS}?status=${STRINGS.ORDERS_STATUS_PENDING}` })
   }
 
   const handleRepay = () => {
@@ -34,10 +34,9 @@ export default function ResultPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title='' showBack={false} />
+        <PageHeader title='' shouldShowBack={false} />
 
         <View className={styles.body}>
-          {/* Status Icon */}
           <View className={styles.iconWrap}>
             {isSuccess ? (
               <View className={styles.successIcon}>
@@ -59,10 +58,9 @@ export default function ResultPage() {
           </Text>
 
           {orderId && (
-            <Text className={styles.orderId}>订单编号：{orderId}</Text>
+            <Text className={styles.orderId}>{STRINGS.RESULT_ORDER_ID_PREFIX}{orderId}</Text>
           )}
 
-          {/* Actions */}
           <View className={styles.actions}>
             {isSuccess ? (
               <Button variant='gradient' size='lg' onClick={handleViewOrder} className={styles.actionBtn}>

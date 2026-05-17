@@ -6,12 +6,12 @@ import styles from './index.module.scss'
 
 interface PageHeaderProps {
   title: string
-  showBack?: boolean
+  shouldShowBack?: boolean
   onBack?: () => void
   rightContent?: ReactNode
 }
 
-export function PageHeader({ title, showBack = false, onBack, rightContent }: PageHeaderProps) {
+export function PageHeader({ title, shouldShowBack = false, onBack, rightContent }: PageHeaderProps) {
   const handleBack = () => {
     if (onBack) {
       onBack()
@@ -23,7 +23,7 @@ export function PageHeader({ title, showBack = false, onBack, rightContent }: Pa
   return (
     <View className={styles.nav}>
       <View className={styles.side}>
-        {showBack && (
+        {shouldShowBack && (
           <View className={styles.backBtn} onClick={handleBack}>
             <Icon name='chevron-left' size={20} color='#333333' />
           </View>

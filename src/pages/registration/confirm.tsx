@@ -5,6 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { PriceRow } from '@/components/PriceRow'
 import { Button } from '@/components/Button'
+import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { mockFormData } from '@/constants/mock'
@@ -37,10 +38,9 @@ export default function ConfirmPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.CONFIRM_TITLE} showBack />
+        <PageHeader title={STRINGS.CONFIRM_TITLE} shouldShowBack />
 
         <View className={styles.body}>
-          {/* Order Info */}
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.CONFIRM_ORDER_INFO}</Text>
             <View className={styles.card}>
@@ -73,7 +73,6 @@ export default function ConfirmPage() {
             </View>
           </View>
 
-          {/* Price Detail */}
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.FORM_PRICE_DETAIL}</Text>
             <View className={styles.card}>
@@ -89,7 +88,6 @@ export default function ConfirmPage() {
             </View>
           </View>
 
-          {/* Payment Method */}
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.CONFIRM_PAYMENT_METHOD}</Text>
             <View className={styles.paymentCard}>
@@ -104,22 +102,13 @@ export default function ConfirmPage() {
           </View>
         </View>
 
-        {/* Bottom Bar */}
         <View className={styles.bottomBar}>
-          <View className={styles.agreement}>
-            <View
-              className={`${styles.checkbox} ${agreed ? styles.checkboxChecked : ''}`}
-              onClick={() => setAgreed(!agreed)}
-            >
-              {agreed && <Text className={styles.checkIcon}>✓</Text>}
-            </View>
-            <Text className={styles.agreementText}>
-              {STRINGS.CONFIRM_AGREEMENT_PREFIX}
-              <Text className={styles.link}>{STRINGS.CONFIRM_AGREEMENT_TERMS}</Text>
-              {STRINGS.AUTH_AGREEMENT_AND}
-              <Text className={styles.link}>{STRINGS.CONFIRM_AGREEMENT_PRIVACY}</Text>
-            </Text>
-          </View>
+          <AgreementCheckbox agreed={agreed} onChange={setAgreed}>
+            {STRINGS.CONFIRM_AGREEMENT_PREFIX}
+            <Text className={styles.link}>{STRINGS.CONFIRM_AGREEMENT_TERMS}</Text>
+            {STRINGS.AUTH_AGREEMENT_AND}
+            <Text className={styles.link}>{STRINGS.CONFIRM_AGREEMENT_PRIVACY}</Text>
+          </AgreementCheckbox>
           <Button
             variant='gradient'
             size='lg'
@@ -127,7 +116,7 @@ export default function ConfirmPage() {
             className={styles.payBtn}
             style={{ opacity: agreed && !paying ? '1' : '0.5', pointerEvents: agreed && !paying ? 'auto' : 'none' }}
           >
-            {paying ? '支付中...' : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${formData.price.toFixed(2)}`}
+            {paying ? STRINGS.CONFIRM_PAYING : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${formData.price.toFixed(2)}`}
           </Button>
         </View>
       </View>

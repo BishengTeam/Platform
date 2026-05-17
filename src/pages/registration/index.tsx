@@ -37,7 +37,7 @@ export default function RegistrationIndexPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.REGISTRATION_TITLE} showBack />
+        <PageHeader title={STRINGS.REGISTRATION_TITLE} shouldShowBack />
         <View className={styles.body}>
           <View className={styles.searchWrap}>
             <Input
@@ -56,7 +56,7 @@ export default function RegistrationIndexPage() {
                 key={cert.id}
                 title={cert.name}
                 subtitle={cert.description}
-                tags={[`${cert.categoryName}`, `${cert.examDuration}`, `${cert.questionCount}题`]}
+                tags={[`${cert.categoryName}`, `${cert.examDuration}`, `${cert.questionCount}${STRINGS.FORM_QUESTION_SUFFIX}`]}
                 price={`¥${cert.price}`}
                 originalPrice={`¥${cert.originalPrice}`}
                 buttonText={STRINGS.EXAM_SIGNUP}

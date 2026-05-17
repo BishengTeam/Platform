@@ -4,12 +4,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import '@nutui/nutui-react-taro/dist/style.css'
 import './app.scss'
 
-function App({ children }: PropsWithChildren) {
-  useLaunch(() => {
-    console.log('App launched.')
-  })
+export default function App({ children }: PropsWithChildren) {
+  useLaunch(() => {})
 
   return <ErrorBoundary>{children}</ErrorBoundary>
 }
-
-export default App

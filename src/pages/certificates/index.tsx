@@ -12,7 +12,7 @@ export default function CertificatesPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.CERTIFICATES_TITLE} showBack />
+        <PageHeader title={STRINGS.CERTIFICATES_TITLE} shouldShowBack />
         <View className={styles.body}>
           <View className={styles.list}>
             {list.map(cert => (

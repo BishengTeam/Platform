@@ -5,6 +5,7 @@ import { setAuthToken } from '@/utils/storage'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { Icon } from '@/components/Icon'
+import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import styles from './index.module.scss'
 
 export default function AuthPage() {
@@ -45,18 +46,17 @@ export default function AuthPage() {
           </View>
         </View>
 
-        <View className={`${styles.agreement} ${shake ? 'shake' : ''} fade-in delay-2`}>
-          <View className={styles.checkbox} onClick={() => setAgreed(!agreed)}>
-            <Icon name={agreed ? 'check-circle-2' : 'circle'} size={16} color={agreed ? '#1677FF' : '#999'} />
-          </View>
-          <Text className={styles.agreementText}>
-            {STRINGS.AUTH_AGREEMENT_PREFIX}
-            <Text className={styles.link}>{STRINGS.AUTH_AGREEMENT_TERMS}</Text>
-            {STRINGS.AUTH_AGREEMENT_AND}
-            <Text className={styles.link}>{STRINGS.AUTH_AGREEMENT_PRIVACY}</Text>
-            {STRINGS.AUTH_AGREEMENT_SUFFIX}
-          </Text>
-        </View>
+        <AgreementCheckbox
+          className={`${shake ? 'shake' : ''} fade-in delay-2`}
+          agreed={agreed}
+          onChange={setAgreed}
+        >
+          {STRINGS.AUTH_AGREEMENT_PREFIX}
+          <Text className={styles.link}>{STRINGS.AUTH_AGREEMENT_TERMS}</Text>
+          {STRINGS.AUTH_AGREEMENT_AND}
+          <Text className={styles.link}>{STRINGS.AUTH_AGREEMENT_PRIVACY}</Text>
+          {STRINGS.AUTH_AGREEMENT_SUFFIX}
+        </AgreementCheckbox>
       </View>
     </View>
   )

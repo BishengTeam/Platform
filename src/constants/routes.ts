@@ -17,8 +17,9 @@ export const ROUTES = {
 } as const
 
 export const TAB_BAR_CONFIG = [
-  { key: 'pages/index/index', label: '对话', icon: 'message-square' },
-  { key: 'pages/activity-zone/index', label: '活动', icon: 'gift' },
+  { key: 'pages/index/index', label: '首页', icon: 'home' },
+  { key: 'pages/study-zone/index', label: '培训', icon: 'book-open' },
+  { key: 'pages/zones/index', label: '发现', icon: 'compass' },
   { key: 'pages/profile/index', label: '我的', icon: 'profile' },
 ]
 

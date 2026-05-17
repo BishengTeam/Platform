@@ -2,14 +2,15 @@ import { View, Text } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
-import { getOrderItems } from '@/services/dataService'
+import type { OrderItem } from '@/types'
 import styles from './index.module.scss'
 
 interface OrderBarProps {
+  items: OrderItem[]
   onNavigate: (route: string) => void
 }
 
-export function OrderBar({ onNavigate }: OrderBarProps) {
+export function OrderBar({ items, onNavigate }: OrderBarProps) {
   return (
     <View className={styles.card}>
       <View className={styles.head}>
@@ -20,7 +21,7 @@ export function OrderBar({ onNavigate }: OrderBarProps) {
         </View>
       </View>
       <View className={styles.orders}>
-        {getOrderItems().map((item, idx) => (
+        {items.map((item, idx) => (
           <View
             key={idx}
             className={styles.item}

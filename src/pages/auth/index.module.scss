@@ -111,24 +111,6 @@
   font-weight: 500;
 }
 
-.agreement {
-  display: flex;
-  align-items: flex-start;
-  gap: $spacing-xs;
-  margin-bottom: $spacing-xl;
-}
-
-.checkbox {
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.agreementText {
-  font-size: $font-sm;
-  line-height: 36px;
-  color: $color-text-tertiary;
-}
-
 .link {
   color: $color-primary;
 }

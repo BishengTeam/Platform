@@ -1,5 +1,4 @@
-import type { TagFilterItem } from '@/components/TagFilter'
-import type { Certification, RegistrationFormData } from '@/types/registration'
+import type { Certification, RegistrationFormData, TagFilterItem } from '@/types/registration'
 
 export const certifications: Certification[] = [
   {

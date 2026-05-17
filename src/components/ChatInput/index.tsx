@@ -1,23 +1,23 @@
 import { View, Text, Input, ScrollView } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
-import { getQuickQuestions } from '@/services/dataService'
 import styles from './index.module.scss'
 
 interface ChatInputProps {
   value: string
-  showQuickQuestions: boolean
+  shouldShowQuickQuestions: boolean
+  quickQuestions: string[]
   onInput: (value: string) => void
   onSend: () => void
   onQuickTap?: (q: string) => void
 }
 
-export function ChatInput({ value, showQuickQuestions, onInput, onSend, onQuickTap }: ChatInputProps) {
+export function ChatInput({ value, shouldShowQuickQuestions, quickQuestions, onInput, onSend, onQuickTap }: ChatInputProps) {
   return (
     <View className={styles.bar}>
-      {showQuickQuestions && (
+      {shouldShowQuickQuestions && (
         <ScrollView scrollX className={styles.quickRow}>
-          {getQuickQuestions().map((q, idx) => (
+          {quickQuestions.map((q, idx) => (
             <View
               key={idx}
               className={styles.quickTag}

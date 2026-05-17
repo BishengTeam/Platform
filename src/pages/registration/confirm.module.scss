@@ -119,39 +119,6 @@
   gap: $spacing-sm;
 }
 
-.agreement {
-  display: flex;
-  align-items: center;
-  gap: $spacing-xs;
-}
-
-.checkbox {
-  width: 32px;
-  height: 32px;
-  border-radius: $radius-sm;
-  border: 2px solid $color-border;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.checkboxChecked {
-  background: $color-primary;
-  border-color: $color-primary;
-}
-
-.checkIcon {
-  color: $color-white;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.agreementText {
-  font-size: $font-2xs;
-  color: $color-text-tertiary;
-}
-
 .link {
   color: $color-primary;
 }

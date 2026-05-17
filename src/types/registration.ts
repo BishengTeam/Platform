@@ -1,3 +1,11 @@
+export interface TagFilterItem {
+  label: string
+  activeColor: string
+  activeBg: string
+  activeText: string
+  inactiveBg: string
+}
+
 export interface Certification {
   id: string
   name: string

@@ -7,7 +7,7 @@ import styles from './index.module.scss'
 
 const tabs = TAB_BAR_CONFIG
 
-export default function CustomTabBar() {
+export function CustomTabBar() {
   const [active, setActive] = useState(0)
 
   useDidShow(() => {

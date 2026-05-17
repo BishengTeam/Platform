@@ -5,7 +5,7 @@ interface PriceRowProps {
   label: string
   value: number
   isTotal?: boolean
-  strikethrough?: boolean
+  isStrikethrough?: boolean
   prefix?: string
   className?: string
 }
@@ -14,7 +14,7 @@ export function PriceRow({
   label,
   value,
   isTotal = false,
-  strikethrough = false,
+  isStrikethrough = false,
   prefix = '¥',
   className = '',
 }: PriceRowProps) {
@@ -22,7 +22,7 @@ export function PriceRow({
     <View className={`${styles.row} ${isTotal ? styles.rowTotal : ''} ${className}`}>
       <Text className={styles.label}>{label}</Text>
       <Text
-        className={`${styles.value} ${isTotal ? styles.valueTotal : ''} ${strikethrough ? styles.strikethrough : ''}`}
+        className={`${styles.value} ${isTotal ? styles.valueTotal : ''} ${isStrikethrough ? styles.strikethrough : ''}`}
       >
         {value < 0 ? `-${prefix}${Math.abs(value).toFixed(2)}` : `${prefix}${value.toFixed(2)}`}
       </Text>

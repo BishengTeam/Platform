@@ -8,7 +8,8 @@ import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
 import { getCertifications } from '@/services/dataService'
-import { validateName, validatePhone, validateIdCard, type ValidationResult } from '@/utils/validator'
+import { validateName, validatePhone, validateIdCard } from '@/utils/validator'
+import type { ValidationResult } from '@/utils/validator'
 import styles from './form.module.scss'
 
 const STORAGE_KEY = 'registration_form_data'
@@ -42,7 +43,7 @@ export default function RegistrationFormPage() {
       idCard: validateIdCard(idCard),
     }
     if (identityType === 'enterprise' && !enterpriseName.trim()) {
-      next.enterpriseName = { valid: false, message: '请输入企业名称' }
+      next.enterpriseName = { valid: false, message: STRINGS.FORM_VALID_ENTERPRISE_NAME }
     }
     setErrors(next)
     return Object.values(next).every(v => v.valid)
@@ -89,9 +90,9 @@ export default function RegistrationFormPage() {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title={STRINGS.FORM_TITLE} showBack />
+          <PageHeader title={STRINGS.FORM_TITLE} shouldShowBack />
           <View className={styles.empty}>
-            <Text>认证项目不存在</Text>
+            <Text>{STRINGS.FORM_ERROR_CERT_NOT_FOUND}</Text>
           </View>
         </View>
       </AuthGuard>
@@ -101,24 +102,22 @@ export default function RegistrationFormPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.FORM_TITLE} showBack />
+        <PageHeader title={STRINGS.FORM_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          {/* 认证项目摘要 */}
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.FORM_CERT_SUMMARY}</Text>
             <View className={styles.summaryCard}>
               <Text className={styles.certName}>{cert.name}</Text>
               <View className={styles.certMeta}>
                 <Text className={styles.metaItem}>{STRINGS.FORM_EXAM_DURATION}: {cert.examDuration}</Text>
-                <Text className={styles.metaItem}>{STRINGS.FORM_QUESTION_COUNT}: {cert.questionCount}题</Text>
-                <Text className={styles.metaItem}>{STRINGS.FORM_PASSING_SCORE}: {cert.passingScore}分</Text>
+                <Text className={styles.metaItem}>{STRINGS.FORM_QUESTION_COUNT}: {cert.questionCount}{STRINGS.FORM_QUESTION_SUFFIX}</Text>
+                <Text className={styles.metaItem}>{STRINGS.FORM_PASSING_SCORE}: {cert.passingScore}{STRINGS.FORM_SCORE_SUFFIX}</Text>
               </View>
             </View>
           </View>
 
-          {/* 表单区 */}
           <View className={styles.section}>
-            <Text className={styles.sectionTitle}>个人信息</Text>
+            <Text className={styles.sectionTitle}>{STRINGS.FORM_PERSONAL_INFO}</Text>
             <FormInput
               label={STRINGS.FORM_REAL_NAME}
               required
@@ -151,7 +150,6 @@ export default function RegistrationFormPage() {
               onBlur={() => handleBlur('idCard')}
             />
 
-            {/* 身份类型切换 */}
             <View className={styles.identityRow}>
               <Text className={styles.identityLabel}>
                 <Text className={styles.asterisk}>*</Text>
@@ -173,7 +171,6 @@ export default function RegistrationFormPage() {
               </View>
             </View>
 
-            {/* 企业报名条件显隐 */}
             {identityType === 'enterprise' && (
               <>
                 <FormInput
@@ -194,7 +191,6 @@ export default function RegistrationFormPage() {
                   }}
                 />
 
-                {/* 考试券区块 */}
                 {couponCount > 0 && (
                   <View className={styles.couponCard}>
                     <View className={styles.couponRow}>
@@ -209,7 +205,7 @@ export default function RegistrationFormPage() {
                       </View>
                     </View>
                     {useCoupon && (
-                      <Text className={styles.couponTip}>使用1张考试券，抵扣考试费</Text>
+                      <Text className={styles.couponTip}>{STRINGS.FORM_COUPON_TIP}</Text>
                     )}
                   </View>
                 )}
@@ -217,20 +213,18 @@ export default function RegistrationFormPage() {
             )}
           </View>
 
-          {/* 费用明细 */}
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.FORM_PRICE_DETAIL}</Text>
             <View className={styles.priceCard}>
               <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={cert.price} />
               {couponDiscount < 0 && (
-                <PriceRow label={STRINGS.FORM_PRICE_COUPON_DISCOUNT} value={couponDiscount} strikethrough />
+                <PriceRow label={STRINGS.FORM_PRICE_COUPON_DISCOUNT} value={couponDiscount} isStrikethrough />
               )}
               <View className={styles.divider} />
               <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={totalPrice} isTotal />
             </View>
           </View>
 
-          {/* 提交按钮 */}
           <View className={styles.btnWrap}>
             <Button variant='gradient' size='lg' onClick={handleSubmit}>
               {STRINGS.FORM_SUBMIT}

@@ -1,49 +1,12 @@
 @use '../../styles/variables' as *;
-@use '../../styles/mixins' as *;
-
-// ========== Page shell ==========
 
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -120px;
-    left: -80px;
-    width: 300px;
-    height: 200px;
-    background: $gradient-blue;
-    opacity: 0.08;
-    border-radius: 50%;
-    filter: blur(60px);
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: -40px;
-    right: -60px;
-    width: 180px;
-    height: 140px;
-    background: $gradient-purple;
-    opacity: 0.05;
-    border-radius: 50%;
-    filter: blur(50px);
-    z-index: 0;
-    pointer-events: none;
-  }
+  background: $color-bg-secondary;
 }
-
-// ========== Main content area ==========
 
 .main {
   flex: 1;
@@ -52,150 +15,49 @@
   overflow-x: hidden;
 }
 
+// ========== Banner ==========
+
 .bannerWrap {
-  padding-top: $spacing-lg;
+  padding: $spacing-md $spacing-md 0;
 }
 
-.content {
-  padding: $spacing-lg;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-xl;
-}
-
-// ========== Zone waterfall grid ==========
-
-.zoneGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $spacing-md;
-}
-
-.zoneCard {
-  background: $color-white;
-  border-radius: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: $shadow-sm;
-  transition: transform 0.15s, box-shadow 0.15s;
-
-  &:active {
-    transform: scale(0.98);
-    box-shadow: $shadow-md;
-  }
-}
-
-.zoneImage {
-  width: 100%;
-  height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.zoneBody {
-  padding: $spacing-md;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-xs;
-}
-
-.zoneTitle {
-  font-size: $font-base;
-  font-weight: 600;
-  color: $color-text;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.zoneDesc {
-  font-size: $font-sm;
-  color: $color-text-secondary;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.zoneFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: $spacing-xs;
-}
-
-.zoneMeta {
-  font-size: $font-xs;
-  color: $color-text-tertiary;
-}
-
-.zoneTag {
-  font-size: $font-xs;
-  color: #1677FF;
-  background: #E6F7FF;
-  padding: 4rpx 12rpx;
-  border-radius: 8rpx;
-  flex-shrink: 0;
-}
-
-// ========== AI Assistant Card ==========
+// ========== AI Card ==========
 
 .aiCard {
-  margin: 20px $spacing-lg 0;
+  margin: 20px $spacing-md 0 $spacing-md;
   background: $color-white;
-  border-radius: $radius-xl;
-  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: $shadow-md;
-  transition: transform 0.15s, box-shadow 0.15s;
-  position: relative;
-  z-index: 1;
+  box-shadow: $shadow-sm;
+  transition: transform 0.15s;
 
   &:active {
     transform: scale(0.98);
-    box-shadow: $shadow-lg;
   }
 }
 
 .aiCardLeft {
   display: flex;
   align-items: center;
-  gap: $spacing-md;
+  gap: $spacing-sm;
   flex: 1;
   min-width: 0;
 }
 
-.aiAvatarWrap {
-  width: $avatar-lg;
-  height: $avatar-lg;
-  border-radius: 50%;
-  background: $gradient-blue;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.25);
-}
+
 
 .aiCardInfo {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
+  gap: 4px;
   min-width: 0;
 }
 
-.aiCardName {
-  font-size: $font-xl;
+.aiCardTitle {
+  font-size: $font-lg;
   font-weight: 600;
   color: $color-text;
 }
@@ -203,17 +65,25 @@
 .aiCardDesc {
   font-size: $font-sm;
   color: $color-text-tertiary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .aiCardRight {
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: 4px;
   flex-shrink: 0;
 }
 
-.aiCardBtn {
+.aiCardAction {
   font-size: $font-base;
   color: $color-primary;
   font-weight: 500;
 }
+
+.section {
+  padding: 0 $spacing-md $spacing-lg;
+}
+

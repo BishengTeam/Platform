@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Taro from '@tarojs/taro'
 import { ZonePage } from '@/components/ZonePage'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
@@ -14,6 +15,7 @@ export default function StudyZonePage() {
       tagFilters={getStudyTagFilters()}
       activeTag={activeTag}
       onTagChange={setActiveTag}
+      onBack={() => Taro.switchTab({ url: '/pages/index/index' })}
     >
       {getCourseList().map((course) => (
         <ZoneCard

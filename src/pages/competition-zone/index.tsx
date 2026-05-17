@@ -34,12 +34,12 @@ export default function CompetitionZonePage() {
           tags={[comp.prize, `${comp.startTime}-${comp.endTime}`]}
           buttonText={activeTag === STRINGS.COMPETITION_ENDED
             ? STRINGS.COMPETITION_VIEW_RESULT
-            : comp.status === '报名中'
+            : comp.status === STRINGS.COMPETITION_STATUS_REGISTERING
             ? STRINGS.COMPETITION_SIGNUP
             : STRINGS.COMPETITION_ENTER}
           buttonVariant={activeTag === STRINGS.COMPETITION_ENDED ? 'secondary' : 'primary'}
-          faded={activeTag === STRINGS.COMPETITION_ENDED}
-          onButtonClick={comp.status === '报名中'
+          isFaded={activeTag === STRINGS.COMPETITION_ENDED}
+          onButtonClick={comp.status === STRINGS.COMPETITION_STATUS_REGISTERING
             ? () => Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
             : undefined}
         />

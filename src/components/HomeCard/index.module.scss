@@ -1,0 +1,91 @@
+@use '../../styles/variables' as *;
+
+.waterfall {
+  display: flex;
+  flex-direction: row;
+  gap: $spacing-sm;
+}
+
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-xs;
+  transition: transform 0.15s;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// ---- Cover ----
+
+.cover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.coverTall {
+  height: 340rpx;
+}
+
+.coverShort {
+  height: 260rpx;
+}
+
+// ---- Tag ----
+
+.tag {
+  position: absolute;
+  top: $spacing-xs;
+  right: $spacing-xs;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.tagText {
+  font-size: $font-2xs;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+// ---- Info area ----
+
+.info {
+  padding: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 120rpx;
+}
+
+.title {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.desc {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

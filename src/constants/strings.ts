@@ -1,11 +1,12 @@
 export const STRINGS = {
   // ---- Tab / Navigation ----
-  TAB_QA: '问答',
-  TAB_ZONES: '专区',
-  TAB_SERVICE: '客服',
+  TAB_HOME: '首页',
+  TAB_TRAINING: '培训',
+  TAB_DISCOVER: '发现',
   TAB_PROFILE: '我的',
 
   // ---- Index Page ----
+  INDEX_PAGE_TITLE: '智天远小程序',
   INDEX_NAV_TITLE: '智能助手',
   INDEX_WELCOME_TITLE: '欢迎来到数字世界！',
   INDEX_WELCOME_SUB: '您可以直接向我提问，或者探索下方专区。',
@@ -20,6 +21,13 @@ export const STRINGS = {
   INDEX_AI_ACTIVITY: '近期平台有以下精彩活动，涵盖线上直播、线下沙龙和技术分享会：',
   INDEX_AI_EMPLOYMENT: '根据您的技能背景，为您匹配以下就业岗位。H3CNE 认证持有者在网络工程师岗位中优势明显：',
   INDEX_AI_DEFAULT: '收到您的问题，我正在为您整理相关信息。\n\n您也可以直接访问下方专区获取更详细的内容，或继续向我提问。',
+  INDEX_ONLINE_COURSES: '在线课程',
+  INDEX_TRAINING_ACTIVITIES: '培训活动',
+  INDEX_VIEW_ALL: '全部',
+  INDEX_ZONE_REGISTRATION_LABEL: '认证专区',
+  INDEX_ZONE_STUDY_LABEL: '学习专区',
+  INDEX_ZONE_COMPETITION_LABEL: '竞赛专区',
+  INDEX_ZONE_TRAINING_LABEL: '培训专区',
 
   // ---- Zones Page ----
   ZONES_HEADER: '专区',
@@ -93,6 +101,7 @@ export const STRINGS = {
   COMPETITION_ONGOING: '进行中',
   COMPETITION_UPCOMING: '即将开始',
   COMPETITION_ENDED: '已结束',
+  COMPETITION_STATUS_REGISTERING: '报名中',
   COMPETITION_VIEW_RESULT: '查看结果',
   COMPETITION_SIGNUP: '立即报名',
   COMPETITION_ENTER: '进入赛场',
@@ -169,4 +178,98 @@ export const STRINGS = {
   // ---- Error Boundary ----
   ERROR_TITLE: '页面出现异常',
   ERROR_DESC: '请稍后重试或联系客服',
+
+  // ---- Validation Messages ----
+  VALIDATOR_NAME_REQUIRED: '请输入姓名',
+  VALIDATOR_NAME_INVALID: '请输入2-20位中文姓名',
+  VALIDATOR_PHONE_REQUIRED: '请输入手机号',
+  VALIDATOR_PHONE_INVALID: '请输入正确的手机号',
+  VALIDATOR_ID_CARD_REQUIRED: '请输入身份证号',
+  VALIDATOR_ID_CARD_INVALID: '请输入正确的身份证号',
+
+  // ---- Index Page Zones ----
+  INDEX_ZONE_REGISTRATION: '认证专区',
+  INDEX_ZONE_STUDY: '学习专区',
+  INDEX_ZONE_COMPETITION: '竞赛专区',
+  INDEX_ZONE_TRAINING: '培训专区',
+  INDEX_ZONE_REGISTRATION_TITLE: 'H3CNE 认证考试',
+  INDEX_ZONE_REGISTRATION_DESC: '构建中小企业网络，开启网络工程师之路',
+  INDEX_ZONE_REGISTRATION_TAG: '新华三',
+  INDEX_ZONE_STUDY_TITLE: '网络工程师入门到精通',
+  INDEX_ZONE_STUDY_DESC: '零基础学习网络基础知识，TCP/IP协议，路由交换技术',
+  INDEX_ZONE_STUDY_TAG: '热门',
+  INDEX_ZONE_COMPETITION_TITLE: '2024全国大学生网络技术大赛',
+  INDEX_ZONE_COMPETITION_DESC: '面向全国大学生的网络技术竞赛，展示技术实力',
+  INDEX_ZONE_COMPETITION_TAG: '报名中',
+  INDEX_ZONE_TRAINING_TITLE: '业务培训',
+  INDEX_ZONE_TRAINING_DESC: '线上线下培训项目，助力技能提升',
+  INDEX_ZONE_TRAINING_TAG: '即将上线',
+  INDEX_ZONE_TRAINING_META: '敬请期待',
+  INDEX_AI_NAME: '智小通',
+  INDEX_AI_DESC: '您的专属 H3CNE 学习助手',
+  INDEX_AI_CONSULT_BTN: '去咨询',
+
+  // ---- AI Consult Page ----
+  AI_CONSULT_HEADER_TITLE: '智小通咨询',
+  AI_CONSULT_HEADER_NAME: '智小通',
+  AI_CONSULT_HEADER_DESC: '您的专属学习与考证助手',
+  AI_CONSULT_WELCOME: '您好!我是智小通,很高兴为您服务。\n\n我可以帮您:\n\n• 报名认证考试\n• 推荐学习课程\n• 提供讲师联系方式\n• 查询竞赛活动信息\n• 推荐就业岗位\n\n有什么我可以帮您的吗?',
+  AI_TEACHER_NAME: '张老师',
+  AI_TEACHER_TITLE: 'H3CNE 金牌讲师 / 考官',
+  AI_TEACHER_WECHAT: 'H3C_TeacherZhang',
+  AI_TEACHER_PHONE: '138-1234-5678',
+  AI_EXAM_CARD_TITLE: 'H3CNE-RS 路由交换认证',
+  AI_EXAM_CARD_DESC: '新华三认证网络工程师，企业网络构建与管理',
+  AI_EXAM_CARD_TAG: '新华三',
+  AI_EMPLOYMENT_CARD_NAME: '就业专区',
+  AI_EMPLOYMENT_CARD_DESC: '热门网络工程师岗位推荐',
+  AI_COMPETITION_CARD_NAME: '竞赛专区',
+  AI_COMPETITION_CARD_DESC: '3个进行中 · 2个即将开始',
+  AI_ACTIVITY_CARD_NAME: '活动专区',
+  AI_ACTIVITY_CARD_DESC: '线上线下活动等你参与',
+  AI_COURSE_CARD_TITLE: 'H3CNE 网络基础精讲',
+  AI_COURSE_CARD_DESC: '从零基础到认证通关，含实验实操',
+  AI_COURSE_CARD_DURATION: '48课时',
+  AI_COURSE_CARD_TAG: '基础课程',
+
+  // ---- Exam Zone ----
+  EXAM_SUFFIX: '考试',
+
+  // ---- Orders Page ----
+  ORDERS_STATUS_PENDING: '待付款',
+  ORDERS_STATUS_ENROLLED: '已报名',
+  ORDERS_STATUS_CANCELLED: '已取消',
+  ORDERS_FREE: '免费',
+
+  // ---- Payment Result ----
+  RESULT_ORDER_ID_PREFIX: '订单编号：',
+
+  // ---- Profile Page ----
+  PROFILE_MOCK_NAME: '小王同学',
+  PROFILE_MOCK_STATUS: 'H3CNE 备考中',
+
+  // ---- Registration Form Validation ----
+  FORM_VALID_ENTERPRISE_NAME: '请输入企业名称',
+  FORM_ERROR_CERT_NOT_FOUND: '认证项目不存在',
+  FORM_QUESTION_SUFFIX: '题',
+  FORM_SCORE_SUFFIX: '分',
+  FORM_PERSONAL_INFO: '个人信息',
+  FORM_COUPON_TIP: '使用1张考试券，抵扣考试费',
+
+  // ---- Registration Confirm ----
+  CONFIRM_PAYING: '支付中...',
+
+  // ---- Feedback ----
+  FEEDBACK_VALID_DESC_REQUIRED: '请填写问题描述',
+
+  // ---- Logout Modal ----
+  LOGOUT_MODAL_TITLE: '提示',
+  LOGOUT_MODAL_CONTENT: '确定要退出当前账号吗？',
+  LOGOUT_MODAL_CANCEL: '取消',
+  LOGOUT_MODAL_CONFIRM: '退出',
+
+  // ---- Func List ----
+  FUNC_LIST_CERTIFICATES: '证书中心',
+  FUNC_LIST_FEEDBACK: '问题反馈',
+  FUNC_LIST_NOTIFICATIONS: '消息通知',
 } as const

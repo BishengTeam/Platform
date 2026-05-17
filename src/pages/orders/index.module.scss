@@ -14,39 +14,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0;
-  // padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
-}
-
-.tabs {
-  display: flex;
-  gap: $spacing-sm;
-  margin-bottom: $spacing-md;
-}
-
-.tab {
-  padding: $spacing-xs $spacing-md;
-  position: relative;
-  transition: all 0.15s ease-out;
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
-.tabText {
-  font-size: $font-base;
-  font-weight: 500;
-}
-
-.tabIndicator {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 3px;
-  background: $color-primary;
-  border-radius: 2px;
 }
 
 .list {

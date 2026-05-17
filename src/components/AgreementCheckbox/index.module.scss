@@ -1,0 +1,18 @@
+@use '../../styles/variables' as *;
+
+.agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-xs;
+}
+
+.checkbox {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.text {
+  font-size: $font-sm;
+  line-height: 36px;
+  color: $color-text-tertiary;
+}

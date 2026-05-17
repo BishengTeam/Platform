@@ -1,0 +1,38 @@
+@use '../../styles/variables' as *;
+
+.section {
+  padding: 20px $spacing-md $spacing-lg;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  transition: transform 0.15s;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}

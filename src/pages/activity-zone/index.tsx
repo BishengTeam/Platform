@@ -36,7 +36,7 @@ export default function ActivityZonePage() {
             ? STRINGS.ACTIVITY_REMIND
             : STRINGS.ACTIVITY_JOIN}
           buttonVariant={activeTag === STRINGS.ACTIVITY_ENDED ? 'secondary' : 'primary'}
-          faded={activeTag === STRINGS.ACTIVITY_ENDED}
+          isFaded={activeTag === STRINGS.ACTIVITY_ENDED}
         />
       ))}
     </ZonePage>

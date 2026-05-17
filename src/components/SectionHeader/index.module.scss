@@ -1,0 +1,25 @@
+@use '../../styles/variables' as *;
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.title {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.more {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.moreText {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}

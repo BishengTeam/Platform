@@ -20,7 +20,7 @@ export default function NotificationsPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.NOTIFICATIONS_TITLE} showBack />
+        <PageHeader title={STRINGS.NOTIFICATIONS_TITLE} shouldShowBack />
         <View className={styles.body}>
           <View className={styles.list}>
             {list.map(item => (

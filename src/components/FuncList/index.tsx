@@ -6,20 +6,21 @@ import { LogoutModal } from '@/components/LogoutModal'
 import { removeAuthToken } from '@/utils/storage'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
-import { getProfileFunctions } from '@/services/dataService'
+import type { ProfileFunction } from '@/types'
 import styles from './index.module.scss'
 
 const FUNC_ROUTES: Record<string, string> = {
-  '证书中心': ROUTES.CERTIFICATES,
-  '问题反馈': ROUTES.FEEDBACK,
-  '消息通知': ROUTES.NOTIFICATIONS,
+  [STRINGS.FUNC_LIST_CERTIFICATES]: ROUTES.CERTIFICATES,
+  [STRINGS.FUNC_LIST_FEEDBACK]: ROUTES.FEEDBACK,
+  [STRINGS.FUNC_LIST_NOTIFICATIONS]: ROUTES.NOTIFICATIONS,
 }
 
 interface FuncListProps {
+  functions: ProfileFunction[]
   onNavigate: (route: string) => void
 }
 
-export function FuncList({ onNavigate }: FuncListProps) {
+export function FuncList({ functions, onNavigate }: FuncListProps) {
   const [showModal, setShowModal] = useState(false)
 
   const handleLogout = () => {
@@ -34,7 +35,7 @@ export function FuncList({ onNavigate }: FuncListProps) {
 
   return (
     <View className={styles.card}>
-      {getProfileFunctions().map((item, idx) => (
+      {functions.map((item, idx) => (
         <View
           key={idx}
           className={`${styles.item} ${idx !== 0 ? styles.border : ''}`}
@@ -65,7 +66,7 @@ export function FuncList({ onNavigate }: FuncListProps) {
       </View>
 
       <LogoutModal
-        visible={showModal}
+        isVisible={showModal}
         onCancel={() => setShowModal(false)}
         onConfirm={confirmLogout}
       />

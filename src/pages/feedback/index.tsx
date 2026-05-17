@@ -12,7 +12,7 @@ export default function FeedbackPage() {
 
   const handleSubmit = () => {
     if (!content.trim()) {
-      Taro.showToast({ title: '请填写问题描述', icon: 'none' })
+      Taro.showToast({ title: STRINGS.FEEDBACK_VALID_DESC_REQUIRED, icon: 'none' })
       return
     }
     Taro.showToast({ title: STRINGS.FEEDBACK_SUCCESS, icon: 'success' })
@@ -23,7 +23,7 @@ export default function FeedbackPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.FEEDBACK_TITLE} showBack />
+        <PageHeader title={STRINGS.FEEDBACK_TITLE} shouldShowBack />
         <View className={styles.body}>
           <View className={styles.card}>
             <View className={styles.field}>

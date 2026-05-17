@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { View } from '@tarojs/components'
+import { View, type ITouchEvent } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
 import styles from './index.module.scss'
@@ -27,13 +27,13 @@ export function FloatingService() {
 
   const x = side === 'left' ? edgeGap : Taro.getSystemInfoSync().windowWidth - btnPx - edgeGap
 
-  const handleTouchStart = useCallback((e: any) => {
+  const handleTouchStart = useCallback((e: ITouchEvent) => {
     const touch = e.touches[0]
     startRef.current = { y: touch.clientY - y, moved: 0, lastTouchX: touch.clientX }
     dragY.current = y
   }, [y])
 
-  const handleTouchMove = useCallback((e: any) => {
+  const handleTouchMove = useCallback((e: ITouchEvent) => {
     const touch = e.touches[0]
     const newY = touch.clientY - startRef.current.y
     const dy = Math.abs(newY - dragY.current)

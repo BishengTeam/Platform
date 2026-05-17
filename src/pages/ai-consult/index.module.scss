@@ -89,8 +89,8 @@
 }
 
 .avatarWrap {
-  width: $avatar-xl;
-  height: $avatar-xl;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: #ffffff;
   display: flex;
@@ -124,8 +124,12 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0 $spacing-lg;
+  padding: 0;
   box-sizing: border-box;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .welcome {

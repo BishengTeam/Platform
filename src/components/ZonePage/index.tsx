@@ -3,7 +3,8 @@ import { View } from '@tarojs/components'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { ZoneBanner, type ZoneBannerItem } from '@/components/ZoneBanner'
-import { TagFilter, type TagFilterItem } from '@/components/TagFilter'
+import { TagFilter } from '@/components/TagFilter'
+import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
 interface ZonePageProps {
@@ -14,6 +15,7 @@ interface ZonePageProps {
   onTagChange: (tag: string) => void
   children: ReactNode
   header?: ReactNode
+  onBack?: () => void
 }
 
 export function ZonePage({
@@ -24,11 +26,12 @@ export function ZonePage({
   onTagChange,
   children,
   header,
+  onBack,
 }: ZonePageProps) {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={title} showBack />
+        <PageHeader title={title} shouldShowBack onBack={onBack} />
         <View className={styles.body}>
           <ZoneBanner items={bannerItems} />
           <View className={styles.content}>
