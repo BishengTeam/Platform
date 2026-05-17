@@ -2,6 +2,7 @@ export const ROUTES = {
   AUTH: 'pages/auth/index',
   INDEX: 'pages/index/index',
   ZONES: 'pages/zones/index',
+  ACTIVITY: 'pages/activity-zone/index',
   SERVICE: 'pages/service/index',
   PROFILE: 'pages/profile/index',
   ORDERS: 'pages/orders/index',
@@ -12,11 +13,12 @@ export const ROUTES = {
   REGISTRATION_FORM: 'pages/registration/form',
   REGISTRATION_CONFIRM: 'pages/registration/confirm',
   PAYMENT_RESULT: 'pages/payment/result',
+  AI_CONSULT: 'pages/ai-consult/index',
 } as const
 
 export const TAB_BAR_CONFIG = [
   { key: 'pages/index/index', label: '对话', icon: 'message-square' },
-  { key: 'pages/zones/index', label: '专区', icon: 'zones' },
+  { key: 'pages/activity-zone/index', label: '活动', icon: 'gift' },
   { key: 'pages/profile/index', label: '我的', icon: 'profile' },
 ]
 

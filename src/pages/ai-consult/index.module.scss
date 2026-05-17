@@ -1,0 +1,165 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+  overflow: hidden;
+}
+
+// ========== Blue header ==========
+
+.header {
+  background: $gradient-blue;
+  padding: $safe-top $spacing-lg $spacing-lg;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 160px;
+    height: 160px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 60%;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $nav-title-height;
+  padding-bottom: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.backBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-out;
+
+  &:active {
+    transform: scale(0.92);
+    opacity: 0.85;
+  }
+}
+
+.headerTitle {
+  font-size: $font-xl;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  flex: 1;
+}
+
+.headerRight {
+  width: 40px;
+}
+
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding-top: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.avatarWrap {
+  width: $avatar-xl;
+  height: $avatar-xl;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.headerName {
+  font-size: $font-2xl;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.headerDesc {
+  font-size: $font-sm;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+// ========== Chat body ==========
+
+.body {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 $spacing-lg;
+  box-sizing: border-box;
+}
+
+.welcome {
+  padding-top: $spacing-lg;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.welcomeBubble {
+  background: #ffffff;
+  border-radius: 14rpx 40rpx 40rpx 40rpx;
+  padding: 28rpx 36rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04), 0 0 0 1rpx #EDEDED;
+  max-width: 78%;
+}
+
+.welcomeText {
+  font-size: $font-lg;
+  line-height: 1.6;
+  color: $color-text;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+.bottomPad {
+  height: $spacing-lg;
+}
+
+// ========== Input area ==========
+
+.inputArea {
+  flex-shrink: 0;
+  background: $color-white;
+  box-shadow:
+    0 -1px 3px rgba(0, 0, 0, 0.04),
+    0 -4px 12px rgba(0, 0, 0, 0.05);
+}

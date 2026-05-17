@@ -3,8 +3,7 @@ import { ROUTES, TAB_BAR_CONFIG } from './constants/routes'
 export default defineAppConfig({
   pages: [
     ROUTES.INDEX,
-    ROUTES.ZONES,
-    ROUTES.SERVICE,
+    ROUTES.ACTIVITY,
     ROUTES.PROFILE,
   ],
   subPackages: [
@@ -22,10 +21,6 @@ export default defineAppConfig({
     },
     {
       root: 'pages/competition-zone',
-      pages: ['index'],
-    },
-    {
-      root: 'pages/activity-zone',
       pages: ['index'],
     },
     {
@@ -56,19 +51,11 @@ export default defineAppConfig({
       root: 'pages/payment',
       pages: ['result'],
     },
-  ],
-  preloadRule: {
-    'pages/zones/index': {
-      network: 'all',
-      packages: [
-        'pages/exam-zone',
-        'pages/study-zone',
-        'pages/competition-zone',
-        'pages/activity-zone',
-        'pages/employment-zone',
-      ],
+    {
+      root: 'pages/ai-consult',
+      pages: ['index'],
     },
-  },
+  ],
   tabBar: {
     custom: true,
     color: '#999999',
