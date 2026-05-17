@@ -4,16 +4,17 @@ import { Icon } from '@/components/Icon'
 import styles from './index.module.scss'
 
 interface EmptyStateProps {
-  icon: string
+  icon?: string
+  iconNode?: ReactNode
   title: string
   description?: string
   children?: ReactNode
 }
 
-export function EmptyState({ icon, title, description, children }: EmptyStateProps) {
+export function EmptyState({ icon, iconNode, title, description, children }: EmptyStateProps) {
   return (
     <View className={styles.wrapper}>
-      <Icon name={icon} size={96} color='#BFBFBF' className={styles.icon} />
+      {iconNode || (icon && <Icon name={icon} size={96} color='#BFBFBF' className={styles.icon} />)}
       <Text className={styles.title}>{title}</Text>
       {description && <Text className={styles.desc}>{description}</Text>}
       {children && <View className={styles.actions}>{children}</View>}

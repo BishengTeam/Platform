@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
 import { LogoutModal } from '@/components/LogoutModal'
-import { removeAuthToken } from '@/utils/storage'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import type { ProfileFunction } from '@/types'
@@ -18,19 +16,19 @@ const FUNC_ROUTES: Record<string, string> = {
 interface FuncListProps {
   functions: ProfileFunction[]
   onNavigate: (route: string) => void
+  onLogout: () => void
 }
 
-export function FuncList({ functions, onNavigate }: FuncListProps) {
-  const [showModal, setShowModal] = useState(false)
+export function FuncList({ functions, onNavigate, onLogout }: FuncListProps) {
+  const [isModalVisible, setModalVisible] = useState(false)
 
   const handleLogout = () => {
-    setShowModal(true)
+    setModalVisible(true)
   }
 
   const confirmLogout = () => {
-    setShowModal(false)
-    removeAuthToken()
-    Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
+    setModalVisible(false)
+    onLogout()
   }
 
   return (
@@ -66,8 +64,8 @@ export function FuncList({ functions, onNavigate }: FuncListProps) {
       </View>
 
       <LogoutModal
-        isVisible={showModal}
-        onCancel={() => setShowModal(false)}
+        isVisible={isModalVisible}
+        onCancel={() => setModalVisible(false)}
         onConfirm={confirmLogout}
       />
     </View>

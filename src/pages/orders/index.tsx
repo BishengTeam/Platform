@@ -8,10 +8,17 @@ import { STRINGS } from '@/constants/strings'
 import { getOrders } from '@/services/dataService'
 import styles from './index.module.scss'
 
-const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
-  [STRINGS.ORDERS_STATUS_PENDING]: { color: '#FA8C16', bg: '#FFF7E6' },
-  [STRINGS.ORDERS_STATUS_ENROLLED]: { color: '#1677FF', bg: '#F0F5FF' },
-  [STRINGS.ORDERS_STATUS_CANCELLED]: { color: '#999999', bg: '#F5F5F5' },
+const STATUS_CONFIG: Record<string, { badgeClass: string; badgeTextClass: string; label: string }> = {
+  pending: { badgeClass: styles.badgePending, badgeTextClass: styles.badgePendingText, label: STRINGS.ORDERS_STATUS_PENDING },
+  enrolled: { badgeClass: styles.badgeEnrolled, badgeTextClass: styles.badgeEnrolledText, label: STRINGS.ORDERS_STATUS_ENROLLED },
+  cancelled: { badgeClass: styles.badgeCancelled, badgeTextClass: styles.badgeCancelledText, label: STRINGS.ORDERS_STATUS_CANCELLED },
+}
+
+const STATUS_DISPLAY_MAP: Record<string, string> = {
+  [STRINGS.ORDERS_TAG_ALL]: STRINGS.ORDERS_TAG_ALL,
+  [STRINGS.ORDERS_STATUS_PENDING]: 'pending',
+  [STRINGS.ORDERS_STATUS_ENROLLED]: 'enrolled',
+  [STRINGS.ORDERS_STATUS_CANCELLED]: 'cancelled',
 }
 
 const TAG_KEYS = [
@@ -31,7 +38,7 @@ export default function OrdersPage() {
 
   const filteredOrders = activeTag === STRINGS.ORDERS_TAG_ALL
     ? getOrders()
-    : getOrders().filter(o => o.status === activeTag)
+    : getOrders().filter(o => o.status === STATUS_DISPLAY_MAP[activeTag])
 
   return (
     <AuthGuard>
@@ -61,15 +68,9 @@ export default function OrdersPage() {
                   </View>
                   <View className={styles.cardBottom}>
                     <Text className={styles.cardDate}>{order.date}</Text>
-                    <View
-                      className={styles.badge}
-                      style={{ background: statusCfg.bg }}
-                    >
-                      <Text
-                        className={styles.badgeText}
-                        style={{ color: statusCfg.color }}
-                      >
-                        {order.status}
+                    <View className={`${styles.badge} ${statusCfg.badgeClass}`}>
+                      <Text className={`${styles.badgeText} ${statusCfg.badgeTextClass}`}>
+                        {statusCfg.label}
                       </Text>
                     </View>
                   </View>

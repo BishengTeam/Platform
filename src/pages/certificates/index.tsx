@@ -27,10 +27,10 @@ export default function CertificatesPage() {
                   <Text className={styles.certDesc}>{cert.description}</Text>
                   <View className={styles.certMeta}>
                     <Text className={styles.certDate}>
-                      {STRINGS.CERTIFICATES_ISSUE_DATE}：{cert.issueDate}
+                      {STRINGS.CERTIFICATES_ISSUE_DATE}{cert.issueDate}
                     </Text>
                     <Text className={styles.certAuthority}>
-                      {STRINGS.CERTIFICATES_AUTHORITY}：{cert.authority}
+                      {STRINGS.CERTIFICATES_AUTHORITY}{cert.authority}
                     </Text>
                   </View>
                 </View>

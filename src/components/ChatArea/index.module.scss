@@ -1,8 +1,6 @@
 @use '../../styles/variables' as *;
 @use '../../styles/mixins' as *;
 
-// ========== Chat list ==========
-
 .chatList {
   display: flex;
   flex-direction: column;
@@ -10,7 +8,6 @@
   padding: $spacing-md 0 0 0;
 }
 
-// ========== Bubble row ==========
 
 .chatBubble {
   display: flex;
@@ -27,7 +24,6 @@
   justify-content: flex-start;
 }
 
-// ========== Bubble content ==========
 
 .bubbleContent {
   display: flex;
@@ -46,7 +42,6 @@
   align-items: flex-start;
 }
 
-// ========== Bubble shape ==========
 
 .bubble {
   padding: 28rpx 36rpx;
@@ -80,7 +75,6 @@
   color: #ffffff;
 }
 
-// ========== Teacher card sections ==========
 
 .teacherHead {
   display: flex;
@@ -133,7 +127,6 @@
   width: 100%;
 }
 
-// ========== Shared rich card ==========
 
 .richCard {
   background: #ffffff;
@@ -277,7 +270,6 @@
   font-weight: 500;
 }
 
-// ========== Typing indicator ==========
 
 .typingDots {
   background: #ffffff;
@@ -301,7 +293,6 @@
   &:nth-child(3) { animation-delay: 0.3s; opacity: 0.8; }
 }
 
-// ========== Responsive ==========
 
 @include respond-to(xs) {
   .bubbleContent {

@@ -1,8 +1,8 @@
 export const STRINGS = {
   // ---- Tab / Navigation ----
   TAB_HOME: '首页',
-  TAB_TRAINING: '培训',
-  TAB_DISCOVER: '发现',
+  TAB_TRAINING: '学习',
+  TAB_DISCOVER: '活动',
   TAB_PROFILE: '我的',
 
   // ---- Index Page ----
@@ -24,11 +24,6 @@ export const STRINGS = {
   INDEX_ONLINE_COURSES: '在线课程',
   INDEX_TRAINING_ACTIVITIES: '培训活动',
   INDEX_VIEW_ALL: '全部',
-  INDEX_ZONE_REGISTRATION_LABEL: '认证专区',
-  INDEX_ZONE_STUDY_LABEL: '学习专区',
-  INDEX_ZONE_COMPETITION_LABEL: '竞赛专区',
-  INDEX_ZONE_TRAINING_LABEL: '培训专区',
-
   // ---- Zones Page ----
   ZONES_HEADER: '专区',
   ZONES_BANNER_TITLE: 'H3CNE 认证考试',
@@ -42,6 +37,15 @@ export const STRINGS = {
   SERVICE_HEADER: '人工客服',
   SERVICE_CARD_TITLE: '官方客服助理',
   SERVICE_CARD_SUBTITLE: '在线时间: 09:00 - 18:00',
+  SERVICE_PHONE_LABEL: '电话咨询',
+  SERVICE_WECHAT_LABEL: '微信客服',
+  SERVICE_EMAIL_LABEL: '邮箱咨询',
+  SERVICE_ACTION_CALL: '呼叫',
+  SERVICE_ACTION_QR: '二维码',
+  SERVICE_ACTION_COPY: '复制',
+  SERVICE_PHONE_VALUE: '400-123-4567',
+  SERVICE_WECHAT_VALUE: '扫码添加专属客服',
+  SERVICE_EMAIL_VALUE: 'service@example.com',
 
   // ---- Profile Page ----
   PROFILE_ORDERS: '我的订单',
@@ -51,14 +55,11 @@ export const STRINGS = {
   // ---- Orders Page ----
   ORDERS_TITLE: '我的订单',
   ORDERS_TAG_ALL: '全部',
-  ORDERS_TAG_PENDING: '待付款',
-  ORDERS_TAG_ENROLLED: '已报名',
-  ORDERS_TAG_CANCELLED: '已取消',
 
   // ---- Certificates Page ----
   CERTIFICATES_TITLE: '证书中心',
-  CERTIFICATES_ISSUE_DATE: '发证日期',
-  CERTIFICATES_AUTHORITY: '发证机构',
+  CERTIFICATES_ISSUE_DATE: '发证日期：',
+  CERTIFICATES_AUTHORITY: '发证机构：',
 
   // ---- Feedback Page ----
   FEEDBACK_TITLE: '问题反馈',
@@ -108,6 +109,7 @@ export const STRINGS = {
 
   // ---- Activity Zone ----
   ACTIVITY_TITLE: '活动专区',
+  ACTIVITY_DISCOUNT_SECTION: '精彩活动',
   ACTIVITY_ONGOING: '进行中',
   ACTIVITY_UPCOMING: '即将开始',
   ACTIVITY_ENDED: '已结束',
@@ -272,4 +274,15 @@ export const STRINGS = {
   FUNC_LIST_CERTIFICATES: '证书中心',
   FUNC_LIST_FEEDBACK: '问题反馈',
   FUNC_LIST_NOTIFICATIONS: '消息通知',
+
+  // ---- AI Chat Cards ----
+  AI_CARD_VIEW_DETAIL: '查看详情 →',
+  AI_CARD_ENTER_ZONE: '进入专区 →',
+
+  // ---- Mock Data ----
+  MOCK_INDEX_WELCOME_MESSAGE: '您好！我是智天远智能助手 👋\n\n我可以帮您查询考试认证、推荐学习课程、了解竞赛活动、对接就业岗位。您可以直接向我提问，也可以点击下方专区入口快速浏览。\n\n请问有什么可以帮您的？',
+  MOCK_QUICK_QUESTION_1: '如何报名 H3CNE 认证？',
+  MOCK_QUICK_QUESTION_2: '有哪些学习课程推荐？',
+  MOCK_QUICK_QUESTION_3: '最近有什么竞赛？',
+  MOCK_QUICK_QUESTION_4: '帮我推荐就业方向',
 } as const

@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'

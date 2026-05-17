@@ -9,13 +9,13 @@ import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import styles from './index.module.scss'
 
 export default function AuthPage() {
-  const [agreed, setAgreed] = useState(false)
-  const [shake, setShake] = useState(false)
+  const [isAgreed, setIsAgreed] = useState(false)
+  const [isShaking, setIsShaking] = useState(false)
 
   const handleLogin = () => {
-    if (!agreed) {
-      setShake(true)
-      setTimeout(() => setShake(false), 500)
+    if (!isAgreed) {
+      setIsShaking(true)
+      setTimeout(() => setIsShaking(false), 500)
       return
     }
     setAuthToken()
@@ -40,16 +40,12 @@ export default function AuthPage() {
             <Icon name='message-circle' size={20} color='#ffffff' />
             <Text className={styles.wechatBtnText}>{STRINGS.AUTH_WECHAT_BTN}</Text>
           </View>
-          <View className={styles.phoneBtn} onClick={handleLogin}>
-            <Icon name='phone' size={20} color='#333333' />
-            <Text className={styles.phoneBtnText}>{STRINGS.AUTH_PHONE_BTN}</Text>
-          </View>
         </View>
 
         <AgreementCheckbox
-          className={`${shake ? 'shake' : ''} fade-in delay-2`}
-          agreed={agreed}
-          onChange={setAgreed}
+          className={`${isShaking ? 'shake' : ''} fade-in delay-2`}
+          agreed={isAgreed}
+          onChange={setIsAgreed}
         >
           {STRINGS.AUTH_AGREEMENT_PREFIX}
           <Text className={styles.link}>{STRINGS.AUTH_AGREEMENT_TERMS}</Text>

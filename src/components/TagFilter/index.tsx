@@ -37,10 +37,7 @@ export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFi
                 className={`${styles.underlineTab} ${isActive ? styles.underlineTabActive : ''}`}
                 onClick={() => onChange(tag.label)}
               >
-                <Text
-                  className={styles.underlineTabText}
-                  style={{ color: isActive ? '#1677FF' : '#666666' }}
-                >
+                <Text className={styles.underlineTabText}>
                   {tag.label}
                 </Text>
                 {isActive && <View className={styles.underlineIndicator} />}

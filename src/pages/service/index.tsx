@@ -1,20 +1,26 @@
+import { useCallback } from 'react'
 import { View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import { STRINGS } from '@/constants/strings'
+import { ROUTES } from '@/constants/routes'
 import { getContactList } from '@/services/dataService'
 import styles from './index.module.scss'
 
 export default function ServicePage() {
+  const handleBack = useCallback(() => {
+    Taro.switchTab({ url: `/${ROUTES.INDEX}` })
+  }, [])
+
   return (
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader
           title={STRINGS.SERVICE_HEADER}
           shouldShowBack
-          onBack={() => Taro.switchTab({ url: '/pages/index/index' })}
+          onBack={handleBack}
         />
 
         <View className={styles.body}>

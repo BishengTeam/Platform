@@ -4,7 +4,9 @@
       "Read(//tmp/**)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(rg --include='*.tsx' --include='*.ts' -n '[\\\\x{4e00}-\\\\x{9fff}]' src/)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

@@ -8,19 +8,35 @@
   background: $color-bg-secondary;
 }
 
+.bannerWrap {
+  padding: $spacing-md $spacing-md 0;
+}
+
 .body {
   flex: 1;
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.content {
-  padding: 0 $spacing-lg $spacing-xl;
+.section {
+  padding: 20px $spacing-md $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+  display: block;
 }
 
 .cardList {
+  margin-top: $spacing-sm;
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;

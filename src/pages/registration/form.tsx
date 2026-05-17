@@ -21,7 +21,7 @@ export default function RegistrationFormPage() {
   const [idCard, setIdCard] = useState('')
   const [identityType, setIdentityType] = useState<'personal' | 'enterprise'>('personal')
   const [enterpriseName, setEnterpriseName] = useState('')
-  const [useCoupon, setUseCoupon] = useState(false)
+  const [isCouponActive, setUseCoupon] = useState(false)
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
 
   useLoad((options) => {
@@ -60,7 +60,7 @@ export default function RegistrationFormPage() {
       id_card: idCard.trim(),
       identity_type: identityType,
       price: cert.price,
-      coupon_count: useCoupon ? 1 : 0,
+      coupon_count: isCouponActive ? 1 : 0,
       enterprise_name: identityType === 'enterprise' ? enterpriseName.trim() : '',
     }
 
@@ -68,7 +68,7 @@ export default function RegistrationFormPage() {
     Taro.navigateTo({ url: '/pages/registration/confirm' })
   }
 
-  const couponDiscount = useCoupon && cert ? -cert.price : 0
+  const couponDiscount = isCouponActive && cert ? -cert.price : 0
   const totalPrice = cert ? cert.price + couponDiscount : 0
 
   const handleBlur = (field: string) => {
@@ -198,13 +198,13 @@ export default function RegistrationFormPage() {
                         {STRINGS.FORM_COUPON_COUNT}: {couponCount}{STRINGS.FORM_COUPON_COUNT_UNIT}
                       </Text>
                       <View
-                        className={`${styles.couponToggle} ${useCoupon ? styles.couponToggleActive : ''}`}
-                        onClick={() => setUseCoupon(!useCoupon)}
+                        className={`${styles.couponToggle} ${isCouponActive ? styles.couponToggleActive : ''}`}
+                        onClick={() => setUseCoupon(!isCouponActive)}
                       >
-                        <View className={`${styles.couponDot} ${useCoupon ? styles.couponDotActive : ''}`} />
+                        <View className={`${styles.couponDot} ${isCouponActive ? styles.couponDotActive : ''}`} />
                       </View>
                     </View>
-                    {useCoupon && (
+                    {isCouponActive && (
                       <Text className={styles.couponTip}>{STRINGS.FORM_COUPON_TIP}</Text>
                     )}
                   </View>

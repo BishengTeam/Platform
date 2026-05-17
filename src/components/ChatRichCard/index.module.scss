@@ -1,0 +1,68 @@
+@use '../../styles/variables' as *;
+
+.card {
+  margin-top: $spacing-sm;
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  box-shadow: $shadow-xs;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.95;
+    transition: all 0.1s;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-xs;
+}
+
+.titleWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.desc {
+  font-size: $font-xs;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: $spacing-xs;
+}
+
+.meta {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-xs;
+}
+
+.metaItem {
+  font-size: 20px;
+  color: $color-text-tertiary;
+  background: $color-bg-secondary;
+  padding: 4px 12px;
+  border-radius: $radius-sm;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actionText {
+  font-size: $font-xs;
+  color: $color-primary;
+}

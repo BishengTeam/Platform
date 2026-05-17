@@ -84,6 +84,30 @@
   border-radius: $radius-full;
 }
 
+.badgePending {
+  background: #FFF7E6;
+}
+
+.badgePendingText {
+  color: #FA8C16;
+}
+
+.badgeEnrolled {
+  background: #F0F5FF;
+}
+
+.badgeEnrolledText {
+  color: #1677FF;
+}
+
+.badgeCancelled {
+  background: #F5F5F5;
+}
+
+.badgeCancelledText {
+  color: #999999;
+}
+
 .badgeText {
   font-size: $font-xs;
   font-weight: 500;

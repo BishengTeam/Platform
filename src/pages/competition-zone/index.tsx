@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Taro from '@tarojs/taro'
 import { ZonePage } from '@/components/ZonePage'
 import { ZoneCard } from '@/components/ZoneCard'
@@ -17,6 +17,10 @@ export default function CompetitionZonePage() {
     : activeTag === STRINGS.COMPETITION_UPCOMING
     ? getUpcomingCompetitions()
     : getEndedCompetitions()
+
+  const handleRegistration = useCallback(() => {
+    Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
+  }, [])
 
   return (
     <ZonePage
@@ -40,7 +44,7 @@ export default function CompetitionZonePage() {
           buttonVariant={activeTag === STRINGS.COMPETITION_ENDED ? 'secondary' : 'primary'}
           isFaded={activeTag === STRINGS.COMPETITION_ENDED}
           onButtonClick={comp.status === STRINGS.COMPETITION_STATUS_REGISTERING
-            ? () => Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
+            ? handleRegistration
             : undefined}
         />
       ))}

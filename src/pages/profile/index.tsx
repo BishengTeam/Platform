@@ -5,13 +5,20 @@ import { FuncList } from '@/components/FuncList'
 import { Icon } from '@/components/Icon'
 import { OrderBar } from '@/components/OrderBar'
 import { CustomTabBar } from '@/components/TabBar'
+import { removeAuthToken } from '@/utils/storage'
 import { STRINGS } from '@/constants/strings'
+import { ROUTES } from '@/constants/routes'
 import { getOrderItems, getProfileFunctions } from '@/services/dataService'
 import styles from './index.module.scss'
 
 export default function ProfilePage() {
   const handleNavigate = (route: string) => {
     Taro.navigateTo({ url: `/${route}` })
+  }
+
+  const handleLogout = () => {
+    removeAuthToken()
+    Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
   }
 
   return (
@@ -31,9 +38,9 @@ export default function ProfilePage() {
 
         <View className={styles.body}>
           <OrderBar items={getOrderItems()} onNavigate={handleNavigate} />
-          <FuncList functions={getProfileFunctions()} onNavigate={handleNavigate} />
+          <FuncList functions={getProfileFunctions()} onNavigate={handleNavigate} onLogout={handleLogout} />
         </View>
-        <CustomTabBar />
+        <CustomTabBar activeTabKey='pages/profile/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>
     </AuthGuard>
   )

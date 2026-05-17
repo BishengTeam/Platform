@@ -9,7 +9,6 @@
   overflow: hidden;
 }
 
-// ========== Blue header ==========
 
 .header {
   background: $gradient-blue;
@@ -117,7 +116,6 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
-// ========== Chat body ==========
 
 .body {
   flex: 1;
@@ -158,7 +156,6 @@
   height: $spacing-lg;
 }
 
-// ========== Input area ==========
 
 .inputArea {
   flex-shrink: 0;

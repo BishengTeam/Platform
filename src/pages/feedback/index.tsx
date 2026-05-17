@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { View, Text, Textarea, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -10,7 +10,15 @@ export default function FeedbackPage() {
   const [content, setContent] = useState('')
   const [contact, setContact] = useState('')
 
-  const handleSubmit = () => {
+  const handleContentInput = useCallback((e: { detail: { value: string } }) => {
+    setContent(e.detail.value)
+  }, [])
+
+  const handleContactInput = useCallback((e: { detail: { value: string } }) => {
+    setContact(e.detail.value)
+  }, [])
+
+  const handleSubmit = useCallback(() => {
     if (!content.trim()) {
       Taro.showToast({ title: STRINGS.FEEDBACK_VALID_DESC_REQUIRED, icon: 'none' })
       return
@@ -18,7 +26,7 @@ export default function FeedbackPage() {
     Taro.showToast({ title: STRINGS.FEEDBACK_SUCCESS, icon: 'success' })
     setContent('')
     setContact('')
-  }
+  }, [content])
 
   return (
     <AuthGuard>
@@ -32,7 +40,7 @@ export default function FeedbackPage() {
                 className={styles.textarea}
                 placeholder={STRINGS.FEEDBACK_DESC_PLACEHOLDER}
                 value={content}
-                onInput={e => setContent(e.detail.value)}
+                onInput={handleContentInput}
                 maxlength={500}
                 autoHeight
               />
@@ -45,7 +53,7 @@ export default function FeedbackPage() {
                 className={styles.input}
                 placeholder={STRINGS.FEEDBACK_CONTACT_PLACEHOLDER}
                 value={contact}
-                onInput={e => setContact(e.detail.value)}
+                onInput={handleContactInput}
                 maxlength={50}
               />
             </View>

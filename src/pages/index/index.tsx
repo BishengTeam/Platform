@@ -12,7 +12,7 @@ import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
 import { getExamBannerItems, getHomeCourses, getHomeActivities } from '@/services/dataService'
 import styles from './index.module.scss'
 
@@ -29,7 +29,7 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     bg: '#F6FFED',
     iconColor: '#2e7d32',
     icon: 'book-open',
-    url: '/pages/study-zone/index',
+    url: '/pages/training/index',
   },
   {
     name: STRINGS.INDEX_ZONE_COMPETITION,
@@ -39,11 +39,11 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     url: '/pages/competition-zone/index',
   },
   {
-    name: STRINGS.INDEX_ZONE_TRAINING,
-    bg: '#F9F0FF',
-    iconColor: '#7b1fa2',
-    icon: 'users',
-    url: '',
+    name: STRINGS.ZONE_NAMES[3],
+    bg: '#E6FFFB',
+    iconColor: '#13C2C2',
+    icon: 'gift',
+    url: '/pages/activity-zone/index',
   },
 ]
 
@@ -53,13 +53,17 @@ export default function IndexPage() {
   }
 
   const handleKingKongClick = (item: KingKongItem) => {
-    if (item.url) {
+    if (!item.url) return
+    const path = item.url.replace(/^\//, '')
+    if (TAB_BAR_CONFIG.some(t => t.key === path)) {
+      Taro.switchTab({ url: item.url })
+    } else {
       Taro.navigateTo({ url: item.url })
     }
   }
 
   const handleGoStudyZone = () => {
-    Taro.switchTab({ url: '/pages/study-zone/index' })
+    Taro.switchTab({ url: '/pages/training/index' })
   }
 
   const courses = getHomeCourses()
@@ -102,7 +106,7 @@ export default function IndexPage() {
           </View>
         </View>
 
-        <CustomTabBar />
+        <CustomTabBar activeTabKey='pages/index/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>
     </AuthGuard>
   )

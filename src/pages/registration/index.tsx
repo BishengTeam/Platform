@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { View, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -21,18 +21,22 @@ export default function RegistrationIndexPage() {
       ? certifications
       : certifications.filter(c => c.categoryName === activeTag)
     if (keyword.trim()) {
-      const kw = keyword.trim().toLowerCase()
+      const keywordLower = keyword.trim().toLowerCase()
       list = list.filter(c =>
-        c.name.toLowerCase().includes(kw) ||
-        c.description.toLowerCase().includes(kw)
+        c.name.toLowerCase().includes(keywordLower) ||
+        c.description.toLowerCase().includes(keywordLower)
       )
     }
     return list
   }, [activeTag, keyword, certifications])
 
-  const handleCardClick = (certId: string) => {
+  const handleKeywordInput = useCallback((e: { detail: { value: string } }) => {
+    setKeyword(e.detail.value)
+  }, [])
+
+  const handleCardClick = useCallback((certId: string) => {
     Taro.navigateTo({ url: `/pages/registration/form?cert_id=${certId}` })
-  }
+  }, [])
 
   return (
     <AuthGuard>
@@ -44,7 +48,7 @@ export default function RegistrationIndexPage() {
               className={styles.searchInput}
               placeholder={STRINGS.REGISTRATION_SEARCH_PLACEHOLDER}
               value={keyword}
-              onInput={e => setKeyword(e.detail.value)}
+              onInput={handleKeywordInput}
             />
           </View>
           <View className={styles.filterRow}>

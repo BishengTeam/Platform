@@ -1,8 +1,9 @@
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { View } from '@tarojs/components'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { ZoneBanner, type ZoneBannerItem } from '@/components/ZoneBanner'
+import { ZoneBanner } from '@/components/ZoneBanner'
+import type { ZoneBannerItem } from '@/components/ZoneBanner'
 import { TagFilter } from '@/components/TagFilter'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
@@ -15,6 +16,7 @@ interface ZonePageProps {
   onTagChange: (tag: string) => void
   children: ReactNode
   header?: ReactNode
+  shouldShowBack?: boolean
   onBack?: () => void
 }
 
@@ -26,14 +28,17 @@ export function ZonePage({
   onTagChange,
   children,
   header,
+  shouldShowBack = true,
   onBack,
 }: ZonePageProps) {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={title} shouldShowBack onBack={onBack} />
+        <PageHeader title={title} shouldShowBack={shouldShowBack} onBack={onBack} />
         <View className={styles.body}>
-          <ZoneBanner items={bannerItems} />
+          <View className={styles.bannerWrap}>
+            <ZoneBanner items={bannerItems} />
+          </View>
           <View className={styles.content}>
             <TagFilter tags={tagFilters} activeTag={activeTag} onChange={onTagChange} />
             {header}

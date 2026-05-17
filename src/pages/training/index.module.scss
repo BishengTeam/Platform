@@ -17,14 +17,18 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .content {
-  padding: 0 $spacing-lg $spacing-xl;
+  padding: 20px $spacing-md $spacing-md;
 }
 
 .cardList {
+  margin-top: $spacing-sm;
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;

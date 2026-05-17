@@ -126,3 +126,8 @@
 .payBtn {
   width: 100%;
 }
+
+.payBtnDisabled {
+  opacity: 0.5;
+  pointer-events: none;
+}

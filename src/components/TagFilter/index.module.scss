@@ -19,7 +19,6 @@
   transition: all 0.2s;
 }
 
-// ========== Underline variant ==========
 
 .underlineRow {
   display: flex;
@@ -39,6 +38,11 @@
 .underlineTabText {
   font-size: $font-base;
   font-weight: 500;
+  color: #666666;
+}
+
+.underlineTabActive .underlineTabText {
+  color: $color-primary;
 }
 
 .underlineIndicator {

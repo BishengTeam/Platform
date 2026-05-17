@@ -89,28 +89,6 @@
   font-weight: 500;
 }
 
-.phoneBtn {
-  width: 100%;
-  height: $button-height;
-  background: $color-bg-secondary;
-  color: $color-text;
-  border-radius: $radius-lg;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $spacing-xs;
-
-  &:active {
-    transform: scale(0.95);
-    transition: transform 0.1s;
-  }
-}
-
-.phoneBtnText {
-  font-size: $font-lg;
-  font-weight: 500;
-}
-
 .link {
   color: $color-primary;
 }

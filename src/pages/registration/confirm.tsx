@@ -15,18 +15,18 @@ import styles from './confirm.module.scss'
 const STORAGE_KEY = 'registration_form_data'
 
 export default function ConfirmPage() {
-  const [agreed, setAgreed] = useState(false)
-  const [paying, setPaying] = useState(false)
+  const [isAgreed, setIsAgreed] = useState(false)
+  const [isPaying, setIsPaying] = useState(false)
 
   const formData: RegistrationFormData = Taro.getStorageSync(STORAGE_KEY) || mockFormData
   const identityLabel = formData.identity_type === 'enterprise' ? STRINGS.FORM_IDENTITY_ENTERPRISE : STRINGS.FORM_IDENTITY_PERSONAL
 
   const handlePay = () => {
-    if (!agreed || paying) return
-    setPaying(true)
+    if (!isAgreed || isPaying) return
+    setIsPaying(true)
 
     setTimeout(() => {
-      setPaying(false)
+      setIsPaying(false)
       const success = Math.random() > 0.3
       const orderId = `ORD${Date.now()}`
       Taro.navigateTo({
@@ -103,7 +103,7 @@ export default function ConfirmPage() {
         </View>
 
         <View className={styles.bottomBar}>
-          <AgreementCheckbox agreed={agreed} onChange={setAgreed}>
+          <AgreementCheckbox agreed={isAgreed} onChange={setIsAgreed}>
             {STRINGS.CONFIRM_AGREEMENT_PREFIX}
             <Text className={styles.link}>{STRINGS.CONFIRM_AGREEMENT_TERMS}</Text>
             {STRINGS.AUTH_AGREEMENT_AND}
@@ -113,10 +113,9 @@ export default function ConfirmPage() {
             variant='gradient'
             size='lg'
             onClick={handlePay}
-            className={styles.payBtn}
-            style={{ opacity: agreed && !paying ? '1' : '0.5', pointerEvents: agreed && !paying ? 'auto' : 'none' }}
+            className={`${styles.payBtn} ${isAgreed && !isPaying ? '' : styles.payBtnDisabled}`}
           >
-            {paying ? STRINGS.CONFIRM_PAYING : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${formData.price.toFixed(2)}`}
+            {isPaying ? STRINGS.CONFIRM_PAYING : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${formData.price.toFixed(2)}`}
           </Button>
         </View>
       </View>

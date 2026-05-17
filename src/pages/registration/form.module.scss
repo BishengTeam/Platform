@@ -37,7 +37,6 @@
   display: block;
 }
 
-// ---- 认证摘要 ----
 .summaryCard {
   background: $color-white;
   border-radius: $radius-md;
@@ -66,7 +65,6 @@
   border-radius: $radius-sm;
 }
 
-// ---- 身份切换 ----
 .identityRow {
   margin-bottom: $spacing-md;
 }
@@ -109,7 +107,6 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-// ---- 考试券 ----
 .couponCard {
   background: linear-gradient(135deg, #FFF7E6, #FFF2F0);
   border-radius: $radius-md;
@@ -164,7 +161,6 @@
   display: block;
 }
 
-// ---- 费用明细 ----
 .priceCard {
   background: $color-white;
   border-radius: $radius-md;
@@ -177,7 +173,6 @@
   margin: $spacing-xs 0;
 }
 
-// ---- 提交按钮 ----
 .btnWrap {
   padding: $spacing-xl $spacing-lg;
 }

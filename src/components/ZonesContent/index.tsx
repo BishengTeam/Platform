@@ -1,13 +1,22 @@
 import { View } from '@tarojs/components'
-import Taro from '@tarojs/taro'
-import { ZONE_ROUTES } from '@/constants/routes'
+import { ZONE_ROUTES, ZONE_ROUTE_KEYS } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import styles from './index.module.scss'
 
-export function ZonesContent() {
+interface Props {
+  onZoneTap?: (url: string) => void
+}
+
+function getZoneRoute(zoneName: string): string | undefined {
+  const idx = STRINGS.ZONE_NAMES.indexOf(zoneName as typeof STRINGS.ZONE_NAMES[number])
+  if (idx < 0) return undefined
+  return ZONE_ROUTES[ZONE_ROUTE_KEYS[idx]]
+}
+
+export function ZonesContent({ onZoneTap }: Props) {
   const handleNavigate = (zone: string) => {
-    const url = ZONE_ROUTES[zone]
-    if (url) Taro.navigateTo({ url })
+    const url = getZoneRoute(zone)
+    if (url) onZoneTap?.(url)
   }
 
   return (
