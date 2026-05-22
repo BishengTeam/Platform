@@ -8,6 +8,7 @@ interface PriceRowProps {
   isStrikethrough?: boolean
   prefix?: string
   className?: string
+  size?: 'normal' | 'lg'
 }
 
 export function PriceRow({
@@ -17,12 +18,13 @@ export function PriceRow({
   isStrikethrough = false,
   prefix = '¥',
   className = '',
+  size = 'normal',
 }: PriceRowProps) {
   return (
-    <View className={`${styles.row} ${isTotal ? styles.rowTotal : ''} ${className}`}>
-      <Text className={styles.label}>{label}</Text>
+    <View className={`${styles.row} ${isTotal ? styles.rowTotal : ''} ${size === 'lg' ? styles.lg : ''} ${className}`}>
+      <Text className={`${styles.label} ${size === 'lg' ? styles.labelLg : ''}`}>{label}</Text>
       <Text
-        className={`${styles.value} ${isTotal ? styles.valueTotal : ''} ${isStrikethrough ? styles.strikethrough : ''}`}
+        className={`${styles.value} ${isTotal ? styles.valueTotal : ''} ${isStrikethrough ? styles.strikethrough : ''} ${size === 'lg' && !isTotal ? styles.valueLg : ''} ${size === 'lg' && isTotal ? styles.valueTotalLg : ''}`}
       >
         {value < 0 ? `-${prefix}${Math.abs(value).toFixed(2)}` : `${prefix}${value.toFixed(2)}`}
       </Text>

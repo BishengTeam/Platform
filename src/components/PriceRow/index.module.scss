@@ -35,3 +35,24 @@
   color: $color-text-tertiary;
   font-weight: 400;
 }
+
+.row.lg {
+  padding: 12px 0;
+}
+
+.rowTotal.lg {
+  padding-top: 20px;
+  margin-top: 12px;
+}
+
+.labelLg {
+  font-size: $font-base;
+}
+
+.valueLg {
+  font-size: $font-base;
+}
+
+.valueTotalLg {
+  font-size: $font-xl;
+}

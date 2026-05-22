@@ -76,15 +76,16 @@ export default function ConfirmPage() {
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.FORM_PRICE_DETAIL}</Text>
             <View className={styles.card}>
-              <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={formData.price} />
+              <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={formData.price} size='lg' />
               {formData.coupon_count > 0 && (
                 <PriceRow
                   label={`${STRINGS.FORM_PRICE_COUPON_DISCOUNT} (${formData.coupon_count}${STRINGS.FORM_COUPON_COUNT_UNIT})`}
                   value={-formData.price}
                   className={styles.discountRow}
+                  size='lg'
                 />
               )}
-              <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={formData.price} isTotal />
+              <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={formData.price} isTotal size='lg' />
             </View>
           </View>
 

@@ -2,7 +2,7 @@
 
 .page {
   min-height: 100vh;
-  padding-bottom: 200px;
+  padding-bottom: 260px;
   background: $color-bg;
 }
 
@@ -11,28 +11,28 @@
 }
 
 .section {
-  margin-top: $spacing-sm;
+  margin-top: $spacing-md;
 }
 
 .sectionTitle {
-  font-size: $font-xs;
+  font-size: $font-sm;
   color: $color-text-tertiary;
   padding: 0 $spacing-xs;
-  margin-bottom: $spacing-xs;
+  margin-bottom: $spacing-sm;
   display: block;
 }
 
 .card {
   background: $color-white;
   border-radius: $radius-md;
-  padding: $spacing-sm $spacing-md;
+  padding: $spacing-md $spacing-md;
 }
 
 .infoRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: $spacing-sm 0;
+  padding: 20px 0;
 
   &:not(:last-child) {
     border-bottom: $border-thin solid $color-border;
@@ -40,12 +40,12 @@
 }
 
 .infoLabel {
-  font-size: $font-sm;
+  font-size: $font-base;
   color: $color-text-secondary;
 }
 
 .infoValue {
-  font-size: $font-sm;
+  font-size: $font-base;
   color: $color-text;
 }
 
@@ -57,7 +57,7 @@
 .paymentCard {
   background: $color-white;
   border-radius: $radius-md;
-  padding: $spacing-md;
+  padding: $spacing-lg;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -66,16 +66,16 @@
 .paymentLeft {
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: 20px;
 }
 
 .wechatIcon {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: $radius-sm;
   background: $color-success;
   color: $color-white;
-  font-size: $font-sm;
+  font-size: $font-base;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -83,13 +83,13 @@
 }
 
 .paymentLabel {
-  font-size: $font-sm;
+  font-size: $font-base;
   color: $color-text;
 }
 
 .radioOuter {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: 2px solid $color-primary;
   display: flex;
@@ -98,8 +98,8 @@
 }
 
 .radioInner {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: $color-primary;
 }
