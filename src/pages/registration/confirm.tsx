@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -13,16 +13,42 @@ import type { RegistrationFormData } from '@/types/registration'
 import styles from './confirm.module.scss'
 
 const STORAGE_KEY = 'registration_form_data'
+const COUNTDOWN_SECONDS = 30 * 60
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
 
 export default function ConfirmPage() {
   const [isAgreed, setIsAgreed] = useState(false)
   const [isPaying, setIsPaying] = useState(false)
+  const [remaining, setRemaining] = useState(COUNTDOWN_SECONDS)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const isExpired = remaining <= 0
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setRemaining(prev => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [])
 
   const formData: RegistrationFormData = Taro.getStorageSync(STORAGE_KEY) || mockFormData
   const identityLabel = formData.identity_type === 'enterprise' ? STRINGS.FORM_IDENTITY_ENTERPRISE : STRINGS.FORM_IDENTITY_PERSONAL
 
-  const handlePay = () => {
-    if (!isAgreed || isPaying) return
+  const handlePay = useCallback(() => {
+    if (!isAgreed || isPaying || isExpired) return
     setIsPaying(true)
 
     setTimeout(() => {
@@ -30,10 +56,12 @@ export default function ConfirmPage() {
       const success = Math.random() > 0.3
       const orderId = `ORD${Date.now()}`
       Taro.navigateTo({
-        url: `/${ROUTES.PAYMENT_RESULT}?order_id=${orderId}&status=${success ? 'success' : 'fail'}`,
+        url: `/${ROUTES.PAYMENT_RESULT}?order_id=${orderId}&status=${success ? 'success' : 'fail'}&cert_name=${encodeURIComponent(formData.cert_name)}&price=${formData.price}`,
       })
     }, 1500)
-  }
+  }, [isAgreed, isPaying, isExpired, formData.cert_name, formData.price])
+
+  const timeText = formatTime(remaining)
 
   return (
     <AuthGuard>
@@ -104,20 +132,37 @@ export default function ConfirmPage() {
         </View>
 
         <View className={styles.bottomBar}>
+          <View className={styles.countdownRow}>
+            {isExpired ? (
+              <Text className={styles.countdownExpired}>{STRINGS.CONFIRM_COUNTDOWN_EXPIRED}</Text>
+            ) : (
+              <Text className={styles.countdownText}>
+                {STRINGS.CONFIRM_COUNTDOWN_PREFIX}
+                <Text className={styles.countdownTime}>{timeText}</Text>
+                {STRINGS.CONFIRM_COUNTDOWN_SUFFIX}
+              </Text>
+            )}
+          </View>
+
+          <Button
+            variant='gradient'
+            size='lg'
+            onClick={handlePay}
+            className={`${styles.payBtn} ${isAgreed && !isPaying && !isExpired ? '' : styles.payBtnDisabled}`}
+          >
+            {isExpired
+              ? STRINGS.CONFIRM_COUNTDOWN_EXPIRED
+              : isPaying
+                ? STRINGS.CONFIRM_PAYING
+                : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${formData.price.toFixed(2)}`}
+          </Button>
+
           <AgreementCheckbox agreed={isAgreed} onChange={setIsAgreed}>
             {STRINGS.CONFIRM_AGREEMENT_PREFIX}
             <Text className={styles.link}>{STRINGS.CONFIRM_AGREEMENT_TERMS}</Text>
             {STRINGS.AUTH_AGREEMENT_AND}
             <Text className={styles.link}>{STRINGS.CONFIRM_AGREEMENT_PRIVACY}</Text>
           </AgreementCheckbox>
-          <Button
-            variant='gradient'
-            size='lg'
-            onClick={handlePay}
-            className={`${styles.payBtn} ${isAgreed && !isPaying ? '' : styles.payBtnDisabled}`}
-          >
-            {isPaying ? STRINGS.CONFIRM_PAYING : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${formData.price.toFixed(2)}`}
-          </Button>
         </View>
       </View>
     </AuthGuard>

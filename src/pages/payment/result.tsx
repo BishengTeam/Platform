@@ -1,37 +1,24 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
-import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import styles from './result.module.scss'
 
-function SuccessIcon() {
-  return (
-    <View className={styles.successIcon}>
-      <Text className={styles.checkmark}>✓</Text>
-    </View>
-  )
-}
-
-function FailIcon() {
-  return (
-    <View className={styles.failIcon}>
-      <Text className={styles.cross}>✕</Text>
-    </View>
-  )
-}
-
 export default function ResultPage() {
   const [orderId, setOrderId] = useState('')
   const [status, setStatus] = useState('success')
+  const [certName, setCertName] = useState('')
+  const [price, setPrice] = useState('')
 
   useLoad((options) => {
     setStatus((options.status as string) || 'success')
     setOrderId((options.order_id as string) || '')
+    setCertName(options.cert_name ? decodeURIComponent(options.cert_name as string) : '')
+    setPrice((options.price as string) || '')
   })
 
   const isSuccess = status === 'success'
@@ -48,42 +35,58 @@ export default function ResultPage() {
     Taro.switchTab({ url: `/${ROUTES.INDEX}` })
   }
 
-  const actionButtons = useMemo(() => {
-    if (isSuccess) {
-      return (
-        <Button variant='gradient' size='lg' onClick={handleViewOrder} className={styles.actionBtn}>
-          {STRINGS.RESULT_VIEW_ORDER}
-        </Button>
-      )
-    }
-    return (
-      <>
-        <Button variant='gradient' size='lg' onClick={handleRepay} className={styles.actionBtn}>
-          {STRINGS.RESULT_REPAY}
-        </Button>
-        <Button variant='secondary' size='lg' onClick={handleBackHome} className={styles.actionBtn}>
-          {STRINGS.RESULT_BACK_HOME}
-        </Button>
-      </>
-    )
-  }, [isSuccess])
-
   return (
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title='' shouldShowBack={false} />
 
         <View className={styles.body}>
-          <EmptyState
-            iconNode={isSuccess ? <SuccessIcon /> : <FailIcon />}
-            title={isSuccess ? STRINGS.RESULT_SUCCESS_TITLE : STRINGS.RESULT_FAIL_TITLE}
-            description={isSuccess ? STRINGS.RESULT_SUCCESS_DESC : STRINGS.RESULT_FAIL_DESC}
-          >
-            {orderId ? (
-              <Text className={styles.orderId}>{STRINGS.RESULT_ORDER_ID_PREFIX}{orderId}</Text>
+          <View className={isSuccess ? styles.successIcon : styles.failIcon}>
+            <Text className={styles.iconText}>{isSuccess ? '✓' : '✕'}</Text>
+          </View>
+
+          <Text className={styles.title}>
+            {isSuccess ? STRINGS.RESULT_SUCCESS_TITLE : STRINGS.RESULT_FAIL_TITLE}
+          </Text>
+          <Text className={styles.desc}>
+            {isSuccess ? STRINGS.RESULT_SUCCESS_DESC : STRINGS.RESULT_FAIL_DESC}
+          </Text>
+
+          <View className={styles.orderCard}>
+            <View className={styles.cardRow}>
+              <Text className={styles.cardLabel}>{STRINGS.RESULT_ORDER_ID}</Text>
+              <Text className={styles.cardValueSm}>{orderId || '—'}</Text>
+            </View>
+            {certName ? (
+              <View className={styles.cardRow}>
+                <Text className={styles.cardLabel}>{STRINGS.RESULT_CERT_PROJECT}</Text>
+                <Text className={styles.cardValue}>{certName}</Text>
+              </View>
             ) : null}
-            {actionButtons}
-          </EmptyState>
+            {price ? (
+              <View className={styles.cardRow}>
+                <Text className={styles.cardLabel}>{STRINGS.RESULT_PAID_AMOUNT}</Text>
+                <Text className={styles.cardValuePrice}>¥{parseFloat(price).toFixed(2)}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          <View className={styles.actions}>
+            {isSuccess ? (
+              <Button variant='gradient' size='lg' onClick={handleViewOrder} className={styles.actionBtn}>
+                {STRINGS.RESULT_VIEW_ORDER}
+              </Button>
+            ) : (
+              <>
+                <Button variant='gradient' size='lg' onClick={handleRepay} className={styles.actionBtn}>
+                  {STRINGS.RESULT_REPAY}
+                </Button>
+                <Button variant='secondary' size='lg' onClick={handleBackHome} className={styles.actionBtn} style={{ border: '1px solid #E0E0E0', color: '#666666', background: '#ffffff' }}>
+                  {STRINGS.RESULT_BACK_HOME}
+                </Button>
+              </>
+            )}
+          </View>
         </View>
       </View>
     </AuthGuard>

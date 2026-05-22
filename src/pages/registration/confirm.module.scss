@@ -123,6 +123,27 @@
   color: $color-primary;
 }
 
+.countdownRow {
+  text-align: center;
+}
+
+.countdownText {
+  font-size: $font-sm;
+  color: #666666;
+  line-height: 36px;
+}
+
+.countdownTime {
+  color: $color-primary;
+  font-weight: 700;
+}
+
+.countdownExpired {
+  font-size: $font-sm;
+  color: $color-price;
+  line-height: 36px;
+}
+
 .payBtn {
   width: 100%;
 }

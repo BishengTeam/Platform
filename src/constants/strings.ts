@@ -177,6 +177,9 @@ export const STRINGS = {
   CONFIRM_AGREEMENT_TERMS: '《报名须知》',
   CONFIRM_AGREEMENT_PRIVACY: '《隐私协议》',
   CONFIRM_PAY_BUTTON: '立即支付',
+  CONFIRM_COUNTDOWN_PREFIX: '名额已锁定，请在 ',
+  CONFIRM_COUNTDOWN_SUFFIX: ' 内完成支付',
+  CONFIRM_COUNTDOWN_EXPIRED: '支付超时，请重新报名',
 
   // ---- Payment Result ----
   RESULT_SUCCESS_TITLE: '支付成功',
@@ -255,6 +258,9 @@ export const STRINGS = {
 
   // ---- Payment Result ----
   RESULT_ORDER_ID_PREFIX: '订单编号：',
+  RESULT_ORDER_ID: '订单编号',
+  RESULT_CERT_PROJECT: '认证项目',
+  RESULT_PAID_AMOUNT: '实付金额',
 
   // ---- Registration Form Validation ----
   FORM_VALID_ENTERPRISE_NAME: '请输入企业名称',

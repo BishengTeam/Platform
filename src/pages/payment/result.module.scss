@@ -1,5 +1,4 @@
 @use '../../styles/variables' as *;
-@use '../../styles/animations' as *;
 
 .page {
   min-height: 100vh;
@@ -10,63 +9,103 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: $spacing-4xl $spacing-lg;
+  padding: 100px $spacing-lg 60px;
 }
 
-.iconWrap {
-  margin-bottom: $spacing-xl;
-  animation: fadeInUp 0.5s ease-out both;
-}
-
+// ---- Icons ----
 .successIcon {
   width: 128px;
   height: 128px;
   border-radius: 50%;
-  background: $color-success;
+  background: linear-gradient(135deg, #26C283, #1FA870);
+  box-shadow: 0 8px 32px rgba(38, 194, 131, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 48px;
 }
 
 .failIcon {
   width: 128px;
   height: 128px;
   border-radius: 50%;
-  background: $color-price;
+  background: linear-gradient(135deg, #FF6B6B, #FF5252);
+  box-shadow: 0 8px 32px rgba(255, 82, 82, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 48px;
 }
 
-.checkmark,
-.cross {
-  font-size: 64px;
-  color: $color-white;
+.iconText {
+  font-size: 72px;
+  color: #ffffff;
   font-weight: 700;
+  line-height: 1;
 }
 
+// ---- Title & Description ----
 .title {
-  font-size: $font-xl;
+  font-size: 56px;
   font-weight: 600;
-  color: $color-text;
+  color: #333333;
   margin-bottom: $spacing-sm;
 }
 
 .desc {
-  font-size: $font-sm;
-  color: $color-text-secondary;
-  margin-bottom: $spacing-lg;
+  font-size: 36px;
+  font-weight: 400;
+  color: #666666;
+  margin-bottom: 48px;
   text-align: center;
+  line-height: 1.6;
 }
 
-.orderId {
-  font-size: $font-xs;
-  color: $color-text-tertiary;
-  margin-bottom: $spacing-3xl;
+// ---- Order Detail Card ----
+.orderCard {
+  width: 100%;
+  background: #F8F9FA;
+  border-radius: $radius-sm;
+  padding: $spacing-lg;
+  margin-bottom: 48px;
 }
 
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #EAEAEA;
+  }
+}
+
+.cardLabel {
+  font-size: 26px;
+  color: #999999;
+  flex-shrink: 0;
+}
+
+.cardValueSm {
+  font-size: 26px;
+  color: #999999;
+}
+
+.cardValue {
+  font-size: 26px;
+  color: #333333;
+  text-align: right;
+}
+
+.cardValuePrice {
+  font-size: 26px;
+  color: $color-text;
+  font-weight: 500;
+}
+
+// ---- Action Buttons ----
 .actions {
-  margin-top: $spacing-4xl;
   width: 100%;
   display: flex;
   flex-direction: column;
