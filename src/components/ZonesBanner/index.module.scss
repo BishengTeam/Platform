@@ -3,7 +3,7 @@
 .banner {
   width: 100%;
   height: $banner-height;
-  background: linear-gradient(to right, #1677FF, #4096FF);
+  background: $gradient-blue;
   border-radius: $radius-lg;
   box-shadow: $shadow-sm;
   padding: $spacing-xl;
@@ -27,7 +27,7 @@
 }
 
 .desc {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba($color-white, 0.8);
   font-size: $font-sm;
   margin-bottom: 12px;
   overflow: hidden;

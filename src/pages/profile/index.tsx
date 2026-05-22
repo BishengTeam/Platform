@@ -1,45 +1,82 @@
-import { View } from '@tarojs/components'
+import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
-import { FuncList } from '@/components/FuncList'
+import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
-import { OrderBar } from '@/components/OrderBar'
 import { CustomTabBar } from '@/components/TabBar'
-import { removeAuthToken } from '@/utils/storage'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import { getOrderItems, getProfileFunctions } from '@/services/dataService'
+import { profileGridItems, profileListItems } from '@/constants/mock/profile'
 import styles from './index.module.scss'
 
 export default function ProfilePage() {
-  const handleNavigate = (route: string) => {
+  const handleNavigate = (route?: string) => {
+    if (!route) {
+      Taro.showToast({ title: '功能开发中', icon: 'none' })
+      return
+    }
     Taro.navigateTo({ url: `/${route}` })
-  }
-
-  const handleLogout = () => {
-    removeAuthToken()
-    Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
   }
 
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <View className={styles.header}>
-          <View className={styles.headerLeft}>
+        <PageHeader title={STRINGS.TAB_PROFILE} />
+
+        <View className={styles.main}>
+          <View
+            className={styles.headerBanner}
+            onClick={() => handleNavigate(ROUTES.PROFILE_DETAIL)}
+          >
             <View className={styles.avatar}>
-              <Icon name='user' size={32} color='#1677FF' />
+              <Icon name='user' size={56} color='#1677FF' />
             </View>
-            <View>
-              <View className={styles.name}>{STRINGS.PROFILE_MOCK_NAME}</View>
-              <View className={styles.status}>{STRINGS.PROFILE_MOCK_STATUS}</View>
+            <View className={styles.headerInfo}>
+              <Text className={styles.name}>{STRINGS.PROFILE_MOCK_NAME}</Text>
+              <Text className={styles.status}>{STRINGS.PROFILE_MOCK_STATUS}</Text>
+            </View>
+            <Icon name='chevron-right' size={22} color='rgba(255,255,255,0.7)' className={styles.bannerArrow} />
+          </View>
+
+          <View className={`${styles.card} ${styles.cardOverlap}`}>
+            <View className={styles.gridRow}>
+              {profileGridItems.map((item) => (
+                <View key={item.label} className={styles.gridItem} onClick={() => handleNavigate(item.route)}>
+                  <View className={styles.gridIconWrap}>
+                    <Icon name={item.icon} size={40} color='#1677FF' />
+                  </View>
+                  <Text className={styles.gridLabel}>{item.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View className={`${styles.card} ${styles.cardList}`}>
+            {profileListItems.map((item, index) => (
+              <View key={item.label}>
+                {index > 0 && <View className={styles.divider} />}
+                <View className={styles.listItem} onClick={() => handleNavigate(item.route)}>
+                  <View className={styles.listLeft}>
+                    <Icon name={item.icon} size={28} color='#666666' />
+                    <Text className={styles.listLabel}>{item.label}</Text>
+                  </View>
+                  <Icon name='chevron-right' size={22} color='#CCCCCC' />
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <View className={`${styles.card} ${styles.cardSettings}`}>
+            <View className={styles.listItem} onClick={() => handleNavigate(ROUTES.SETTINGS)}>
+              <View className={styles.listLeft}>
+                <Icon name='settings' size={28} color='#666666' />
+                <Text className={styles.listLabel}>{STRINGS.PROFILE_SETTINGS}</Text>
+              </View>
+              <Icon name='chevron-right' size={22} color='#CCCCCC' />
             </View>
           </View>
         </View>
 
-        <View className={styles.body}>
-          <OrderBar items={getOrderItems()} onNavigate={handleNavigate} />
-          <FuncList functions={getProfileFunctions()} onNavigate={handleNavigate} onLogout={handleLogout} />
-        </View>
         <CustomTabBar activeTabKey='pages/profile/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>
     </AuthGuard>

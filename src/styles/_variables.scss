@@ -110,6 +110,15 @@ $border-thin: 1PX;
 $safe-bottom: env(safe-area-inset-bottom, 0px);
 $safe-top: env(safe-area-inset-top, 0px);
 
+// Additional colors not yet covered above
+$color-blue-light: #E6F7FF;
+$color-bg-chat: #F8F9FB;
+$color-border-light: #f0f0f0;
+$color-border-lighter: #EDEDED;
+$color-text-dark: #1A1A1A;
+$color-auth-gradient-start: #E6F0FF;
+$color-wechat-green: #07C160;
+
 // Animation offsets
 $anim-offset-sm: 10px;
 $anim-offset-md: 16px;

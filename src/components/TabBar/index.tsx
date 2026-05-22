@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Tabbar, TabbarItem } from '@nutui/nutui-react-taro'
 import { Icon } from '@/components/Icon'
 import { TAB_BAR_CONFIG } from '@/constants/routes'

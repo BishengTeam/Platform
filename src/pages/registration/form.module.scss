@@ -108,7 +108,7 @@
 }
 
 .couponCard {
-  background: linear-gradient(135deg, #FFF7E6, #FFF2F0);
+  background: linear-gradient(135deg, $color-orange-tint, $color-red-tint);
   border-radius: $radius-md;
   padding: $spacing-md;
   margin-bottom: $spacing-md;

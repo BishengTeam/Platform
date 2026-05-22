@@ -7,3 +7,14 @@ export interface ZoneIcon {
 }
 
 export type QuickQuestion = string
+
+export interface HomeCard {
+  id: number
+  title: string
+  description: string
+  gradient: string
+  icon: string
+  tag: string
+  tagColor: string
+  tall: boolean
+}

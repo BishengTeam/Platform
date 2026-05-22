@@ -1,10 +1,11 @@
+import { STRINGS } from '@/constants/strings'
 import type { StudyBannerItem, Course, StudyTagFilter } from '@/types'
 
 export const studyBannerItems: StudyBannerItem[] = [
-  { id: 'profile', title: '学习成就未来', description: '海量优质课程，助你成为网络技术专家', gradient: 'gradient-green', icon: 'book-open', buttonText: '查看我的学习', buttonColor: '#ffffff' },
-  { id: 1, title: '网络工程师入门到精通', description: '零基础学习网络基础知识，TCP/IP协议，路由交换技术', gradient: 'gradient-red', icon: 'book-open', buttonText: '立即学习', buttonColor: '#ffffff' },
-  { id: 2, title: 'H3CNE认证全程班', description: '针对华三认证考试的全套课程，包含题库和模拟考试', gradient: 'gradient-blue', icon: 'book-open', buttonText: '立即学习', buttonColor: '#ffffff' },
-  { id: 3, title: '华为HCIA认证培训', description: '华为官方认证课程，讲师均为华为认证HCIE专家', gradient: 'gradient-orange', icon: 'book-open', buttonText: '立即学习', buttonColor: '#ffffff' },
+  { id: 'profile', title: '学习成就未来', description: '海量优质课程，助你成为网络技术专家', gradient: 'gradient-green', icon: 'book-open', buttonText: STRINGS.STUDY_VIEW_MY, buttonColor: '#ffffff' },
+  { id: 1, title: '网络工程师入门到精通', description: '零基础学习网络基础知识，TCP/IP协议，路由交换技术', gradient: 'gradient-red', icon: 'book-open', buttonText: STRINGS.STUDY_ENROLL, buttonColor: '#ffffff' },
+  { id: 2, title: 'H3CNE认证全程班', description: '针对华三认证考试的全套课程，包含题库和模拟考试', gradient: 'gradient-blue', icon: 'book-open', buttonText: STRINGS.STUDY_ENROLL, buttonColor: '#ffffff' },
+  { id: 3, title: '华为HCIA认证培训', description: '华为官方认证课程，讲师均为华为认证HCIE专家', gradient: 'gradient-orange', icon: 'book-open', buttonText: STRINGS.STUDY_ENROLL, buttonColor: '#ffffff' },
 ]
 
 export const courseList: Course[] = [
@@ -17,9 +18,9 @@ export const courseList: Course[] = [
 ]
 
 export const studyTagFilters: StudyTagFilter[] = [
-  { label: '全部课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
-  { label: '基础课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
-  { label: '进阶课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
-  { label: '实战课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
-  { label: '认证课程', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.STUDY_TAG_ALL, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.STUDY_TAG_BASIC, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.STUDY_TAG_ADVANCED, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.STUDY_TAG_PRACTICAL, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.STUDY_TAG_CERTIFICATION, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
 ]

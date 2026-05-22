@@ -24,7 +24,7 @@
     right: -40px;
     width: 160px;
     height: 160px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba($color-white, 0.08);
     border-radius: 50%;
     pointer-events: none;
   }
@@ -36,7 +36,7 @@
     left: 60%;
     width: 100px;
     height: 100px;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba($color-white, 0.06);
     border-radius: 50%;
     pointer-events: none;
   }
@@ -69,7 +69,7 @@
 .headerTitle {
   font-size: $font-xl;
   font-weight: 600;
-  color: #ffffff;
+  color: $color-white;
   text-align: center;
   flex: 1;
 }
@@ -91,7 +91,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: #ffffff;
+  background: $color-white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,12 +108,12 @@
 .headerName {
   font-size: $font-2xl;
   font-weight: 700;
-  color: #ffffff;
+  color: $color-white;
 }
 
 .headerDesc {
   font-size: $font-sm;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba($color-white, 0.85);
 }
 
 
@@ -137,10 +137,10 @@
 }
 
 .welcomeBubble {
-  background: #ffffff;
+  background: $color-white;
   border-radius: 14rpx 40rpx 40rpx 40rpx;
   padding: 28rpx 36rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04), 0 0 0 1rpx #EDEDED;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04), 0 0 0 1rpx $color-border-lighter;
   max-width: 78%;
 }
 

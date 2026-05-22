@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
-import type { HomeCard as HomeCardItem } from '@/constants/mock/home'
+import type { HomeCard as HomeCardItem } from '@/types'
 import styles from './index.module.scss'
 
 interface Props {

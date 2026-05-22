@@ -79,7 +79,7 @@ export default function ConfirmPage() {
               <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={formData.price} />
               {formData.coupon_count > 0 && (
                 <PriceRow
-                  label={`${STRINGS.FORM_PRICE_COUPON_DISCOUNT}（${formData.coupon_count}${STRINGS.FORM_COUPON_COUNT_UNIT}）`}
+                  label={`${STRINGS.FORM_PRICE_COUPON_DISCOUNT} (${formData.coupon_count}${STRINGS.FORM_COUPON_COUNT_UNIT})`}
                   value={-formData.price}
                   className={styles.discountRow}
                 />

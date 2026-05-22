@@ -50,17 +50,17 @@
 }
 
 .userBubbleBg {
-  color: #ffffff;
+  color: $color-white;
   background: $gradient-blue;
   border-radius: 40rpx 14rpx 40rpx 40rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 122, 255, 0.25);
+  box-shadow: 0 4rpx 16rpx rgba($color-primary, 0.25);
 }
 
 .aiBubbleBg {
-  color: #1A1A1A;
-  background: #ffffff;
+  color: $color-text-dark;
+  background: $color-white;
   border-radius: 14rpx 40rpx 40rpx 40rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04), 0 0 0 1rpx #EDEDED;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04), 0 0 0 1rpx $color-border-lighter;
 }
 
 .bubbleText {
@@ -72,7 +72,7 @@
 }
 
 .userBubbleBg .bubbleText {
-  color: #ffffff;
+  color: $color-white;
 }
 
 
@@ -102,7 +102,7 @@
   flex-direction: column;
   gap: 4rpx;
   margin-bottom: $spacing-md;
-  background: #F8F9FB;
+  background: $color-bg-chat;
   border-radius: 16rpx;
   padding: $spacing-sm $spacing-md;
 }
@@ -129,7 +129,7 @@
 
 
 .richCard {
-  background: #ffffff;
+  background: $color-white;
   border-radius: 28rpx;
   padding: $spacing-lg;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
@@ -191,8 +191,8 @@
 
 .cardTag {
   font-size: $font-xs;
-  color: #1677FF;
-  background: #E6F7FF;
+  color: $color-primary;
+  background: $color-blue-light;
   padding: 4rpx 16rpx;
   border-radius: 8rpx;
   flex-shrink: 0;
@@ -201,7 +201,7 @@
 .cardPrice {
   font-size: $font-lg;
   font-weight: 600;
-  color: #FA8C16;
+  color: $color-warning;
   flex-shrink: 0;
 }
 
@@ -219,7 +219,7 @@
 
 .cardActionText {
   font-size: $font-sm;
-  color: #1677FF;
+  color: $color-primary;
   font-weight: 500;
 }
 
@@ -249,7 +249,7 @@
   flex-direction: column;
   gap: 4rpx;
   margin-bottom: $spacing-md;
-  background: #F8F9FB;
+  background: $color-bg-chat;
   border-radius: 16rpx;
   padding: $spacing-sm $spacing-md;
 }
@@ -272,10 +272,10 @@
 
 
 .typingDots {
-  background: #ffffff;
+  background: $color-white;
   border-radius: 14rpx 40rpx 40rpx 40rpx;
   padding: 28rpx 36rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04), 0 0 0 1rpx #EDEDED;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04), 0 0 0 1rpx $color-border-lighter;
   display: flex;
   align-items: center;
   gap: 10rpx;
@@ -284,7 +284,7 @@
 .typingDot {
   width: 14rpx;
   height: 14rpx;
-  background: #1677FF;
+  background: $color-primary;
   border-radius: 50%;
   opacity: 0.4;
   animation: bounce 1.2s infinite ease-in-out;

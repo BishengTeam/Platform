@@ -15,7 +15,7 @@
   left: 0;
   width: 100%;
   min-height: 60vh;
-  background: linear-gradient(to bottom, #E6F0FF, $color-white);
+  background: linear-gradient(to bottom, $color-auth-gradient-start, $color-white);
   pointer-events: none;
   z-index: 0;
 }
@@ -35,9 +35,9 @@
   width: $logo-size;
   max-width: 100%;
   height: $logo-size;
-  background: linear-gradient(to top right, #1677FF, #4096FF);
+  background: $color-primary-gradient;
   border-radius: $spacing-xl;
-  box-shadow: 0 4px 16px rgba(22, 119, 255, 0.3);
+  box-shadow: 0 4px 16px rgba($color-primary, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,7 +76,7 @@
   align-items: center;
   justify-content: center;
   gap: $spacing-xs;
-  box-shadow: 0 4px 12px rgba(7, 193, 96, 0.2);
+  box-shadow: 0 4px 12px rgba($color-success, 0.2);
 
   &:active {
     transform: scale(0.95);

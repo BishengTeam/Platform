@@ -1,10 +1,11 @@
+import { STRINGS } from '@/constants/strings'
 import type { EmploymentBannerItem, Job, EmploymentTagFilter } from '@/types'
 
 export const employmentBannerItems: EmploymentBannerItem[] = [
-  { id: 'profile', title: '好工作 好未来', description: '海量优质岗位，专业就业指导，助你找到心仪工作', gradient: 'gradient-teal', icon: 'briefcase', buttonText: '我的求职', buttonColor: '#ffffff' },
-  { id: 1, title: '网络工程师', description: '华为技术有限公司 · 深圳 · 1-3年经验', gradient: 'gradient-red', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#ffffff' },
-  { id: 2, title: '网络安全工程师', description: '阿里巴巴集团 · 杭州 · 3-5年经验', gradient: 'gradient-orange', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#ffffff' },
-  { id: 3, title: '网络安全顾问', description: '奇安信科技集团 · 北京 · 5-10年经验', gradient: 'gradient-purple', icon: 'briefcase', buttonText: '立即投递', buttonColor: '#ffffff' },
+  { id: 'profile', title: STRINGS.EMPLOYMENT_BANNER_TITLE, description: STRINGS.EMPLOYMENT_BANNER_DESC, gradient: 'gradient-teal', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_MY_JOBS, buttonColor: '#ffffff' },
+  { id: 1, title: '网络工程师', description: '华为技术有限公司 · 深圳 · 1-3年经验', gradient: 'gradient-red', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_APPLY, buttonColor: '#ffffff' },
+  { id: 2, title: '网络安全工程师', description: '阿里巴巴集团 · 杭州 · 3-5年经验', gradient: 'gradient-orange', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_APPLY, buttonColor: '#ffffff' },
+  { id: 3, title: '网络安全顾问', description: '奇安信科技集团 · 北京 · 5-10年经验', gradient: 'gradient-purple', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_APPLY, buttonColor: '#ffffff' },
 ]
 
 export const jobList: Job[] = [
@@ -17,8 +18,8 @@ export const jobList: Job[] = [
 ]
 
 export const employmentTagFilters: EmploymentTagFilter[] = [
-  { label: '推荐职位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
-  { label: '实习岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
-  { label: '全职岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
-  { label: '远程岗位', activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { label: STRINGS.EMPLOYMENT_TAG_RECOMMEND, activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { label: STRINGS.EMPLOYMENT_TAG_INTERN, activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { label: STRINGS.EMPLOYMENT_TAG_FULLTIME, activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { label: STRINGS.EMPLOYMENT_TAG_REMOTE, activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
 ]

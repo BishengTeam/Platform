@@ -85,27 +85,27 @@
 }
 
 .badgePending {
-  background: #FFF7E6;
+  background: $color-orange-tint;
 }
 
 .badgePendingText {
-  color: #FA8C16;
+  color: $color-warning;
 }
 
 .badgeEnrolled {
-  background: #F0F5FF;
+  background: $color-blue-tint;
 }
 
 .badgeEnrolledText {
-  color: #1677FF;
+  color: $color-primary;
 }
 
 .badgeCancelled {
-  background: #F5F5F5;
+  background: $color-bg-secondary;
 }
 
 .badgeCancelledText {
-  color: #999999;
+  color: $color-text-tertiary;
 }
 
 .badgeText {

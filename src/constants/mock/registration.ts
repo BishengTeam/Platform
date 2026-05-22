@@ -1,3 +1,4 @@
+import { STRINGS } from '@/constants/strings'
 import type { Certification, RegistrationFormData, TagFilterItem } from '@/types/registration'
 
 export const certifications: Certification[] = [
@@ -76,10 +77,10 @@ export const certifications: Certification[] = [
 ]
 
 export const registrationTagFilters: TagFilterItem[] = [
-  { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
-  { label: 'H3CNE', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
-  { label: 'H3CSE', activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
-  { label: 'H3CIE', activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+  { label: STRINGS.REGISTRATION_TAG_ALL, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { label: STRINGS.REGISTRATION_TAG_H3CNE, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { label: STRINGS.REGISTRATION_TAG_H3CSE, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.REGISTRATION_TAG_H3CIE, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
 ]
 
 export const mockFormData: RegistrationFormData = {

@@ -41,7 +41,7 @@
 }
 
 .desc {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba($color-white, 0.8);
   font-size: $font-base;
   line-height: 1.5;
   margin-bottom: $spacing-md;

@@ -16,6 +16,8 @@ export const ROUTES = {
   REGISTRATION_CONFIRM: 'pages/registration/confirm',
   PAYMENT_RESULT: 'pages/payment/result',
   AI_CONSULT: 'pages/ai-consult/index',
+  PROFILE_DETAIL: 'pages/profile/detail/index',
+  SETTINGS: 'pages/settings/index',
 } as const
 
 export const TAB_BAR_CONFIG = [

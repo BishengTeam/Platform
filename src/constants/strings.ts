@@ -48,9 +48,19 @@ export const STRINGS = {
   SERVICE_EMAIL_VALUE: 'service@example.com',
 
   // ---- Profile Page ----
+  PROFILE_MOCK_NAME: '小王同学',
+  PROFILE_MOCK_STATUS: 'H3CNE 备考中',
   PROFILE_ORDERS: '我的订单',
   PROFILE_ALL_ORDERS: '全部订单',
   PROFILE_LOGOUT: '退出登录',
+  PROFILE_GRID_CHECKIN: '打卡挑战',
+  PROFILE_GRID_GROUP_BUY: '拼团资料',
+  PROFILE_GRID_MY_COURSES: '我的课程',
+  PROFILE_GRID_MY_FAVORITES: '我的收藏',
+  PROFILE_LIST_ORDERS: '我的订单',
+  PROFILE_LIST_SERVICE: '客服中心',
+  PROFILE_LIST_SHARE: '分享给好友',
+  PROFILE_SETTINGS: '设置',
 
   // ---- Orders Page ----
   ORDERS_TITLE: '我的订单',
@@ -246,10 +256,6 @@ export const STRINGS = {
   // ---- Payment Result ----
   RESULT_ORDER_ID_PREFIX: '订单编号：',
 
-  // ---- Profile Page ----
-  PROFILE_MOCK_NAME: '小王同学',
-  PROFILE_MOCK_STATUS: 'H3CNE 备考中',
-
   // ---- Registration Form Validation ----
   FORM_VALID_ENTERPRISE_NAME: '请输入企业名称',
   FORM_ERROR_CERT_NOT_FOUND: '认证项目不存在',
@@ -285,4 +291,42 @@ export const STRINGS = {
   MOCK_QUICK_QUESTION_2: '有哪些学习课程推荐？',
   MOCK_QUICK_QUESTION_3: '最近有什么竞赛？',
   MOCK_QUICK_QUESTION_4: '帮我推荐就业方向',
+
+  // ---- Exam Tag Labels ----
+  EXAM_TAG_H3C: '新华三',
+  EXAM_TAG_HUAWEI: '华为',
+  EXAM_TAG_SANGFOR: '深信服',
+  EXAM_TAG_RUANKAO: '软考',
+
+  // ---- Competition ----
+  COMPETITION_STATUS_RESERVING: '预约中',
+  COMPETITION_BANNER_VIEW_MY: '查看我的竞赛',
+
+  // ---- Activity Status ----
+  ACTIVITY_STATUS_HOT: '火热进行中',
+  ACTIVITY_STATUS_LONG_TERM: '长期有效',
+  ACTIVITY_MY_PRIZES: '我的奖品',
+
+  // ---- Study Tag Labels ----
+  STUDY_TAG_BASIC: '基础课程',
+  STUDY_TAG_ADVANCED: '进阶课程',
+  STUDY_TAG_PRACTICAL: '实战课程',
+  STUDY_TAG_CERTIFICATION: '认证课程',
+  STUDY_VIEW_MY: '查看我的学习',
+
+  // ---- Employment ----
+  EMPLOYMENT_BANNER_TITLE: '好工作 好未来',
+  EMPLOYMENT_BANNER_DESC: '海量优质岗位，专业就业指导，助你找到心仪工作',
+  EMPLOYMENT_MY_JOBS: '我的求职',
+  EMPLOYMENT_TAG_INTERN: '实习岗位',
+  EMPLOYMENT_TAG_FULLTIME: '全职岗位',
+  EMPLOYMENT_TAG_REMOTE: '远程岗位',
+
+  // ---- Profile Mock ----
+  PROFILE_CERT_COUNT: '2本',
+
+  // ---- Registration Tag Labels ----
+  REGISTRATION_TAG_H3CNE: 'H3CNE',
+  REGISTRATION_TAG_H3CSE: 'H3CSE',
+  REGISTRATION_TAG_H3CIE: 'H3CIE',
 } as const

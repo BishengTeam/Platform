@@ -9,3 +9,9 @@ export interface ProfileFunction {
   label: string
   value: string
 }
+
+export interface ProfileMenuItem {
+  icon: string
+  label: string
+  route?: string
+}

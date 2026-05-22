@@ -1,5 +1,5 @@
 import { STRINGS } from '@/constants/strings'
-import type { ZoneIcon, Message } from '@/types'
+import type { ZoneIcon, Message, HomeCard } from '@/types'
 
 export const zoneIcons: ZoneIcon[] = [
   { id: 'exam', name: STRINGS.ZONE_NAMES[0], icon: 'book-open', color: '#1677FF', bg: '#E6F7FF' },
@@ -19,17 +19,6 @@ export const quickQuestions: string[] = [
 export const initialMessages: Message[] = [
   { id: 1, type: 'ai', text: STRINGS.MOCK_INDEX_WELCOME_MESSAGE },
 ]
-
-export interface HomeCard {
-  id: number
-  title: string
-  description: string
-  gradient: string
-  icon: string
-  tag: string
-  tagColor: string
-  tall: boolean
-}
 
 export const homeCourses: HomeCard[] = [
   {

@@ -8,61 +8,139 @@
   background: $color-bg-secondary;
 }
 
-.header {
-  height: $header-height-profile;
-  padding-top: $nav-title-height;
-  padding-left: $spacing-xl;
-  padding-right: $spacing-xl;
-  background: linear-gradient(to bottom right, #1677FF, #4096FF);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: $shadow-xs;
-  position: relative;
-  z-index: 10;
+.main {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.headerLeft {
+// ---- Header Banner ----
+.headerBanner {
+  padding: $spacing-4xl $spacing-lg $spacing-4xl;
+  background: $gradient-blue;
   display: flex;
-  align-items: center;
-  gap: $spacing-sm;
+  align-items: flex-start;
+  gap: $spacing-md;
 }
 
 .avatar {
   width: $avatar-xl;
   height: $avatar-xl;
-  background: $color-white;
+  flex-shrink: 0;
+  background: rgba($color-white, 0.25);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: $shadow-lg-alt;
+  border: 2px solid rgba($color-white, 0.3);
+}
+
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: $avatar-xl;
 }
 
 .name {
-  font-size: $font-2xl;
-  font-weight: bold;
+  font-size: $font-3xl;
+  font-weight: 700;
   color: $color-white;
+  line-height: 1;
+  padding-top: 10px;
 }
 
 .status {
-  font-size: $font-sm;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: $spacing-2xs;
+  font-size: $font-base;
+  color: rgba($color-white, 0.75);
+  padding-bottom: 8px;
 }
 
-.body {
+.bannerArrow {
+  margin-left: auto;
+  align-self: flex-end;
+  margin-bottom: 48px;
+  flex-shrink: 0;
+}
+
+// ---- Card ----
+.card {
+  margin: $spacing-md $spacing-md 0;
+  background: $color-white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.cardOverlap {
+  margin-top: -24px;
+  position: relative;
+  z-index: 10;
+}
+
+// ---- Grid Menu ----
+.gridRow {
+  display: flex;
+  flex-direction: row;
+}
+
+.gridItem {
   flex: 1;
-  width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
-  margin-top: -$spacing-sm;
-  position: relative;
-  z-index: 20;
+  align-items: center;
+  gap: $spacing-md;
 }
 
+.gridIconWrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: $color-white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.gridLabel {
+  font-size: $font-base;
+  color: $color-text;
+  font-weight: 500;
+}
 
+// ---- List Group ----
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px $spacing-md;
+}
+
+.listLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.listLabel {
+  font-size: $font-lg;
+  color: $color-text;
+}
+
+.divider {
+  height: 1px;
+  background: #f5f5f5;
+  margin: 0 $spacing-md;
+}
+
+// ---- Bottom Padding for List Card ----
+.cardList {
+  padding-bottom: 24px;
+}
+
+// ---- Settings Card ----
+.cardSettings {
+  padding-top: 8px;
+  padding-bottom: 0;
+}
