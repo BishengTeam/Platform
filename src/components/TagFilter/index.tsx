@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { ScrollView, View, Text } from '@tarojs/components'
 import { Tag } from '@nutui/nutui-react-taro'
 import type { TagFilterItem } from '@/types/registration'
@@ -24,6 +25,11 @@ function toTagItem(item: TagFilterItem | string): TagFilterItem {
 }
 
 export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFilterProps) {
+  const handleClick = useCallback((e: { currentTarget: { dataset: Record<string, string> } }) => {
+    const label = e.currentTarget.dataset.label
+    if (label) onChange(label)
+  }, [onChange])
+
   if (variant === 'underline') {
     return (
       <ScrollView scrollX className={styles.scroll} enableFlex>
@@ -35,7 +41,8 @@ export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFi
               <View
                 key={tag.label}
                 className={`${styles.underlineTab} ${isActive ? styles.underlineTabActive : ''}`}
-                onClick={() => onChange(tag.label)}
+                data-label={tag.label}
+                onClick={handleClick}
               >
                 <Text className={styles.underlineTabText}>
                   {tag.label}
@@ -62,7 +69,8 @@ export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFi
               background={isActive ? tag.activeBg : tag.inactiveBg}
               color={isActive ? tag.activeText : tag.activeColor}
               style={isActive ? undefined : tag.inactiveStyle}
-              onClick={() => onChange(tag.label)}
+              data-label={tag.label}
+              onClick={handleClick}
             >
               {tag.label}
             </Tag>

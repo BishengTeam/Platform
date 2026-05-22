@@ -60,6 +60,7 @@ export const STRINGS = {
   PROFILE_LIST_ORDERS: '我的订单',
   PROFILE_LIST_SERVICE: '客服中心',
   PROFILE_LIST_SHARE: '分享给好友',
+  PROFILE_FEATURE_IN_DEVELOPMENT: '功能开发中',
   PROFILE_SETTINGS: '设置',
 
   // ---- Orders Page ----

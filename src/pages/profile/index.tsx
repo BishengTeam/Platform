@@ -1,8 +1,11 @@
+import { useCallback, useMemo } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
+import { KingKongZone } from '@/components/KingKongZone'
+import type { KingKongItem } from '@/components/KingKongZone'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
@@ -12,11 +15,23 @@ import styles from './index.module.scss'
 export default function ProfilePage() {
   const handleNavigate = (route?: string) => {
     if (!route) {
-      Taro.showToast({ title: '功能开发中', icon: 'none' })
+      Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })
       return
     }
     Taro.navigateTo({ url: `/${route}` })
   }
+
+  const handleGridItemClick = useCallback((item: KingKongItem) => {
+    handleNavigate(item.url || undefined)
+  }, [])
+
+  const gridItems: KingKongItem[] = useMemo(() => profileGridItems.map((item) => ({
+    name: item.label,
+    bg: 'transparent',
+    iconColor: '#1677FF',
+    icon: item.icon,
+    url: item.route || '',
+  })), [])
 
   return (
     <AuthGuard>
@@ -39,16 +54,7 @@ export default function ProfilePage() {
           </View>
 
           <View className={`${styles.card} ${styles.cardOverlap}`}>
-            <View className={styles.gridRow}>
-              {profileGridItems.map((item) => (
-                <View key={item.label} className={styles.gridItem} onClick={() => handleNavigate(item.route)}>
-                  <View className={styles.gridIconWrap}>
-                    <Icon name={item.icon} size={40} color='#1677FF' />
-                  </View>
-                  <Text className={styles.gridLabel}>{item.label}</Text>
-                </View>
-              ))}
-            </View>
+            <KingKongZone items={gridItems} onItemClick={handleGridItemClick} columns={4} className={styles.profileGrid} />
           </View>
 
           <View className={`${styles.card} ${styles.cardList}`}>

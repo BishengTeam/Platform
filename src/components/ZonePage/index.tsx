@@ -16,6 +16,7 @@ interface ZonePageProps {
   onTagChange: (tag: string) => void
   children: ReactNode
   header?: ReactNode
+  footer?: ReactNode
   shouldShowBack?: boolean
   onBack?: () => void
 }
@@ -28,6 +29,7 @@ export function ZonePage({
   onTagChange,
   children,
   header,
+  footer,
   shouldShowBack = true,
   onBack,
 }: ZonePageProps) {
@@ -46,6 +48,7 @@ export function ZonePage({
               {children}
             </View>
           </View>
+          {footer}
         </View>
       </View>
     </AuthGuard>

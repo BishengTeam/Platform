@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { View } from '@tarojs/components'
 import { ZONE_ROUTES, ZONE_ROUTE_KEYS } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
@@ -14,17 +15,19 @@ function getZoneRoute(zoneName: string): string | undefined {
 }
 
 export function ZonesContent({ onZoneTap }: Props) {
-  const handleNavigate = (zone: string) => {
+  const handleNavigate = useCallback((e: { currentTarget: { dataset: Record<string, string> } }) => {
+    const zone = e.currentTarget.dataset.zone
+    if (!zone) return
     const url = getZoneRoute(zone)
     if (url) onZoneTap?.(url)
-  }
+  }, [onZoneTap])
 
   return (
     <View className={styles.gridCard}>
         <View className={styles.gridTitle}>{STRINGS.ZONES_GRID_TITLE}</View>
         <View className={styles.grid}>
           {STRINGS.ZONE_NAMES.map((zone) => (
-            <View key={zone} className={styles.gridItem} onClick={() => handleNavigate(zone)}>
+            <View key={zone} className={styles.gridItem} data-zone={zone} onClick={handleNavigate}>
               <View className={styles.gridItemText}>{zone}</View>
               <View className={styles.gridItemSub}>{STRINGS.ZONES_GRID_DETAIL}</View>
             </View>

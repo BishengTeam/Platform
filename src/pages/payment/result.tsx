@@ -81,7 +81,7 @@ export default function ResultPage() {
                 <Button variant='gradient' size='lg' onClick={handleRepay} className={styles.actionBtn}>
                   {STRINGS.RESULT_REPAY}
                 </Button>
-                <Button variant='secondary' size='lg' onClick={handleBackHome} className={styles.actionBtn} style={{ border: '1px solid #E0E0E0', color: '#666666', background: '#ffffff' }}>
+                <Button variant='secondary' size='lg' onClick={handleBackHome} className={styles.actionBtnSecondary}>
                   {STRINGS.RESULT_BACK_HOME}
                 </Button>
               </>

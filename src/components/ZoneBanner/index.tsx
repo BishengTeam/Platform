@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { View, Swiper, SwiperItem } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
@@ -29,6 +30,13 @@ interface ZoneBannerProps {
 }
 
 export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
+  const handleButtonClick = useCallback((e: { stopPropagation: () => void; currentTarget: { dataset: Record<string, string> } }) => {
+    if (!onButtonClick) return
+    e.stopPropagation()
+    const index = Number(e.currentTarget.dataset.index)
+    if (items[index]) onButtonClick(items[index])
+  }, [items, onButtonClick])
+
   return (
     <View className={styles.container}>
       <Swiper
@@ -37,7 +45,7 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
         autoplay
         interval={3000}
       >
-        {items.map((item) => (
+        {items.map((item, i) => (
           <SwiperItem key={item.id}>
             <View
               className={styles.slide}
@@ -46,15 +54,16 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
               <View className={styles.content}>
                 <View className={styles.title}>{item.title}</View>
                 <View className={styles.desc}>{item.description}</View>
-                <Button
-                  size='sm'
-                  className={styles.bannerBtn}
-                  style={{ color: item.buttonColor }}
-                  variant='secondary'
-                  onClick={onButtonClick ? () => onButtonClick(item) : undefined}
-                >
-                  {item.buttonText}
-                </Button>
+                <View data-index={i} onClick={handleButtonClick}>
+                  <Button
+                    size='sm'
+                    className={styles.bannerBtn}
+                    style={{ color: item.buttonColor }}
+                    variant='secondary'
+                  >
+                    {item.buttonText}
+                  </Button>
+                </View>
               </View>
               {item.icon && (
                 <View className={styles.iconWrap}>

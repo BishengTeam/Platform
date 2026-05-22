@@ -3,7 +3,7 @@ import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import styles from './index.module.scss'
 
-export function ZonesBanner() {
+export function ZonesIntroBanner() {
   return (
     <View className={styles.banner}>
       <View className={styles.content}>

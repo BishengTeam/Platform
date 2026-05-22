@@ -6,7 +6,7 @@
     "preserveConstEnums": true,
     "moduleResolution": "bundler",
     "experimentalDecorators": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "lib",
     "noUnusedLocals": true,
