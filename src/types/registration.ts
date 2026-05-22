@@ -4,6 +4,7 @@ export interface TagFilterItem {
   activeBg: string
   activeText: string
   inactiveBg: string
+  inactiveStyle?: Record<string, string>
 }
 
 export interface Certification {
@@ -12,6 +13,7 @@ export interface Certification {
   description: string
   price: number
   originalPrice: number
+  vendor: string
   category: string
   categoryName: string
   examDuration: string

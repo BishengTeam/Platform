@@ -61,6 +61,7 @@ export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFi
               className={styles.tag}
               background={isActive ? tag.activeBg : tag.inactiveBg}
               color={isActive ? tag.activeText : tag.activeColor}
+              style={isActive ? undefined : tag.inactiveStyle}
               onClick={() => onChange(tag.label)}
             >
               {tag.label}

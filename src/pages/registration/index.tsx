@@ -9,6 +9,13 @@ import { STRINGS } from '@/constants/strings'
 import { getCertifications, getRegistrationTagFilters } from '@/services/dataService'
 import styles from './index.module.scss'
 
+const VENDOR_MAP: Record<string, string> = {
+  [STRINGS.REGISTRATION_TAG_H3C]: 'h3c',
+  [STRINGS.REGISTRATION_TAG_SANGFOR]: 'sangfor',
+  [STRINGS.REGISTRATION_TAG_NISP]: 'nisp',
+  [STRINGS.REGISTRATION_TAG_RS]: 'rs',
+}
+
 export default function RegistrationIndexPage() {
   const [activeTag, setActiveTag] = useState<string>(STRINGS.REGISTRATION_TAG_ALL)
   const [keyword, setKeyword] = useState('')
@@ -17,9 +24,13 @@ export default function RegistrationIndexPage() {
   const tagFilters = getRegistrationTagFilters()
 
   const filtered = useMemo(() => {
-    let list = activeTag === STRINGS.REGISTRATION_TAG_ALL
-      ? certifications
-      : certifications.filter(c => c.categoryName === activeTag)
+    let list = certifications
+    if (activeTag !== STRINGS.REGISTRATION_TAG_ALL) {
+      const vendor = VENDOR_MAP[activeTag]
+      if (vendor) {
+        list = certifications.filter(c => c.vendor === vendor)
+      }
+    }
     if (keyword.trim()) {
       const keywordLower = keyword.trim().toLowerCase()
       list = list.filter(c =>

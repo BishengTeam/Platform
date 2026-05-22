@@ -174,5 +174,7 @@
 }
 
 .btnWrap {
+  display: flex;
+  justify-content: center;
   padding: $spacing-xl $spacing-lg;
 }
