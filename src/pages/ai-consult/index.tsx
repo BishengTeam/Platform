@@ -4,8 +4,9 @@ import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
 import { ChatArea } from '@/components/ChatArea'
 import { ChatInput } from '@/components/ChatInput'
+import { FloatingService } from '@/components/FloatingService'
 import { STRINGS } from '@/constants/strings'
-import { ZONE_ROUTES } from '@/constants/routes'
+import { ROUTES, ZONE_ROUTES } from '@/constants/routes'
 import {
   KEYWORD_TEACHER, KEYWORD_EXAM, KEYWORD_EMPLOYMENT,
   KEYWORD_COMPETITION, KEYWORD_ACTIVITY, KEYWORD_COURSE,
@@ -98,6 +99,10 @@ export default function AiConsultPage() {
     if (route) Taro.navigateTo({ url: route })
   }, [])
 
+  const handleGoService = useCallback(() => {
+    Taro.navigateTo({ url: `/${ROUTES.SERVICE}` })
+  }, [])
+
   return (
     <View className={styles.page}>
       <View className={styles.header}>
@@ -125,6 +130,8 @@ export default function AiConsultPage() {
           onQuickTap={handleQuickTap}
         />
       </View>
+
+      <FloatingService onPress={handleGoService} />
     </View>
   )
 }

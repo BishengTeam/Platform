@@ -53,6 +53,10 @@ export default defineAppConfig({
       pages: ['result'],
     },
     {
+      root: 'pages/service',
+      pages: ['index'],
+    },
+    {
       root: 'pages/ai-consult',
       pages: ['index'],
     },
