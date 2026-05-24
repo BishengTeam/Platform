@@ -7,3 +7,7 @@
   height: 100dvh;
   background: $color-bg-secondary;
 }
+
+.bodyWithTabbar {
+  padding-bottom: calc(#{$tab-bar-height} + #{$safe-bottom}) !important;
+}

@@ -16,14 +16,18 @@ interface KingKongZoneProps {
   onItemClick?: (item: KingKongItem) => void
   className?: string
   columns?: number
+  /** 'card' = 首页 2x2 宫格带背景色, 'tab' = 个人中心 1x4 横向平铺 */
+  variant?: 'card' | 'tab'
 }
 
-export function KingKongZone({ items, onItemClick, className, columns = 2 }: KingKongZoneProps) {
+export function KingKongZone({ items, onItemClick, className, columns = 2, variant = 'card' }: KingKongZoneProps) {
   const handleItemClick = useCallback((e: { currentTarget: { dataset: Record<string, string> } }) => {
     if (!onItemClick) return
     const index = Number(e.currentTarget.dataset.index)
     if (items[index]) onItemClick(items[index])
   }, [items, onItemClick])
+
+  const itemClass = variant === 'tab' ? styles.itemTab : styles.itemCard
 
   return (
     <View className={`${styles.section} ${className || ''}`}>
@@ -31,15 +35,15 @@ export function KingKongZone({ items, onItemClick, className, columns = 2 }: Kin
         {items.map((item, i) => (
           <View
             key={item.name}
-            className={styles.item}
+            className={itemClass}
             style={{ background: item.bg }}
             data-index={i}
             onClick={handleItemClick}
           >
-            <Text className={styles.label}>{item.name}</Text>
             <View className={styles.icon}>
               <Icon name={item.icon} size={40} color={item.iconColor} />
             </View>
+            <Text className={styles.label}>{item.name}</Text>
           </View>
         ))}
       </View>

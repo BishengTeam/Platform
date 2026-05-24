@@ -54,7 +54,7 @@ export default function ProfilePage() {
           </View>
 
           <View className={`${styles.card} ${styles.cardOverlap}`}>
-            <KingKongZone items={gridItems} onItemClick={handleGridItemClick} columns={4} className={styles.profileGrid} />
+            <KingKongZone items={gridItems} onItemClick={handleGridItemClick} columns={4} variant='tab' className={styles.profileGrid} />
           </View>
 
           <View className={`${styles.card} ${styles.cardList}`}>

@@ -34,6 +34,7 @@ export default function ActivityZonePage() {
         activeTag={activityTag}
         onTagChange={setActivityTag}
         shouldShowBack={false}
+        className={styles.bodyWithTabbar}
         footer={
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.EMPLOYMENT_TITLE}</Text>

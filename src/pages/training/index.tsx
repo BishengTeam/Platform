@@ -31,6 +31,7 @@ export default function TrainingPage() {
         activeTag={activeTag}
         onTagChange={setActiveTag}
         shouldShowBack={false}
+        className={styles.bodyWithTabbar}
       >
         {courses.map((course) => (
           <ZoneCard

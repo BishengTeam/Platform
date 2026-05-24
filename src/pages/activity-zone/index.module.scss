@@ -8,6 +8,10 @@
   background: $color-bg-secondary;
 }
 
+.bodyWithTabbar {
+  padding-bottom: calc(#{$tab-bar-height} + #{$safe-bottom}) !important;
+}
+
 .section {
   padding: 20px $spacing-md $spacing-md;
 }

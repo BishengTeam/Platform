@@ -3,7 +3,6 @@ import { View, Text } from '@tarojs/components'
 import { useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { TagFilter } from '@/components/TagFilter'
 import { STRINGS } from '@/constants/strings'
 import { getOrders } from '@/services/dataService'
 import styles from './index.module.scss'
@@ -45,12 +44,23 @@ export default function OrdersPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.ORDERS_TITLE} shouldShowBack />
         <View className={styles.body}>
-          <TagFilter
-            tags={[...TAG_KEYS]}
-            activeTag={activeTag}
-            onChange={setActiveTag}
-            variant='underline'
-          />
+          <View className={styles.tabs}>
+            {TAG_KEYS.map((tag) => {
+              const isActive = activeTag === tag
+              return (
+                <View
+                  key={tag}
+                  className={`${styles.tab} ${isActive ? styles.tabActive : ''}`}
+                  onClick={() => setActiveTag(tag)}
+                >
+                  <View className={styles.tabInner}>
+                    <Text className={styles.tabText}>{tag}</Text>
+                    {isActive && <View className={styles.tabIndicator} />}
+                  </View>
+                </View>
+              )
+            })}
+          </View>
 
           <View className={styles.list}>
             {filteredOrders.map(order => {

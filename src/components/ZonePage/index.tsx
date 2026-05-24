@@ -19,6 +19,7 @@ interface ZonePageProps {
   footer?: ReactNode
   shouldShowBack?: boolean
   onBack?: () => void
+  className?: string
 }
 
 export function ZonePage({
@@ -32,12 +33,13 @@ export function ZonePage({
   footer,
   shouldShowBack = true,
   onBack,
+  className,
 }: ZonePageProps) {
   return (
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={title} shouldShowBack={shouldShowBack} onBack={onBack} />
-        <View className={styles.body}>
+        <View className={`${styles.body} ${className || ''}`}>
           <View className={styles.bannerWrap}>
             <ZoneBanner items={bannerItems} />
           </View>
