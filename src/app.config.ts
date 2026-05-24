@@ -17,10 +17,6 @@ export default defineAppConfig({
       pages: ['index'],
     },
     {
-      root: 'pages/exam-zone',
-      pages: ['index'],
-    },
-    {
       root: 'pages/competition-zone',
       pages: ['index'],
     },

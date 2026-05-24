@@ -29,7 +29,7 @@ Page → Component (UI) / Hook (logic) / Service (API)
 
 | 类型 | 规范 | 示例 |
 |------|------|------|
-| 目录 | kebab-case | `activity-zone/`、`exam-zone/` |
+| 目录 | kebab-case | `activity-zone/`、`competition-zone/` |
 | 组件文件 | index.tsx / index.module.scss | `components/AuthGuard/index.tsx` |
 | Hook 文件 | camelCase，use 前缀 | `useAuth.ts`、`useZonePage.ts` |
 | 工具/常量/类型文件 | camelCase | `storage.ts`、`icons.ts` |
