@@ -15,6 +15,7 @@ export const ROUTES = {
   REGISTRATION_FORM: 'pages/registration/form',
   REGISTRATION_CONFIRM: 'pages/registration/confirm',
   PAYMENT_RESULT: 'pages/payment/result',
+  ORDER_DETAIL: 'pages/order-detail/index',
   AI_CONSULT: 'pages/ai-consult/index',
   PROFILE_DETAIL: 'pages/profile/detail/index',
   SETTINGS: 'pages/settings/index',

@@ -6,3 +6,14 @@ export interface Order {
   date: string
   amount: string
 }
+
+export interface OrderDetail {
+  orderId: string
+  courseCover: string
+  courseTitle: string
+  courseSubtitle: string
+  amountPaid: string
+  paymentMethod: string
+  paymentTime: string
+  orderTime: string
+}

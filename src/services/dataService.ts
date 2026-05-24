@@ -27,6 +27,7 @@ import {
   orderItems,
   profileFunctions,
   orders,
+  orderDetails,
   certificates,
   notifications,
   certifications,
@@ -69,6 +70,11 @@ export function getOrderItems() { return orderItems }
 export function getProfileFunctions() { return profileFunctions }
 
 export function getOrders() { return orders }
+
+export function getOrderDetail(id: string) {
+  if (orderDetails[id]) return orderDetails[id]
+  return Object.values(orderDetails).find(d => d.orderId === id) || null
+}
 
 export function getCertificates() { return certificates }
 

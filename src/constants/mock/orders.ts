@@ -1,4 +1,4 @@
-import type { Order } from '@/types'
+import type { Order, OrderDetail } from '@/types'
 
 export const orders: Order[] = [
   {
@@ -50,3 +50,36 @@ export const orders: Order[] = [
     amount: '',
   },
 ]
+
+export const orderDetails: Record<string, OrderDetail> = {
+  '1': {
+    orderId: '85204525620741',
+    courseCover: '',
+    courseTitle: 'H3CNE 认证考试报名',
+    courseSubtitle: '2024年6月考试批次 · 北京考场',
+    amountPaid: '1200.00',
+    paymentMethod: '微信支付',
+    paymentTime: '2026-03-05 10:10:58',
+    orderTime: '2026-03-05 15:10:26',
+  },
+  '2': {
+    orderId: '85204525620742',
+    courseCover: '',
+    courseTitle: 'H3CSE 高级认证考试',
+    courseSubtitle: '2024年9月考试批次 · 上海考场',
+    amountPaid: '1500.00',
+    paymentMethod: '微信支付',
+    paymentTime: '2026-03-04 14:30:22',
+    orderTime: '2026-03-04 18:45:10',
+  },
+  '3': {
+    orderId: '85204525620743',
+    courseCover: '',
+    courseTitle: 'H3CNE 模拟考试',
+    courseSubtitle: '在线模拟考试 · 不限地点',
+    amountPaid: '0.00',
+    paymentMethod: '微信支付',
+    paymentTime: '2026-02-20 09:15:33',
+    orderTime: '2026-02-20 12:00:05',
+  },
+}

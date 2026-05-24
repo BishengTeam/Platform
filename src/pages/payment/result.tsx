@@ -24,7 +24,7 @@ export default function ResultPage() {
   const isSuccess = status === 'success'
 
   const handleViewOrder = () => {
-    Taro.navigateTo({ url: `/${ROUTES.ORDERS}?status=${STRINGS.ORDERS_STATUS_PENDING}` })
+    Taro.navigateTo({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${orderId}` })
   }
 
   const handleRepay = () => {

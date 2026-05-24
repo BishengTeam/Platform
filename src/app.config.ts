@@ -53,6 +53,10 @@ export default defineAppConfig({
       pages: ['result'],
     },
     {
+      root: 'pages/order-detail',
+      pages: ['index'],
+    },
+    {
       root: 'pages/service',
       pages: ['index'],
     },

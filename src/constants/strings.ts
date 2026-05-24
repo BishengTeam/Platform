@@ -182,6 +182,17 @@ export const STRINGS = {
   CONFIRM_COUNTDOWN_SUFFIX: ' 内完成支付',
   CONFIRM_COUNTDOWN_EXPIRED: '支付超时，请重新报名',
 
+  // ---- Order Detail ----
+  ORDER_DETAIL_TITLE: '订单详情',
+  ORDER_DETAIL_AMOUNT_PAID: '实付款',
+  ORDER_DETAIL_ORDER_ID: '订单编号',
+  ORDER_DETAIL_COPY: '复制',
+  ORDER_DETAIL_COPY_SUCCESS: '复制成功',
+  ORDER_DETAIL_PAYMENT_METHOD: '支付方式',
+  ORDER_DETAIL_PAYMENT_TIME: '支付时间',
+  ORDER_DETAIL_ORDER_TIME: '下单时间',
+  ORDER_DETAIL_PAYMENT_METHOD_WECHAT: '微信支付',
+
   // ---- Payment Result ----
   RESULT_SUCCESS_TITLE: '支付成功',
   RESULT_SUCCESS_DESC: '恭喜您报名成功，请按时参加考试',
