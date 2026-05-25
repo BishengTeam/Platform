@@ -67,22 +67,6 @@ export const STRINGS = {
   ORDERS_TITLE: '我的订单',
   ORDERS_TAG_ALL: '全部',
 
-  // ---- Certificates Page ----
-  CERTIFICATES_TITLE: '证书中心',
-  CERTIFICATES_ISSUE_DATE: '发证日期：',
-  CERTIFICATES_AUTHORITY: '发证机构：',
-
-  // ---- Feedback Page ----
-  FEEDBACK_TITLE: '问题反馈',
-  FEEDBACK_DESC_LABEL: '问题描述',
-  FEEDBACK_DESC_PLACEHOLDER: '请详细描述您遇到的问题...',
-  FEEDBACK_CONTACT_LABEL: '联系方式（选填）',
-  FEEDBACK_CONTACT_PLACEHOLDER: '请输入手机号或微信号',
-  FEEDBACK_SUBMIT: '提交反馈',
-  FEEDBACK_SUCCESS: '感谢您的反馈，我们会尽快处理！',
-
-  // ---- Notifications Page ----
-  NOTIFICATIONS_TITLE: '消息通知',
 
   // ---- Auth Page ----
   AUTH_APP_NAME: 'H3CNE 数字世界',
@@ -285,9 +269,6 @@ export const STRINGS = {
   // ---- Registration Confirm ----
   CONFIRM_PAYING: '支付中...',
 
-  // ---- Feedback ----
-  FEEDBACK_VALID_DESC_REQUIRED: '请填写问题描述',
-
   // ---- Logout Modal ----
   LOGOUT_MODAL_TITLE: '提示',
   LOGOUT_MODAL_CONTENT: '确定要退出当前账号吗？',
@@ -295,9 +276,6 @@ export const STRINGS = {
   LOGOUT_MODAL_CONFIRM: '退出',
 
   // ---- Func List ----
-  FUNC_LIST_CERTIFICATES: '证书中心',
-  FUNC_LIST_FEEDBACK: '问题反馈',
-  FUNC_LIST_NOTIFICATIONS: '消息通知',
 
   // ---- AI Chat Cards ----
   AI_CARD_VIEW_DETAIL: '查看详情 →',
@@ -339,9 +317,6 @@ export const STRINGS = {
   EMPLOYMENT_TAG_INTERN: '实习岗位',
   EMPLOYMENT_TAG_FULLTIME: '全职岗位',
   EMPLOYMENT_TAG_REMOTE: '远程岗位',
-
-  // ---- Profile Mock ----
-  PROFILE_CERT_COUNT: '2本',
 
   // ---- Registration Tag Labels ----
   REGISTRATION_TAG_H3C: 'H3C',

@@ -8,6 +8,4 @@ export type { EmploymentBannerItem, Job, EmploymentTagFilter } from './employmen
 export type { ContactItem } from './service'
 export type { OrderItem, ProfileFunction, ProfileMenuItem } from './profile'
 export type { Order, OrderDetail } from './orders'
-export type { Certificate } from './certificates'
-export type { Notification } from './notifications'
 export type { Certification, RegistrationFormData, PaymentResult } from './registration'

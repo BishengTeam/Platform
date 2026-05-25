@@ -7,11 +7,7 @@ export const orderItems: OrderItem[] = [
   { icon: 'bell', label: STRINGS.ORDERS_STATUS_CANCELLED, badge: 0 },
 ]
 
-export const profileFunctions: ProfileFunction[] = [
-  { icon: 'file-text', label: STRINGS.FUNC_LIST_CERTIFICATES, value: STRINGS.PROFILE_CERT_COUNT },
-  { icon: 'message-square', label: STRINGS.FUNC_LIST_FEEDBACK, value: '' },
-  { icon: 'bell', label: STRINGS.FUNC_LIST_NOTIFICATIONS, value: '' },
-]
+export const profileFunctions: ProfileFunction[] = []
 
 export const profileGridItems: ProfileMenuItem[] = [
   { icon: 'shield', label: STRINGS.PROFILE_GRID_CHECKIN, route: 'pages/activity-zone/index' },

@@ -28,8 +28,6 @@ import {
   profileFunctions,
   orders,
   orderDetails,
-  certificates,
-  notifications,
   certifications,
   registrationTagFilters,
 } from '@/constants/mock'
@@ -75,10 +73,6 @@ export function getOrderDetail(id: string) {
   if (orderDetails[id]) return orderDetails[id]
   return Object.values(orderDetails).find(d => d.orderId === id) || null
 }
-
-export function getCertificates() { return certificates }
-
-export function getNotifications() { return notifications }
 
 export function getCertifications() { return certifications }
 export function getRegistrationTagFilters() { return registrationTagFilters }

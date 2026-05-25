@@ -2,16 +2,9 @@ import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
 import { LogoutModal } from '@/components/LogoutModal'
-import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import type { ProfileFunction } from '@/types'
 import styles from './index.module.scss'
-
-const FUNC_ROUTES: Record<string, string> = {
-  [STRINGS.FUNC_LIST_CERTIFICATES]: ROUTES.CERTIFICATES,
-  [STRINGS.FUNC_LIST_FEEDBACK]: ROUTES.FEEDBACK,
-  [STRINGS.FUNC_LIST_NOTIFICATIONS]: ROUTES.NOTIFICATIONS,
-}
 
 interface FuncListProps {
   functions: ProfileFunction[]
@@ -37,10 +30,7 @@ export function FuncList({ functions, onNavigate, onLogout }: FuncListProps) {
         <View
           key={idx}
           className={`${styles.item} ${idx !== 0 ? styles.border : ''}`}
-          onClick={() => {
-            const route = FUNC_ROUTES[item.label]
-            if (route) onNavigate(route)
-          }}
+          onClick={() => onNavigate('')}
         >
           <View className={styles.left}>
             <Icon name={item.icon} size={20} color='#69B1FF' />

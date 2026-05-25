@@ -7,6 +7,4 @@ export { employmentBannerItems, jobList, employmentTagFilters } from './employme
 export { contactList } from './service'
 export { orderItems, profileFunctions } from './profile'
 export { orders, orderDetails } from './orders'
-export { certificates } from './certificates'
-export { notifications } from './notifications'
 export { certifications, registrationTagFilters, mockFormData } from './registration'

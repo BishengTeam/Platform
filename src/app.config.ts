@@ -29,18 +29,6 @@ export default defineAppConfig({
       pages: ['index'],
     },
     {
-      root: 'pages/certificates',
-      pages: ['index'],
-    },
-    {
-      root: 'pages/feedback',
-      pages: ['index'],
-    },
-    {
-      root: 'pages/notifications',
-      pages: ['index'],
-    },
-    {
       root: 'pages/registration',
       pages: ['index', 'form', 'confirm'],
     },
