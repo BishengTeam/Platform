@@ -1,0 +1,86 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.intro {
+  font-size: $font-base;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-md 0;
+  border-bottom: $border-thin solid $color-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $color-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stepNumberText {
+  color: $color-white;
+  font-size: $font-lg;
+  font-weight: 700;
+}
+
+.stepContent {
+  flex: 1;
+}
+
+.stepTitle {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.stepDesc {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  display: block;
+}
+
+.inputSection {
+  margin-top: $spacing-xl;
+}
+
+.btnWrap {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-xl 0;
+}

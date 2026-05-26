@@ -1,0 +1,45 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.filterRow {
+  padding: $spacing-md $spacing-lg 0;
+}
+
+.list {
+  padding: $spacing-md $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.itemTitle {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.itemSub {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}

@@ -1,0 +1,85 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.wrongCount {
+  font-size: $font-sm;
+  color: $color-price;
+  font-weight: 600;
+}
+
+.wrongDate {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.stem {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+  line-height: 1.5;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: $spacing-sm;
+}
+
+.optionText {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+.optionCorrect {
+  color: $color-success;
+  font-weight: 600;
+}
+
+.explanation {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+  background: $color-bg-secondary;
+  padding: $spacing-sm;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}

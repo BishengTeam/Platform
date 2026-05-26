@@ -1,0 +1,26 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.filterRow {
+  padding: $spacing-md $spacing-lg 0;
+}
+
+.cardList {
+  padding: $spacing-md $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}

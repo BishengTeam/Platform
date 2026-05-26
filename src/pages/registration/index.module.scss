@@ -45,3 +45,35 @@
   flex-direction: column;
   gap: $spacing-sm;
 }
+
+.priceTags {
+  display: flex;
+  gap: $spacing-sm;
+  padding: 0 $spacing-md $spacing-sm;
+  margin-top: -4px;
+}
+
+.priceStudent,
+.priceEnterprise {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: $color-white;
+  border-radius: $radius-sm;
+  padding: 4px 10px;
+  font-size: $font-sm;
+}
+
+.priceLabel {
+  color: $color-text-tertiary;
+}
+
+.priceStudent .priceValue {
+  color: $color-success;
+  font-weight: 600;
+}
+
+.priceEnterprise .priceValue {
+  color: $color-primary;
+  font-weight: 600;
+}

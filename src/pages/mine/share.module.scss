@@ -1,0 +1,59 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-lg $spacing-md;
+  background: $color-white;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-sm;
+}
+
+.cardIcon {
+  font-size: 32px;
+}
+
+.cardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardLabel {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.cardDesc {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+.arrow {
+  font-size: $font-lg;
+  color: $color-text-tertiary;
+}
+
+.btnWrap {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-xl 0;
+}

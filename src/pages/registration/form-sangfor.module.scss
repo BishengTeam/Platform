@@ -1,0 +1,10 @@
+@use '../../styles/variables' as *;
+@use './form.module.scss';
+
+.couponTip {
+  font-size: $font-sm;
+  color: $color-warning;
+  text-align: center;
+  padding: 0 $spacing-lg;
+  display: block;
+}

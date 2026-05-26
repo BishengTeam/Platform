@@ -30,6 +30,20 @@ import {
   orderDetails,
   certifications,
   registrationTagFilters,
+  courseCategories,
+  quizCategories,
+  quizQuestions,
+  wrongBook,
+  favoriteQuestions,
+  checkinRecords,
+  myCourses,
+  pointsBalance,
+  pointRecords,
+  agreements,
+  examIntentions,
+  teacherContacts,
+  myCollections,
+  registeredExams,
 } from '@/constants/mock'
 
 export function getZoneIcons() { return zoneIcons }
@@ -76,3 +90,25 @@ export function getOrderDetail(id: string) {
 
 export function getCertifications() { return certifications }
 export function getRegistrationTagFilters() { return registrationTagFilters }
+
+export function getCourseListExpanded() { return courseList }
+export function getCourseCategories() { return courseCategories }
+export function getCourseById(id: string) { return courseList.find(c => c.id === id) || null }
+
+export function getQuizCategories() { return quizCategories }
+export function getQuizQuestions(categoryId?: string) {
+  if (categoryId) return quizQuestions.filter(q => q.categoryId === categoryId)
+  return quizQuestions
+}
+export function getWrongBook() { return wrongBook }
+export function getFavoriteQuestions() { return favoriteQuestions }
+export function getCheckinRecords() { return checkinRecords }
+
+export function getMyCourses() { return myCourses }
+export function getPointsBalance() { return pointsBalance }
+export function getPointRecords() { return pointRecords }
+export function getAgreements() { return agreements }
+export function getExamIntentions() { return examIntentions }
+export function getTeacherContacts() { return teacherContacts }
+export function getMyCollections() { return myCollections }
+export function getRegisteredExams() { return registeredExams }

@@ -178,3 +178,64 @@
   justify-content: center;
   padding: $spacing-xl $spacing-lg;
 }
+
+// ---- Upload ----
+.uploadRow {
+  margin-bottom: $spacing-md;
+}
+
+.uploadLabel {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.uploadBox {
+  background: $color-white;
+  border: 1px dashed $color-border;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-align: center;
+}
+
+.uploadTip {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.uploadPath {
+  font-size: $font-sm;
+  color: $color-primary;
+}
+
+// ---- Triple toggle ----
+.identityTriple {
+  display: flex;
+  background: $color-bg-tertiary;
+  border-radius: $radius-sm;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: $spacing-md;
+}
+
+// ---- Sub-section ----
+.subSection {
+  margin-top: $spacing-sm;
+  padding: $spacing-md;
+  background: $color-bg-secondary;
+  border-radius: $radius-md;
+}
+
+// ---- Link ----
+.linkRow {
+  text-align: right;
+  margin-bottom: $spacing-md;
+  margin-top: -$spacing-xs;
+}
+
+.linkText {
+  font-size: $font-sm;
+  color: $color-primary;
+}

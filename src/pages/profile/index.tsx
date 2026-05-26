@@ -41,7 +41,7 @@ export default function ProfilePage() {
         <View className={styles.main}>
           <View
             className={styles.headerBanner}
-            onClick={() => handleNavigate(ROUTES.PROFILE_DETAIL)}
+            onClick={() => handleNavigate(ROUTES.MINE_PROFILE)}
           >
             <View className={styles.avatar}>
               <Icon name='user' size={56} color='#1677FF' />
@@ -73,7 +73,7 @@ export default function ProfilePage() {
           </View>
 
           <View className={`${styles.card} ${styles.cardSettings}`}>
-            <View className={styles.listItem} onClick={() => handleNavigate(ROUTES.SETTINGS)}>
+            <View className={styles.listItem} onClick={() => handleNavigate('pages/mine/profile')}>
               <View className={styles.listLeft}>
                 <Icon name='settings' size={28} color='#666666' />
                 <Text className={styles.listLabel}>{STRINGS.PROFILE_SETTINGS}</Text>

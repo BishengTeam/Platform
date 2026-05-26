@@ -1,0 +1,94 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.cardTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.cardStatus {
+  font-size: $font-sm;
+  font-weight: 600;
+}
+
+.cardContent {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  margin-bottom: $spacing-sm;
+}
+
+.cardMeta {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.metaText {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.signArea {
+  margin-top: $spacing-md;
+}
+
+.signCanvas {
+  height: 200px;
+  background: $color-bg-secondary;
+  border: 1px dashed $color-border;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $spacing-sm;
+}
+
+.signPlaceholder {
+  font-size: $font-base;
+  color: $color-text-tertiary;
+}
+
+.signActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}

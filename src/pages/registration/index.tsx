@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
-import { View, Input } from '@tarojs/components'
+import { View, Text, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
@@ -7,6 +7,7 @@ import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
 import { getCertifications, getRegistrationTagFilters } from '@/services/dataService'
+import type { Certification } from '@/types/registration'
 import styles from './index.module.scss'
 
 const VENDOR_MAP: Record<string, string> = {
@@ -14,6 +15,13 @@ const VENDOR_MAP: Record<string, string> = {
   [STRINGS.REGISTRATION_TAG_SANGFOR]: 'sangfor',
   [STRINGS.REGISTRATION_TAG_NISP]: 'nisp',
   [STRINGS.REGISTRATION_TAG_RS]: 'rs',
+}
+
+const VENDOR_ROUTE_MAP: Record<string, string> = {
+  h3c: 'form',
+  sangfor: 'form-sangfor',
+  nisp: 'form-nisp',
+  rs: 'form-renshe',
 }
 
 export default function RegistrationIndexPage() {
@@ -45,8 +53,9 @@ export default function RegistrationIndexPage() {
     setKeyword(e.detail.value)
   }, [])
 
-  const handleCardClick = useCallback((certId: string) => {
-    Taro.navigateTo({ url: `/pages/registration/form?cert_id=${certId}` })
+  const handleCardClick = useCallback((cert: Certification) => {
+    const route = VENDOR_ROUTE_MAP[cert.vendor] || 'form'
+    Taro.navigateTo({ url: `/pages/registration/${route}?cert_id=${cert.id}` })
   }, [])
 
   return (
@@ -67,16 +76,33 @@ export default function RegistrationIndexPage() {
           </View>
           <View className={styles.cardList}>
             {filtered.map(cert => (
-              <ZoneCard
-                key={cert.id}
-                title={cert.name}
-                subtitle={cert.description}
-                tags={[`${cert.categoryName}`, `${cert.examDuration}`, `${cert.questionCount}${STRINGS.FORM_QUESTION_SUFFIX}`]}
-                price={`¥${cert.price}`}
-                originalPrice={`¥${cert.originalPrice}`}
-                buttonText={STRINGS.EXAM_SIGNUP}
-                onButtonClick={() => handleCardClick(cert.id)}
-              />
+              <View key={cert.id}>
+                <ZoneCard
+                  title={cert.name}
+                  subtitle={cert.description}
+                  tags={[cert.examCode, cert.categoryName, `${cert.examDuration}`, `${cert.questionCount}${STRINGS.FORM_QUESTION_SUFFIX}`]}
+                  price={`¥${cert.price}`}
+                  originalPrice={`¥${cert.originalPrice}`}
+                  buttonText={STRINGS.EXAM_SIGNUP}
+                  onButtonClick={() => handleCardClick(cert)}
+                />
+                {(cert.studentPrice || cert.enterprisePrice) && (
+                  <View className={styles.priceTags}>
+                    {cert.studentPrice && (
+                      <View className={styles.priceStudent}>
+                        <Text className={styles.priceLabel}>学生价</Text>
+                        <Text className={styles.priceValue}>¥{cert.studentPrice}</Text>
+                      </View>
+                    )}
+                    {cert.enterprisePrice && (
+                      <View className={styles.priceEnterprise}>
+                        <Text className={styles.priceLabel}>企业价</Text>
+                        <Text className={styles.priceValue}>¥{cert.enterprisePrice}</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
             ))}
           </View>
         </View>

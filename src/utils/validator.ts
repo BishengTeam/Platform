@@ -26,3 +26,16 @@ export function validateIdCard(idCard: string): ValidationResult {
   if (!ID_CARD_RE.test(idCard.trim())) return { valid: false, message: STRINGS.VALIDATOR_ID_CARD_INVALID }
   return { valid: true, message: '' }
 }
+
+export function validateEmail(email: string): ValidationResult {
+  if (!email.trim()) return { valid: false, message: STRINGS.VALIDATOR_EMAIL_REQUIRED }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return { valid: false, message: STRINGS.VALIDATOR_EMAIL_INVALID }
+  }
+  return { valid: true, message: '' }
+}
+
+export function validateRequired(value: string, label: string): ValidationResult {
+  if (!value.trim()) return { valid: false, message: `请输入${label}` }
+  return { valid: true, message: '' }
+}

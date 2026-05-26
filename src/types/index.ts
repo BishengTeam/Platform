@@ -8,4 +8,7 @@ export type { EmploymentBannerItem, Job, EmploymentTagFilter } from './employmen
 export type { ContactItem } from './service'
 export type { OrderItem, ProfileFunction, ProfileMenuItem } from './profile'
 export type { Order, OrderDetail } from './orders'
-export type { Certification, RegistrationFormData, PaymentResult } from './registration'
+export type { Certification, RegistrationFormData, PaymentResult, SangforFormData, NispFormData, RensheFormData } from './registration'
+export type { CourseItem, CourseSession, CourseReview } from './course'
+export type { QuizCategory, QuizQuestion, QuizOption, CheckinRecord, WrongQuestion, QuizPracticeState } from './quiz'
+export type { MyCourse, PointRecord, Agreement, ExamIntention, TeacherContact } from './mine'

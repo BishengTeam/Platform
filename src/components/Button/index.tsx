@@ -5,6 +5,7 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'gradient'
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  disabled?: boolean
   onClick?: () => void
   children: ReactNode
   style?: Record<string, string>
@@ -20,6 +21,7 @@ export function Button({
   variant = 'primary',
   size = 'md',
   className = '',
+  disabled,
   onClick,
   children,
   style,
@@ -30,6 +32,7 @@ export function Button({
         className={className}
         size={SIZE_MAP[size] || 'normal'}
         color='linear-gradient(135deg, #1677FF, #4096FF)'
+        disabled={disabled}
         onClick={onClick}
         style={style}
       >
@@ -43,6 +46,7 @@ export function Button({
       className={className}
       type={variant === 'primary' ? 'primary' : 'default'}
       size={SIZE_MAP[size] || 'normal'}
+      disabled={disabled}
       onClick={onClick}
       style={style}
     >

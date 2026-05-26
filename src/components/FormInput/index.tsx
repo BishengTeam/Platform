@@ -9,6 +9,7 @@ interface FormInputProps {
   value: string
   type?: 'text' | 'number' | 'idcard'
   maxlength?: number
+  disabled?: boolean
   error?: ValidationResult
   onChange: (value: string) => void
   onBlur?: () => void
@@ -21,6 +22,7 @@ export function FormInput({
   value,
   type = 'text',
   maxlength,
+  disabled,
   error,
   onChange,
   onBlur,
@@ -39,6 +41,7 @@ export function FormInput({
         value={value}
         type={type}
         maxlength={maxlength}
+        disabled={disabled}
         onInput={e => onChange(e.detail.value)}
         onBlur={onBlur}
       />

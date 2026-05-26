@@ -30,7 +30,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/registration',
-      pages: ['index', 'form', 'confirm'],
+      pages: ['index', 'form', 'form-sangfor', 'form-nisp', 'form-renshe', 'xuexin-guide', 'confirm'],
     },
     {
       root: 'pages/payment',
@@ -46,6 +46,22 @@ export default defineAppConfig({
     },
     {
       root: 'pages/ai-consult',
+      pages: ['index'],
+    },
+    {
+      root: 'pages/course',
+      pages: ['index', 'detail'],
+    },
+    {
+      root: 'pages/quiz',
+      pages: ['index', 'practice', 'wrong-book', 'collections', 'checkin'],
+    },
+    {
+      root: 'pages/mine',
+      pages: ['courses', 'profile', 'points', 'agreements', 'collections', 'exam-query', 'exam-intention', 'contact-teachers', 'share', 'deactivate'],
+    },
+    {
+      root: 'pages/login-poster',
       pages: ['index'],
     },
   ],

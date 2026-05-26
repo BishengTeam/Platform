@@ -5,9 +5,137 @@
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg-secondary;
+  background: $color-bg;
 }
 
-.bodyWithTabbar {
-  padding-bottom: calc(#{$tab-bar-height} + #{$safe-bottom}) !important;
+.tabBar {
+  background: $color-white;
+  padding: 0 $spacing-lg;
+  border-bottom: $border-thin solid $color-border;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(#{$tab-bar-height} + #{$safe-bottom});
+}
+
+.subFilter {
+  padding: $spacing-md $spacing-lg 0;
+}
+
+.cardList {
+  padding: $spacing-md $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+// ---- Checkin Bar ----
+.checkinBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $spacing-md $spacing-lg;
+  padding: $spacing-md;
+  background: linear-gradient(135deg, $color-orange-tint, $color-red-tint);
+  border-radius: $radius-md;
+}
+
+.checkinInfo {
+  display: flex;
+  align-items: center;
+}
+
+.checkinStreak {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}
+
+// ---- Quiz Grid ----
+.quizGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-sm;
+  padding: 0 $spacing-lg $spacing-md;
+}
+
+.quizGridItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  padding: $spacing-lg $spacing-md;
+  background: $color-white;
+  border-radius: $radius-md;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.quizGridIcon {
+  font-size: 32px;
+}
+
+.quizGridLabel {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+}
+
+// ---- Quiz Category Cards ----
+.quizCategoryList {
+  padding: 0 $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.quizCategoryCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background: $color-white;
+  border-radius: $radius-md;
+}
+
+.quizCategoryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quizCategoryName {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.quizCategoryCount {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+// ---- Quiz Bottom ----
+.quizBottom {
+  display: flex;
+  justify-content: space-around;
+  padding: $spacing-lg;
+}
+
+.quizBottomItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.quizBottomIcon {
+  font-size: 24px;
+}
+
+.quizBottomLabel {
+  font-size: $font-sm;
+  color: $color-text-secondary;
 }

@@ -1,0 +1,202 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-tertiary;
+  font-size: $font-base;
+}
+
+.coverPlaceholder {
+  height: 360px;
+  background: linear-gradient(135deg, $color-primary, #722ED1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl;
+}
+
+.coverText {
+  font-size: $font-xl;
+  font-weight: 700;
+  color: $color-white;
+  text-align: center;
+}
+
+.infoCard {
+  background: $color-white;
+  margin: -$spacing-lg $spacing-lg 0;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+  font-size: $font-xl;
+  font-weight: 700;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.description {
+  font-size: $font-base;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+.metaRow {
+  display: flex;
+  gap: $spacing-lg;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.metaValue {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.section {
+  padding: $spacing-lg $spacing-lg 0;
+}
+
+.sectionTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.sessionList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.sessionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background: $color-white;
+  border-radius: $radius-md;
+  border: $border-thin solid $color-border;
+}
+
+.sessionActive {
+  border-color: $color-primary;
+  background: $color-blue-tint;
+}
+
+.sessionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sessionLabel {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.sessionDate {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.sessionPrice {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-price;
+}
+
+.descText {
+  font-size: $font-base;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  display: block;
+}
+
+.reviewCard {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xs;
+}
+
+.reviewUser {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+}
+
+.reviewRating {
+  font-size: $font-sm;
+  color: $color-warning;
+}
+
+.reviewContent {
+  font-size: $font-base;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+.reviewDate {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.priceCard {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin: $spacing-lg $spacing-lg 0;
+}
+
+.btnWrap {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-xl $spacing-lg;
+}

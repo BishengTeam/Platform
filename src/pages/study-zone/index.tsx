@@ -21,10 +21,10 @@ export default function StudyZonePage() {
         <ZoneCard
           key={course.id}
           title={course.title}
-          subtitle={course.description}
-          tags={[course.tag, course.duration]}
-          price={course.price}
-          originalPrice={course.originalPrice}
+          subtitle={`${course.description}`}
+          tags={[course.tag, course.duration, `${course.rating}分`]}
+          price={course.price === 0 ? STRINGS.ORDERS_FREE : `¥${course.price}`}
+          originalPrice={course.originalPrice > 0 ? `¥${course.originalPrice}` : undefined}
           buttonText={STRINGS.STUDY_ENROLL}
         />
       ))}
