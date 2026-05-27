@@ -1,0 +1,227 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm $spacing-lg;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.timerIcon {
+  font-size: $font-lg;
+}
+
+.timerText {
+  font-size: $font-xl;
+  font-weight: 700;
+  color: $color-price;
+}
+
+.progressText {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+.progressBar {
+  height: 4px;
+  background: $color-border;
+  margin: 0 $spacing-lg;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: $color-primary;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.emptyBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.questionCard {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.questionHeader {
+  margin-bottom: $spacing-md;
+}
+
+.questionIndex {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.stem {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  line-height: 1.6;
+  margin-bottom: $spacing-lg;
+  display: block;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  border: $border-thin solid $color-border;
+  border-radius: $radius-md;
+  background: $color-white;
+}
+
+.optionSelected {
+  border-color: $color-primary;
+  background: $color-blue-tint;
+}
+
+.optionLabel {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: $color-bg-secondary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+}
+
+.optionLabelActive {
+  background: $color-primary;
+  color: $color-white;
+}
+
+.optionText {
+  font-size: $font-base;
+  color: $color-text;
+  flex: 1;
+}
+
+.questionGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: $spacing-sm;
+}
+
+.gridItem {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+.gridItemActive {
+  border-color: $color-primary;
+  color: $color-primary;
+  font-weight: 600;
+}
+
+.gridItemDone {
+  background: $color-blue-tint;
+  border-color: $color-primary;
+  color: $color-primary;
+}
+
+.navRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-md} + #{$safe-bottom});
+}
+
+.navHint {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.resultBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.resultCard {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  text-align: center;
+  width: 100%;
+  margin-bottom: $spacing-xl;
+}
+
+.resultEmoji {
+  font-size: 48px;
+  display: block;
+  margin-bottom: $spacing-md;
+}
+
+.resultScore {
+  font-size: $font-xl;
+  font-weight: 700;
+  color: $color-text;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.resultAccuracy {
+  font-size: $font-lg;
+  color: $color-primary;
+  font-weight: 600;
+  display: block;
+}
+
+.btnWrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

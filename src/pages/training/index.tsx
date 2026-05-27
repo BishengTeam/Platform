@@ -10,11 +10,21 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getCourseList, getQuizCategories, getCheckinRecords } from '@/services/dataService'
+import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
 const MAIN_TABS = [STRINGS.TRAINING_TAB_TECH, STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
-const TECH_TAGS = ['全部', STRINGS.TAG_H3C, STRINGS.TAG_SANGFOR, STRINGS.TAG_NISP]
-const COURSE_TAGS = ['全部', STRINGS.TRAINING_FREE_COURSE, STRINGS.TRAINING_PAID_COURSE]
+const TECH_TAGS: TagFilterItem[] = [
+  { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { label: STRINGS.TAG_H3C, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#E8F2FF' },
+  { label: STRINGS.TAG_SANGFOR, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.TAG_NISP, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+]
+const COURSE_TAGS: TagFilterItem[] = [
+  { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { label: STRINGS.TRAINING_FREE_COURSE, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { label: STRINGS.TRAINING_PAID_COURSE, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+]
 const TECH_CATEGORIES = ['h3c', 'sangfor', 'nisp']
 
 const QUIZ_GRID = [
@@ -31,7 +41,7 @@ const QUIZ_BOTTOM = [
 ]
 
 export default function TrainingPage() {
-  const [mainTab, setMainTab] = useState(MAIN_TABS[0])
+  const [mainTab, setMainTab] = useState<string>(MAIN_TABS[0])
   const [techTag, setTechTag] = useState('全部')
   const [courseTag, setCourseTag] = useState('全部')
 
@@ -53,7 +63,11 @@ export default function TrainingPage() {
   }, [courseTag, allCourses])
 
   const handleQuizGrid = useCallback((mode: string) => {
-    Taro.navigateTo({ url: `/pages/quiz/practice?mode=${mode}` })
+    if (mode === 'mock') {
+      Taro.navigateTo({ url: `/pages/quiz/mock` })
+    } else {
+      Taro.navigateTo({ url: `/pages/quiz/practice?mode=${mode}` })
+    }
   }, [])
 
   const handleQuizCategory = useCallback((categoryId: string) => {
@@ -62,8 +76,8 @@ export default function TrainingPage() {
 
   const renderTechTab = () => (
     <View>
-      <View className={styles.subFilter}>
-        <TagFilter tags={TECH_TAGS} activeTag={techTag} onChange={setTechTag} />
+      <View className={styles.filterRow}>
+        <TagFilter tags={TECH_TAGS} activeTag={techTag} onChange={setTechTag} className={styles.tagSm} />
       </View>
       <View className={styles.cardList}>
         {techCourses.map(course => (
@@ -84,8 +98,8 @@ export default function TrainingPage() {
 
   const renderCourseTab = () => (
     <View>
-      <View className={styles.subFilter}>
-        <TagFilter tags={COURSE_TAGS} activeTag={courseTag} onChange={setCourseTag} />
+      <View className={styles.filterRow}>
+        <TagFilter tags={COURSE_TAGS} activeTag={courseTag} onChange={setCourseTag} className={styles.tagSm} />
       </View>
       <View className={styles.cardList}>
         {onlineCourses.map(course => (

@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { ScrollView, View, Text } from '@tarojs/components'
 import { Tag } from '@nutui/nutui-react-taro'
 import type { TagFilterItem } from '@/types/registration'
@@ -9,6 +8,7 @@ interface TagFilterProps {
   activeTag: string
   onChange: (tag: string) => void
   variant?: 'pill' | 'underline'
+  className?: string
 }
 
 function toTagItem(item: TagFilterItem | string): TagFilterItem {
@@ -16,20 +16,15 @@ function toTagItem(item: TagFilterItem | string): TagFilterItem {
     return {
       label: item,
       activeColor: '#1677FF',
-      activeBg: '#F0F5FF',
-      activeText: '#1677FF',
-      inactiveBg: '#F5F5F5',
+      activeBg: '#1677FF',
+      activeText: '#ffffff',
+      inactiveBg: '#F0F5FF',
     }
   }
   return item
 }
 
-export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFilterProps) {
-  const handleClick = useCallback((e: { currentTarget: { dataset: Record<string, string> } }) => {
-    const label = e.currentTarget.dataset.label
-    if (label) onChange(label)
-  }, [onChange])
-
+export function TagFilter({ tags, activeTag, onChange, variant = 'pill', className = '' }: TagFilterProps) {
   if (variant === 'underline') {
     return (
       <ScrollView scrollX className={styles.scroll} enableFlex>
@@ -41,8 +36,7 @@ export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFi
               <View
                 key={tag.label}
                 className={`${styles.underlineTab} ${isActive ? styles.underlineTabActive : ''}`}
-                data-label={tag.label}
-                onClick={handleClick}
+                onClick={() => onChange(tag.label)}
               >
                 <Text className={styles.underlineTabText}>
                   {tag.label}
@@ -65,12 +59,11 @@ export function TagFilter({ tags, activeTag, onChange, variant = 'pill' }: TagFi
           return (
             <Tag
               key={tag.label}
-              className={styles.tag}
+              className={`${styles.tag} ${className}`}
               background={isActive ? tag.activeBg : tag.inactiveBg}
               color={isActive ? tag.activeText : tag.activeColor}
               style={isActive ? undefined : tag.inactiveStyle}
-              data-label={tag.label}
-              onClick={handleClick}
+              onClick={() => onChange(tag.label)}
             >
               {tag.label}
             </Tag>

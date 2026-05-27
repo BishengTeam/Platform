@@ -10,7 +10,7 @@ import { getCourseList, getCourseCategories } from '@/services/dataService'
 import styles from './index.module.scss'
 
 export default function CourseIndexPage() {
-  const [activeTag, setActiveTag] = useState(STRINGS.COURSE_CATEGORY_ALL)
+  const [activeTag, setActiveTag] = useState<string>(STRINGS.COURSE_CATEGORY_ALL)
   const allCourses = getCourseList()
   const categories = getCourseCategories()
 

@@ -9,9 +9,11 @@
 }
 
 .tabBar {
-  background: $color-white;
-  padding: 0 $spacing-lg;
+  background: $color-bg;
+  padding: $spacing-md $spacing-lg 0;
   border-bottom: $border-thin solid $color-border;
+  display: flex;
+  justify-content: center;
 }
 
 .body {
@@ -20,8 +22,12 @@
   padding-bottom: calc(#{$tab-bar-height} + #{$safe-bottom});
 }
 
-.subFilter {
+.filterRow {
   padding: $spacing-md $spacing-lg 0;
+}
+
+.tagSm {
+  --nutui-tag-font-size: 26px !important;
 }
 
 .cardList {
@@ -29,6 +35,7 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;
+
 }
 
 // ---- Checkin Bar ----

@@ -86,22 +86,6 @@ export default function RegistrationIndexPage() {
                   buttonText={STRINGS.EXAM_SIGNUP}
                   onButtonClick={() => handleCardClick(cert)}
                 />
-                {(cert.studentPrice || cert.enterprisePrice) && (
-                  <View className={styles.priceTags}>
-                    {cert.studentPrice && (
-                      <View className={styles.priceStudent}>
-                        <Text className={styles.priceLabel}>学生价</Text>
-                        <Text className={styles.priceValue}>¥{cert.studentPrice}</Text>
-                      </View>
-                    )}
-                    {cert.enterprisePrice && (
-                      <View className={styles.priceEnterprise}>
-                        <Text className={styles.priceLabel}>企业价</Text>
-                        <Text className={styles.priceValue}>¥{cert.enterprisePrice}</Text>
-                      </View>
-                    )}
-                  </View>
-                )}
               </View>
             ))}
           </View>

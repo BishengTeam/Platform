@@ -12,7 +12,7 @@ import styles from './collections.module.scss'
 const TABS = [STRINGS.MINE_COLLECTIONS_COURSES, STRINGS.MINE_COLLECTIONS_MATERIALS]
 
 export default function MineCollectionsPage() {
-  const [activeTab, setActiveTab] = useState(TABS[0])
+  const [activeTab, setActiveTab] = useState<string>(TABS[0])
   const data = getMyCollections()
 
   const items = activeTab === TABS[0] ? data.courses : data.materials

@@ -22,6 +22,7 @@ export const ROUTES = {
   COURSE_DETAIL: 'pages/course/detail',
   QUIZ_INDEX: 'pages/quiz/index',
   QUIZ_PRACTICE: 'pages/quiz/practice',
+  QUIZ_MOCK: 'pages/quiz/mock',
   QUIZ_WRONG_BOOK: 'pages/quiz/wrong-book',
   QUIZ_COLLECTIONS: 'pages/quiz/collections',
   QUIZ_CHECKIN: 'pages/quiz/checkin',

@@ -28,7 +28,11 @@ export default function QuizIndexPage() {
   const streakDays = checkinRecords.filter(r => r.completed).length
 
   const handleQuizGrid = useCallback((mode: string) => {
-    Taro.navigateTo({ url: `/pages/quiz/practice?mode=${mode}` })
+    if (mode === 'mock') {
+      Taro.navigateTo({ url: `/pages/quiz/mock` })
+    } else {
+      Taro.navigateTo({ url: `/pages/quiz/practice?mode=${mode}` })
+    }
   }, [])
 
   const handleQuizCategory = useCallback((categoryId: string) => {

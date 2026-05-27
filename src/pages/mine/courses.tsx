@@ -13,7 +13,7 @@ import styles from './courses.module.scss'
 const STATUS_TAGS = [STRINGS.MINE_COURSES_ACTIVE, STRINGS.MINE_COURSES_PENDING, STRINGS.MINE_COURSES_EXPIRED]
 
 export default function MyCoursesPage() {
-  const [activeStatus, setActiveStatus] = useState(STATUS_TAGS[0])
+  const [activeStatus, setActiveStatus] = useState<string>(STATUS_TAGS[0])
   const allCourses = getMyCourses()
 
   const filtered = useMemo(() => {

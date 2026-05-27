@@ -429,13 +429,13 @@ export const STRINGS = {
 
   // ---- Training Tabs ----
   TRAINING_TAB_TECH: '技术培训',
-  TRAINING_TAB_COURSE: '初级在线课程',
-  TRAINING_TAB_QUIZ: '题库刷题',
+  TRAINING_TAB_COURSE: '在线课程',
+  TRAINING_TAB_QUIZ: '题库助手',
   TRAINING_FREE_COURSE: '免费课',
   TRAINING_PAID_COURSE: '付费课',
 
   // ---- Quiz ----
-  QUIZ_HEADER: '刷题题库',
+  QUIZ_HEADER: '章节练习',
   QUIZ_CHECKIN_TITLE: '今日打卡',
   QUIZ_CHECKIN_STREAK: '已连续打卡',
   QUIZ_CHECKIN_DAYS: '天',
@@ -466,6 +466,7 @@ export const STRINGS = {
   QUIZ_CHECKIN_DONE: '已打卡',
   QUIZ_REDO: '再来一次',
   QUIZ_NO_QUESTIONS: '暂无题目',
+  QUIZ_ANSWERED: '已答',
   QUIZ_TYPE_SINGLE: '单选题',
   QUIZ_TYPE_MULTIPLE: '多选题',
   QUIZ_FEEDBACK_CORRECT: '回答正确！',
