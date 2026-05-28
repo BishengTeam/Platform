@@ -7,7 +7,10 @@
       "Bash(echo \"exit: $?\")",
       "Bash(rg --include='*.tsx' --include='*.ts' -n '[\\\\x{4e00}-\\\\x{9fff}]' src/)",
       "mcp__ide__getDiagnostics",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Read(//Users/21202/Documents/文件/工作室/projects/Customer/Platform/src/**)",
+      "Read(//d/Users/21202/Documents/文件/工作室/projects/Customer/Platform/src/**)"
     ]
   }
 }

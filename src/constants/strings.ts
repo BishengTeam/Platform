@@ -435,7 +435,7 @@ export const STRINGS = {
   TRAINING_PAID_COURSE: '付费课',
 
   // ---- Quiz ----
-  QUIZ_HEADER: '章节练习',
+  QUIZ_HEADER: '刷题练习',
   QUIZ_CHECKIN_TITLE: '今日打卡',
   QUIZ_CHECKIN_STREAK: '已连续打卡',
   QUIZ_CHECKIN_DAYS: '天',

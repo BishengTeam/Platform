@@ -81,7 +81,7 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
       },
     },
     rn: {
-      appName: 'taroDemo',
+      appName: 'Platform',
       postcss: {
         cssModules: {
           enable: false, // 默认为 false，如需使用 css modules 功能，则设为 true

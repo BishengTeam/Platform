@@ -15,15 +15,14 @@ export default function CourseIndexPage() {
   const categories = getCourseCategories()
 
   const filtered = useMemo(() => {
-    if (activeTag === STRINGS.COURSE_CATEGORY_ALL) return allCourses
+    if (activeTag === '全部') return allCourses
     const catMap: Record<string, string> = {
-      [STRINGS.TAG_H3C]: 'h3c',
-      [STRINGS.TAG_SANGFOR]: 'sangfor',
-      [STRINGS.TAG_NISP]: 'nisp',
-      [STRINGS.TAG_RENSHE]: 'rs',
+      [STRINGS.STUDY_TAG_BASIC]: 'basic',
+      [STRINGS.STUDY_TAG_ADVANCED]: 'advanced',
+      [STRINGS.STUDY_TAG_PRACTICAL]: 'practical',
     }
     const cat = catMap[activeTag]
-    return cat ? allCourses.filter(c => c.category === cat || c.category === 'free' || c.category === 'paid') : allCourses
+    return cat ? allCourses.filter(c => c.category === cat) : allCourses
   }, [activeTag, allCourses])
 
   return (

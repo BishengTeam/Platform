@@ -11,7 +11,7 @@
 .body {
   flex: 1;
   overflow-y: auto;
-  padding: $spacing-md $spacing-lg;
+  padding: $spacing-md 0;
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
@@ -79,12 +79,11 @@
 
 .questionCard {
   background: $color-white;
-  border-radius: $radius-md;
+  border-radius: $radius-lg;
   padding: $spacing-lg;
-  margin-bottom: $spacing-md;
-  max-width: 95%;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 $spacing-md $spacing-md;
+  box-shadow: $shadow-sm;
+   
 }
 
 .questionHeader {
@@ -160,6 +159,8 @@
   font-size: $font-base;
   color: $color-text;
   flex: 1;
+  min-width: 0;
+  word-break: break-all;
 }
 
 .feedback {
@@ -203,5 +204,5 @@
   display: flex;
   justify-content: space-between;
   gap: $spacing-md;
-  padding: $spacing-md 0;
+  padding: $spacing-md;
 }

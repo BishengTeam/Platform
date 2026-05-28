@@ -187,38 +187,21 @@ export default function QuizMockPage() {
             </View>
           </View>
 
-          <View className={styles.questionGrid}>
-            {questions.map((q, idx) => {
-              const isAnswered = answers[q.id] !== undefined
-              const isCurrent = idx === currentIndex
-              return (
-                <View
-                  key={q.id}
-                  className={`${styles.gridItem} ${isCurrent ? styles.gridItemActive : ''} ${isAnswered ? styles.gridItemDone : ''}`}
-                  onClick={() => setCurrentIndex(idx)}
-                >
-                  <Text>{idx + 1}</Text>
-                </View>
-              )
-            })}
+          <View className={styles.navRow}>
+            <Button variant='secondary' size='md' onClick={handlePrev} disabled={currentIndex === 0}>
+              {STRINGS.QUIZ_PREV}
+            </Button>
+            {currentIndex < questions.length - 1 ? (
+              <Button variant='primary' size='md' onClick={handleNext}>
+                {STRINGS.QUIZ_NEXT}
+              </Button>
+            ) : (
+              <Button variant='gradient' size='md' onClick={handleSubmit}>
+                {STRINGS.QUIZ_SUBMIT}
+              </Button>
+            )}
           </View>
         </ScrollView>
-
-        <View className={styles.navRow}>
-          <Button variant='secondary' size='md' onClick={handlePrev} disabled={currentIndex === 0}>
-            {STRINGS.QUIZ_PREV}
-          </Button>
-          <Text className={styles.navHint}>{currentIndex + 1} / {questions.length}</Text>
-          {currentIndex < questions.length - 1 ? (
-            <Button variant='primary' size='md' onClick={handleNext}>
-              {STRINGS.QUIZ_NEXT}
-            </Button>
-          ) : (
-            <Button variant='gradient' size='md' onClick={handleSubmit}>
-              {STRINGS.QUIZ_SUBMIT}
-            </Button>
-          )}
-        </View>
       </View>
     </AuthGuard>
   )

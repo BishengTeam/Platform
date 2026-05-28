@@ -20,6 +20,8 @@ export interface CourseItem {
   id: string
   title: string
   description: string
+  desc1?: string
+  desc2?: string
   cover: string
   price: number
   originalPrice: number
