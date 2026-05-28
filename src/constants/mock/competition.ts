@@ -25,6 +25,7 @@ export const endedCompetitions: Competition[] = [
 ]
 
 export const competitionTagFilters: CompetitionTagFilter[] = [
+  { label: STRINGS.COMPETITION_TAG_ALL, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
   { label: STRINGS.COMPETITION_ONGOING, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
   { label: STRINGS.COMPETITION_UPCOMING, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
   { label: STRINGS.COMPETITION_ENDED, activeColor: '#999999', activeBg: '#999999', activeText: '#ffffff', inactiveBg: '#F5F5F5' },

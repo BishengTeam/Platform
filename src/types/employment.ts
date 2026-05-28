@@ -14,6 +14,7 @@ export interface Job {
   company: string
   location: string
   salary: string
+  originalPrice?: string
   experience: string
   education: string
 }

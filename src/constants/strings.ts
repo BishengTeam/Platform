@@ -97,9 +97,11 @@ export const STRINGS = {
   COMPETITION_ONGOING: '进行中',
   COMPETITION_UPCOMING: '即将开始',
   COMPETITION_ENDED: '已结束',
+  COMPETITION_TAG_ALL: '全部',
   COMPETITION_STATUS_REGISTERING: '报名中',
   COMPETITION_VIEW_RESULT: '查看结果',
   COMPETITION_SIGNUP: '立即报名',
+  COMPETITION_SIGNUP_ENDED: '报名结束',
   COMPETITION_ENTER: '进入赛场',
 
   // ---- Activity Zone ----
@@ -108,6 +110,7 @@ export const STRINGS = {
   ACTIVITY_ONGOING: '进行中',
   ACTIVITY_UPCOMING: '即将开始',
   ACTIVITY_ENDED: '已结束',
+  ACTIVITY_TAG_ALL: '全部',
   ACTIVITY_VIEW_DETAIL: '查看详情',
   ACTIVITY_REMIND: '预约提醒',
   ACTIVITY_JOIN: '立即参与',
@@ -115,6 +118,7 @@ export const STRINGS = {
   // ---- Employment Zone ----
   EMPLOYMENT_TITLE: '就业专区',
   EMPLOYMENT_TAG_RECOMMEND: '推荐职位',
+  EMPLOYMENT_TAG_ALL: '全部',
   EMPLOYMENT_APPLY: '立即投递',
 
   // ---- Registration Zone ----
@@ -482,7 +486,7 @@ export const STRINGS = {
   COURSE_INSTRUCTOR: '讲师',
   COURSE_SESSIONS: '班次选择',
   COURSE_RATING: '评分',
-  COURSE_REVIEWS: '条评价',
+  COURSE_REVIEWS: '评价',
   COURSE_ENROLL_BTN: '立即报名',
   COURSE_DESCRIPTION: '课程介绍',
   COURSE_SCHEDULE: '上课时间',

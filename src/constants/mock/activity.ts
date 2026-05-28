@@ -25,6 +25,7 @@ export const endedActivities: Activity[] = [
 ]
 
 export const activityTagFilters: ActivityTagFilter[] = [
+  { label: STRINGS.ACTIVITY_TAG_ALL, activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
   { label: STRINGS.ACTIVITY_ONGOING, activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
   { label: STRINGS.ACTIVITY_UPCOMING, activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
   { label: STRINGS.ACTIVITY_ENDED, activeColor: '#999999', activeBg: '#999999', activeText: '#ffffff', inactiveBg: '#F5F5F5' },

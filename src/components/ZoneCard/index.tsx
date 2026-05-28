@@ -8,6 +8,8 @@ interface ZoneCardProps {
   tags?: string[]
   price?: string
   originalPrice?: string
+  statusLabel?: string
+  statusColor?: string
   buttonText: string
   buttonVariant?: 'primary' | 'secondary' | 'gradient'
   onButtonClick?: () => void
@@ -22,6 +24,8 @@ export function ZoneCard({
   tags = [],
   price,
   originalPrice,
+  statusLabel,
+  statusColor,
   buttonText,
   buttonVariant = 'primary',
   onButtonClick,
@@ -34,7 +38,14 @@ export function ZoneCard({
       onClick={onCardClick}
       className={`${styles.card} ${isFaded ? styles.faded : ''} ${className}`}
     >
-      <View className={styles.title}>{title}</View>
+      <View className={styles.header}>
+        <View className={styles.title}>{title}</View>
+        {statusLabel && (
+          <View className={styles.statusTag} style={statusColor ? { color: statusColor, borderColor: statusColor } : undefined}>
+            {statusLabel}
+          </View>
+        )}
+      </View>
       {subtitle && <View className={styles.subtitle}>{subtitle}</View>}
       {tags.length > 0 && (
         <View className={styles.tags}>
