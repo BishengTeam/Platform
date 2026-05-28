@@ -9,6 +9,7 @@ export interface KingKongItem {
   iconColor: string
   icon: string
   url: string
+  tab?: string
 }
 
 interface KingKongZoneProps {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -23,7 +23,14 @@ import styles from './index.module.scss'
 type MainTab = 'activity' | 'competition' | 'employment'
 
 export default function ActivityZonePage() {
-  const [mainTab, setMainTab] = useState<MainTab>('activity')
+  const storedTab = useRef(Taro.getStorageSync('activityZoneTab') as MainTab | undefined)
+  const initialTab = storedTab.current || 'activity'
+  const [mainTab, setMainTab] = useState<MainTab>(initialTab)
+
+  if (storedTab.current) {
+    Taro.removeStorageSync('activityZoneTab')
+    storedTab.current = undefined
+  }
   const [activityTag, setActivityTag] = useState<string>(STRINGS.ACTIVITY_TAG_ALL)
   const [competitionTag, setCompetitionTag] = useState<string>(STRINGS.COMPETITION_TAG_ALL)
   const [employmentTag, setEmploymentTag] = useState<string>(STRINGS.EMPLOYMENT_TAG_ALL)
@@ -158,6 +165,7 @@ export default function ActivityZonePage() {
                       statusColor={status.color}
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
+                      buttonColor='#722ED1'
                       isFaded={status.label === STRINGS.ACTIVITY_ENDED}
                     />
                   )
@@ -180,6 +188,7 @@ export default function ActivityZonePage() {
                       statusColor={status.color}
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
+                      buttonColor='#FA8C16'
                       isFaded={status.label === STRINGS.COMPETITION_ENDED}
                     />
                   )
@@ -197,6 +206,7 @@ export default function ActivityZonePage() {
                     price={item.salary}
                     originalPrice={item.originalPrice}
                     buttonText={STRINGS.EMPLOYMENT_APPLY}
+                    buttonColor='#13C2C2'
                   />
                 ))}
               </View>

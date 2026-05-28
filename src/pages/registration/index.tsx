@@ -84,6 +84,7 @@ export default function RegistrationIndexPage() {
                   price={`¥${cert.price}`}
                   originalPrice={`¥${cert.originalPrice}`}
                   buttonText={STRINGS.EXAM_SIGNUP}
+                  buttonColor='#1677FF'
                   onButtonClick={() => handleCardClick(cert)}
                 />
               </View>

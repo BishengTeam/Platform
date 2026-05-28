@@ -18,10 +18,7 @@ export const profileGridItems: ProfileMenuItem[] = [
 
 export const profileListItems: ProfileMenuItem[] = [
   { icon: 'file-text', label: STRINGS.PROFILE_LIST_ORDERS, route: 'pages/orders/index' },
-  { icon: 'award', label: '报考查询', route: 'pages/mine/exam-query' },
   { icon: 'star', label: '积分优惠', route: 'pages/mine/points' },
-  { icon: 'clipboard', label: '我的协议', route: 'pages/mine/agreements' },
-  { icon: 'users', label: '联系老师', route: 'pages/mine/contact-teachers' },
   { icon: 'headset', label: STRINGS.PROFILE_LIST_SERVICE, route: 'pages/service/index' },
   { icon: 'send', label: STRINGS.PROFILE_LIST_SHARE, route: 'pages/mine/share' },
 ]

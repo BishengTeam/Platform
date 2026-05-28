@@ -17,10 +17,7 @@ const STORAGE_KEY = 'registration_form_data'
 
 export default function RegistrationFormPage() {
   const [certId, setCertId] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
   const [realName, setRealName] = useState('')
-  const [gender, setGender] = useState<'male' | 'female' | ''>('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [idCard, setIdCard] = useState('')
@@ -28,8 +25,6 @@ export default function RegistrationFormPage() {
   const [education, setEducation] = useState('')
   const [organization, setOrganization] = useState('')
   const [examDate, setExamDate] = useState('')
-  const [country, setCountry] = useState('')
-  const [language, setLanguage] = useState('')
   const [identityType, setIdentityType] = useState<'personal' | 'student' | 'enterprise'>('personal')
   const [xuexinCode, setXuexinCode] = useState('')
   const [studentProofPath, setStudentProofPath] = useState('')
@@ -77,10 +72,7 @@ export default function RegistrationFormPage() {
     const formData = {
       cert_id: cert.id,
       cert_name: cert.name,
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
       real_name: realName.trim(),
-      gender: gender || undefined,
       phone: phone.trim(),
       email: email.trim(),
       id_card: idCard.trim(),
@@ -89,8 +81,6 @@ export default function RegistrationFormPage() {
       organization: organization.trim(),
       identity_type: identityType,
       exam_date: examDate,
-      country: country.trim(),
-      language: language.trim(),
       price: cert.price,
       batch_count: identityType === 'enterprise' ? Number(batchCount) || 1 : 1,
       coupon_count: isCouponActive ? 1 : 0,
@@ -166,18 +156,6 @@ export default function RegistrationFormPage() {
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.FORM_PERSONAL_INFO}</Text>
             <FormInput
-              label={STRINGS.FORM_LAST_NAME}
-              placeholder={STRINGS.FORM_LAST_NAME_PLACEHOLDER}
-              value={lastName}
-              onChange={setLastName}
-            />
-            <FormInput
-              label={STRINGS.FORM_FIRST_NAME}
-              placeholder={STRINGS.FORM_FIRST_NAME_PLACEHOLDER}
-              value={firstName}
-              onChange={setFirstName}
-            />
-            <FormInput
               label={STRINGS.FORM_REAL_NAME}
               required
               placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER}
@@ -185,26 +163,6 @@ export default function RegistrationFormPage() {
               error={errors.realName}
               onChange={setRealName}
             />
-
-            <View className={styles.identityRow}>
-              <Text className={styles.identityLabel}>
-                {STRINGS.FORM_GENDER}
-              </Text>
-              <View className={styles.identityToggle}>
-                <View
-                  className={`${styles.identityOption} ${gender === 'male' ? styles.identityActive : ''}`}
-                  onClick={() => setGender('male')}
-                >
-                  <Text>{STRINGS.FORM_GENDER_MALE}</Text>
-                </View>
-                <View
-                  className={`${styles.identityOption} ${gender === 'female' ? styles.identityActive : ''}`}
-                  onClick={() => setGender('female')}
-                >
-                  <Text>{STRINGS.FORM_GENDER_FEMALE}</Text>
-                </View>
-              </View>
-            </View>
 
             <FormInput
               label={STRINGS.FORM_PHONE}
@@ -357,18 +315,6 @@ export default function RegistrationFormPage() {
                 </Text>
               </View>
             </View>
-            <FormInput
-              label={STRINGS.FORM_COUNTRY}
-              placeholder={STRINGS.FORM_COUNTRY_PLACEHOLDER}
-              value={country}
-              onChange={setCountry}
-            />
-            <FormInput
-              label={STRINGS.FORM_LANGUAGE}
-              placeholder={STRINGS.FORM_LANGUAGE_PLACEHOLDER}
-              value={language}
-              onChange={setLanguage}
-            />
           </View>
 
           <View className={styles.section}>

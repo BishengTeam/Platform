@@ -36,7 +36,8 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     bg: '#FFF7E6',
     iconColor: '#c67c00',
     icon: 'trophy',
-    url: '/pages/competition-zone/index',
+    url: '/pages/activity-zone/index',
+    tab: 'competition',
   },
   {
     name: STRINGS.ZONE_NAMES[3],
@@ -56,7 +57,10 @@ export default function IndexPage() {
     if (!item.url) return
     const path = item.url.replace(/^\//, '')
     if (TAB_BAR_CONFIG.some(t => t.key === path)) {
-      Taro.switchTab({ url: item.url })
+      if (item.tab) {
+        Taro.setStorageSync('activityZoneTab', item.tab)
+      }
+      Taro.switchTab({ url: `/${path}` })
     } else {
       Taro.navigateTo({ url: item.url })
     }

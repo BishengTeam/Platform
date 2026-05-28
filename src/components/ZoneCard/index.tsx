@@ -12,6 +12,7 @@ interface ZoneCardProps {
   statusColor?: string
   buttonText: string
   buttonVariant?: 'primary' | 'secondary' | 'gradient'
+  buttonColor?: string
   onButtonClick?: () => void
   onCardClick?: () => void
   isFaded?: boolean
@@ -28,6 +29,7 @@ export function ZoneCard({
   statusColor,
   buttonText,
   buttonVariant = 'primary',
+  buttonColor,
   onButtonClick,
   onCardClick,
   isFaded = false,
@@ -67,6 +69,7 @@ export function ZoneCard({
         )}
         <Button
           variant={buttonVariant}
+          color={buttonColor}
           size='sm'
           className={styles.btn}
           onClick={onButtonClick}

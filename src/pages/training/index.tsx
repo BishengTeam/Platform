@@ -70,6 +70,7 @@ export default function TrainingPage() {
             price={course.price === 0 ? STRINGS.ORDERS_FREE : `¥${course.price}`}
             originalPrice={course.originalPrice > course.price ? `¥${course.originalPrice}` : undefined}
             buttonText={STRINGS.STUDY_ENROLL}
+            buttonColor='#52C41A'
             onButtonClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}
           />
         ))}

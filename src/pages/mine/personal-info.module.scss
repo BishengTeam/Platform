@@ -14,27 +14,33 @@
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
-.menuSection {
+.card {
   margin: $spacing-md $spacing-lg;
   background: $color-white;
   border-radius: 16px;
   overflow: hidden;
+  padding: $spacing-md 0;
 }
 
-.menuItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px $spacing-md;
-}
-
-.menuLeft {
+.infoRow {
   display: flex;
   align-items: center;
   gap: $spacing-md;
+  padding: 18px $spacing-lg;
 }
 
-.menuLabel {
+.infoText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoLabel {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.infoValue {
   font-size: $font-lg;
   color: $color-text;
 }
@@ -42,12 +48,9 @@
 .divider {
   height: 1px;
   background: #f5f5f5;
-  margin: 0 $spacing-md;
+  margin: 0 $spacing-lg;
 }
 
-.btnSection {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
+.btnWrap {
   padding: $spacing-xl $spacing-lg;
 }

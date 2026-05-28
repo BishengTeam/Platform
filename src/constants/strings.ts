@@ -62,6 +62,10 @@ export const STRINGS = {
   PROFILE_LIST_SHARE: '分享给好友',
   PROFILE_FEATURE_IN_DEVELOPMENT: '功能开发中',
   PROFILE_SETTINGS: '设置',
+  SETTINGS_ABOUT_US: '关于我们',
+  SETTINGS_FEEDBACK: '意见反馈',
+  SETTINGS_PERSONAL_INFO_LIST: '个人信息收集清单',
+  SETTINGS_SWITCH_ACCOUNT: '切换账号',
 
   // ---- Orders Page ----
   ORDERS_TITLE: '我的订单',
@@ -503,7 +507,8 @@ export const STRINGS = {
   MINE_COURSES_EXPIRED: '已过期',
   MINE_COURSES_CONTINUE: '继续学习',
   MINE_COURSES_EMPTY: '暂无课程',
-  MINE_PROFILE_TITLE: '编辑资料',
+  MINE_PROFILE_TITLE: '个人资料',
+  MINE_EDIT_PROFILE_TITLE: '编辑资料',
   MINE_PROFILE_EDIT_COUNT: '修改次数',
   MINE_PROFILE_SAVE: '保存',
   FORM_NICKNAME: '昵称',

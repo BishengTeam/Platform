@@ -28,6 +28,8 @@ export const ROUTES = {
   QUIZ_CHECKIN: 'pages/quiz/checkin',
   MINE_COURSES: 'pages/mine/courses',
   MINE_PROFILE: 'pages/mine/profile',
+  MINE_PERSONAL_INFO: 'pages/mine/personal-info',
+  MINE_EDIT_PROFILE: 'pages/mine/edit-profile',
   MINE_POINTS: 'pages/mine/points',
   MINE_AGREEMENTS: 'pages/mine/agreements',
   MINE_COLLECTIONS: 'pages/mine/collections',
@@ -49,7 +51,7 @@ export const TAB_BAR_CONFIG = [
 export const ZONE_ROUTES: Record<string, string> = {
   exam: '/pages/registration/index',
   learn: '/pages/training/index',
-  compete: '/pages/competition-zone/index',
+  compete: '/pages/activity-zone/index?tab=competition',
   activity: '/pages/activity-zone/index',
   job: '/pages/employment-zone/index',
 }

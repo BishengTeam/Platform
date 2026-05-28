@@ -9,6 +9,7 @@ interface ButtonProps {
   onClick?: () => void
   children: ReactNode
   style?: Record<string, string>
+  color?: string
 }
 
 const SIZE_MAP: Record<string, 'small' | 'normal' | 'large'> = {
@@ -25,13 +26,14 @@ export function Button({
   onClick,
   children,
   style,
+  color,
 }: ButtonProps) {
   if (variant === 'gradient') {
     return (
       <NutButton
         className={className}
         size={SIZE_MAP[size] || 'normal'}
-        color='linear-gradient(135deg, #1677FF, #4096FF)'
+        color={color || 'linear-gradient(135deg, #1677FF, #4096FF)'}
         disabled={disabled}
         onClick={onClick}
         style={style}
@@ -49,6 +51,7 @@ export function Button({
       disabled={disabled}
       onClick={onClick}
       style={style}
+      color={color}
     >
       {children}
     </NutButton>

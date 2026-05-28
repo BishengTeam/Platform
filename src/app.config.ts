@@ -17,10 +17,6 @@ export default defineAppConfig({
       pages: ['index'],
     },
     {
-      root: 'pages/competition-zone',
-      pages: ['index'],
-    },
-    {
       root: 'pages/employment-zone',
       pages: ['index'],
     },
@@ -58,7 +54,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/mine',
-      pages: ['courses', 'profile', 'points', 'agreements', 'collections', 'exam-query', 'exam-intention', 'contact-teachers', 'share', 'deactivate'],
+      pages: ['courses', 'profile', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'exam-intention', 'contact-teachers', 'share', 'deactivate'],
     },
     {
       root: 'pages/login-poster',
