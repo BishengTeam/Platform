@@ -1,14 +1,18 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
+import { QuizBottomNav } from '@/components/QuizBottomNav'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import { getCourseList, getQuizCategories } from '@/services/dataService'
+import type { QuizBottomItem } from '@/constants/quiz'
+import { getStudyZone, getQuizCategories } from '@/services/dataService'
+import type { StudyZoneResponse, CourseBrief, ZoneBrief } from '@/types'
+import type { QuizCategory } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
@@ -21,7 +25,7 @@ const TECH_TAGS: TagFilterItem[] = [
   { label: STRINGS.STUDY_TAG_PRACTICAL, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
 ]
 
-const QUIZ_GRID_ITEMS = [
+const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
   { label: '刷题练习', icon: '📝', route: ROUTES.QUIZ_PRACTICE },
   { label: '模拟考试', icon: '📋', route: ROUTES.QUIZ_MOCK },
   { label: '错题收藏', icon: '📕', route: ROUTES.QUIZ_WRONG_BOOK },
@@ -31,14 +35,27 @@ export default function TrainingPage() {
   const [mainTab, setMainTab] = useState<string>(MAIN_TABS[0])
   const [techTag, setTechTag] = useState('全部')
 
-  const allCourses = getCourseList()
-  const quizCategories = getQuizCategories()
-  const [selectedQuizId, setSelectedQuizId] = useState(quizCategories[0]?.id || '')
+  const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
+  const [quizCategories, setQuizCategories] = useState<QuizCategory[]>([])
+  const [selectedQuizId, setSelectedQuizId] = useState('')
+  const [zoneBanner, setZoneBanner] = useState<ZoneBrief | null>(null)
+
+  useEffect(() => {
+    getStudyZone().then((data: StudyZoneResponse) => {
+      setAllCourses(data.courses)
+      setZoneBanner(data.zones[0] ?? null)
+    })
+    getQuizCategories().then((cats) => {
+      setQuizCategories(cats)
+      setSelectedQuizId(cats[0]?.id || '')
+    })
+  }, [])
+
   const selectedQuiz = quizCategories.find(q => q.id === selectedQuizId) || quizCategories[0]
 
   const techCourses = useMemo(() => {
     if (techTag === '全部') return allCourses
-    return allCourses.filter(c => c.tag === techTag)
+    return allCourses.filter(c => c.category === techTag)
   }, [techTag, allCourses])
 
   const handleQuizSelect = useCallback(() => {
@@ -51,8 +68,8 @@ export default function TrainingPage() {
     })
   }, [quizCategories])
 
-  const handleQuizGrid = useCallback((route: string) => {
-    Taro.navigateTo({ url: `/${route}` })
+  const handleQuizBottomNav = useCallback((item: QuizBottomItem) => {
+    Taro.navigateTo({ url: `/pages/${item.route}` })
   }, [])
 
   const renderTechTab = () => (
@@ -65,10 +82,9 @@ export default function TrainingPage() {
           <ZoneCard
             key={course.id}
             title={course.title}
-            subtitle={course.desc1 || course.description}
-            tags={[course.desc2 || course.duration, `${course.rating}分`]}
-            price={course.price === 0 ? STRINGS.ORDERS_FREE : `¥${course.price}`}
-            originalPrice={course.originalPrice > course.price ? `¥${course.originalPrice}` : undefined}
+            subtitle={course.teacher_name || course.description || ''}
+            tags={[course.category]}
+            price={String(course.price) === '0' || course.price === 0 ? STRINGS.ORDERS_FREE : `¥${course.price}`}
             buttonText={STRINGS.STUDY_ENROLL}
             buttonColor='#52C41A'
             onButtonClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}
@@ -107,19 +123,12 @@ export default function TrainingPage() {
             <Text className={styles.statsLabel}>正确率</Text>
           </View>
         </View>
-        <View className={styles.statsCta} onClick={() => handleQuizGrid(ROUTES.QUIZ_PRACTICE)}>
+        <View className={styles.statsCta} onClick={() => Taro.navigateTo({ url: `/pages/${ROUTES.QUIZ_PRACTICE}` })}>
           <Text className={styles.statsCtaText}>开始练习</Text>
         </View>
       </View>
 
-      <View className={styles.quizBottomRow}>
-        {QUIZ_GRID_ITEMS.map(item => (
-          <View key={item.route} className={styles.quizBottomItem} onClick={() => handleQuizGrid(item.route)}>
-            <Text className={styles.quizBottomIcon}>{item.icon}</Text>
-            <Text className={styles.quizBottomLabel}>{item.label}</Text>
-          </View>
-        ))}
-      </View>
+      <QuizBottomNav items={TRAINING_QUIZ_BOTTOM} onItemClick={handleQuizBottomNav} />
     </View>
   )
 

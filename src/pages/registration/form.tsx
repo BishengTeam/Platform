@@ -1,14 +1,14 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro, { useLoad, useDidShow } from '@tarojs/taro'
+import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { ROUTES } from '@/constants/routes'
-import { getCertifications } from '@/services/dataService'
+import { getCertDetail, uploadFile, createOrder, getUserProfile } from '@/services/dataService'
+import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard, validateEmail } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
 import styles from './form.module.scss'
@@ -25,29 +25,32 @@ export default function RegistrationFormPage() {
   const [education, setEducation] = useState('')
   const [organization, setOrganization] = useState('')
   const [examDate, setExamDate] = useState('')
-  const [identityType, setIdentityType] = useState<'personal' | 'student' | 'enterprise'>('personal')
-  const [xuexinCode, setXuexinCode] = useState('')
-  const [studentProofPath, setStudentProofPath] = useState('')
-  const [enterpriseName, setEnterpriseName] = useState('')
-  const [batchCount, setBatchCount] = useState('1')
-  const [isCouponActive, setUseCoupon] = useState(false)
+  const [gender, setGender] = useState('')
+  const [country, setCountry] = useState('')
+  const [language, setLanguage] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
 
   useLoad((options) => {
     setCertId(options?.cert_id || '')
   })
 
-  useDidShow(() => {
-    const storedCode = Taro.getStorageSync('xuexin_verification_code')
-    if (storedCode) {
-      setXuexinCode(storedCode)
-      Taro.removeStorageSync('xuexin_verification_code')
-    }
-  })
+  const [cert, setCert] = useState<CertificationDetail | null>(null)
 
-  const cert = useMemo(() => getCertifications().find(c => c.id === certId), [certId])
+  useEffect(() => {
+    const id = Number(certId)
+    if (!id) return
+    getCertDetail(id).then(setCert)
+  }, [certId])
 
-  const couponCount = 1
+  useEffect(() => {
+    getUserProfile().then(profile => {
+      if (profile.phone && !phone) setPhone(profile.phone)
+      if (profile.real_name && !realName) setRealName(profile.real_name)
+      if (profile.email && !email) setEmail(profile.email)
+    })
+  }, [])
 
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
@@ -56,41 +59,33 @@ export default function RegistrationFormPage() {
       idCard: validateIdCard(idCard),
     }
     if (email.trim()) next.email = validateEmail(email)
-    if (identityType === 'enterprise' && !enterpriseName.trim()) {
-      next.enterpriseName = { valid: false, message: STRINGS.FORM_VALID_ENTERPRISE_NAME }
-    }
-    if (identityType === 'student' && !xuexinCode.trim()) {
-      next.xuexinCode = { valid: false, message: STRINGS.VALIDATOR_VERIFICATION_REQUIRED }
-    }
     setErrors(next)
     return Object.values(next).every(v => v.valid)
-  }, [realName, phone, idCard, email, identityType, enterpriseName, xuexinCode])
+  }, [realName, phone, idCard, email])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
 
-    const formData = {
-      cert_id: cert.id,
-      cert_name: cert.name,
-      real_name: realName.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-      id_card: idCard.trim(),
-      id_photo: idPhotoPath,
-      education: education.trim(),
-      organization: organization.trim(),
-      identity_type: identityType,
-      exam_date: examDate,
-      price: cert.price,
-      batch_count: identityType === 'enterprise' ? Number(batchCount) || 1 : 1,
-      coupon_count: isCouponActive ? 1 : 0,
-      enterprise_name: identityType === 'enterprise' ? enterpriseName.trim() : '',
-      xuexin_code: identityType === 'student' ? xuexinCode.trim() : '',
-      student_proof: identityType === 'student' ? studentProofPath : '',
-    }
+    const order = await createOrder({
+      cert_type: 'h3c',
+      candidate_name: realName.trim(),
+      candidate_phone: phone.trim(),
+      candidate_idcard: idCard.trim(),
+      extra_data: {
+        email: email.trim(),
+        education: education.trim(),
+        organization: organization.trim(),
+        exam_date: examDate,
+        gender: gender || undefined,
+        country: country || undefined,
+        language: language || undefined,
+        first_name: firstName.trim() || undefined,
+        last_name: lastName.trim() || undefined,
+      },
+      attachments: [idPhotoPath].filter(Boolean),
+    })
 
-    Taro.setStorageSync(STORAGE_KEY, formData)
-    Taro.navigateTo({ url: '/pages/registration/confirm' })
+    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.order_id}` })
   }
 
   const handleChooseIdPhoto = () => {
@@ -98,30 +93,19 @@ export default function RegistrationFormPage() {
       count: 1,
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
-      success: (res) => setIdPhotoPath(res.tempFilePaths[0]),
+    }).then(res => {
+      const filePath = res.tempFilePaths[0]
+      uploadFile(filePath).then(({ url }) => {
+        setIdPhotoPath(url)
+      }).catch(() => {
+        Taro.showToast({ title: '上传失败', icon: 'none' })
+      })
     })
-  }
-
-  const handleChooseStudentProof = () => {
-    Taro.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: (res) => setStudentProofPath(res.tempFilePaths[0]),
-    })
-  }
-
-  const handleGoXuexinGuide = () => {
-    Taro.navigateTo({ url: `/pages/registration/xuexin-guide` })
   }
 
   const handlePickExamDate = () => {
-    Taro.showToast({ title: '请选择考试日期', icon: 'none' })
+    Taro.showToast({ title: STRINGS.FORM_PICK_EXAM_DATE, icon: 'none' })
   }
-
-  const batchMultiplier = identityType === 'enterprise' ? (Number(batchCount) || 1) : 1
-  const couponDiscount = isCouponActive && cert ? -cert.price : 0
-  const totalPrice = cert ? cert.price * batchMultiplier + couponDiscount : 0
 
   if (!cert) {
     return (
@@ -214,95 +198,55 @@ export default function RegistrationFormPage() {
               value={organization}
               onChange={setOrganization}
             />
-          </View>
 
-          <View className={styles.section}>
-            <Text className={styles.sectionTitle}>{STRINGS.FORM_IDENTITY_TYPE}</Text>
-            <View className={styles.identityTriple}>
-              <View
-                className={`${styles.identityOption} ${identityType === 'personal' ? styles.identityActive : ''}`}
-                onClick={() => setIdentityType('personal')}
-              >
-                <Text>{STRINGS.FORM_IDENTITY_PERSONAL}</Text>
-              </View>
-              <View
-                className={`${styles.identityOption} ${identityType === 'student' ? styles.identityActive : ''}`}
-                onClick={() => setIdentityType('student')}
-              >
-                <Text>{STRINGS.FORM_IDENTITY_STUDENT}</Text>
-              </View>
-              <View
-                className={`${styles.identityOption} ${identityType === 'enterprise' ? styles.identityActive : ''}`}
-                onClick={() => setIdentityType('enterprise')}
-              >
-                <Text>{STRINGS.FORM_IDENTITY_ENTERPRISE}</Text>
+            <View className={styles.identityRow}>
+              <Text className={styles.identityLabel}>{STRINGS.FORM_GENDER}</Text>
+              <View className={styles.identityToggle}>
+                <View className={`${styles.identityOption} ${gender === 'male' ? styles.identityActive : ''}`} onClick={() => setGender('male')}>
+                  <Text>{STRINGS.FORM_GENDER_MALE}</Text>
+                </View>
+                <View className={`${styles.identityOption} ${gender === 'female' ? styles.identityActive : ''}`} onClick={() => setGender('female')}>
+                  <Text>{STRINGS.FORM_GENDER_FEMALE}</Text>
+                </View>
               </View>
             </View>
 
-            {identityType === 'student' && (
-              <View className={styles.subSection}>
-                <FormInput
-                  label={STRINGS.FORM_STUDENT_VERIFY}
-                  required
-                  placeholder={STRINGS.FORM_STUDENT_VERIFY_PLACEHOLDER}
-                  value={xuexinCode}
-                  error={errors.xuexinCode}
-                  onChange={setXuexinCode}
-                />
-                <View className={styles.linkRow}>
-                  <Text className={styles.linkText} onClick={handleGoXuexinGuide}>
-                    {STRINGS.FORM_XUEXIN_LINK_TEXT}
-                  </Text>
+            <View className={styles.identityRow}>
+              <Text className={styles.identityLabel}>{STRINGS.FORM_COUNTRY}</Text>
+              <View className={styles.identityToggle}>
+                <View className={`${styles.identityOption} ${country === '中国' ? styles.identityActive : ''}`} onClick={() => setCountry('中国')}>
+                  <Text>中国</Text>
                 </View>
-                <View className={styles.uploadRow}>
-                  <Text className={styles.uploadLabel}>{STRINGS.FORM_STUDENT_ID_PHOTO}</Text>
-                  <View className={styles.uploadBox} onClick={handleChooseStudentProof}>
-                    <Text className={studentProofPath ? styles.uploadPath : styles.uploadTip}>
-                      {studentProofPath ? studentProofPath.split('/').pop() || STRINGS.FORM_STUDENT_ID_PHOTO_TIP : STRINGS.FORM_STUDENT_ID_PHOTO_TIP}
-                    </Text>
-                  </View>
+                <View className={`${styles.identityOption} ${country === '其他' ? styles.identityActive : ''}`} onClick={() => setCountry('其他')}>
+                  <Text>其他</Text>
                 </View>
               </View>
-            )}
+            </View>
 
-            {identityType === 'enterprise' && (
-              <View className={styles.subSection}>
-                <FormInput
-                  label={STRINGS.FORM_ENTERPRISE_NAME}
-                  required
-                  placeholder={STRINGS.FORM_ENTERPRISE_NAME_PLACEHOLDER}
-                  value={enterpriseName}
-                  error={errors.enterpriseName}
-                  onChange={setEnterpriseName}
-                />
-                <FormInput
-                  label={STRINGS.FORM_BATCH_COUNT}
-                  placeholder='1'
-                  value={batchCount}
-                  type='number'
-                  onChange={setBatchCount}
-                />
-
-                {couponCount > 0 && (
-                  <View className={styles.couponCard}>
-                    <View className={styles.couponRow}>
-                      <Text className={styles.couponLabel}>
-                        {STRINGS.FORM_COUPON_COUNT}: {couponCount}{STRINGS.FORM_COUPON_COUNT_UNIT}
-                      </Text>
-                      <View
-                        className={`${styles.couponToggle} ${isCouponActive ? styles.couponToggleActive : ''}`}
-                        onClick={() => setUseCoupon(!isCouponActive)}
-                      >
-                        <View className={`${styles.couponDot} ${isCouponActive ? styles.couponDotActive : ''}`} />
-                      </View>
-                    </View>
-                    {isCouponActive && (
-                      <Text className={styles.couponTip}>{STRINGS.FORM_COUPON_TIP}</Text>
-                    )}
-                  </View>
-                )}
+            <View className={styles.identityRow}>
+              <Text className={styles.identityLabel}>{STRINGS.FORM_LANGUAGE}</Text>
+              <View className={styles.identityToggle}>
+                <View className={`${styles.identityOption} ${language === '中文' ? styles.identityActive : ''}`} onClick={() => setLanguage('中文')}>
+                  <Text>中文</Text>
+                </View>
+                <View className={`${styles.identityOption} ${language === 'English' ? styles.identityActive : ''}`} onClick={() => setLanguage('English')}>
+                  <Text>English</Text>
+                </View>
               </View>
-            )}
+            </View>
+
+            <FormInput
+              label={STRINGS.FORM_FIRST_NAME}
+              placeholder={STRINGS.FORM_FIRST_NAME_PLACEHOLDER}
+              value={firstName}
+              onChange={setFirstName}
+            />
+            <FormInput
+              label={STRINGS.FORM_LAST_NAME}
+              placeholder={STRINGS.FORM_LAST_NAME_PLACEHOLDER}
+              value={lastName}
+              onChange={setLastName}
+            />
           </View>
 
           <View className={styles.section}>
@@ -321,14 +265,8 @@ export default function RegistrationFormPage() {
             <Text className={styles.sectionTitle}>{STRINGS.FORM_PRICE_DETAIL}</Text>
             <View className={styles.priceCard}>
               <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={cert.price} />
-              {batchMultiplier > 1 && (
-                <PriceRow label={`${STRINGS.FORM_BATCH_COUNT} × ${batchMultiplier}`} value={cert.price * batchMultiplier} />
-              )}
-              {couponDiscount < 0 && (
-                <PriceRow label={STRINGS.FORM_PRICE_COUPON_DISCOUNT} value={couponDiscount} isStrikethrough />
-              )}
               <View className={styles.divider} />
-              <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={totalPrice} isTotal />
+              <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={cert.price} isTotal />
             </View>
           </View>
 

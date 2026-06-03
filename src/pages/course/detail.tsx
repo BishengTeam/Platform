@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -18,7 +18,10 @@ export default function CourseDetailPage() {
     setCourseId(options?.id || '')
   })
 
-  const course = useMemo(() => getCourseById(courseId), [courseId])
+  const [course, setCourse] = useState(null)
+  useEffect(() => {
+    if (courseId) getCourseById(courseId).then(setCourse)
+  }, [courseId])
 
   const handleEnroll = () => {
     if (!course) return

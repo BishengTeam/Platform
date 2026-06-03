@@ -1,0 +1,30 @@
+@use '../../styles/variables' as *;
+
+.quizGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-sm;
+  padding: 0 $spacing-lg $spacing-md;
+}
+
+.quizGridItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  padding: $spacing-lg $spacing-md;
+  background: $color-white;
+  border-radius: $radius-md;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.quizGridIcon {
+  font-size: 32px;
+}
+
+.quizGridLabel {
+  font-size: $font-base;
+  font-weight: 500;
+  color: $color-text;
+}

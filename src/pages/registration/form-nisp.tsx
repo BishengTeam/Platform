@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -7,16 +7,14 @@ import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCertifications } from '@/services/dataService'
+import { getCertDetail, uploadFile, createOrder, getUserProfile } from '@/services/dataService'
+import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
+import { autoPinyin } from '@/utils/pinyin'
 import type { ValidationResult } from '@/utils/validator'
 import styles from './form.module.scss'
 
 const STORAGE_KEY = 'registration_nisp_form'
-
-function autoPinyin(name: string): string {
-  return name.split('').map(() => 'XX').join(' ')
-}
 
 export default function NispFormPage() {
   const [certId, setCertId] = useState('')
@@ -33,14 +31,35 @@ export default function NispFormPage() {
   const [education, setEducation] = useState('')
   const [address, setAddress] = useState('')
   const [zipCode, setZipCode] = useState('')
+  const [portraitPhotoPath, setPortraitPhotoPath] = useState('')
+  const [idPhotoPath, setIdPhotoPath] = useState('')
+  const [xuexinReportPath, setXuexinReportPath] = useState('')
+  const [templatePath, setTemplatePath] = useState('')
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
 
   useLoad((options) => {
     setCertId(options?.cert_id || '')
   })
 
-  const cert = useMemo(() => getCertifications().find(c => c.id === certId), [certId])
-  const trainingType = cert ? cert.categoryName : ''
+  const [cert, setCert] = useState<CertificationDetail | null>(null)
+
+  useEffect(() => {
+    const id = Number(certId)
+    if (!id) return
+    getCertDetail(id).then(setCert)
+  }, [certId])
+
+  useEffect(() => {
+    getUserProfile().then(profile => {
+      if (profile.phone && !phone) setPhone(profile.phone)
+      if (profile.real_name && !name) setName(profile.real_name)
+      if (profile.email && !email) setEmail(profile.email)
+      if (profile.school && !school) setSchool(profile.school)
+      if (profile.major && !major) setMajor(profile.major)
+    })
+  }, [])
+
+  const trainingType = cert ? (cert as any).categoryName : ''
   const pinyin = name ? autoPinyin(name) : ''
 
   const handleValidate = useCallback(() => {
@@ -60,19 +79,33 @@ export default function NispFormPage() {
     return Object.values(next).every(v => v.valid)
   }, [name, phone, idCard, email, school, major, province, level, address])
 
-  const handleSubmit = () => {
+  const handleUpload = (setter: (path: string) => void) => {
+    Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
+      .then(res => {
+        const filePath = res.tempFilePaths[0]
+        uploadFile(filePath).then(({ url }) => setter(url))
+          .catch(() => Taro.showToast({ title: '上传失败', icon: 'none' }))
+      })
+  }
+
+  const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
-    Taro.setStorageSync(STORAGE_KEY, {
-      cert_id: cert.id, cert_name: cert.name,
-      name: name.trim(), pinyin, phone: phone.trim(),
-      id_card: idCard.trim(), email: email.trim(), school: school.trim(),
-      major: major.trim(), province, training_type: trainingType, level,
-      price: cert.price, gender: level === '2' ? gender : undefined,
-      age: level === '2' && age ? parseInt(age, 10) : undefined,
-      education: level === '2' ? education : undefined,
-      address: level === '2' ? address.trim() : undefined,
-      zip_code: level === '2' ? zipCode.trim() : undefined,
-      institution: level === '2' ? '四川智天远教育科技有限公司' : undefined,
+    await createOrder({
+      cert_type: 'nisp',
+      candidate_name: name.trim(),
+      candidate_phone: phone.trim(),
+      candidate_idcard: idCard.trim(),
+      extra_data: {
+        pinyin, email: email.trim(), school: school.trim(),
+        major: major.trim(), province, training_type: trainingType, level,
+        gender: level === '2' ? gender : undefined,
+        age: level === '2' && age ? parseInt(age, 10) : undefined,
+        education: level === '2' ? education : undefined,
+        address: level === '2' ? address.trim() : undefined,
+        zip_code: level === '2' ? zipCode.trim() : undefined,
+        institution: level === '2' ? STRINGS.NISP_INSTITUTION_DEFAULT : undefined,
+      },
+      attachments: [portraitPhotoPath, idPhotoPath, xuexinReportPath, templatePath].filter(Boolean),
     })
     Taro.showToast({ title: STRINGS.NISP_PAY_SUCCESS_TOAST, icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 1500)
@@ -145,7 +178,7 @@ export default function NispFormPage() {
                 <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} />
                 <FormInput label={STRINGS.FORM_ADDRESS} placeholder={STRINGS.FORM_ADDRESS_PLACEHOLDER} value={address} onChange={setAddress} />
                 <FormInput label={STRINGS.FORM_ZIP_CODE} placeholder={STRINGS.FORM_ZIP_CODE_PLACEHOLDER} value={zipCode} type='number' maxlength={6} onChange={setZipCode} />
-                <FormInput label={STRINGS.FORM_INSTITUTION} placeholder='' value='四川智天远教育科技有限公司' onChange={() => {}} />
+                <FormInput label={STRINGS.FORM_INSTITUTION} placeholder='' value={STRINGS.NISP_INSTITUTION_DEFAULT} onChange={() => {}} />
               </>
             )}
           </View>
@@ -154,15 +187,19 @@ export default function NispFormPage() {
             <Text className={styles.sectionTitle}>{STRINGS.FORM_UPLOAD_MATERIALS}</Text>
             <View className={styles.summaryCard}>
               <Text className={styles.metaItem}>{level === '1' ? STRINGS.FORM_PORTRAIT_PHOTO_TIP_NISP1 : STRINGS.FORM_PORTRAIT_PHOTO_TIP_NISP2}</Text>
-              <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })}>上传寸照</Button></View>
+              <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => handleUpload(setPortraitPhotoPath)}>{STRINGS.FORM_UPLOAD_PORTRAIT_PHOTO}</Button></View>
               <Text className={styles.metaItem}>{STRINGS.FORM_ID_PHOTO_TIP_NISP}</Text>
-              <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })}>上传身份证照片</Button></View>
+              <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => handleUpload(setIdPhotoPath)}>{STRINGS.FORM_UPLOAD_ID_PHOTO}</Button></View>
               <Text className={styles.metaItem}>{STRINGS.FORM_XUEXIN_REPORT_TIP}</Text>
-              <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })}>上传学信网报告</Button></View>
+              <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => handleUpload(setXuexinReportPath)}>{STRINGS.FORM_UPLOAD_XUEXIN_REPORT}</Button></View>
               {level === '2' && (
                 <>
-                  <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })}>{STRINGS.FORM_TEMPLATE_DOWNLOAD}</Button></View>
-                  <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })}>{STRINGS.FORM_TEMPLATE_UPLOAD}</Button></View>
+                  <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => {
+                    Taro.downloadFile({ url: '/api/nisp/template/download' })
+                      .then(() => Taro.showToast({ title: '模板下载成功', icon: 'success' }))
+                      .catch(() => Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' }))
+                  }}>{STRINGS.FORM_TEMPLATE_DOWNLOAD}</Button></View>
+                  <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => handleUpload(setTemplatePath)}>{STRINGS.FORM_TEMPLATE_UPLOAD}</Button></View>
                 </>
               )}
             </View>

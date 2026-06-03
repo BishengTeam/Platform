@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Avatar } from '@nutui/nutui-react-taro'
@@ -13,7 +14,8 @@ import type { KingKongItem } from '@/components/KingKongZone'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
-import { getExamBannerItems, getHomeCourses, getHomeActivities } from '@/services/dataService'
+import { getHomeAggregation } from '@/services/dataService'
+import type { HomeAggregationResponse } from '@/types'
 import styles from './index.module.scss'
 
 const KING_KONG_ITEMS: KingKongItem[] = [
@@ -49,6 +51,12 @@ const KING_KONG_ITEMS: KingKongItem[] = [
 ]
 
 export default function IndexPage() {
+  const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
+
+  useEffect(() => {
+    getHomeAggregation().then(setHomeData)
+  }, [])
+
   const handleGoConsult = () => {
     Taro.navigateTo({ url: `/${ROUTES.AI_CONSULT}` })
   }
@@ -70,9 +78,6 @@ export default function IndexPage() {
     Taro.switchTab({ url: '/pages/training/index' })
   }
 
-  const courses = getHomeCourses()
-  const activities = getHomeActivities()
-
   return (
     <AuthGuard>
       <View className={styles.page}>
@@ -80,7 +85,12 @@ export default function IndexPage() {
 
         <View className={styles.main}>
           <View className={styles.bannerWrap}>
-            <ZoneBanner items={getExamBannerItems()} />
+            <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
+              id: b.id,
+              title: '',
+              image_url: b.image_url,
+              jump_link: b.jump_link,
+            }))} />
           </View>
 
           <View className={styles.aiCard} onClick={handleGoConsult}>
@@ -101,12 +111,12 @@ export default function IndexPage() {
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_ONLINE_COURSES} onViewAll={handleGoStudyZone} />
-            <HomeCard items={courses} onCardClick={handleGoStudyZone} />
+            <HomeCard items={homeData?.zones['study'] ?? []} onCardClick={handleGoStudyZone} />
           </View>
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoStudyZone} />
-            <HomeCard items={activities} onCardClick={handleGoStudyZone} />
+            <HomeCard items={homeData?.zones['activity'] ?? []} onCardClick={handleGoStudyZone} />
           </View>
         </View>
 

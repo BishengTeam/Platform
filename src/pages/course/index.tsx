@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -7,12 +7,19 @@ import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
 import { getCourseList, getCourseCategories } from '@/services/dataService'
+import type { Course } from '@/types'
+import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
 export default function CourseIndexPage() {
   const [activeTag, setActiveTag] = useState<string>(STRINGS.COURSE_CATEGORY_ALL)
-  const allCourses = getCourseList()
-  const categories = getCourseCategories()
+  const [allCourses, setAllCourses] = useState<Course[]>([])
+  const [categories, setCategories] = useState<TagFilterItem[]>([])
+
+  useEffect(() => {
+    getCourseList().then(setAllCourses)
+    getCourseCategories().then(setCategories)
+  }, [])
 
   const filtered = useMemo(() => {
     if (activeTag === '全部') return allCourses

@@ -1,0 +1,23 @@
+@use '../../styles/variables' as *;
+
+.quizBottom {
+  display: flex;
+  justify-content: space-around;
+  padding: $spacing-lg;
+}
+
+.quizBottomItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.quizBottomIcon {
+  font-size: 24px;
+}
+
+.quizBottomLabel {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}

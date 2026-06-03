@@ -1,7 +1,18 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
-import type { HomeCard as HomeCardItem } from '@/types'
 import styles from './index.module.scss'
+
+export interface HomeCardItem {
+  id: number
+  title: string
+  description: string | null
+  cover_url?: string | null
+  gradient?: string
+  icon?: string
+  tag?: string
+  tagColor?: string
+  tall?: boolean
+}
 
 interface Props {
   items: HomeCardItem[]
@@ -13,7 +24,16 @@ export function HomeCard({ items, onCardClick }: Props) {
   const rightColumn = items.filter((_, i) => i % 2 === 1)
 
   const renderCard = (item: HomeCardItem) => {
-    const coverCls = item.tall ? styles.coverTall : styles.coverShort
+    const isTall = item.tall || (item.cover_url ? true : false)
+    const coverCls = isTall ? styles.coverTall : styles.coverShort
+    const coverStyle: Record<string, string> = {}
+    if (item.cover_url) {
+      coverStyle.backgroundImage = `url(${item.cover_url})`
+      coverStyle.backgroundSize = 'cover'
+      coverStyle.backgroundPosition = 'center'
+    } else if (item.gradient) {
+      coverStyle.background = item.gradient
+    }
     return (
       <View
         key={item.id}
@@ -22,16 +42,20 @@ export function HomeCard({ items, onCardClick }: Props) {
       >
         <View
           className={`${styles.cover} ${coverCls}`}
-          style={{ background: item.gradient }}
+          style={coverStyle}
         >
-          <Icon name={item.icon} size={item.tall ? 40 : 32} color='rgba(255,255,255,0.85)' />
-          <View className={styles.tag} style={{ background: item.tagColor }}>
-            <Text className={styles.tagText}>{item.tag}</Text>
-          </View>
+          {item.icon ? (
+            <Icon name={item.icon} size={isTall ? 40 : 32} color='rgba(255,255,255,0.85)' />
+          ) : null}
+          {item.tag ? (
+            <View className={styles.tag} style={{ background: item.tagColor }}>
+              <Text className={styles.tagText}>{item.tag}</Text>
+            </View>
+          ) : null}
         </View>
         <View className={styles.info}>
           <Text className={styles.title}>{item.title}</Text>
-          <Text className={styles.desc}>{item.description}</Text>
+          <Text className={styles.desc}>{item.description ?? ''}</Text>
         </View>
       </View>
     )

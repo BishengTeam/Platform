@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getAgreements } from '@/services/dataService'
+import { getAgreements, createAgreement, signAgreement } from '@/services/dataService'
 import type { Agreement } from '@/types'
 import styles from './agreements.module.scss'
 
@@ -17,23 +17,64 @@ const STATUS_MAP: Record<Agreement['status'], { label: string; color: string }> 
 }
 
 export default function AgreementsPage() {
-  const [items] = useState(getAgreements())
+  const [items, setItems] = useState<Agreement[]>([])
+  const [loading, setLoading] = useState(true)
   const [signingId, setSigningId] = useState<string | null>(null)
   const [signPaths, setSignPaths] = useState<{ x: number; y: number }[]>([])
+  const [signatureImage, setSignatureImage] = useState<string>('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const loadAgreements = useCallback(async () => {
+    try {
+      const data = await getAgreements()
+      setItems(data)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadAgreements()
+  }, [loadAgreements])
+
+  const handleCreateAgreement = async () => {
+    try {
+      const { id } = await createAgreement({ type: 'training' })
+      Taro.showToast({ title: `${STRINGS.MINE_AGREEMENTS_CREATE} #${id}`, icon: 'success' })
+      await loadAgreements()
+    } catch {
+      Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_CREATE_FAIL, icon: 'none' })
+    }
+  }
 
   const handleSignCanvas = (agreementId: string) => {
     // Canvas signature would use Taro.createCanvasContext in production
     Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_HINT, icon: 'none' })
   }
 
-  const handleSubmitSign = () => {
-    setSigningId(null)
-    setSignPaths([])
-    Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_SUCCESS, icon: 'success' })
+  const handleSubmitSign = async () => {
+    if (!signingId) return
+    setSubmitting(true)
+    try {
+      // In production, get signature image from canvas via Taro.canvasToTempFilePath
+      // For now, serialize signPaths as a fallback signature representation
+      const sigImage = signatureImage || JSON.stringify(signPaths)
+      await signAgreement(signingId, sigImage)
+      setSigningId(null)
+      setSignPaths([])
+      setSignatureImage('')
+      Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_SUCCESS, icon: 'success' })
+      await loadAgreements()
+    } catch {
+      Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_HINT, icon: 'none' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleClearSign = () => {
     setSignPaths([])
+    setSignatureImage('')
   }
 
   return (
@@ -41,6 +82,13 @@ export default function AgreementsPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_AGREEMENTS_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
+          {!loading && (
+            <View className={styles.card}>
+              <Button size='sm' onClick={handleCreateAgreement}>
+                {STRINGS.MINE_AGREEMENTS_CREATE}
+              </Button>
+            </View>
+          )}
           {items.map(item => {
             const statusInfo = STATUS_MAP[item.status]
             return (

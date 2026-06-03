@@ -12,6 +12,7 @@ import {
   KEYWORD_COMPETITION, KEYWORD_ACTIVITY, KEYWORD_COURSE,
 } from '@/constants/keywords'
 import { getInitialMessages, getQuickQuestions } from '@/services/dataService'
+import { sendChatMessage } from '@/services/dataService'
 import type { Message } from '@/types'
 import styles from './index.module.scss'
 
@@ -63,8 +64,9 @@ const RESPONSE_BUILDERS: Record<Intent, (id: number) => Message> = {
 }
 
 function buildAiResponse(id: number, query: string): Message {
+  // Fallback when API returns empty or USE_MOCK: keyword-based intent matching
   const intent = detectIntent(query)
-  if (intent) return RESPONSE_BUILDERS[intent](id)
+  if (intent) return RESPONSE_BUILDERS[intent](id) 
   return { id, type: 'ai', text: STRINGS.INDEX_AI_DEFAULT }
 }
 
@@ -74,7 +76,7 @@ export default function AiConsultPage() {
   const [isTyping, setIsTyping] = useState(false)
   const nextIdRef = useRef(100)
 
-  const handleSend = useCallback((text?: string) => {
+  const handleSend = useCallback(async (text?: string) => {
     const query = (text ?? inputValue).trim()
     if (!query) return
 
@@ -83,11 +85,22 @@ export default function AiConsultPage() {
     setInputValue('')
     setIsTyping(true)
 
-    setTimeout(() => {
+    try {
+      const { reply } = await sendChatMessage(query)
       setIsTyping(false)
-      const aiMsg = buildAiResponse(nextIdRef.current++, query)
+      // Fallback to RESPONSE_BUILDERS when API returns empty or USE_MOCK generic reply
+      if (!reply || reply === '收到您的消息，AI 助手正在处理中...') {
+        const aiMsg = buildAiResponse(nextIdRef.current++, query)
+        setMessages(prev => [...prev, aiMsg])
+      } else {
+        const aiMsg: Message = { id: nextIdRef.current++, type: 'ai', text: reply }
+        setMessages(prev => [...prev, aiMsg])
+      }
+    } catch {
+      setIsTyping(false)
+      const aiMsg = buildAiResponse(nextIdRef.current++, query) 
       setMessages(prev => [...prev, aiMsg])
-    }, 1500)
+    }
   }, [inputValue])
 
   const handleSendEmpty = useCallback(() => handleSend(), [handleSend])

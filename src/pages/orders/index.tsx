@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import { useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { STRINGS } from '@/constants/strings'
 import { getOrders } from '@/services/dataService'
+import type { Order } from '@/types'
 import styles from './index.module.scss'
 
 const STATUS_CONFIG: Record<string, { badgeClass: string; badgeTextClass: string; label: string }> = {
@@ -34,10 +35,15 @@ export default function OrdersPage() {
     ? statusParam
     : STRINGS.ORDERS_TAG_ALL
   const [activeTag, setActiveTag] = useState<string>(initialTag)
+  const [orders, setOrders] = useState<Order[]>([])
+
+  useEffect(() => {
+    getOrders().then(setOrders)
+  }, [])
 
   const filteredOrders = activeTag === STRINGS.ORDERS_TAG_ALL
-    ? getOrders()
-    : getOrders().filter(o => o.status === STATUS_DISPLAY_MAP[activeTag])
+    ? orders
+    : orders.filter(o => o.status === STATUS_DISPLAY_MAP[activeTag])
 
   return (
     <AuthGuard>

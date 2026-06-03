@@ -72,11 +72,11 @@ export default function DeactivatePage() {
               </View>
               <View className={styles.unbindList}>
                 <View className={styles.unbindItem}>
-                  <Text className={styles.unbindLabel}>手机号: 138****8888</Text>
+                  <Text className={styles.unbindLabel}>{STRINGS.MINE_DEACTIVATE_MOCK_PHONE}</Text>
                   <Button size='sm' variant='secondary'>{STRINGS.MINE_DEACTIVATE_UNBIND}</Button>
                 </View>
                 <View className={styles.unbindItem}>
-                  <Text className={styles.unbindLabel}>微信: 已绑定</Text>
+                  <Text className={styles.unbindLabel}>{STRINGS.MINE_DEACTIVATE_MOCK_WECHAT}</Text>
                   <Button size='sm' variant='secondary'>{STRINGS.MINE_DEACTIVATE_UNBIND}</Button>
                 </View>
               </View>

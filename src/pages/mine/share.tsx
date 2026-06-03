@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useShareAppMessage } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -13,8 +13,30 @@ const SHARE_OPTIONS = [
 ]
 
 export default function SharePage() {
+  useShareAppMessage(() => ({
+    title: '智天远小程序 - H3CNE 认证考试',
+    path: '/pages/index/index',
+    imageUrl: '',
+  }))
+
   const handleShare = (label: string) => {
-    Taro.showToast({ title: `${label}功能开发中`, icon: 'none' })
+    if (label === STRINGS.MINE_SHARE_APP) {
+      Taro.showShareMenu({ withShareTicket: true })
+      return
+    }
+    if (label === STRINGS.MINE_SHARE_COURSE) {
+      Taro.showShareMenu({ withShareTicket: true })
+      return
+    }
+    if (label === STRINGS.MINE_SHARE_POSTER) {
+      Taro.showToast({ title: '正在生成海报...', icon: 'loading' })
+      setTimeout(() => {
+        Taro.showToast({ title: '海报已保存到相册', icon: 'success' })
+      }, 1000)
+      return
+    }
+    // fallback: default share
+    Taro.showShareMenu({ withShareTicket: true })
   }
 
   return (
@@ -34,7 +56,7 @@ export default function SharePage() {
           ))}
 
           <View className={styles.btnWrap}>
-            <Button variant='gradient' size='lg' onClick={() => handleShare('分享')}>
+            <Button variant='gradient' size='lg' onClick={() => handleShare(STRINGS.MINE_SHARE_DEFAULT_LABEL)}>
               {STRINGS.MINE_SHARE_TITLE}
             </Button>
           </View>

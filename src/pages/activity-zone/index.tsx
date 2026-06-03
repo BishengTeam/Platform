@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -9,18 +9,15 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import {
-  getActivityBannerItems, getActivityTagFilters,
-  getOngoingActivities, getUpcomingActivities, getEndedActivities,
-  getCompetitionBannerItems, getCompetitionTagFilters,
-  getOngoingCompetitions, getUpcomingCompetitions, getEndedCompetitions,
-  getEmploymentBannerItems, getEmploymentTagFilters, getJobList,
+  getActivityZone, getCompetitionZone,
+  enrollActivity, remindActivity, signupCompetition,
 } from '@/services/dataService'
-import type { Activity } from '@/types'
-import type { Competition } from '@/types'
-import type { Job } from '@/types'
+import type { ActivityBrief, CompetitionBrief } from '@/types'
+import type { ActivityZoneResponse, CompetitionZoneResponse, ZoneBrief } from '@/types'
+import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
-type MainTab = 'activity' | 'competition' | 'employment'
+type MainTab = 'activity' | 'competition'
 
 export default function ActivityZonePage() {
   const storedTab = useRef(Taro.getStorageSync('activityZoneTab') as MainTab | undefined)
@@ -33,97 +30,99 @@ export default function ActivityZonePage() {
   }
   const [activityTag, setActivityTag] = useState<string>(STRINGS.ACTIVITY_TAG_ALL)
   const [competitionTag, setCompetitionTag] = useState<string>(STRINGS.COMPETITION_TAG_ALL)
-  const [employmentTag, setEmploymentTag] = useState<string>(STRINGS.EMPLOYMENT_TAG_ALL)
 
-  const allActivities = useMemo(() => {
-    return [...getOngoingActivities(), ...getUpcomingActivities(), ...getEndedActivities()]
+  const [activityBanner, setActivityBanner] = useState<ZoneBrief | null>(null)
+  const [competitionBanner, setCompetitionBanner] = useState<ZoneBrief | null>(null)
+  const [allActivities, setAllActivities] = useState<ActivityBrief[]>([])
+  const [allCompetitions, setAllCompetitions] = useState<CompetitionBrief[]>([])
+
+  useEffect(() => {
+    getActivityZone().then((data: ActivityZoneResponse) => {
+      setAllActivities(data.activities)
+      setActivityBanner(data.zones[0] ?? null)
+    })
+    getCompetitionZone().then((data: CompetitionZoneResponse) => {
+      setAllCompetitions(data.competitions)
+      setCompetitionBanner(data.zones[0] ?? null)
+    })
   }, [])
 
-  const allCompetitions = useMemo(() => {
-    return [...getOngoingCompetitions(), ...getUpcomingCompetitions(), ...getEndedCompetitions()]
-  }, [])
-
-  const allJobs = useMemo(() => getJobList(), [])
+  // Activity time-based grouping
+  const { ongoingActivities, upcomingActivities, endedActivities } = useMemo(() => {
+    const now = new Date()
+    const ongoing = allActivities.filter(a => {
+      if (!a.start_time || !a.end_time) return false
+      return new Date(a.start_time) <= now && new Date(a.end_time) >= now
+    })
+    const upcoming = allActivities.filter(a => a.start_time && new Date(a.start_time) > now)
+    const ended = allActivities.filter(a => a.end_time && new Date(a.end_time) < now)
+    return { ongoingActivities: ongoing, upcomingActivities: upcoming, endedActivities: ended }
+  }, [allActivities])
 
   const activityData = useMemo(() => {
     if (activityTag === STRINGS.ACTIVITY_TAG_ALL) return allActivities
-    if (activityTag === STRINGS.ACTIVITY_ONGOING) return getOngoingActivities()
-    if (activityTag === STRINGS.ACTIVITY_UPCOMING) return getUpcomingActivities()
-    return getEndedActivities()
-  }, [activityTag, allActivities])
+    if (activityTag === STRINGS.ACTIVITY_ONGOING) return ongoingActivities
+    if (activityTag === STRINGS.ACTIVITY_UPCOMING) return upcomingActivities
+    return endedActivities
+  }, [activityTag, allActivities, ongoingActivities, upcomingActivities, endedActivities])
 
+  // CompetitionBrief only has created_at; treat all as active
   const competitionData = useMemo(() => {
-    if (competitionTag === STRINGS.COMPETITION_TAG_ALL) return allCompetitions
-    if (competitionTag === STRINGS.COMPETITION_ONGOING) return getOngoingCompetitions()
-    if (competitionTag === STRINGS.COMPETITION_UPCOMING) return getUpcomingCompetitions()
-    return getEndedCompetitions()
-  }, [competitionTag, allCompetitions])
+    return allCompetitions
+  }, [allCompetitions])
 
-  const getActivityStatusInfo = (item: Activity) => {
-    if (getOngoingActivities().some(a => a.id === item.id)) {
+  const getActivityStatusInfo = (item: ActivityBrief) => {
+    if (ongoingActivities.some(a => a.id === item.id)) {
       return { label: STRINGS.ACTIVITY_ONGOING, color: '#1677FF' }
     }
-    if (getUpcomingActivities().some(a => a.id === item.id)) {
+    if (upcomingActivities.some(a => a.id === item.id)) {
       return { label: STRINGS.ACTIVITY_UPCOMING, color: '#FA8C16' }
     }
     return { label: STRINGS.ACTIVITY_ENDED, color: '#999999' }
   }
 
-  const getCompetitionStatusInfo = (item: Competition) => {
-    if (getOngoingCompetitions().some(c => c.id === item.id)) {
-      return { label: STRINGS.COMPETITION_ONGOING, color: '#1677FF' }
-    }
-    if (getUpcomingCompetitions().some(c => c.id === item.id)) {
-      return { label: STRINGS.COMPETITION_UPCOMING, color: '#FA8C16' }
-    }
-    return { label: STRINGS.COMPETITION_ENDED, color: '#999999' }
-  }
-
-  const getActivityButton = (item: Activity) => {
-    if (getEndedActivities().some(a => a.id === item.id)) {
+  const getActivityButton = (item: ActivityBrief) => {
+    if (endedActivities.some(a => a.id === item.id)) {
       return { text: STRINGS.ACTIVITY_VIEW_DETAIL, variant: 'secondary' as const }
     }
-    if (getUpcomingActivities().some(a => a.id === item.id)) {
+    if (upcomingActivities.some(a => a.id === item.id)) {
       return { text: STRINGS.ACTIVITY_REMIND, variant: 'primary' as const }
     }
     return { text: STRINGS.ACTIVITY_JOIN, variant: 'primary' as const }
   }
 
-  const getCompetitionButton = (item: Competition) => {
-    if (getEndedCompetitions().some(c => c.id === item.id)) {
-      return { text: STRINGS.COMPETITION_SIGNUP_ENDED, variant: 'secondary' as const }
-    }
+  const getCompetitionButton = (_item: CompetitionBrief) => {
     return { text: STRINGS.COMPETITION_SIGNUP, variant: 'primary' as const }
   }
 
-  const currentBannerItems = mainTab === 'activity'
-    ? getActivityBannerItems()
-    : mainTab === 'competition'
-      ? getCompetitionBannerItems()
-      : getEmploymentBannerItems()
-
-  const currentTagFilters = mainTab === 'activity'
-    ? getActivityTagFilters()
-    : mainTab === 'competition'
-      ? getCompetitionTagFilters()
-      : getEmploymentTagFilters()
+  const currentBanner = mainTab === 'activity' ? activityBanner : competitionBanner
 
   const currentActiveTag = mainTab === 'activity'
     ? activityTag
-    : mainTab === 'competition'
-      ? competitionTag
-      : employmentTag
+    : competitionTag
 
   const onTagChange = mainTab === 'activity'
     ? setActivityTag
-    : mainTab === 'competition'
-      ? setCompetitionTag
-      : setEmploymentTag
+    : setCompetitionTag
+
+  // Hardcoded time-based tag filters for activity tab
+  const activityTagFilters: TagFilterItem[] = [
+    { label: STRINGS.ACTIVITY_TAG_ALL, activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+    { label: STRINGS.ACTIVITY_ONGOING, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+    { label: STRINGS.ACTIVITY_UPCOMING, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+    { label: STRINGS.ACTIVITY_ENDED, activeColor: '#999999', activeBg: '#999999', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  ]
+
+  // Simple tag for competition (no real tags with CompetitionBrief)
+  const competitionTagFilters: TagFilterItem[] = [
+    { label: STRINGS.COMPETITION_TAG_ALL, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  ]
+
+  const currentTagFilters = mainTab === 'activity' ? activityTagFilters : competitionTagFilters
 
   const mainTabs = [
     { key: 'activity' as MainTab, label: '活动' },
     { key: 'competition' as MainTab, label: '竞赛' },
-    { key: 'employment' as MainTab, label: '就业' },
   ]
 
   return (
@@ -145,7 +144,17 @@ export default function ActivityZonePage() {
 
         <ScrollView className={styles.body} scrollY>
           <View className={styles.bannerWrap}>
-            <ZoneBanner items={currentBannerItems} />
+            {currentBanner ? (
+              <ZoneBanner items={[{
+                id: currentBanner.id,
+                title: currentBanner.title,
+                description: currentBanner.description ?? '',
+                gradient: 'gradient-purple',
+                buttonText: '查看详情',
+                buttonColor: '#ffffff',
+                image_url: currentBanner.cover_url ?? undefined,
+              }]} />
+            ) : null}
           </View>
           <View className={styles.content}>
             <TagFilter tags={currentTagFilters} activeTag={currentActiveTag} onChange={onTagChange} />
@@ -159,14 +168,23 @@ export default function ActivityZonePage() {
                     <ZoneCard
                       key={item.id}
                       title={item.title}
-                      subtitle={item.description}
-                      tags={[item.benefit, `${item.startTime}-${item.endTime}`]}
+                      subtitle={item.description ?? ''}
+                      tags={[item.location ?? '', `${item.start_time ?? ''}-${item.end_time ?? ''}`]}
                       statusLabel={status.label}
                       statusColor={status.color}
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#722ED1'
                       isFaded={status.label === STRINGS.ACTIVITY_ENDED}
+                      onButtonClick={() => {
+                        if (btn.text === STRINGS.ACTIVITY_JOIN) {
+                          enrollActivity(item.id)
+                          Taro.showToast({ title: '报名成功', icon: 'success' })
+                        } else if (btn.text === STRINGS.ACTIVITY_REMIND) {
+                          remindActivity(item.id)
+                          Taro.showToast({ title: '已设置提醒', icon: 'success' })
+                        }
+                      }}
                     />
                   )
                 })}
@@ -176,39 +194,23 @@ export default function ActivityZonePage() {
             {mainTab === 'competition' && (
               <View className={styles.cardList}>
                 {competitionData.map((item) => {
-                  const status = getCompetitionStatusInfo(item)
                   const btn = getCompetitionButton(item)
                   return (
                     <ZoneCard
                       key={item.id}
-                      title={item.title}
-                      subtitle={item.description}
-                      tags={[item.prize, `${item.startTime}-${item.endTime}`]}
-                      statusLabel={status.label}
-                      statusColor={status.color}
+                      title={item.competition_name}
+                      subtitle={`${item.school}${item.track ? ` | ${item.track}` : ''}`}
+                      tags={[item.created_at]}
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#FA8C16'
-                      isFaded={status.label === STRINGS.COMPETITION_ENDED}
+                      onButtonClick={() => {
+                        signupCompetition(item.id)
+                        Taro.showToast({ title: '报名成功', icon: 'success' })
+                      }}
                     />
                   )
                 })}
-              </View>
-            )}
-
-            {mainTab === 'employment' && (
-              <View className={styles.cardList}>
-                {allJobs.map((item: Job) => (
-                  <ZoneCard
-                    key={item.id}
-                    title={item.title}
-                    subtitle={`${item.company} | ${item.location} ${item.experience} ${item.education}`}
-                    price={item.salary}
-                    originalPrice={item.originalPrice}
-                    buttonText={STRINGS.EMPLOYMENT_APPLY}
-                    buttonColor='#13C2C2'
-                  />
-                ))}
               </View>
             )}
           </View>

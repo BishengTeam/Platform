@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -6,6 +7,7 @@ import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
+import { getUserProfile } from '@/services/dataService'
 import styles from './personal-info.module.scss'
 
 interface InfoRow {
@@ -14,13 +16,43 @@ interface InfoRow {
   icon: string
 }
 
-const infoRows: InfoRow[] = [
-  { label: STRINGS.FORM_NICKNAME, value: '小王同学', icon: 'user' },
-  { label: STRINGS.FORM_PHONE, value: '13800008888', icon: 'phone' },
-  { label: STRINGS.FORM_EMAIL, value: 'xiaowang@example.com', icon: 'mail' },
-]
+function maskIdCard(id: string): string {
+  if (!id || id.length < 10) return id
+  return id.slice(0, 6) + '****' + id.slice(-4)
+}
 
 export default function PersonalInfoPage() {
+  const [nickname, setNickname] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [realName, setRealName] = useState('')
+  const [idCard, setIdCard] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getUserProfile().then(profile => {
+      setNickname(profile.nickname || '')
+      setPhone(profile.phone || '')
+      setEmail(profile.email || '')
+      setRealName(profile.real_name || '')
+      setIdCard(maskIdCard(profile.id_card || ''))
+    }).catch(() => {
+      Taro.showToast({ title: '加载失败', icon: 'none' })
+    }).finally(() => {
+      setLoading(false)
+    })
+  }, [])
+
+  const infoRows: InfoRow[] = [
+    { label: STRINGS.FORM_NICKNAME, value: nickname, icon: 'user' },
+    { label: STRINGS.FORM_REAL_NAME, value: realName, icon: 'shield' },
+    { label: STRINGS.FORM_ID_CARD, value: idCard, icon: 'clipboard' },
+    { label: STRINGS.FORM_PHONE, value: phone, icon: 'phone' },
+    { label: STRINGS.FORM_EMAIL, value: email, icon: 'mail' },
+  ]
+
+  if (loading) return null
+
   return (
     <AuthGuard>
       <View className={styles.page}>

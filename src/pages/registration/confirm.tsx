@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { PriceRow } from '@/components/PriceRow'
@@ -8,11 +8,8 @@ import { Button } from '@/components/Button'
 import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import { mockFormData } from '@/constants/mock'
-import type { RegistrationFormData } from '@/types/registration'
+import { getOrderDetail, prepayOrder } from '@/services/dataService'
 import styles from './confirm.module.scss'
-
-const STORAGE_KEY = 'registration_form_data'
 const COUNTDOWN_SECONDS = 30 * 60
 
 function formatTime(seconds: number): string {
@@ -44,24 +41,84 @@ export default function ConfirmPage() {
     }
   }, [])
 
-  const formData: RegistrationFormData = Taro.getStorageSync(STORAGE_KEY) || mockFormData
-  const identityLabel = formData.identity_type === 'enterprise' ? STRINGS.FORM_IDENTITY_ENTERPRISE : STRINGS.FORM_IDENTITY_PERSONAL
+  const [orderId, setOrderId] = useState('')
+  const [certName, setCertName] = useState('')
+  const [price, setPrice] = useState(0)
+  const [loading, setLoading] = useState(true)
 
-  const handlePay = useCallback(() => {
-    if (!isAgreed || isPaying || isExpired) return
+  useLoad((options) => {
+    const id = options?.order_id || ''
+    setOrderId(id)
+    if (id) {
+      getOrderDetail(id).then(order => {
+        setCertName((order as any).cert_name || (order as any).certName || '')
+        setPrice((order as any).price || 0)
+        setLoading(false)
+      }).catch(() => {
+        setLoading(false)
+      })
+    } else {
+      setLoading(false)
+    }
+  })
+
+  const handlePay = useCallback(async () => {
+    if (!isAgreed || isPaying || isExpired || !orderId) return
     setIsPaying(true)
 
-    setTimeout(() => {
-      setIsPaying(false)
-      const success = Math.random() > 0.3
-      const orderId = `ORD${Date.now()}`
+    try {
+      const prepay = await prepayOrder(orderId)
+
+      if (prepay.timeStamp) {
+        await Taro.requestPayment({
+          timeStamp: prepay.timeStamp,
+          nonceStr: prepay.nonceStr,
+          package: prepay.package,
+          signType: prepay.signType as 'MD5' | 'HMAC-SHA256',
+          paySign: prepay.paySign,
+        })
+      }
+
       Taro.navigateTo({
-        url: `/${ROUTES.PAYMENT_RESULT}?order_id=${orderId}&status=${success ? 'success' : 'fail'}&cert_name=${encodeURIComponent(formData.cert_name)}&price=${formData.price}`,
+        url: `/${ROUTES.PAYMENT_RESULT}?order_id=${orderId}&status=success&cert_name=${encodeURIComponent(certName)}&price=${price}`,
       })
-    }, 1500)
-  }, [isAgreed, isPaying, isExpired, formData.cert_name, formData.price])
+    } catch (err: any) {
+      setIsPaying(false)
+      if (err?.errMsg?.includes('cancel')) return
+
+      Taro.navigateTo({
+        url: `/${ROUTES.PAYMENT_RESULT}?order_id=${orderId}&status=fail&cert_name=${encodeURIComponent(certName)}&price=${price}`,
+      })
+    }
+  }, [isAgreed, isPaying, isExpired, orderId, certName, price])
 
   const timeText = formatTime(remaining)
+
+  if (loading) {
+    return (
+      <AuthGuard>
+        <View className={styles.page}>
+          <PageHeader title={STRINGS.CONFIRM_TITLE} shouldShowBack />
+          <View className={styles.body}>
+            <Text style={{ textAlign: 'center', padding: '40px', color: '#999' }}>加载中...</Text>
+          </View>
+        </View>
+      </AuthGuard>
+    )
+  }
+
+  if (!orderId) {
+    return (
+      <AuthGuard>
+        <View className={styles.page}>
+          <PageHeader title={STRINGS.CONFIRM_TITLE} shouldShowBack />
+          <View className={styles.body}>
+            <Text style={{ textAlign: 'center', padding: '40px', color: '#999' }}>订单不存在</Text>
+          </View>
+        </View>
+      </AuthGuard>
+    )
+  }
 
   return (
     <AuthGuard>
@@ -74,46 +131,16 @@ export default function ConfirmPage() {
             <View className={styles.card}>
               <View className={styles.infoRow}>
                 <Text className={styles.infoLabel}>{STRINGS.CONFIRM_CERT_NAME}</Text>
-                <Text className={styles.infoValue}>{formData.cert_name}</Text>
+                <Text className={styles.infoValue}>{certName}</Text>
               </View>
-              <View className={styles.infoRow}>
-                <Text className={styles.infoLabel}>{STRINGS.CONFIRM_REAL_NAME}</Text>
-                <Text className={styles.infoValue}>{formData.real_name}</Text>
-              </View>
-              <View className={styles.infoRow}>
-                <Text className={styles.infoLabel}>{STRINGS.CONFIRM_PHONE}</Text>
-                <Text className={styles.infoValue}>{formData.phone}</Text>
-              </View>
-              <View className={styles.infoRow}>
-                <Text className={styles.infoLabel}>{STRINGS.CONFIRM_ID_CARD}</Text>
-                <Text className={styles.infoValue}>{formData.id_card}</Text>
-              </View>
-              <View className={styles.infoRow}>
-                <Text className={styles.infoLabel}>{STRINGS.CONFIRM_IDENTITY}</Text>
-                <Text className={styles.infoValue}>{identityLabel}</Text>
-              </View>
-              {formData.identity_type === 'enterprise' && formData.enterprise_name && (
-                <View className={styles.infoRow}>
-                  <Text className={styles.infoLabel}>{STRINGS.FORM_ENTERPRISE_NAME}</Text>
-                  <Text className={styles.infoValue}>{formData.enterprise_name}</Text>
-                </View>
-              )}
             </View>
           </View>
 
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.FORM_PRICE_DETAIL}</Text>
             <View className={styles.card}>
-              <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={formData.price} size='lg' />
-              {formData.coupon_count > 0 && (
-                <PriceRow
-                  label={`${STRINGS.FORM_PRICE_COUPON_DISCOUNT} (${formData.coupon_count}${STRINGS.FORM_COUPON_COUNT_UNIT})`}
-                  value={-formData.price}
-                  className={styles.discountRow}
-                  size='lg'
-                />
-              )}
-              <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={formData.price} isTotal size='lg' />
+              <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={price} size='lg' />
+              <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={price} isTotal size='lg' />
             </View>
           </View>
 
@@ -154,7 +181,7 @@ export default function ConfirmPage() {
               ? STRINGS.CONFIRM_COUNTDOWN_EXPIRED
               : isPaying
                 ? STRINGS.CONFIRM_PAYING
-                : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${formData.price.toFixed(2)}`}
+                : `${STRINGS.CONFIRM_PAY_BUTTON} ¥${price.toFixed(2)}`}
           </Button>
 
           <AgreementCheckbox agreed={isAgreed} onChange={setIsAgreed}>

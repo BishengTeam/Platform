@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -12,7 +12,12 @@ import type { WrongQuestion } from '@/types'
 import styles from './wrong-book.module.scss'
 
 export default function WrongBookPage() {
-  const [items, setItems] = useState<WrongQuestion[]>(getWrongBook())
+  const [items, setItems] = useState<WrongQuestion[]>([])
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    getWrongBook().then(setItems)
+  }, [])
 
   const handleRemove = (id: string) => {
     setItems(prev => prev.filter(item => item.id !== id))

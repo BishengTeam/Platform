@@ -1,14 +1,22 @@
+import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getPointsBalance, getPointRecords } from '@/services/dataService'
+import { getPointsBalance, getPointRecords, getCoupons } from '@/services/dataService'
 import styles from './points.module.scss'
 
 export default function PointsPage() {
-  const balance = getPointsBalance()
-  const records = getPointRecords()
+  const [balance, setBalance] = useState(0)
+  const [records, setRecords] = useState([])
+  const [coupons, setCoupons] = useState([])
+
+  useEffect(() => {
+    getPointsBalance().then(setBalance)
+    getPointRecords().then(setRecords)
+    getCoupons().then(setCoupons)
+  }, [])
 
   return (
     <AuthGuard>
@@ -21,6 +29,23 @@ export default function PointsPage() {
             <Text className={styles.balanceTip}>{STRINGS.MINE_POINTS_REDEEM_TIP}</Text>
             <Button size='sm' variant='secondary'>{STRINGS.MINE_POINTS_REDEEM}</Button>
           </View>
+
+          {coupons.length > 0 && (
+            <View className={styles.section}>
+              <Text className={styles.sectionTitle}>优惠券</Text>
+              <View className={styles.recordList}>
+                {coupons.map(c => (
+                  <View key={c.id} className={styles.recordItem}>
+                    <View className={styles.recordInfo}>
+                      <Text className={styles.recordDesc}>{c.name}</Text>
+                      <Text className={styles.recordDate}>有效期至 {c.expire_at}</Text>
+                    </View>
+                    <Text className={styles.recordAmount}>¥{c.amount}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
 
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.MINE_POINTS_HISTORY}</Text>

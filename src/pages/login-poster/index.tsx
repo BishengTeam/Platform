@@ -9,24 +9,24 @@ import styles from './index.module.scss'
 const POSTERS = [
   {
     id: 'p1',
-    title: '2026全国大学生网络技术大赛',
-    desc: '火热报名中！赢取万元奖金与名企实习机会',
+    title: STRINGS.LOGIN_POSTER_CARD_1_TITLE,
+    desc: STRINGS.LOGIN_POSTER_CARD_1_DESC,
     type: 'competition',
-    tag: '竞赛',
+    tag: STRINGS.LOGIN_POSTER_CARD_1_TAG,
   },
   {
     id: 'p2',
-    title: 'H3CNE 认证暑期特惠',
-    desc: '学生价立减400元，限时优惠',
+    title: STRINGS.LOGIN_POSTER_CARD_2_TITLE,
+    desc: STRINGS.LOGIN_POSTER_CARD_2_DESC,
     type: 'coupon',
-    tag: '优惠券',
+    tag: STRINGS.LOGIN_POSTER_CARD_2_TAG,
   },
   {
     id: 'p3',
-    title: '网络安全技能培训营',
-    desc: '暑假集训班报名开启，名额有限',
+    title: STRINGS.LOGIN_POSTER_CARD_3_TITLE,
+    desc: STRINGS.LOGIN_POSTER_CARD_3_DESC,
     type: 'activity',
-    tag: '活动',
+    tag: STRINGS.LOGIN_POSTER_CARD_3_TAG,
   },
 ]
 

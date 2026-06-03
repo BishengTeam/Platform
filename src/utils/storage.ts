@@ -1,15 +1,16 @@
 import Taro from '@tarojs/taro'
+import { getToken } from '@/utils/request'
 
-const AUTH_KEY = 'h3cne_logged_in'
+const TOKEN_KEY = 'auth_token' // 与 request.ts 统一
 
 export function isLoggedIn(): boolean {
-  return !!Taro.getStorageSync(AUTH_KEY)
+  return !!getToken()
 }
 
-export function setAuthToken(): void {
-  Taro.setStorageSync(AUTH_KEY, 'true')
+export function setAuthToken(token?: string): void {
+  Taro.setStorageSync(TOKEN_KEY, token || 'mock_token')
 }
 
 export function removeAuthToken(): void {
-  Taro.removeStorageSync(AUTH_KEY)
+  Taro.removeStorageSync(TOKEN_KEY)
 }

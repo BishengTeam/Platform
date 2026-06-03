@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -7,8 +7,9 @@ import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCertifications } from '@/services/dataService'
-import { validateName, validatePhone, validateIdCard, validateRequired } from '@/utils/validator'
+import { getCertDetail, createOrder, getUserProfile } from '@/services/dataService'
+import type { CertificationDetail } from '@/types'
+import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
 import styles from './form.module.scss'
 
@@ -19,18 +20,35 @@ export default function SangforFormPage() {
   const [realName, setRealName] = useState('')
   const [phone, setPhone] = useState('')
   const [idCard, setIdCard] = useState('')
-  const [identityType, setIdentityType] = useState<'personal' | 'enterprise'>('personal')
   const [mailingAddress, setMailingAddress] = useState('')
   const [organization, setOrg] = useState('')
   const [examDirection, setExamDirection] = useState('')
   const [verifyCode, setVerifyCode] = useState('')
+  const [examDate, setExamDate] = useState('')
+  const [email, setEmail] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
 
   useLoad((options) => {
     setCertId(options?.cert_id || '')
   })
 
-  const cert = useMemo(() => getCertifications().find(c => c.id === certId), [certId])
+  const [cert, setCert] = useState<CertificationDetail | null>(null)
+
+  useEffect(() => {
+    const id = Number(certId)
+    if (!id) return
+    getCertDetail(id).then(setCert)
+  }, [certId])
+
+  useEffect(() => {
+    getUserProfile().then(profile => {
+      if (profile.phone && !phone) setPhone(profile.phone)
+      if (profile.real_name && !realName) setRealName(profile.real_name)
+      if (profile.email && !email) setEmail(profile.email)
+    })
+  }, [])
 
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
@@ -42,20 +60,31 @@ export default function SangforFormPage() {
       examDirection: validateRequired(examDirection, STRINGS.FORM_EXAM_DIRECTION),
       verifyCode: validateRequired(verifyCode, STRINGS.FORM_VERIFICATION_CODE),
     }
+    if (email.trim()) next.email = validateEmail(email)
     setErrors(next)
     return Object.values(next).every(v => v.valid)
-  }, [realName, phone, idCard, mailingAddress, organization, examDirection, verifyCode])
+  }, [realName, phone, idCard, mailingAddress, organization, examDirection, verifyCode, email])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
-    Taro.setStorageSync(STORAGE_KEY, {
-      cert_id: cert.id, cert_name: cert.name,
-      real_name: realName.trim(), phone: phone.trim(), id_card: idCard.trim(),
-      identity_type: identityType, price: cert.price,
-      mailing_address: mailingAddress.trim(), organization: organization.trim(),
-      exam_direction: examDirection, verification_code: verifyCode.trim(),
+    const order = await createOrder({
+      cert_type: 'sangfor',
+      candidate_name: realName.trim(),
+      candidate_phone: phone.trim(),
+      candidate_idcard: idCard.trim(),
+      extra_data: {
+        mailing_address: mailingAddress.trim(),
+        organization: organization.trim(),
+        exam_direction: examDirection,
+        verification_code: verifyCode.trim(),
+        exam_date: examDate || undefined,
+        email: email.trim() || undefined,
+        first_name: firstName.trim() || undefined,
+        last_name: lastName.trim() || undefined,
+      },
     })
-    Taro.navigateTo({ url: '/pages/registration/confirm' })
+
+    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.order_id}` })
   }
 
   if (!cert) {
@@ -93,19 +122,25 @@ export default function SangforFormPage() {
             <FormInput label={STRINGS.FORM_MAILING_ADDRESS} required placeholder={STRINGS.FORM_MAILING_ADDRESS_PLACEHOLDER} value={mailingAddress} error={errors.mailingAddress} onChange={setMailingAddress} />
             <FormInput label={STRINGS.FORM_ORGANIZATION} required placeholder={STRINGS.FORM_ORGANIZATION_PLACEHOLDER} value={organization} error={errors.organization} onChange={setOrg} />
             <FormInput label={STRINGS.FORM_EXAM_DIRECTION} required placeholder={STRINGS.FORM_EXAM_DIRECTION_PLACEHOLDER} value={examDirection} error={errors.examDirection} onChange={setExamDirection} />
-            <FormInput label={STRINGS.FORM_VERIFICATION_CODE} required placeholder={STRINGS.FORM_VERIFICATION_CODE_PLACEHOLDER} value={verifyCode} error={errors.verifyCode} onChange={setVerifyCode} />
+            <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} error={errors.email} onChange={setEmail} />
+            <FormInput
+              label={STRINGS.FORM_FIRST_NAME}
+              placeholder={STRINGS.FORM_FIRST_NAME_PLACEHOLDER}
+              value={firstName}
+              onChange={setFirstName}
+            />
+            <FormInput
+              label={STRINGS.FORM_LAST_NAME}
+              placeholder={STRINGS.FORM_LAST_NAME_PLACEHOLDER}
+              value={lastName}
+              onChange={setLastName}
+            />
+            <FormInput label={STRINGS.FORM_EXAM_DATE} placeholder={STRINGS.FORM_EXAM_DATE_PLACEHOLDER} value={examDate} onChange={setExamDate} />
 
-            <View className={styles.identityRow}>
-              <Text className={styles.identityLabel}><Text className={styles.asterisk}>*</Text>{STRINGS.FORM_IDENTITY_TYPE}</Text>
-              <View className={styles.identityToggle}>
-                <View className={`${styles.identityOption} ${identityType === 'personal' ? styles.identityActive : ''}`} onClick={() => setIdentityType('personal')}>
-                  <Text>{STRINGS.FORM_IDENTITY_PERSONAL}</Text>
-                </View>
-                <View className={`${styles.identityOption} ${identityType === 'enterprise' ? styles.identityActive : ''}`} onClick={() => setIdentityType('enterprise')}>
-                  <Text>{STRINGS.FORM_IDENTITY_ENTERPRISE}</Text>
-                </View>
-              </View>
+            <View className={styles.linkRow}>
+              <Text className={styles.linkText}>{'请从深信服官方渠道获取动态验证码'}</Text>
             </View>
+            <FormInput label={STRINGS.FORM_VERIFICATION_CODE} required placeholder={STRINGS.FORM_VERIFICATION_CODE_PLACEHOLDER} value={verifyCode} error={errors.verifyCode} onChange={setVerifyCode} />
           </View>
 
           <View className={styles.section}>
@@ -116,8 +151,6 @@ export default function SangforFormPage() {
               <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={cert.price} isTotal />
             </View>
           </View>
-
-          <Text className={styles.couponTip}>{STRINGS.FORM_SANGFOR_COUPON_TIP}</Text>
 
           <View className={styles.btnWrap}>
             <Button variant='gradient' size='lg' onClick={handleSubmit}>{STRINGS.FORM_SUBMIT}</Button>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -13,7 +13,11 @@ const TABS = [STRINGS.MINE_COLLECTIONS_COURSES, STRINGS.MINE_COLLECTIONS_MATERIA
 
 export default function MineCollectionsPage() {
   const [activeTab, setActiveTab] = useState<string>(TABS[0])
-  const data = getMyCollections()
+  const [data, setData] = useState<{ courses: any[]; materials: any[] }>({ courses: [], materials: [] })
+
+  useEffect(() => {
+    getMyCollections().then(setData)
+  }, [])
 
   const items = activeTab === TABS[0] ? data.courses : data.materials
 

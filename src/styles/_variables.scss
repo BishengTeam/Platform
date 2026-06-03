@@ -103,6 +103,11 @@ $gradient-teal: linear-gradient(to right, #13C2C2, #36CFC9);
 $gradient-red: linear-gradient(to right, #FF4D4F, #FF7875);
 $gradient-gray: linear-gradient(to right, #999999, #BFBFBF);
 
+// NOTE: 渐变定义在 _variables.scss (SCSS 变量)、app.scss (CSS 自定义属性)、
+// src/components/ZoneBanner/index.tsx (GRADIENTS 对象) 三处重复。
+// 理想情况下应统一到 _variables.scss，其他位置通过变量引用。
+// 当前暂不强制统一，后续重构时一并处理。
+
 // Border (uppercase PX to prevent Taro from converting to rpx)
 $border-thin: 1PX;
 

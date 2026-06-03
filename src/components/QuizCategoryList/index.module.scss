@@ -1,0 +1,34 @@
+@use '../../styles/variables' as *;
+
+.quizCategoryList {
+  padding: 0 $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.quizCategoryCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background: $color-white;
+  border-radius: $radius-md;
+}
+
+.quizCategoryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quizCategoryName {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.quizCategoryCount {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}

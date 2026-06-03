@@ -12,3 +12,4 @@ export type { Certification, RegistrationFormData, PaymentResult, SangforFormDat
 export type { CourseItem, CourseSession, CourseReview } from './course'
 export type { QuizCategory, QuizQuestion, QuizOption, CheckinRecord, WrongQuestion, QuizPracticeState } from './quiz'
 export type { MyCourse, PointRecord, Agreement, ExamIntention, TeacherContact } from './mine'
+export type { BannerBrief, ZoneBrief, ZoneSectionItem, CourseBrief, CompetitionBrief, ActivityBrief, JobBrief, CertificationResponse, CertificationDetail, HomeAggregationResponse, CertZoneResponse, StudyZoneResponse, CompetitionZoneResponse, ActivityZoneResponse, EmploymentZoneResponse } from './zone'

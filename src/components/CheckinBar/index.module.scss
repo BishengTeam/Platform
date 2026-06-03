@@ -1,0 +1,22 @@
+@use '../../styles/variables' as *;
+
+.checkinBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $spacing-md $spacing-lg;
+  padding: $spacing-md;
+  background: linear-gradient(135deg, $color-orange-tint, $color-red-tint);
+  border-radius: $radius-md;
+}
+
+.checkinInfo {
+  display: flex;
+  align-items: center;
+}
+
+.checkinStreak {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}

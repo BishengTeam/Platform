@@ -5,7 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getQuizQuestions } from '@/services/dataService'
+import { getQuizQuestions, submitQuizAnswer, addFavorite, removeFavorite } from '@/services/dataService'
 import type { QuizQuestion } from '@/types'
 import styles from './practice.module.scss'
 
@@ -23,8 +23,8 @@ export default function QuizPracticePage() {
     const categoryId = options?.categoryId
     const modeParam = options?.mode as Mode | undefined
     if (modeParam) setMode(modeParam)
-    const qs = getQuizQuestions(categoryId || undefined)
-    setQuestions(qs)
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    getQuizQuestions(categoryId || undefined).then(setQuestions)
   })
 
   const currentQuestion = questions[currentIndex]
@@ -32,7 +32,12 @@ export default function QuizPracticePage() {
 
   const handleSelectSingle = useCallback((questionId: string, optIndex: number) => {
     setAnswers(prev => ({ ...prev, [questionId]: optIndex }))
-  }, [])
+    const q = questions.find(q => q.id === questionId)
+    if (q) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      submitQuizAnswer({ question_id: questionId, answer: optIndex, is_correct: optIndex === q.correctAnswer })
+    }
+  }, [questions])
 
   const handleSelectMultiple = useCallback((questionId: string, optIndex: number) => {
     setAnswers(prev => {
@@ -40,7 +45,13 @@ export default function QuizPracticePage() {
       const next = cur.includes(optIndex) ? cur.filter(i => i !== optIndex) : [...cur, optIndex]
       return { ...prev, [questionId]: next }
     })
-  }, [])
+    const q = questions.find(q => q.id === questionId)
+    if (q) {
+      const correct = q.correctAnswer as number[]
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      submitQuizAnswer({ question_id: questionId, answer: optIndex, is_correct: correct.includes(optIndex) })
+    }
+  }, [questions])
 
   const isCorrect = useMemo(() => {
     if (!currentQuestion || selectedAnswer === undefined) return null
@@ -77,8 +88,12 @@ export default function QuizPracticePage() {
       const next = new Set(prev)
       if (next.has(id)) {
         next.delete(id)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        removeFavorite(id)
       } else {
         next.add(id)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        addFavorite(id)
       }
       return next
     })

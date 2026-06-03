@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -14,7 +14,11 @@ const STATUS_TAGS = [STRINGS.MINE_COURSES_ACTIVE, STRINGS.MINE_COURSES_PENDING, 
 
 export default function MyCoursesPage() {
   const [activeStatus, setActiveStatus] = useState<string>(STATUS_TAGS[0])
-  const allCourses = getMyCourses()
+  const [allCourses, setAllCourses] = useState([])
+
+  useEffect(() => {
+    getMyCourses().then(setAllCourses)
+  }, [])
 
   const filtered = useMemo(() => {
     const statusMap: Record<string, string> = {

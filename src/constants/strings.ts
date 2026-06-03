@@ -46,6 +46,9 @@ export const STRINGS = {
   SERVICE_PHONE_VALUE: '400-123-4567',
   SERVICE_WECHAT_VALUE: '扫码添加专属客服',
   SERVICE_EMAIL_VALUE: 'service@example.com',
+  SERVICE_TICKETS_TITLE: '我的工单',
+  SERVICE_TICKETS_EMPTY: '暂无工单',
+  SERVICE_TICKETS_STATUS: '状态:',
 
   // ---- Profile Page ----
   PROFILE_MOCK_NAME: '小王同学',
@@ -157,6 +160,7 @@ export const STRINGS = {
   FORM_PRICE_COUPON_DISCOUNT: '考试券抵扣',
   FORM_PRICE_TOTAL: '合计',
   FORM_SUBMIT: '提交报名',
+  FORM_PICK_EXAM_DATE: '请选择考试日期',
 
   // ---- Registration Confirm ----
   CONFIRM_TITLE: '确认报名',
@@ -396,6 +400,10 @@ export const STRINGS = {
   FORM_NISP_LEVEL: 'NISP等级',
   FORM_NISP_LEVEL_PLACEHOLDER: '请选择一级或二级',
   FORM_INSTITUTION: '培训机构',
+  FORM_UPLOAD_PORTRAIT_PHOTO: '上传寸照',
+  FORM_UPLOAD_ID_PHOTO: '上传身份证照片',
+  FORM_UPLOAD_XUEXIN_REPORT: '上传学信网报告',
+  NISP_INSTITUTION_DEFAULT: '四川智天远教育科技有限公司',
   NISP_LEVEL_1: 'NISP 一级',
   NISP_LEVEL_2: 'NISP 二级',
   NISP_PAY_SUCCESS_TOAST: '缴费成功，请等待审核通知',
@@ -558,8 +566,12 @@ export const STRINGS = {
   MINE_DEACTIVATE_CONFIRM_DESC: '注销后，您的所有数据将被永久删除，无法恢复。包括但不限于：订单记录、学习进度、积分余额、课程收藏等。',
   MINE_DEACTIVATE_CANCEL: '暂不注销',
   MINE_DEACTIVATE_SUCCESS: '注销申请已提交',
+  MINE_DEACTIVATE_MOCK_PHONE: '手机号: 138****8888',
+  MINE_DEACTIVATE_MOCK_WECHAT: '微信: 已绑定',
 
   // ---- Agreements Page ----
+  MINE_AGREEMENTS_CREATE: '新建协议',
+  MINE_AGREEMENTS_CREATE_FAIL: '创建失败',
   MINE_AGREEMENTS_STATUS_PENDING_SIGN: '待签署',
   MINE_AGREEMENTS_STATUS_PENDING_REVIEW: '待审核',
   MINE_AGREEMENTS_STATUS_STAMPED: '已签章',
@@ -587,6 +599,7 @@ export const STRINGS = {
   MINE_SHARE_APP_DESC: '分享小程序给微信好友',
   MINE_SHARE_COURSE_DESC: '推荐课程给朋友',
   MINE_SHARE_POSTER_DESC: '生成专属推广海报',
+  MINE_SHARE_DEFAULT_LABEL: '分享',
 
   // ---- Courses Page ----
   MINE_COURSES_UNIT: '节',
@@ -598,6 +611,15 @@ export const STRINGS = {
   LOGIN_POSTER_WELCOME: '欢迎回来！以下是近期活动和优惠：',
   LOGIN_POSTER_CLAIM_NOW: '立即领取',
   LOGIN_POSTER_VIEW_DETAIL: '查看详情',
+  LOGIN_POSTER_CARD_1_TITLE: '2026全国大学生网络技术大赛',
+  LOGIN_POSTER_CARD_1_DESC: '火热报名中！赢取万元奖金与名企实习机会',
+  LOGIN_POSTER_CARD_1_TAG: '竞赛',
+  LOGIN_POSTER_CARD_2_TITLE: 'H3CNE 认证暑期特惠',
+  LOGIN_POSTER_CARD_2_DESC: '学生价立减400元，限时优惠',
+  LOGIN_POSTER_CARD_2_TAG: '优惠券',
+  LOGIN_POSTER_CARD_3_TITLE: '网络安全技能培训营',
+  LOGIN_POSTER_CARD_3_DESC: '暑假集训班报名开启，名额有限',
+  LOGIN_POSTER_CARD_3_TAG: '活动',
 
   // ---- Validation ----
   VALIDATOR_EMAIL_REQUIRED: '请输入邮箱',
@@ -614,4 +636,7 @@ export const STRINGS = {
   TAG_RENSHE: '人社',
   TAG_FREE: '免费',
   TAG_PAID: '付费',
+  WEEKDAY_LABELS: ['日', '一', '二', '三', '四', '五', '六'] as const,
+  CALENDAR_YEAR_SUFFIX: '年',
+  CALENDAR_MONTH_SUFFIX: '月',
 } as const

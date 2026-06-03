@@ -9,7 +9,7 @@ import { STRINGS } from '@/constants/strings'
 import { getExamIntentions } from '@/services/dataService'
 import styles from './exam-intention.module.scss'
 
-const CATEGORIES = ['H3CNE', 'H3CSE', 'H3CIE', 'SCSA', 'SCSP', 'SCSI', 'NISP', '人社']
+const CATEGORIES = ['H3CNE', 'H3CSE', 'H3CIE', 'SCSA', 'SCSP', 'SCSI', 'NISP', STRINGS.TAG_RENSHE]
 
 export default function ExamIntentionPage() {
   const existing = getExamIntentions()

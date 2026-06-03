@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -7,7 +7,8 @@ import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCertifications } from '@/services/dataService'
+import { getCertDetail, createOrder } from '@/services/dataService'
+import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
 import styles from './form.module.scss'
@@ -27,7 +28,13 @@ export default function RensheFormPage() {
     setCertId(options?.cert_id || '')
   })
 
-  const cert = useMemo(() => getCertifications().find(c => c.id === certId), [certId])
+  const [cert, setCert] = useState<CertificationDetail | null>(null)
+
+  useEffect(() => {
+    const id = Number(certId)
+    if (!id) return
+    getCertDetail(id).then(setCert)
+  }, [certId])
 
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
@@ -40,14 +47,17 @@ export default function RensheFormPage() {
     return Object.values(next).every(v => v.valid)
   }, [realName, phone, idCard, branch])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
-    Taro.setStorageSync(STORAGE_KEY, {
-      cert_id: cert.id, cert_name: cert.name,
-      real_name: realName.trim(), phone: phone.trim(),
-      id_card: idCard.trim(), branch, price: cert.price,
+    const order = await createOrder({
+      cert_type: 'renshe',
+      candidate_name: realName.trim(),
+      candidate_phone: phone.trim(),
+      candidate_idcard: idCard.trim(),
+      extra_data: { branch },
     })
-    Taro.navigateTo({ url: '/pages/registration/confirm' })
+
+    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.order_id}` })
   }
 
   if (!cert) {

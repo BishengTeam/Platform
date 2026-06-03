@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
-import { View, Swiper, SwiperItem } from '@tarojs/components'
+import { View, Swiper, SwiperItem, Image } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
 import styles from './index.module.scss'
@@ -17,11 +18,13 @@ const GRADIENTS: Record<string, string> = {
 export interface ZoneBannerItem {
   id: string | number
   title: string
-  description: string
-  gradient: string
+  description?: string
+  gradient?: string
   icon?: string
-  buttonText: string
-  buttonColor: string
+  buttonText?: string
+  buttonColor?: string
+  image_url?: string
+  jump_link?: string | null
 }
 
 interface ZoneBannerProps {
@@ -47,6 +50,22 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
       >
         {items.map((item, i) => (
           <SwiperItem key={item.id}>
+            {item.image_url ? (
+              <View
+                className={styles.slide}
+                style={{ backgroundImage: `url(${item.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                onClick={() => {
+                  if (item.jump_link) {
+                    Taro.navigateTo({ url: item.jump_link })
+                  }
+                }}
+              >
+                <View className={styles.content}>
+                  <View className={styles.title}>{item.title}</View>
+                  {item.description ? <View className={styles.desc}>{item.description}</View> : null}
+                </View>
+              </View>
+            ) : (
             <View
               className={styles.slide}
               style={{ background: GRADIENTS[item.gradient] || GRADIENTS['gradient-blue'] }}
@@ -71,6 +90,7 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
                 </View>
               )}
             </View>
+            )}
           </SwiperItem>
         ))}
       </Swiper>

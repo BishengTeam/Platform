@@ -1,18 +1,23 @@
-import { useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { View, Text } from '@tarojs/components'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getCheckinRecords } from '@/services/dataService'
+import { getCheckinRecords, submitCheckin } from '@/services/dataService'
 import styles from './checkin.module.scss'
 
-const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
+const WEEKDAYS = STRINGS.WEEKDAY_LABELS
 
 export default function QuizCheckinPage() {
-  const records = getCheckinRecords()
+  const [records, setRecords] = useState<{ date: string; completed: boolean }[]>([])
   const today = new Date()
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    getCheckinRecords().then(setRecords)
+  }, [])
 
   const todayRecord = records.find(r => r.date === todayStr)
   const streakDays = records.filter(r => r.completed).length
@@ -64,7 +69,7 @@ export default function QuizCheckinPage() {
 
           <View className={styles.calendarCard}>
             <Text className={styles.calendarTitle}>
-              {today.getFullYear()}年{today.getMonth() + 1}月
+              {today.getFullYear()}{STRINGS.CALENDAR_YEAR_SUFFIX}{today.getMonth() + 1}{STRINGS.CALENDAR_MONTH_SUFFIX}
             </Text>
 
             <View className={styles.weekdayRow}>
@@ -93,7 +98,8 @@ export default function QuizCheckinPage() {
               size='lg'
               disabled={todayRecord?.completed}
               onClick={() => {
-                // In production, this would call an API to record checkin
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                submitCheckin().then(() => getCheckinRecords().then(setRecords))
               }}
             >
               {todayRecord?.completed ? STRINGS.QUIZ_CHECKIN_TODAY : STRINGS.QUIZ_CHECKIN_BTN}
