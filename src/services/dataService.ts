@@ -63,6 +63,7 @@ export function getInitialMessages() { return initialMessages }
 export function getContactList() { return contactList }
 export function getOrderItems() { return orderItems }
 export function getProfileFunctions() { return profileFunctions }
+export function getExamBannerItems() { return examBannerItems }
 
 // ================================================================
 // Zone 聚合端点（2026-06-03 重构）
