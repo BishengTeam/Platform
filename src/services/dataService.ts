@@ -53,7 +53,7 @@ import type {
 } from '@/types'
 
 /** 全局开关：true=mock，false=真实API */
-const USE_MOCK = true
+const USE_MOCK = false
 
 // ---- 纯本地/静态数据（无对应 API） ----
 
