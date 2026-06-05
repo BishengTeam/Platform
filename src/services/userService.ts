@@ -485,10 +485,10 @@ export async function assignCoupon(data: { coupon_id?: string; user_id?: string 
   await post('/api/coupons/assign', data as unknown as Record<string, unknown>)
 }
 
-/** POST /api/coupons/verify — 核销优惠券 */
+/** POST /api/coupons/validate — 核销优惠券 */
 export async function verifyCoupon(couponCode: string): Promise<{ valid: boolean; message?: string }> {
   if (USE_MOCK) return { valid: true }
-  const res = await post<{ valid: boolean; message?: string }>('/api/coupons/verify', { coupon_code: couponCode })
+  const res = await post<{ valid: boolean; message?: string }>('/api/coupons/validate', { coupon_code: couponCode })
   return res.data
 }
 
@@ -518,13 +518,13 @@ export async function getPoster(): Promise<{ url: string }> {
   return res.data
 }
 
-/** POST /api/system/upload — 文件上传 OSS */
+/** POST /api/upload — 文件上传 OSS */
 export async function uploadToOss(filePath: string, token?: string): Promise<{ url: string }> {
   if (USE_MOCK) return { url: filePath }
   const Taro = require('@tarojs/taro').default
   const authToken = token || getToken()
   const res = await Taro.uploadFile({
-    url: '/api/system/upload',
+    url: '/api/upload',
     filePath,
     name: 'file',
     header: authToken ? { Authorization: `Bearer ${authToken}` } : {},
@@ -534,10 +534,10 @@ export async function uploadToOss(filePath: string, token?: string): Promise<{ u
   return data.data
 }
 
-/** GET /api/system/media/{media_id} — 文件访问 URL */
+/** GET /api/media/{media_id} — 文件访问 URL */
 export async function getSystemMediaUrl(mediaId: string): Promise<{ url: string }> {
   if (USE_MOCK) return { url: '' }
-  const res = await get<{ url: string }>(`/api/system/media/${mediaId}`)
+  const res = await get<{ url: string }>(`/api/media/${mediaId}`)
   return res.data
 }
 
