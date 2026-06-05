@@ -196,12 +196,6 @@ export async function validateCoupon(code: string): Promise<{ valid: boolean; me
   return res.data
 }
 
-/** POST /api/verification/send — 发送动态验证码 */
-export async function sendVerificationCode(phone: string): Promise<void> {
-  if (USE_MOCK) return
-  await post('/api/verification/send', { phone })
-}
-
 // ================================================================
 // P2 — 用户资料 / AI / 协议 / 工单
 // ================================================================

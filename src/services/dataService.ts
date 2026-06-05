@@ -48,7 +48,7 @@ export {
   getMyCollections, getRegisteredExams,
   createOrder, prepayOrder,
   addFavorite, removeFavorite, submitCheckin,
-  validateCoupon, sendVerificationCode,
+  validateCoupon,
   getUserProfile, updateUserProfile, sendChatMessage,
   createAgreement, signAgreement, getCoupons, getTickets,
   uploadFile,
