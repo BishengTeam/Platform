@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -11,12 +12,27 @@ const WEEKDAYS = STRINGS.WEEKDAY_LABELS
 
 export default function QuizCheckinPage() {
   const [records, setRecords] = useState<{ date: string; completed: boolean }[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const today = new Date()
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
   useEffect(() => {
-    getCheckinRecords().then(setRecords).catch(() => setRecords([]))
+    getCheckinRecords()
+      .then(setRecords)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
   }, [])
+
+  const handleCheckin = () => {
+    if (submitting) return
+    setSubmitting(true)
+    submitCheckin()
+      .then(() => getCheckinRecords().then(setRecords))
+      .catch(() => Taro.showToast({ title: '打卡失败，请重试', icon: 'none' }))
+      .finally(() => setSubmitting(false))
+  }
 
   const todayRecord = records.find(r => r.date === todayStr)
   const streakDays = records.filter(r => r.completed).length
@@ -51,17 +67,17 @@ export default function QuizCheckinPage() {
         <View className={styles.body}>
           <View className={styles.statsCard}>
             <View className={styles.statItem}>
-              <Text className={styles.statValue}>{streakDays}</Text>
+              <Text className={styles.statValue}>{loading ? '-' : streakDays}</Text>
               <Text className={styles.statLabel}>{STRINGS.QUIZ_CHECKIN_STATS_STREAK}</Text>
             </View>
             <View className={styles.statDivider} />
             <View className={styles.statItem}>
-              <Text className={styles.statValue}>{completedDays}</Text>
+              <Text className={styles.statValue}>{loading ? '-' : completedDays}</Text>
               <Text className={styles.statLabel}>{STRINGS.QUIZ_CHECKIN_STATS_TOTAL}</Text>
             </View>
             <View className={styles.statDivider} />
             <View className={styles.statItem}>
-              <Text className={styles.statValue}>{completedDays * 10}</Text>
+              <Text className={styles.statValue}>{loading ? '-' : completedDays * 10}</Text>
               <Text className={styles.statLabel}>{STRINGS.QUIZ_CHECKIN_STATS_QUESTIONS}</Text>
             </View>
           </View>
@@ -91,18 +107,18 @@ export default function QuizCheckinPage() {
             </View>
           </View>
 
-          <View className={styles.btnWrap}>
-            <Button
-              variant='gradient'
-              size='lg'
-              disabled={todayRecord?.completed}
-              onClick={() => {
-                submitCheckin().then(() => getCheckinRecords().then(setRecords)).catch(() => {})
-              }}
-            >
-              {todayRecord?.completed ? STRINGS.QUIZ_CHECKIN_TODAY : STRINGS.QUIZ_CHECKIN_BTN}
-            </Button>
-          </View>
+          {!loading && !error && (
+            <View className={styles.btnWrap}>
+              <Button
+                variant='gradient'
+                size='lg'
+                disabled={todayRecord?.completed || submitting}
+                onClick={handleCheckin}
+              >
+                {submitting ? '打卡中...' : todayRecord?.completed ? STRINGS.QUIZ_CHECKIN_TODAY : STRINGS.QUIZ_CHECKIN_BTN}
+              </Button>
+            </View>
+          )}
         </View>
       </View>
     </AuthGuard>
