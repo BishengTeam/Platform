@@ -27,8 +27,8 @@ export default function AuthPage() {
       success: (loginRes) => {
         if (loginRes.code) {
           wxLogin(loginRes.code)
-            .then(({ token }) => {
-              setToken(token)
+            .then(({ access_token }) => {
+              setToken(access_token)
               Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
             })
             .catch(() => {

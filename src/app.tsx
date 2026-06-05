@@ -14,8 +14,8 @@ export default function App({ children }: PropsWithChildren) {
       success: (loginRes) => {
         if (loginRes.code) {
           wxLogin(loginRes.code)
-            .then(({ token }) => {
-              setToken(token)
+            .then(({ access_token }) => {
+              setToken(access_token)
             })
             .catch(() => {
               // 后端登录失败不阻塞，用户可手动在 auth 页重试

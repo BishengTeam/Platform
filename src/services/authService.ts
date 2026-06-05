@@ -12,9 +12,9 @@ const USE_MOCK = false
 // ================================================================
 
 /** POST /api/auth/login — 微信 code 登录，返回 token */
-export async function wxLogin(code: string): Promise<{ token: string; refresh_token?: string; expires_in?: number }> {
-  if (USE_MOCK) return { token: 'mock_token_' + Date.now() }
-  const res = await post<{ token: string; refresh_token?: string; expires_in?: number }>('/api/auth/login', { code })
+export async function wxLogin(code: string): Promise<{ access_token: string; refresh_token?: string; expires_in?: number }> {
+  if (USE_MOCK) return { access_token: 'mock_token_' + Date.now() }
+  const res = await post<{ access_token: string; refresh_token?: string; expires_in?: number }>('/api/auth/login', { code })
   return res.data
 }
 
