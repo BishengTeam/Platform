@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -9,7 +10,11 @@ import { getRegisteredExams } from '@/services/dataService'
 import styles from './exam-query.module.scss'
 
 export default function ExamQueryPage() {
-  const exams = getRegisteredExams()
+  const [exams, setExams] = useState<Array<any>>([])
+
+  useEffect(() => {
+    getRegisteredExams().then(setExams).catch(() => setExams([]))
+  }, [])
 
   return (
     <AuthGuard>

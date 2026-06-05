@@ -110,10 +110,18 @@ export async function getMyCollections() {
   return res.data
 }
 
-export async function getRegisteredExams() {
+export async function getRegisteredExams(): Promise<Array<{id: string; name: string; examCode: string; date: string; status: string; link: string}>> {
   if (USE_MOCK) return registeredExams
-  const res = await get<any[]>(`/api/user/exams`)
-  return res.data
+  const res = await get<Array<{id: number; cert_type: string; status: string; paid_at: string; created_at: string}>>('/api/orders', { status: 'paid' })
+  const orders: any[] = (res.data as any)?.items || res.data || []
+  return orders.map((order: any) => ({
+    id: String(order.id),
+    name: order.cert_type,
+    examCode: order.cert_type,
+    date: order.paid_at || order.created_at || '',
+    status: '已报名',
+    link: '',
+  }))
 }
 
 // ================================================================
