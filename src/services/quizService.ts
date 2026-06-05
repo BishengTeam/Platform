@@ -21,20 +21,23 @@ export async function getQuizQuestions(categoryId?: string) {
     if (categoryId) return quizQuestions.filter(q => q.categoryId === categoryId)
     return quizQuestions
   }
-  const res = await get<any[]>(`/api/quiz/questions`, categoryId ? { category_id: categoryId } : undefined)
-  return res.data
+  const res = await get<any>(`/api/quiz/questions`, categoryId ? { category_id: categoryId } : undefined)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getWrongBook() {
   if (USE_MOCK) return wrongBook
-  const res = await get<any[]>(`/api/quiz/wrong-book`)
-  return res.data
+  const res = await get<any>(`/api/quiz/wrong-book`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getFavoriteQuestions() {
   if (USE_MOCK) return favoriteQuestions
-  const res = await get<any[]>(`/api/quiz/collections`)
-  return res.data
+  const res = await get<any>(`/api/quiz/collections`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getCheckinRecords(): Promise<{ date: string; completed: boolean }[]> {

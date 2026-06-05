@@ -9,8 +9,9 @@ const USE_MOCK = false
 
 export async function getCourseList() {
   if (USE_MOCK) return courseList
-  const res = await get<any[]>(`/api/courses`)
-  return res.data
+  const res = await get<any>(`/api/courses`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getCourseListExpanded() {
@@ -33,8 +34,9 @@ export async function getCourseById(id: string) {
 
 export async function getMyCourses() {
   if (USE_MOCK) return myCourses
-  const res = await get<any[]>(`/api/courses/my`)
-  return res.data
+  const res = await get<any>(`/api/courses/my`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 /** POST /api/courses/enroll — 课程报名 */

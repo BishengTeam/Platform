@@ -61,8 +61,9 @@ export async function getRegistrationTagFilters() {
 
 export async function getOrders() {
   if (USE_MOCK) return orders
-  const res = await get<any[]>(`/api/orders`)
-  return res.data
+  const res = await get<any>(`/api/orders`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getOrderDetail(id: number) {
@@ -82,20 +83,23 @@ export async function getPointsBalance() {
 
 export async function getPointRecords() {
   if (USE_MOCK) return pointRecords
-  const res = await get<any[]>(`/api/points/history`)
-  return res.data
+  const res = await get<any>(`/api/points/history`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getAgreements() {
   if (USE_MOCK) return agreements
-  const res = await get<any[]>(`/api/agreements`)
-  return res.data
+  const res = await get<any>(`/api/agreements`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getMyCollections() {
   if (USE_MOCK) return myCollections
-  const res = await get<any[]>(`/api/collections`)
-  return res.data
+  const res = await get<any>(`/api/collections`)
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 export async function getRegisteredExams(): Promise<Array<{id: string; name: string; examCode: string; date: string; status: string; link: string}>> {
@@ -244,8 +248,9 @@ export async function signAgreement(id: string, signatureImage: string): Promise
 /** GET /api/coupons — 获取优惠券列表 */
 export async function getCoupons(): Promise<Array<{ id: string; name: string; amount: number; expire_at: string }>> {
   if (USE_MOCK) return []
-  const res = await get<Array<Record<string, unknown>>>('/api/coupons')
-  return res.data as unknown as Array<{ id: string; name: string; amount: number; expire_at: string }>
+  const res = await get<any>('/api/coupons')
+  const data = res.data as any
+  return (data?.items || data || []) as Array<{ id: string; name: string; amount: number; expire_at: string }>
 }
 
 /** GET /api/tickets — 获取工单列表 */
@@ -253,8 +258,9 @@ export async function getTickets(): Promise<Array<{ id: string; title: string; s
   if (USE_MOCK) return [
     { id: 'T001', title: '考试报名咨询', status: '处理中', created_at: '2026-06-01' },
   ]
-  const res = await get<Array<Record<string, unknown>>>('/api/tickets')
-  return res.data as unknown as Array<{ id: string; title: string; status: string; created_at: string }>
+  const res = await get<any>('/api/tickets')
+  const data = res.data as any
+  return (data?.items || data || []) as Array<{ id: string; title: string; status: string; created_at: string }>
 }
 
 /**
@@ -393,8 +399,9 @@ export async function getCompetitionTracks(): Promise<Array<Record<string, unkno
 /** GET /api/jobs — 岗位列表 */
 export async function getJobs(): Promise<Array<Record<string, unknown>>> {
   if (USE_MOCK) return []
-  const res = await get<Array<Record<string, unknown>>>('/api/jobs')
-  return res.data
+  const res = await get<any>('/api/jobs')
+  const data = res.data as any
+  return (data?.items || data || []) as Array<Record<string, unknown>>
 }
 
 // ================================================================
