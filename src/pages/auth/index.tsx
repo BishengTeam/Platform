@@ -27,8 +27,13 @@ export default function AuthPage() {
       success: (loginRes) => {
         if (loginRes.code) {
           wxLogin(loginRes.code)
-            .then(({ access_token }) => {
-              setToken(access_token)
+            .then((data) => {
+              console.log('[Auth] wxLogin response:', JSON.stringify(data))
+              console.log('[Auth] access_token:', data.access_token?.substring(0, 20) + '...')
+              setToken(data.access_token)
+              const stored = Taro.getStorageSync('auth_token')
+              console.log('[Auth] token stored:', stored?.substring(0, 20) + '...')
+              console.log('[Auth] reLaunching to:', `/${ROUTES.INDEX}`)
               Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
             })
             .catch(() => {

@@ -16,11 +16,16 @@ export function AuthGuard({ children, onAuthFail = defaultAuthFail }: PropsWithC
   const { isChecked, isLoggedIn } = useAuth()
 
   useEffect(() => {
+    console.log('[AuthGuard] isChecked:', isChecked, 'isLoggedIn:', isLoggedIn)
     if (isChecked && !isLoggedIn) {
+      console.log('[AuthGuard] redirecting to auth')
       onAuthFail()
     }
   }, [isChecked, isLoggedIn, onAuthFail])
 
-  if (!isChecked || !isLoggedIn) return null
+  if (!isChecked || !isLoggedIn) {
+    console.log('[AuthGuard] blocking render: isChecked=', isChecked, 'isLoggedIn=', isLoggedIn)
+    return null
+  }
   return <>{children}</>
 }
