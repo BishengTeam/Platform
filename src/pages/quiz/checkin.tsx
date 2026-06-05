@@ -15,8 +15,7 @@ export default function QuizCheckinPage() {
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getCheckinRecords().then(setRecords)
+    getCheckinRecords().then(setRecords).catch(() => setRecords([]))
   }, [])
 
   const todayRecord = records.find(r => r.date === todayStr)
@@ -98,8 +97,7 @@ export default function QuizCheckinPage() {
               size='lg'
               disabled={todayRecord?.completed}
               onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                submitCheckin().then(() => getCheckinRecords().then(setRecords))
+                submitCheckin().then(() => getCheckinRecords().then(setRecords)).catch(() => {})
               }}
             >
               {todayRecord?.completed ? STRINGS.QUIZ_CHECKIN_TODAY : STRINGS.QUIZ_CHECKIN_BTN}

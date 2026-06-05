@@ -16,7 +16,7 @@ export default function MineCollectionsPage() {
   const [data, setData] = useState<{ courses: any[]; materials: any[] }>({ courses: [], materials: [] })
 
   useEffect(() => {
-    getMyCollections().then(setData)
+    getMyCollections().then(setData).catch(() => {})
   }, [])
 
   const items = activeTab === TABS[0] ? data.courses : data.materials

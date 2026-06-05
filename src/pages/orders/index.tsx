@@ -38,7 +38,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
 
   useEffect(() => {
-    getOrders().then(setOrders)
+    getOrders().then(setOrders).catch(() => {})
   }, [])
 
   const filteredOrders = activeTag === STRINGS.ORDERS_TAG_ALL

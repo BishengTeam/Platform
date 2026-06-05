@@ -54,7 +54,7 @@ export default function IndexPage() {
   const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
 
   useEffect(() => {
-    getHomeAggregation().then(setHomeData)
+    getHomeAggregation().then(setHomeData).catch(() => {})
   }, [])
 
   const handleGoConsult = () => {

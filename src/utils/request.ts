@@ -97,9 +97,10 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
       Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
       // 跳转登录页
       Taro.reLaunch({ url: '/pages/auth/index' })
-    } else {
-      Taro.showToast({ title: result.message || '请求失败', icon: 'none' })
+      // 中断调用链，避免后续代码拿到 null/error 数据而崩溃
+      throw new Error('UNAUTHORIZED')
     }
+    Taro.showToast({ title: result.message || '请求失败', icon: 'none' })
 
     return result
   } catch (err: unknown) {

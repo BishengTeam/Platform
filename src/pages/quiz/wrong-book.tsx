@@ -16,7 +16,7 @@ export default function WrongBookPage() {
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getWrongBook().then(setItems)
+    getWrongBook().then(setItems).catch(() => {})
   }, [])
 
   const handleRemove = (id: string) => {

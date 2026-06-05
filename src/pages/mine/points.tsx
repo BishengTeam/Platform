@@ -13,9 +13,9 @@ export default function PointsPage() {
   const [coupons, setCoupons] = useState([])
 
   useEffect(() => {
-    getPointsBalance().then(setBalance)
-    getPointRecords().then(setRecords)
-    getCoupons().then(setCoupons)
+    getPointsBalance().then(setBalance).catch(() => {})
+    getPointRecords().then(setRecords).catch(() => {})
+    getCoupons().then(setCoupons).catch(() => {})
   }, [])
 
   return (

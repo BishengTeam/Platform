@@ -15,7 +15,7 @@ export default function QuizCollectionsPage() {
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getFavoriteQuestions().then(setItems)
+    getFavoriteQuestions().then(setItems).catch(() => {})
   }, [])
 
   const handleRemove = (id: number) => {

@@ -17,7 +17,7 @@ export default function MyCoursesPage() {
   const [allCourses, setAllCourses] = useState([])
 
   useEffect(() => {
-    getMyCourses().then(setAllCourses)
+    getMyCourses().then(setAllCourses).catch(() => {})
   }, [])
 
   const filtered = useMemo(() => {

@@ -33,7 +33,7 @@ export default function RensheFormPage() {
   useEffect(() => {
     const id = Number(certId)
     if (!id) return
-    getCertDetail(id).then(setCert)
+    getCertDetail(id).then(setCert).catch(() => {})
   }, [certId])
 
   const handleValidate = useCallback(() => {

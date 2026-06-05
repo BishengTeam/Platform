@@ -17,8 +17,8 @@ export default function CourseIndexPage() {
   const [categories, setCategories] = useState<TagFilterItem[]>([])
 
   useEffect(() => {
-    getCourseList().then(setAllCourses)
-    getCourseCategories().then(setCategories)
+    getCourseList().then(setAllCourses).catch(() => {})
+    getCourseCategories().then(setCategories).catch(() => {})
   }, [])
 
   const filtered = useMemo(() => {

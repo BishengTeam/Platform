@@ -24,7 +24,7 @@ export default function QuizPracticePage() {
     const modeParam = options?.mode as Mode | undefined
     if (modeParam) setMode(modeParam)
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getQuizQuestions(categoryId || undefined).then(setQuestions)
+    getQuizQuestions(categoryId || undefined).then(setQuestions).catch(() => {})
   })
 
   const currentQuestion = questions[currentIndex]

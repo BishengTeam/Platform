@@ -39,7 +39,7 @@ export default function SangforFormPage() {
   useEffect(() => {
     const id = Number(certId)
     if (!id) return
-    getCertDetail(id).then(setCert)
+    getCertDetail(id).then(setCert).catch(() => {})
   }, [certId])
 
   useEffect(() => {
