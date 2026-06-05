@@ -85,7 +85,8 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
     }
 
     // 业务错误：先 toast，再按错误码分流
-    if (result.code === 401) {
+    // 后端认证错误码: 40100-40199，HTTP 401
+    if (result.code === 40100 || res.statusCode === 401) {
       removeToken()
       Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
       // 跳转登录页
