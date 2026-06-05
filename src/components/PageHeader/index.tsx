@@ -15,8 +15,13 @@ export function PageHeader({ title, shouldShowBack = false, onBack, rightContent
   const handleBack = () => {
     if (onBack) {
       onBack()
-    } else {
+      return
+    }
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
       Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
     }
   }
 
