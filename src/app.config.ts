@@ -54,7 +54,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/mine',
-      pages: ['courses', 'profile', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'exam-intention', 'contact-teachers', 'share', 'deactivate'],
+      pages: ['courses', 'profile', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'exam-intention', 'share', 'deactivate'],
     },
     {
       root: 'pages/login-poster',
