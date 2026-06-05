@@ -40,11 +40,11 @@ export default function ActivityZonePage() {
     getActivityZone().then((data: ActivityZoneResponse) => {
       setAllActivities(data.activities)
       setActivityBanner(data.zones[0] ?? null)
-    })
+    }).catch(() => {})
     getCompetitionZone().then((data: CompetitionZoneResponse) => {
       setAllCompetitions(data.competitions)
       setCompetitionBanner(data.zones[0] ?? null)
-    })
+    }).catch(() => {})
   }, [])
 
   // Activity time-based grouping

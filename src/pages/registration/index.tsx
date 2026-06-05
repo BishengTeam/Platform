@@ -52,7 +52,7 @@ export default function RegistrationIndexPage() {
         })),
       ]
       setTagFilters(tags)
-    })
+    }).catch(() => {})
   }, [])
 
   const filtered = useMemo(() => {

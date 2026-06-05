@@ -24,7 +24,7 @@ export default function ServicePage() {
     getTickets().then(data => {
       setTickets(data)
       setTicketsLoaded(true)
-    })
+    }).catch(() => {})
   }, [])
 
   const handleBack = useCallback(() => {

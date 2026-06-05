@@ -29,7 +29,7 @@ export default function EmploymentZonePage() {
         }])
       }
       setJobList(data.jobs)
-    })
+    }).catch(() => {})
     // Hardcoded tag filters since getEmploymentTagFilters is removed
     setTagFilters([
       { label: STRINGS.EMPLOYMENT_TAG_RECOMMEND, activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#F0F5FF' },

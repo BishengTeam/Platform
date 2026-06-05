@@ -47,7 +47,7 @@ export default function SangforFormPage() {
       if (profile.phone && !phone) setPhone(profile.phone)
       if (profile.real_name && !realName) setRealName(profile.real_name)
       if (profile.email && !email) setEmail(profile.email)
-    })
+    }).catch(() => {})
   }, [])
 
   const handleValidate = useCallback(() => {

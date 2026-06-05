@@ -56,7 +56,7 @@ export default function NispFormPage() {
       if (profile.email && !email) setEmail(profile.email)
       if (profile.school && !school) setSchool(profile.school)
       if (profile.major && !major) setMajor(profile.major)
-    })
+    }).catch(() => {})
   }, [])
 
   const trainingType = cert ? (cert as any).categoryName : ''

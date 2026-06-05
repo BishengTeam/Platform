@@ -44,11 +44,11 @@ export default function TrainingPage() {
     getStudyZone().then((data: StudyZoneResponse) => {
       setAllCourses(data.courses)
       setZoneBanner(data.zones[0] ?? null)
-    })
+    }).catch(() => {})
     getQuizCategories().then((cats) => {
       setQuizCategories(cats)
       setSelectedQuizId(cats[0]?.id || '')
-    })
+    }).catch(() => {})
   }, [])
 
   const selectedQuiz = quizCategories.find(q => q.id === selectedQuizId) || quizCategories[0]

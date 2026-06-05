@@ -49,7 +49,7 @@ export default function RegistrationFormPage() {
       if (profile.phone && !phone) setPhone(profile.phone)
       if (profile.real_name && !realName) setRealName(profile.real_name)
       if (profile.email && !email) setEmail(profile.email)
-    })
+    }).catch(() => {})
   }, [])
 
   const handleValidate = useCallback(() => {
@@ -100,7 +100,7 @@ export default function RegistrationFormPage() {
       }).catch(() => {
         Taro.showToast({ title: '上传失败', icon: 'none' })
       })
-    })
+    }).catch(() => {})
   }
 
   const handlePickExamDate = () => {
