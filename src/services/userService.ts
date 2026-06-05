@@ -326,13 +326,6 @@ export async function getNispTemplate(): Promise<{ url: string }> {
   return res.data
 }
 
-/** GET /api/cert/export — 认证报名导出 CSV */
-export async function exportCertRegistrations(): Promise<{ url: string }> {
-  if (USE_MOCK) return { url: '' }
-  const res = await get<{ url: string }>('/api/cert/export')
-  return res.data
-}
-
 // ================================================================
 // 积分扩展 — 领取 / 兑换
 // ================================================================
@@ -393,13 +386,6 @@ export async function registerActivity(data: { activity_id: number; name: string
   await post('/api/activities/register', data as unknown as Record<string, unknown>)
 }
 
-/** GET /api/activities/export — 导出活动报名 CSV */
-export async function exportActivityRegistrations(): Promise<{ url: string }> {
-  if (USE_MOCK) return { url: '' }
-  const res = await get<{ url: string }>('/api/activities/export')
-  return res.data
-}
-
 // ================================================================
 // 竞赛扩展
 // ================================================================
@@ -415,13 +401,6 @@ export async function getCompetitionStats(): Promise<Array<Record<string, unknow
 export async function getCompetitionTracks(): Promise<Array<Record<string, unknown>>> {
   if (USE_MOCK) return []
   const res = await get<Array<Record<string, unknown>>>('/api/competition/tracks')
-  return res.data
-}
-
-/** GET /api/competition/export — 导出竞赛报名 CSV */
-export async function exportCompetitionRegistrations(): Promise<{ url: string }> {
-  if (USE_MOCK) return { url: '' }
-  const res = await get<{ url: string }>('/api/competition/export')
   return res.data
 }
 
