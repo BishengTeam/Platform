@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { setAuthToken } from '@/utils/storage'
+import { wxLogin } from '@/services/dataService'
+import { setToken } from '@/utils/request'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { Icon } from '@/components/Icon'
@@ -11,6 +12,7 @@ import styles from './index.module.scss'
 export default function AuthPage() {
   const [isAgreed, setIsAgreed] = useState(false)
   const [isShaking, setIsShaking] = useState(false)
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   const handleLogin = () => {
     if (!isAgreed) {
@@ -18,8 +20,31 @@ export default function AuthPage() {
       setTimeout(() => setIsShaking(false), 500)
       return
     }
-    setAuthToken()
-    Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
+    if (isLoggingIn) return
+
+    setIsLoggingIn(true)
+    Taro.login({
+      success: (loginRes) => {
+        if (loginRes.code) {
+          wxLogin(loginRes.code)
+            .then(({ token }) => {
+              setToken(token)
+              Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
+            })
+            .catch(() => {
+              setIsLoggingIn(false)
+              Taro.showToast({ title: '登录失败，请重试', icon: 'none' })
+            })
+        } else {
+          setIsLoggingIn(false)
+          Taro.showToast({ title: '获取微信授权失败', icon: 'none' })
+        }
+      },
+      fail: () => {
+        setIsLoggingIn(false)
+        Taro.showToast({ title: '微信登录失败', icon: 'none' })
+      },
+    })
   }
 
   return (
@@ -38,7 +63,7 @@ export default function AuthPage() {
         <View className={`${styles.actions} fade-in-up delay-1`}>
           <View className={styles.wechatBtn} onClick={handleLogin}>
             <Icon name='message-circle' size={20} color='#ffffff' />
-            <Text className={styles.wechatBtnText}>{STRINGS.AUTH_WECHAT_BTN}</Text>
+            <Text className={styles.wechatBtnText}>{isLoggingIn ? '登录中...' : STRINGS.AUTH_WECHAT_BTN}</Text>
           </View>
         </View>
 

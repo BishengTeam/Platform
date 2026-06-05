@@ -2,9 +2,9 @@
   "miniprogramRoot": "./dist",
   "projectname": "Platform",
   "description": "",
-  "appid": "touristappid",
+  "appid": "wx08157fb5562f4ebe",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": false,
     "enhance": false,
     "compileHotReLoad": false,

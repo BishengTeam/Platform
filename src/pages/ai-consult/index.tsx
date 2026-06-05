@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { View, ScrollView, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
@@ -11,7 +11,7 @@ import {
   KEYWORD_TEACHER, KEYWORD_EXAM, KEYWORD_EMPLOYMENT,
   KEYWORD_COMPETITION, KEYWORD_ACTIVITY, KEYWORD_COURSE,
 } from '@/constants/keywords'
-import { getInitialMessages, getQuickQuestions } from '@/services/dataService'
+import { getInitialMessages, fetchQuickQuestions } from '@/services/dataService'
 import { sendChatMessage } from '@/services/dataService'
 import type { Message } from '@/types'
 import styles from './index.module.scss'
@@ -74,7 +74,12 @@ export default function AiConsultPage() {
   const [messages, setMessages] = useState<Message[]>(getInitialMessages())
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [quickQuestions, setQuickQuestions] = useState<string[]>([])
   const nextIdRef = useRef(100)
+
+  useEffect(() => {
+    fetchQuickQuestions().then(setQuickQuestions).catch(() => setQuickQuestions([]))
+  }, [])
 
   const handleSend = useCallback(async (text?: string) => {
     const query = (text ?? inputValue).trim()
@@ -137,7 +142,7 @@ export default function AiConsultPage() {
         <ChatInput
           value={inputValue}
           shouldShowQuickQuestions
-          quickQuestions={getQuickQuestions()}
+          quickQuestions={quickQuestions}
           onInput={setInputValue}
           onSend={handleSendEmpty}
           onQuickTap={handleQuickTap}

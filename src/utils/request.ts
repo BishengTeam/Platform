@@ -12,7 +12,7 @@ import Taro from '@tarojs/taro'
 
 // ---- 配置 ----
 
-const BASE_URL = process.env.TARO_APP_API_BASE || ''
+const BASE_URL = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
 
 const TOKEN_KEY = 'auth_token'
 
@@ -71,6 +71,7 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
       method,
       data,
       header: headers,
+      timeout: 15000,
     })
 
     if (showLoading) {

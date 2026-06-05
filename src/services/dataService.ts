@@ -58,6 +58,7 @@ const USE_MOCK = false
 // ---- 纯本地/静态数据（无对应 API） ----
 
 export function getZoneIcons() { return zoneIcons }
+/** @deprecated 同步版本仅返回本地 mock，请使用异步的 fetchQuickQuestions() 对接 GET /api/quick-questions */
 export function getQuickQuestions() { return quickQuestions }
 export function getInitialMessages() { return initialMessages }
 export function getContactList() { return contactList }
@@ -546,4 +547,359 @@ export async function uploadFile(filePath: string, token?: string): Promise<{ ur
   const data = JSON.parse(res.data) as { code: number; data: { url: string }; message: string }
   if (data.code !== 0) throw new Error(data.message || '上传失败')
   return data.data
+}
+
+// ================================================================
+// 认证模块 — 登录 / 刷新 / 退出
+// ================================================================
+
+/** POST /api/auth/login — 微信 code 登录，返回 token */
+export async function wxLogin(code: string): Promise<{ token: string; refresh_token?: string; expires_in?: number }> {
+  if (USE_MOCK) return { token: 'mock_token_' + Date.now() }
+  const res = await post<{ token: string; refresh_token?: string; expires_in?: number }>('/api/auth/login', { code })
+  return res.data
+}
+
+/** POST /api/auth/refresh — 刷新 token */
+export async function refreshToken(): Promise<{ token: string }> {
+  if (USE_MOCK) return { token: 'mock_refreshed_' + Date.now() }
+  const res = await post<{ token: string }>('/api/auth/refresh')
+  return res.data
+}
+
+/** POST /api/auth/logout — 退出登录 */
+export async function logout(): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/auth/logout')
+}
+
+// ================================================================
+// 用户扩展 — 注销 / 手机号解密 / 实名认证 / 解绑
+// ================================================================
+
+/** DELETE /api/user/account — 注销账号 */
+export async function deleteAccount(): Promise<void> {
+  if (USE_MOCK) return
+  await del('/api/user/account')
+}
+
+/** POST /api/user/phone/decrypt — 解密微信手机号 */
+export async function decryptPhone(data: { encrypted_data: string; iv: string }): Promise<{ phone: string }> {
+  if (USE_MOCK) return { phone: '138****8888' }
+  const res = await post<{ phone: string }>('/api/user/phone/decrypt', data as unknown as Record<string, unknown>)
+  return res.data
+}
+
+/** POST /api/user/identity — 提交实名认证 */
+export async function submitIdentity(data: { real_name: string; id_card: string }): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/user/identity', data as unknown as Record<string, unknown>)
+}
+
+/** GET /api/user/identity — 查询实名认证状态 */
+export async function getIdentityStatus(): Promise<{ status: string; real_name?: string; id_card?: string }> {
+  if (USE_MOCK) return { status: 'verified', real_name: '王小明', id_card: '330106****1234' }
+  const res = await get<{ status: string; real_name?: string; id_card?: string }>('/api/user/identity')
+  return res.data
+}
+
+/** POST /api/user/unbind — 解绑手机号/微信 */
+export async function unbindAccount(type: 'phone' | 'wechat'): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/user/unbind', { type })
+}
+
+// ================================================================
+// 课程报名
+// ================================================================
+
+/** POST /api/courses/enroll — 课程报名 */
+export async function enrollCourse(courseId: number): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/courses/enroll', { course_id: courseId })
+}
+
+// ================================================================
+// 题库扩展 — 错题本写操作
+// ================================================================
+
+/** POST /api/quiz/wrong-book — 加入错题本 */
+export async function addWrongBook(questionId: number): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/quiz/wrong-book', { question_id: questionId })
+}
+
+/** DELETE /api/quiz/wrong-book/{id} — 移出错题本 */
+export async function removeWrongBook(id: number): Promise<void> {
+  if (USE_MOCK) return
+  await del(`/api/quiz/wrong-book/${id}`)
+}
+
+// ================================================================
+// 深信服 / NISP / 认证导出
+// ================================================================
+
+/** GET /api/cert/sangfor/coupons — 深信服考试券列表 */
+export async function getSangforCoupons(): Promise<Array<Record<string, unknown>>> {
+  if (USE_MOCK) return []
+  const res = await get<Array<Record<string, unknown>>>('/api/cert/sangfor/coupons')
+  return res.data
+}
+
+/** GET /api/cert/sangfor/verify-code — 深信服动态验证码下发 */
+export async function getSangforVerifyCode(): Promise<{ code: string }> {
+  if (USE_MOCK) return { code: '123456' }
+  const res = await get<{ code: string }>('/api/cert/sangfor/verify-code')
+  return res.data
+}
+
+/** GET /api/cert/nisp/pinyin — NISP 拼音生成 */
+export async function getNispPinyin(text: string): Promise<{ pinyin: string }> {
+  if (USE_MOCK) return { pinyin: 'zhangsan' }
+  const res = await get<{ pinyin: string }>('/api/cert/nisp/pinyin', { text } as unknown as Record<string, unknown>)
+  return res.data
+}
+
+/** GET /api/cert/nisp/template — NISP 模板文件 */
+export async function getNispTemplate(): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: '' }
+  const res = await get<{ url: string }>('/api/cert/nisp/template')
+  return res.data
+}
+
+/** GET /api/cert/export — 认证报名导出 CSV */
+export async function exportCertRegistrations(): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: '' }
+  const res = await get<{ url: string }>('/api/cert/export')
+  return res.data
+}
+
+// ================================================================
+// 积分扩展 — 领取 / 兑换
+// ================================================================
+
+/** POST /api/points/claim — 领取积分 */
+export async function claimPoints(pointId?: string): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/points/claim', pointId ? { point_id: pointId } : undefined)
+}
+
+/** POST /api/points/redeem — 积分兑换 */
+export async function redeemPoints(data: { item_id: string; points: number }): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/points/redeem', data as unknown as Record<string, unknown>)
+}
+
+// ================================================================
+// 价格配置
+// ================================================================
+
+/** GET /api/prices — 价格配置列表 */
+export async function getPrices(): Promise<Array<Record<string, unknown>>> {
+  if (USE_MOCK) return []
+  const res = await get<Array<Record<string, unknown>>>('/api/prices')
+  return res.data
+}
+
+// ================================================================
+// 通用收藏（区别于题库收藏 /api/quiz/collections）
+// ================================================================
+
+/** POST /api/collections — 通用添加收藏 */
+export async function addCollection(data: { type: string; target_id: number }): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/collections', data as unknown as Record<string, unknown>)
+}
+
+/** DELETE /api/collections/{id} — 通用取消收藏 */
+export async function removeCollection(id: number): Promise<void> {
+  if (USE_MOCK) return
+  await del(`/api/collections/${id}`)
+}
+
+// ================================================================
+// 活动扩展
+// ================================================================
+
+/** GET /api/activities — 活动列表（独立端点） */
+export async function getActivities(): Promise<Array<Record<string, unknown>>> {
+  if (USE_MOCK) return []
+  const res = await get<Array<Record<string, unknown>>>('/api/activities')
+  return res.data
+}
+
+/** POST /api/activities/register — 活动报名（主端点，含报名人信息） */
+export async function registerActivity(data: { activity_id: number; name: string; phone: string; remark?: string }): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/activities/register', data as unknown as Record<string, unknown>)
+}
+
+/** GET /api/activities/export — 导出活动报名 CSV */
+export async function exportActivityRegistrations(): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: '' }
+  const res = await get<{ url: string }>('/api/activities/export')
+  return res.data
+}
+
+// ================================================================
+// 竞赛扩展
+// ================================================================
+
+/** GET /api/competition/stats — 按学校统计竞赛报名 */
+export async function getCompetitionStats(): Promise<Array<Record<string, unknown>>> {
+  if (USE_MOCK) return []
+  const res = await get<Array<Record<string, unknown>>>('/api/competition/stats')
+  return res.data
+}
+
+/** GET /api/competition/tracks — 竞赛赛道列表 */
+export async function getCompetitionTracks(): Promise<Array<Record<string, unknown>>> {
+  if (USE_MOCK) return []
+  const res = await get<Array<Record<string, unknown>>>('/api/competition/tracks')
+  return res.data
+}
+
+/** GET /api/competition/export — 导出竞赛报名 CSV */
+export async function exportCompetitionRegistrations(): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: '' }
+  const res = await get<{ url: string }>('/api/competition/export')
+  return res.data
+}
+
+// ================================================================
+// 岗位列表
+// ================================================================
+
+/** GET /api/jobs — 岗位列表 */
+export async function getJobs(): Promise<Array<Record<string, unknown>>> {
+  if (USE_MOCK) return []
+  const res = await get<Array<Record<string, unknown>>>('/api/jobs')
+  return res.data
+}
+
+// ================================================================
+// 工单扩展
+// ================================================================
+
+/** POST /api/tickets — 创建工单 */
+export async function createTicket(data: { title: string; description: string; type?: string }): Promise<{ id: string }> {
+  if (USE_MOCK) return { id: `TKT${Date.now()}` }
+  const res = await post<{ id: string }>('/api/tickets', data as unknown as Record<string, unknown>)
+  return res.data
+}
+
+/** GET /api/tickets/{id} — 工单详情 */
+export async function getTicketDetail(id: string): Promise<Record<string, unknown>> {
+  if (USE_MOCK) return { id, title: '考试报名咨询', status: '处理中', created_at: '2026-06-01' }
+  const res = await get<Record<string, unknown>>(`/api/tickets/${id}`)
+  return res.data
+}
+
+// ================================================================
+// 分享
+// ================================================================
+
+/** POST /api/share — 生成分享链接 */
+export async function createShare(data: { type: string; target_id: number }): Promise<{ code: string; url: string }> {
+  if (USE_MOCK) return { code: 'mock_share_code', url: '' }
+  const res = await post<{ code: string; url: string }>('/api/share', data as unknown as Record<string, unknown>)
+  return res.data
+}
+
+/** GET /api/share/{code} — 分享追踪（通过分享码获取目标信息） */
+export async function getShareInfo(code: string): Promise<Record<string, unknown>> {
+  if (USE_MOCK) return { type: 'course', target_id: 1 }
+  const res = await get<Record<string, unknown>>(`/api/share/${code}`)
+  return res.data
+}
+
+// ================================================================
+// 媒体
+// ================================================================
+
+/** GET /api/media/{file_id} — 访问/下载文件 */
+export async function getMediaUrl(fileId: string): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: '' }
+  const res = await get<{ url: string }>(`/api/media/${fileId}`)
+  return res.data
+}
+
+// ================================================================
+// 优惠券扩展
+// ================================================================
+
+/** POST /api/coupons/assign — 下发优惠券 */
+export async function assignCoupon(data: { coupon_id?: string; user_id?: string }): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/coupons/assign', data as unknown as Record<string, unknown>)
+}
+
+/** POST /api/coupons/verify — 核销优惠券 */
+export async function verifyCoupon(couponCode: string): Promise<{ valid: boolean; message?: string }> {
+  if (USE_MOCK) return { valid: true }
+  const res = await post<{ valid: boolean; message?: string }>('/api/coupons/verify', { coupon_code: couponCode })
+  return res.data
+}
+
+// ================================================================
+// 客服扩展
+// ================================================================
+
+/**
+ * GET /api/chat/stream — SSE 流式消息
+ * 注意：微信小程序不支持原生 SSE，实际对接时需通过 wx.request 或 WebSocket 桥接
+ */
+export async function streamChatMessage(): Promise<void> {
+  // SSE 流式端点，小程序端通常需要特殊封装（如 wx.request enableChunked 或 WebSocket）
+  // 当前仅声明端点，具体实现在对接时根据后端流式协议调整
+  if (USE_MOCK) return
+  await get('/api/chat/stream')
+}
+
+// ================================================================
+// 系统
+// ================================================================
+
+/** GET /api/system/poster — 登录海报 */
+export async function getPoster(): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: '' }
+  const res = await get<{ url: string }>('/api/system/poster')
+  return res.data
+}
+
+/** POST /api/system/upload — 文件上传 OSS */
+export async function uploadToOss(filePath: string, token?: string): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: filePath }
+  const Taro = require('@tarojs/taro').default
+  const authToken = token || getToken()
+  const res = await Taro.uploadFile({
+    url: '/api/system/upload',
+    filePath,
+    name: 'file',
+    header: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+  })
+  const data = JSON.parse(res.data) as { code: number; data: { url: string }; message: string }
+  if (data.code !== 0) throw new Error(data.message || '上传失败')
+  return data.data
+}
+
+/** GET /api/system/media/{media_id} — 文件访问 URL */
+export async function getSystemMediaUrl(mediaId: string): Promise<{ url: string }> {
+  if (USE_MOCK) return { url: '' }
+  const res = await get<{ url: string }>(`/api/system/media/${mediaId}`)
+  return res.data
+}
+
+// ================================================================
+// 快捷问题 — 从本地静态数据升级为 API 调用（async）
+// ================================================================
+
+/**
+ * GET /api/quick-questions — 推荐问题列表
+ * USE_MOCK 为 true 时回退到本地 mock 数据
+ */
+export async function fetchQuickQuestions(): Promise<string[]> {
+  if (USE_MOCK) return quickQuestions
+  const res = await get<string[]>('/api/quick-questions')
+  return res.data
 }
