@@ -92,18 +92,6 @@ export async function getAgreements() {
   return res.data
 }
 
-export async function getExamIntentions() {
-  if (USE_MOCK) return examIntentions
-  const res = await get<any[]>(`/api/user/exam-intentions`)
-  return res.data
-}
-
-export async function getTeacherContacts() {
-  if (USE_MOCK) return teacherContacts
-  const res = await get<any[]>(`/api/user/teachers`)
-  return res.data
-}
-
 export async function getMyCollections() {
   if (USE_MOCK) return myCollections
   const res = await get<any[]>(`/api/collections`)

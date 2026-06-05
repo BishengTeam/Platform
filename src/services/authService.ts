@@ -18,17 +18,17 @@ export async function wxLogin(code: string): Promise<{ access_token: string; ref
   return res.data
 }
 
-/** POST /api/auth/refresh — 刷新 token */
-export async function refreshToken(): Promise<{ token: string }> {
-  if (USE_MOCK) return { token: 'mock_refreshed_' + Date.now() }
-  const res = await post<{ token: string }>('/api/auth/refresh')
+/** POST /api/auth/refresh — 刷新 token，需传 refresh_token */
+export async function refreshToken(refresh_token: string): Promise<{ access_token: string; refresh_token: string }> {
+  if (USE_MOCK) return { access_token: 'mock_refreshed_' + Date.now(), refresh_token: 'mock_refresh_' + Date.now() }
+  const res = await post<{ access_token: string; refresh_token: string }>('/api/auth/refresh', { refresh_token })
   return res.data
 }
 
-/** POST /api/auth/logout — 退出登录 */
-export async function logout(): Promise<void> {
+/** POST /api/auth/logout — 退出登录，需传 refresh_token */
+export async function logout(refresh_token?: string): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/auth/logout')
+  await post('/api/auth/logout', refresh_token ? { refresh_token } : undefined)
 }
 
 // ================================================================

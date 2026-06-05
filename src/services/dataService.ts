@@ -44,7 +44,7 @@ export {
 export {
   getCertifications, getCertDetail, getRegistrationTagFilters,
   getOrders, getOrderDetail, getPointsBalance, getPointRecords,
-  getAgreements, getExamIntentions, getTeacherContacts,
+  getAgreements,
   getMyCollections, getRegisteredExams,
   createOrder, prepayOrder,
   addFavorite, removeFavorite, submitCheckin,
