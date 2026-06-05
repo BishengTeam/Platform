@@ -23,7 +23,9 @@ export function getToken(): string {
 }
 
 export function setToken(token: string): void {
+  console.log('[Request] setToken:', token?.substring(0, 20) + '...')
   Taro.setStorageSync(TOKEN_KEY, token)
+  console.log('[Request] verify stored:', Taro.getStorageSync(TOKEN_KEY)?.substring(0, 20) + '...')
 }
 
 export function removeToken(): void {
@@ -53,12 +55,15 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
   const { url, method = 'GET', data, header = {}, showLoading = true } = options
 
   const token = getToken()
+  console.log(`[Request] ${method} ${url} | token:`, token ? token.substring(0, 20) + '...' : '(empty)')
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...header,
   }
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
+  } else {
+    console.warn(`[Request] ${method} ${url} | NO TOKEN — request may fail with 401`)
   }
 
   if (showLoading) {
@@ -87,6 +92,7 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
     // 业务错误：先 toast，再按错误码分流
     // 后端认证错误码: 40100-40199，HTTP 401
     if (result.code === 40100 || res.statusCode === 401) {
+      console.warn('[Request] 401 detected — removing token and redirecting to auth')
       removeToken()
       Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
       // 跳转登录页
