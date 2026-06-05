@@ -34,8 +34,6 @@ export const ROUTES = {
   MINE_AGREEMENTS: 'pages/mine/agreements',
   MINE_COLLECTIONS: 'pages/mine/collections',
   MINE_EXAM_QUERY: 'pages/mine/exam-query',
-  MINE_EXAM_INTENTION: 'pages/mine/exam-intention',
-  MINE_CONTACT_TEACHERS: 'pages/mine/contact-teachers',
   MINE_SHARE: 'pages/mine/share',
   MINE_DEACTIVATE: 'pages/mine/deactivate',
   LOGIN_POSTER: 'pages/login-poster/index',
