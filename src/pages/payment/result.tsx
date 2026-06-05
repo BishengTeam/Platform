@@ -25,7 +25,7 @@ export default function ResultPage() {
 
   useEffect(() => {
     if (!orderId) return
-    getOrderDetail(orderId)
+    getOrderDetail(Number(orderId))
       .then((detail) => {
         if (detail) setOrderDetail(detail)
       })

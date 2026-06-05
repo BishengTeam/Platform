@@ -14,9 +14,11 @@ export default function OrderDetailPage() {
 
   useLoad((options) => {
     try {
-      const id = (options.order_id as string) || (options.id as string) || '1'
-      const data = getOrderDetail(id)
-      setDetail(data)
+      const idStr = (options.order_id as string) || (options.id as string) || '1'
+      const id = Number(idStr)
+      getOrderDetail(id).then(data => setDetail(data)).catch(e => {
+        console.error('[order-detail] useLoad error:', e)
+      })
     } catch (e) {
       console.error('[order-detail] useLoad error:', e)
     }

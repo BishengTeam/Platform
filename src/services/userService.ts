@@ -65,7 +65,7 @@ export async function getOrders() {
   return res.data
 }
 
-export async function getOrderDetail(id: string) {
+export async function getOrderDetail(id: number) {
   if (USE_MOCK) {
     if (orderDetails[id]) return orderDetails[id]
     return Object.values(orderDetails).find(d => d.orderId === id) || null
@@ -168,13 +168,13 @@ export async function prepayOrder(orderId: string): Promise<{
 // ================================================================
 
 /** POST /api/quiz/collections — 收藏题目 */
-export async function addFavorite(questionId: string): Promise<void> {
+export async function addFavorite(questionId: number): Promise<void> {
   if (USE_MOCK) return
   await post('/api/quiz/collections', { question_id: questionId })
 }
 
 /** DELETE /api/quiz/collections/{id} — 取消收藏 */
-export async function removeFavorite(questionId: string): Promise<void> {
+export async function removeFavorite(questionId: number): Promise<void> {
   if (USE_MOCK) return
   await del(`/api/quiz/collections/${questionId}`)
 }
@@ -182,7 +182,7 @@ export async function removeFavorite(questionId: string): Promise<void> {
 /** POST /api/quiz/checkin — 打卡 */
 export async function submitCheckin(): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/quiz/checkin')
+  await post('/api/quiz/checkin', { questions_completed: 1 })
 }
 
 // ================================================================

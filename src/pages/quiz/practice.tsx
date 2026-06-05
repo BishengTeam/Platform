@@ -83,7 +83,7 @@ export default function QuizPracticePage() {
     }
   }
 
-  const handleToggleFavorite = useCallback((id: string) => {
+  const handleToggleFavorite = useCallback((id: number) => {
     setFavorites(prev => {
       const next = new Set(prev)
       if (next.has(id)) {

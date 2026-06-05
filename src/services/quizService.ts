@@ -21,7 +21,7 @@ export async function getQuizQuestions(categoryId?: string) {
     if (categoryId) return quizQuestions.filter(q => q.categoryId === categoryId)
     return quizQuestions
   }
-  const res = await get<any[]>(`/api/quiz/questions`, categoryId ? { categoryId } : undefined)
+  const res = await get<any[]>(`/api/quiz/questions`, categoryId ? { category_id: categoryId } : undefined)
   return res.data
 }
 

@@ -18,7 +18,7 @@ export default function QuizCollectionsPage() {
     getFavoriteQuestions().then(setItems)
   }, [])
 
-  const handleRemove = (id: string) => {
+  const handleRemove = (id: number) => {
     setItems(prev => prev.filter(item => item.id !== id))
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     removeFavorite(id)

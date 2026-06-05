@@ -50,7 +50,7 @@ export default function ConfirmPage() {
     const id = options?.order_id || ''
     setOrderId(id)
     if (id) {
-      getOrderDetail(id).then(order => {
+      getOrderDetail(Number(id)).then(order => {
         setCertName((order as any).cert_name || (order as any).certName || '')
         setPrice((order as any).price || 0)
         setLoading(false)

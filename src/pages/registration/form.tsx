@@ -67,7 +67,7 @@ export default function RegistrationFormPage() {
     if (!cert || !handleValidate()) return
 
     const order = await createOrder({
-      cert_type: 'h3c',
+      cert_type: cert.code,
       candidate_name: realName.trim(),
       candidate_phone: phone.trim(),
       candidate_idcard: idCard.trim(),
