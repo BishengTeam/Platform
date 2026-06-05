@@ -37,10 +37,12 @@ export async function getFavoriteQuestions() {
   return res.data
 }
 
-export async function getCheckinRecords() {
+export async function getCheckinRecords(): Promise<{ date: string; completed: boolean }[]> {
   if (USE_MOCK) return checkinRecords
-  const res = await get<any[]>(`/api/quiz/checkin`)
-  return res.data
+  const res = await get<{ checkin_date: string; checked_in: boolean }>(`/api/quiz/checkin`)
+  const data = res.data
+  if (!data) return []
+  return [{ date: data.checkin_date, completed: data.checked_in }]
 }
 
 // ---- 题库提交 ----
