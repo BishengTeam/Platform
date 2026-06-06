@@ -22,7 +22,7 @@ export const STRINGS = {
   INDEX_AI_EMPLOYMENT: '根据您的技能背景，为您匹配以下就业岗位。H3CNE 认证持有者在网络工程师岗位中优势明显：',
   INDEX_AI_DEFAULT: '收到您的问题，我正在为您整理相关信息。\n\n您也可以直接访问下方专区获取更详细的内容，或继续向我提问。',
   INDEX_ONLINE_COURSES: '在线课程',
-  INDEX_TRAINING_ACTIVITIES: '培训活动',
+  INDEX_TRAINING_ACTIVITIES: '在线培训',
   INDEX_VIEW_ALL: '全部',
   // ---- Zones Page ----
   ZONES_HEADER: '专区',

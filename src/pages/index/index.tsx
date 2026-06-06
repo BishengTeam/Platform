@@ -78,6 +78,24 @@ export default function IndexPage() {
     Taro.switchTab({ url: '/pages/training/index' })
   }
 
+  const handleGoActivityZone = () => {
+    const path = `/${ROUTES.ACTIVITY}`
+    Taro.switchTab({ url: path })
+  }
+
+  const handleGoCompetitionZone = () => {
+    Taro.setStorageSync('activityZoneTab', 'competition')
+    Taro.switchTab({ url: `/${ROUTES.ACTIVITY}` })
+  }
+
+  const handleGoEmploymentZone = () => {
+    Taro.navigateTo({ url: '/pages/employment-zone/index' })
+  }
+
+  const handleGoCertZone = () => {
+    Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
+  }
+
   return (
     <AuthGuard>
       <View className={styles.page}>
@@ -115,8 +133,23 @@ export default function IndexPage() {
           </View>
 
           <View className={styles.section}>
-            <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoStudyZone} />
-            <HomeCard items={homeData?.activities ?? []} onCardClick={handleGoStudyZone} />
+            <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
+            <HomeCard items={homeData?.activities ?? []} onCardClick={handleGoActivityZone} />
+          </View>
+
+          <View className={styles.section}>
+            <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
+            <HomeCard items={homeData?.zones['cert'] ?? []} onCardClick={handleGoCertZone} />
+          </View>
+
+          <View className={styles.section}>
+            <SectionHeader title={STRINGS.ZONE_NAMES[2]} onViewAll={handleGoCompetitionZone} />
+            <HomeCard items={homeData?.zones['competition'] ?? []} onCardClick={handleGoCompetitionZone} />
+          </View>
+
+          <View className={styles.section}>
+            <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
+            <HomeCard items={homeData?.zones['employment'] ?? []} onCardClick={handleGoEmploymentZone} />
           </View>
         </View>
 

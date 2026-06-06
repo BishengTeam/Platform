@@ -9,15 +9,15 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import {
-  getActivityZone, getCompetitionZone,
-  enrollActivity, remindActivity, signupCompetition,
+  getActivityZone, getCompetitionZone, getEmploymentZone,
+  enrollActivity, remindActivity, signupCompetition, applyJob,
 } from '@/services/dataService'
-import type { ActivityBrief, CompetitionBrief } from '@/types'
-import type { ActivityZoneResponse, CompetitionZoneResponse, ZoneBrief } from '@/types'
+import type { ActivityBrief, CompetitionBrief, JobBrief } from '@/types'
+import type { ActivityZoneResponse, CompetitionZoneResponse, EmploymentZoneResponse, ZoneBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
-type MainTab = 'activity' | 'competition'
+type MainTab = 'activity' | 'competition' | 'employment'
 
 export default function ActivityZonePage() {
   const storedTab = useRef(Taro.getStorageSync('activityZoneTab') as MainTab | undefined)
@@ -30,11 +30,14 @@ export default function ActivityZonePage() {
   }
   const [activityTag, setActivityTag] = useState<string>(STRINGS.ACTIVITY_TAG_ALL)
   const [competitionTag, setCompetitionTag] = useState<string>(STRINGS.COMPETITION_TAG_ALL)
+  const [employmentTag, setEmploymentTag] = useState<string>(STRINGS.EMPLOYMENT_TAG_ALL)
 
   const [activityBanner, setActivityBanner] = useState<ZoneBrief | null>(null)
   const [competitionBanner, setCompetitionBanner] = useState<ZoneBrief | null>(null)
+  const [employmentBanner, setEmploymentBanner] = useState<ZoneBrief | null>(null)
   const [allActivities, setAllActivities] = useState<ActivityBrief[]>([])
   const [allCompetitions, setAllCompetitions] = useState<CompetitionBrief[]>([])
+  const [allJobs, setAllJobs] = useState<JobBrief[]>([])
 
   useEffect(() => {
     getActivityZone().then((data: ActivityZoneResponse) => {
@@ -44,6 +47,10 @@ export default function ActivityZonePage() {
     getCompetitionZone().then((data: CompetitionZoneResponse) => {
       setAllCompetitions(data.competitions)
       setCompetitionBanner(data.zones[0] ?? null)
+    }).catch(() => {})
+    getEmploymentZone().then((data: EmploymentZoneResponse) => {
+      setAllJobs(data.jobs)
+      setEmploymentBanner(data.zones[0] ?? null)
     }).catch(() => {})
   }, [])
 
@@ -71,6 +78,16 @@ export default function ActivityZonePage() {
     return allCompetitions
   }, [allCompetitions])
 
+  // Employment jobs filtering
+  const employmentData = useMemo(() => {
+    if (employmentTag === STRINGS.EMPLOYMENT_TAG_ALL) return allJobs
+    // If specific tag selected, filter by matching tag in hardcoded tag list
+    return allJobs.filter(job => {
+      const tag = employmentTag.toLowerCase()
+      return (job.title + (job.company ?? '') + (job.location ?? '')).toLowerCase().includes(tag)
+    })
+  }, [employmentTag, allJobs])
+
   const getActivityStatusInfo = (item: ActivityBrief) => {
     if (ongoingActivities.some(a => a.id === item.id)) {
       return { label: STRINGS.ACTIVITY_ONGOING, color: '#1677FF' }
@@ -95,15 +112,27 @@ export default function ActivityZonePage() {
     return { text: STRINGS.COMPETITION_SIGNUP, variant: 'primary' as const }
   }
 
-  const currentBanner = mainTab === 'activity' ? activityBanner : competitionBanner
+  const getEmploymentButton = (_item: JobBrief) => {
+    return { text: STRINGS.EMPLOYMENT_APPLY, variant: 'primary' as const }
+  }
+
+  const currentBanner = mainTab === 'activity'
+    ? activityBanner
+    : mainTab === 'competition'
+      ? competitionBanner
+      : employmentBanner
 
   const currentActiveTag = mainTab === 'activity'
     ? activityTag
-    : competitionTag
+    : mainTab === 'competition'
+      ? competitionTag
+      : employmentTag
 
   const onTagChange = mainTab === 'activity'
     ? setActivityTag
-    : setCompetitionTag
+    : mainTab === 'competition'
+      ? setCompetitionTag
+      : setEmploymentTag
 
   // Hardcoded time-based tag filters for activity tab
   const activityTagFilters: TagFilterItem[] = [
@@ -118,11 +147,22 @@ export default function ActivityZonePage() {
     { label: STRINGS.COMPETITION_TAG_ALL, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
   ]
 
-  const currentTagFilters = mainTab === 'activity' ? activityTagFilters : competitionTagFilters
+  // Employment tag filters (matching employment-zone page style)
+  const employmentTagFilters: TagFilterItem[] = [
+    { label: STRINGS.EMPLOYMENT_TAG_ALL, activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+    { label: STRINGS.EMPLOYMENT_TAG_RECOMMEND, activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  ]
+
+  const currentTagFilters = mainTab === 'activity'
+    ? activityTagFilters
+    : mainTab === 'competition'
+      ? competitionTagFilters
+      : employmentTagFilters
 
   const mainTabs = [
     { key: 'activity' as MainTab, label: '活动' },
     { key: 'competition' as MainTab, label: '竞赛' },
+    { key: 'employment' as MainTab, label: '就业' },
   ]
 
   return (
@@ -149,7 +189,7 @@ export default function ActivityZonePage() {
                 id: currentBanner.id,
                 title: currentBanner.title,
                 description: currentBanner.description ?? '',
-                gradient: 'gradient-purple',
+                gradient: mainTab === 'employment' ? 'gradient-teal' : mainTab === 'competition' ? 'gradient-orange' : 'gradient-purple',
                 buttonText: '查看详情',
                 buttonColor: '#ffffff',
                 image_url: currentBanner.cover_url ?? undefined,
@@ -199,8 +239,8 @@ export default function ActivityZonePage() {
                     <ZoneCard
                       key={item.id}
                       title={item.competition_name}
-                      subtitle={`${item.school}${item.track ? ` | ${item.track}` : ''}`}
-                      tags={[item.created_at]}
+                      subtitle={item.school}
+                      tags={[item.track ?? '']}
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#FA8C16'
@@ -213,8 +253,32 @@ export default function ActivityZonePage() {
                 })}
               </View>
             )}
+
+            {mainTab === 'employment' && (
+              <View className={styles.cardList}>
+                {employmentData.map((job) => {
+                  const btn = getEmploymentButton(job)
+                  return (
+                    <ZoneCard
+                      key={job.id}
+                      title={job.title}
+                      subtitle={job.company}
+                      tags={[job.location ?? '', job.salary_range ?? '']}
+                      price={job.salary_range ?? ''}
+                      buttonText={btn.text}
+                      buttonVariant={btn.variant}
+                      buttonColor='#13C2C2'
+                      onButtonClick={() => {
+                        applyJob(job.id)
+                        Taro.showToast({ title: '投递成功', icon: 'success' })
+                      }}
+                    />
+                  )
+                })}
+              </View>
+            )}
           </View>
-        </ScrollView>
+          </ScrollView>
 
         <CustomTabBar activeTabKey='pages/activity-zone/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>
