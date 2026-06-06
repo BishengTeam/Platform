@@ -32,11 +32,26 @@ export async function getCourseById(id: string) {
   return res.data
 }
 
+/** GET /api/courses/my — 我的课程，适配后端 CourseEnrollmentResponse → MyCourse */
 export async function getMyCourses() {
   if (USE_MOCK) return myCourses
   const res = await get<any>(`/api/courses/my`)
   const data = res.data as any
-  return data?.items || data || []
+  const items = data?.items || data || []
+  return items.map((item: any) => ({
+    id: String(item.id),
+    title: item.course?.title || '',
+    cover: item.course?.cover_url || '',
+    progress: 0,
+    status: item.status === 'enrolled'
+      ? 'active'
+      : item.status === 'expired'
+        ? 'expired'
+        : 'pending',
+    instructor: item.course?.teacher_name || '',
+    totalLessons: 0,
+    completedLessons: 0,
+  }))
 }
 
 /** POST /api/courses/enroll — 课程报名 */

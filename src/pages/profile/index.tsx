@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -10,9 +10,22 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { profileGridItems, profileListItems } from '@/constants/mock/profile'
+import { getUserProfile } from '@/services/dataService'
 import styles from './index.module.scss'
 
 export default function ProfilePage() {
+  const [userName, setUserName] = useState(STRINGS.PROFILE_MOCK_NAME)
+  const [userStatus, setUserStatus] = useState(STRINGS.PROFILE_MOCK_STATUS)
+  const [avatar, setAvatar] = useState('')
+
+  useEffect(() => {
+    getUserProfile().then(profile => {
+      setUserName(profile.nickname || profile.real_name || STRINGS.PROFILE_MOCK_NAME)
+      setUserStatus(STRINGS.PROFILE_MOCK_STATUS)
+      setAvatar(profile.avatar || '')
+    }).catch(() => {})
+  }, [])
+
   const handleNavigate = (route?: string) => {
     if (!route) {
       Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })
@@ -44,11 +57,15 @@ export default function ProfilePage() {
             onClick={() => handleNavigate(ROUTES.MINE_PROFILE)}
           >
             <View className={styles.avatar}>
-              <Icon name='user' size={56} color='#1677FF' />
+              {avatar ? (
+                <Icon name='user' size={56} color='#1677FF' />
+              ) : (
+                <Icon name='user' size={56} color='#1677FF' />
+              )}
             </View>
             <View className={styles.headerInfo}>
-              <Text className={styles.name}>{STRINGS.PROFILE_MOCK_NAME}</Text>
-              <Text className={styles.status}>{STRINGS.PROFILE_MOCK_STATUS}</Text>
+              <Text className={styles.name}>{userName}</Text>
+              <Text className={styles.status}>{userStatus}</Text>
             </View>
             <Icon name='chevron-right' size={22} color='rgba(255,255,255,0.7)' className={styles.bannerArrow} />
           </View>

@@ -216,14 +216,16 @@ export default function ActivityZonePage() {
                       buttonVariant={btn.variant}
                       buttonColor='#722ED1'
                       isFaded={status.label === STRINGS.ACTIVITY_ENDED}
-                      onButtonClick={() => {
-                        if (btn.text === STRINGS.ACTIVITY_JOIN) {
-                          enrollActivity(item.id)
-                          Taro.showToast({ title: '报名成功', icon: 'success' })
-                        } else if (btn.text === STRINGS.ACTIVITY_REMIND) {
-                          remindActivity(item.id)
-                          Taro.showToast({ title: '已设置提醒', icon: 'success' })
-                        }
+                      onButtonClick={async () => {
+                        try {
+                          if (btn.text === STRINGS.ACTIVITY_JOIN) {
+                            await enrollActivity(item.id)
+                            Taro.showToast({ title: '报名成功', icon: 'success' })
+                          } else if (btn.text === STRINGS.ACTIVITY_REMIND) {
+                            await remindActivity(item.id)
+                            Taro.showToast({ title: '已设置提醒', icon: 'success' })
+                          }
+                        } catch { /* 错误已由 request 层统一 toast */ }
                       }}
                     />
                   )
@@ -244,9 +246,11 @@ export default function ActivityZonePage() {
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#FA8C16'
-                      onButtonClick={() => {
-                        signupCompetition(item.id)
-                        Taro.showToast({ title: '报名成功', icon: 'success' })
+                      onButtonClick={async () => {
+                        try {
+                          await signupCompetition(item.competition_name, item.school, item.track ?? undefined)
+                          Taro.showToast({ title: '报名成功', icon: 'success' })
+                        } catch { /* 错误已由 request 层统一 toast */ }
                       }}
                     />
                   )
@@ -268,9 +272,11 @@ export default function ActivityZonePage() {
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#13C2C2'
-                      onButtonClick={() => {
-                        applyJob(job.id)
-                        Taro.showToast({ title: '投递成功', icon: 'success' })
+                      onButtonClick={async () => {
+                        try {
+                          await applyJob(job.id)
+                          Taro.showToast({ title: '投递成功', icon: 'success' })
+                        } catch { /* 错误已由 request 层统一 toast */ }
                       }}
                     />
                   )

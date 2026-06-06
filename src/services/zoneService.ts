@@ -176,9 +176,15 @@ export async function remindActivity(activityId: number): Promise<void> {
 }
 
 /** POST /api/competition/signup — 竞赛报名 */
-export async function signupCompetition(competitionId: number): Promise<void> {
+export async function signupCompetition(
+  competitionName: string, school: string, track?: string,
+): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/competition/signup', { competition_id: competitionId })
+  await post('/api/competition/signup', {
+    competition_name: competitionName,
+    school: school,
+    track: track ?? null,
+  })
 }
 
 /** POST /api/jobs/{id}/apply — 岗位投递 */

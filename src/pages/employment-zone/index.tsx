@@ -54,9 +54,11 @@ export default function EmploymentZonePage() {
           tags={[job.location ?? '', job.salary_range ?? '']}
           price={job.salary_range ?? ''}
           buttonText={STRINGS.EMPLOYMENT_APPLY}
-          onButtonClick={() => {
-            applyJob(job.id)
-            Taro.showToast({ title: '投递成功', icon: 'success' })
+          onButtonClick={async () => {
+            try {
+              await applyJob(job.id)
+              Taro.showToast({ title: '投递成功', icon: 'success' })
+            } catch { /* 错误已由 request 层统一 toast */ }
           }}
         />
       ))}

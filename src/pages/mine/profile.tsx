@@ -6,6 +6,8 @@ import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
+import { logout } from '@/services/dataService'
+import { removeToken } from '@/utils/request'
 import styles from './profile.module.scss'
 
 interface MenuItem {
@@ -40,6 +42,8 @@ export default function SettingsPage() {
       confirmText: STRINGS.LOGOUT_MODAL_CONFIRM,
       success: (res) => {
         if (res.confirm) {
+          removeToken()
+          logout().catch(() => {})
           Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
         }
       },
