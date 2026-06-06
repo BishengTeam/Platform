@@ -111,12 +111,12 @@ export default function IndexPage() {
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_ONLINE_COURSES} onViewAll={handleGoStudyZone} />
-            <HomeCard items={homeData?.zones['study'] ?? []} onCardClick={handleGoStudyZone} />
+            <HomeCard items={homeData?.courses ?? []} onCardClick={handleGoStudyZone} />
           </View>
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoStudyZone} />
-            <HomeCard items={homeData?.zones['activity'] ?? []} onCardClick={handleGoStudyZone} />
+            <HomeCard items={homeData?.activities ?? []} onCardClick={handleGoStudyZone} />
           </View>
         </View>
 

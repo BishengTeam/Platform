@@ -98,6 +98,8 @@ export interface CertificationResponse {
 export interface HomeAggregationResponse {
   banners: BannerBrief[]
   zones: Record<string, ZoneSectionItem[]> // key = "cert"|"study"|"competition"|"activity"|"employment"
+  courses: CourseBrief[]
+  activities: ActivityBrief[]
 }
 
 /** GET /api/zones/cert 认证专区 */
