@@ -23,7 +23,28 @@ import {
   certifications,
 } from '@/constants/mock'
 
-import { get, post } from '@/utils/request'
+import { get, post, resolveUrl } from '@/utils/request'
+
+/**
+ * 递归遍历 API 响应，将 image_url / cover_url 的相对路径转为完整 URL。
+ * 支持嵌套对象和数组。
+ */
+function resolveMedia<T>(data: T): T {
+  if (data === null || data === undefined) return data
+  if (Array.isArray(data)) return data.map(resolveMedia) as unknown as T
+  if (typeof data === 'object') {
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      if ((key === 'image_url' || key === 'cover_url') && typeof value === 'string') {
+        result[key] = resolveUrl(value)
+      } else {
+        result[key] = resolveMedia(value)
+      }
+    }
+    return result as T
+  }
+  return data
+}
 
 import type {
   HomeAggregationResponse,
@@ -72,14 +93,14 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
     }
   }
   const res = await get<HomeAggregationResponse>('/api/zones')
-  return res.data
+  return resolveMedia(res.data)
 }
 
 /** GET /api/zones/cert — 认证专区：zone 列表 + 认证项目列表 */
 export async function getCertZone(): Promise<CertZoneResponse> {
   if (USE_MOCK) return { zones: [], certifications }
   const res = await get<CertZoneResponse>('/api/zones/cert')
-  return res.data
+  return resolveMedia(res.data)
 }
 
 /** GET /api/zones/study — 学习专区：zone 列表 + 课程列表 */
@@ -94,7 +115,7 @@ export async function getStudyZone(): Promise<StudyZoneResponse> {
     teacher_name: c.instructor || null,
   })) }
   const res = await get<StudyZoneResponse>('/api/zones/study')
-  return res.data
+  return resolveMedia(res.data)
 }
 
 /** GET /api/zones/competition — 竞赛专区 */
@@ -113,7 +134,7 @@ export async function getCompetitionZone(): Promise<CompetitionZoneResponse> {
     }
   }
   const res = await get<CompetitionZoneResponse>('/api/zones/competition')
-  return res.data
+  return resolveMedia(res.data)
 }
 
 /** GET /api/zones/activity — 活动专区 */
@@ -135,7 +156,7 @@ export async function getActivityZone(): Promise<ActivityZoneResponse> {
     }
   }
   const res = await get<ActivityZoneResponse>('/api/zones/activity')
-  return res.data
+  return resolveMedia(res.data)
 }
 
 /** GET /api/zones/employment — 就业专区 */
@@ -156,7 +177,7 @@ export async function getEmploymentZone(): Promise<EmploymentZoneResponse> {
     }
   }
   const res = await get<EmploymentZoneResponse>('/api/zones/employment')
-  return res.data
+  return resolveMedia(res.data)
 }
 
 // ================================================================

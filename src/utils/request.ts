@@ -14,6 +14,18 @@ import Taro from '@tarojs/taro'
 
 const BASE_URL = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
 
+/**
+ * 将后端返回的相对路径（如 /api/media/xxx.webp）转为完整 URL。
+ * 如果已经是完整 URL（http(s):// 开头）则原样返回。
+ * 如果 BASE_URL 未配置则返回原值。
+ */
+export function resolveUrl(path: string | null | undefined): string {
+  if (!path) return ''
+  if (/^https?:\/\//i.test(path)) return path
+  if (!BASE_URL) return path
+  return `${BASE_URL}${path}`
+}
+
 const TOKEN_KEY = 'auth_token'
 
 // ---- Token 管理 ----
