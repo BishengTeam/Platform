@@ -9,11 +9,11 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import {
-  getActivityZone, getCompetitionZone, getEmploymentZone,
+  getActivityList, getCompetitionZone, getJobList,
   enrollActivity, remindActivity, signupCompetition, applyJob,
 } from '@/services/dataService'
 import type { ActivityBrief, CompetitionBrief, JobBrief } from '@/types'
-import type { ActivityZoneResponse, CompetitionZoneResponse, EmploymentZoneResponse, ZoneBrief } from '@/types'
+import type { CompetitionZoneResponse, ZoneBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
@@ -40,17 +40,17 @@ export default function ActivityZonePage() {
   const [allJobs, setAllJobs] = useState<JobBrief[]>([])
 
   useEffect(() => {
-    getActivityZone().then((data: ActivityZoneResponse) => {
-      setAllActivities(data.activities)
-      setActivityBanner(data.zones[0] ?? null)
+    getActivityList().then((data) => {
+      setAllActivities(data)
+      setActivityBanner(null)
     }).catch(() => {})
     getCompetitionZone().then((data: CompetitionZoneResponse) => {
       setAllCompetitions(data.competitions)
       setCompetitionBanner(data.zones[0] ?? null)
     }).catch(() => {})
-    getEmploymentZone().then((data: EmploymentZoneResponse) => {
-      setAllJobs(data.jobs)
-      setEmploymentBanner(data.zones[0] ?? null)
+    getJobList().then((data) => {
+      setAllJobs(data)
+      setEmploymentBanner(null)
     }).catch(() => {})
   }, [])
 

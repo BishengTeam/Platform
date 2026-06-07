@@ -9,20 +9,14 @@ import {
   initialMessages,
   homeCourses,
   homeActivities,
-  courseList,
   competitionBannerItems,
   ongoingCompetitions,
   upcomingCompetitions,
   endedCompetitions,
-  ongoingActivities,
-  upcomingActivities,
-  endedActivities,
-  jobList,
   contactList,
   orderItems,
   profileFunctions,
   examBannerItems,
-  certifications,
 } from '@/constants/mock'
 
 import { get, post, resolveUrl } from '@/utils/request'
@@ -50,11 +44,11 @@ function resolveMedia<T>(data: T): T {
 
 import type {
   HomeAggregationResponse,
-  CertZoneResponse,
-  StudyZoneResponse,
   CompetitionZoneResponse,
-  ActivityZoneResponse,
-  EmploymentZoneResponse,
+  CourseBrief,
+  ActivityBrief,
+  JobBrief,
+  CertificationResponse,
 } from '@/types'
 
 /** 全局开关：true=mock，false=真实API */
@@ -113,26 +107,32 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
   return resolveMedia(res.data)
 }
 
-/** GET /api/zones/cert — 认证专区：zone 列表 + 认证项目列表 */
-export async function getCertZone(): Promise<CertZoneResponse> {
-  if (USE_MOCK) return { zones: [], certifications }
-  const res = await get<CertZoneResponse>('/api/zones/cert')
-  return resolveMedia(res.data)
+/** GET /api/courses — 课程列表 */
+export async function getCourseList(): Promise<CourseBrief[]> {
+  if (USE_MOCK) return []
+  const res = await get<any>('/api/courses')
+  return res.data?.items || res.data || []
 }
 
-/** GET /api/zones/study — 学习专区：zone 列表 + 课程列表 */
-export async function getStudyZone(): Promise<StudyZoneResponse> {
-  if (USE_MOCK) return { zones: [], courses: courseList.map(c => ({
-    id: Number(c.id) || 0,
-    title: c.title,
-    category: c.tag || '',
-    description: c.desc || null,
-    cover_url: c.image || null,
-    price: c.price ?? 0,
-    teacher_name: c.instructor || null,
-  })) }
-  const res = await get<StudyZoneResponse>('/api/zones/study')
-  return resolveMedia(res.data)
+/** GET /api/activities — 活动列表 */
+export async function getActivityList(): Promise<ActivityBrief[]> {
+  if (USE_MOCK) return []
+  const res = await get<any>('/api/activities')
+  return res.data?.items || res.data || []
+}
+
+/** GET /api/jobs — 岗位列表 */
+export async function getJobList(): Promise<JobBrief[]> {
+  if (USE_MOCK) return []
+  const res = await get<any>('/api/jobs')
+  return res.data?.items || res.data || []
+}
+
+/** GET /api/cert/certifications — 认证列表 */
+export async function getCertificationList(): Promise<CertificationResponse[]> {
+  if (USE_MOCK) return []
+  const res = await get<any>('/api/cert/certifications')
+  return res.data?.items || res.data || []
 }
 
 /** GET /api/zones/competition — 竞赛专区 */
@@ -151,49 +151,6 @@ export async function getCompetitionZone(): Promise<CompetitionZoneResponse> {
     }
   }
   const res = await get<CompetitionZoneResponse>('/api/zones/competition')
-  return resolveMedia(res.data)
-}
-
-/** GET /api/zones/activity — 活动专区 */
-export async function getActivityZone(): Promise<ActivityZoneResponse> {
-  if (USE_MOCK) {
-    const all = [...ongoingActivities, ...upcomingActivities, ...endedActivities]
-    return {
-      zones: [],
-      activities: all.map(a => ({
-        id: (a as any).id ?? 0,
-        title: a.name || (a as any).title || '',
-        description: a.desc || null,
-        cover_url: (a as any).image || null,
-        location: (a as any).location || null,
-        start_time: (a as any).startDate || null,
-        end_time: (a as any).endDate || null,
-        max_participants: ((a as any).current ?? 0) + ((a as any).remaining ?? 0),
-      })),
-    }
-  }
-  const res = await get<ActivityZoneResponse>('/api/zones/activity')
-  return resolveMedia(res.data)
-}
-
-/** GET /api/zones/employment — 就业专区 */
-export async function getEmploymentZone(): Promise<EmploymentZoneResponse> {
-  if (USE_MOCK) {
-    return {
-      zones: [],
-      jobs: jobList.map((j, idx) => ({
-        id: idx + 1,
-        title: j.title,
-        company: j.company,
-        location: j.location || null,
-        salary_range: j.salary || null,
-        description: j.description || null,
-        requirements: null,
-        contact_info: null,
-      })),
-    }
-  }
-  const res = await get<EmploymentZoneResponse>('/api/zones/employment')
   return resolveMedia(res.data)
 }
 

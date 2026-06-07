@@ -15,7 +15,7 @@ import {
 
 import { get, post, put, del, getToken } from '@/utils/request'
 
-import { getCertZone } from './zoneService'
+import { getCertificationList } from './zoneService'
 
 const USE_MOCK = false
 
@@ -33,7 +33,7 @@ export async function getCertifications() {
  */
 export async function getCertDetail(certId: number): Promise<import('@/types').CertificationDetail | null> {
   if (USE_MOCK) {
-    const { certifications: certs } = await getCertZone()
+    const certs = await getCertificationList()
     const matched = certs.find(c => c.id === certId)
     if (!matched) return null
     const oldCert = certifications.find(c => c.name === matched.name || c.chinese_name === matched.chinese_name)

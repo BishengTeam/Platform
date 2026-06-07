@@ -10,8 +10,8 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import type { QuizBottomItem } from '@/constants/quiz'
-import { getStudyZone, getQuizCategories } from '@/services/dataService'
-import type { StudyZoneResponse, CourseBrief, ZoneBrief } from '@/types'
+import { getCourseList, getQuizCategories } from '@/services/dataService'
+import type { CourseBrief } from '@/types'
 import type { QuizCategory } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
@@ -41,12 +41,10 @@ export default function TrainingPage() {
   const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
   const [quizCategories, setQuizCategories] = useState<QuizCategory[]>([])
   const [selectedQuizId, setSelectedQuizId] = useState('')
-  const [zoneBanner, setZoneBanner] = useState<ZoneBrief | null>(null)
 
   useEffect(() => {
-    getStudyZone().then((data: StudyZoneResponse) => {
-      setAllCourses(data.courses)
-      setZoneBanner(data.zones[0] ?? null)
+    getCourseList().then((data) => {
+      setAllCourses(data)
     }).catch((err) => {
       console.error('[TrainingPage] 课程数据加载失败:', err)
     })

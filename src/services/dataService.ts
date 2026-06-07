@@ -27,8 +27,9 @@ export {
 
 // Zone
 export {
-  getHomeAggregation, getCertZone, getStudyZone,
-  getCompetitionZone, getActivityZone, getEmploymentZone,
+  getHomeAggregation, getCourseList, getActivityList,
+  getJobList, getCertificationList,
+  getCompetitionZone,
   enrollActivity, remindActivity, signupCompetition, applyJob,
   getZoneIcons, getQuickQuestions, getInitialMessages,
   getContactList, getOrderItems, getProfileFunctions, getExamBannerItems,
@@ -36,7 +37,7 @@ export {
 
 // Course
 export {
-  getCourseList, getCourseListExpanded, getCourseCategories,
+  getCourseListExpanded, getCourseCategories,
   getCourseById, getMyCourses, enrollCourse,
 } from './courseService'
 

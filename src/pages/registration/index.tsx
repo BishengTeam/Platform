@@ -6,8 +6,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
-import { getCertZone } from '@/services/dataService'
-import type { CertZoneResponse, CertificationResponse, ZoneBrief } from '@/types'
+import { getCertificationList } from '@/services/dataService'
+import type { CertificationResponse } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
@@ -33,14 +33,12 @@ export default function RegistrationIndexPage() {
 
   const [certifications, setCertifications] = useState<CertificationResponse[]>([])
   const [tagFilters, setTagFilters] = useState<TagFilterItem[]>([])
-  const [zoneCards, setZoneCards] = useState<ZoneBrief[]>([])
 
   useEffect(() => {
-    getCertZone().then((data: CertZoneResponse) => {
-      setCertifications(data.certifications)
-      setZoneCards(data.zones.slice(1))
+    getCertificationList().then((data) => {
+      setCertifications(data)
       // Generate tag filters from distinct vendors
-      const vendors = [...new Set(data.certifications.map(c => c.vendor))]
+      const vendors = [...new Set(data.map(c => c.vendor))]
       const tags: TagFilterItem[] = [
         { label: VENDOR_ALL, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
         ...vendors.map(v => ({
@@ -99,19 +97,6 @@ export default function RegistrationIndexPage() {
           <View className={styles.filterRow}>
             <TagFilter tags={tagFilters} activeTag={activeTag} onChange={setActiveTag} />
           </View>
-          {/* Zone cards from zones.slice(1) */}
-          {zoneCards.map((zone: ZoneBrief) => (
-            <View key={zone.id}>
-              <ZoneCard
-                title={zone.title}
-                subtitle={zone.description ?? ''}
-                tags={[]}
-                buttonText={STRINGS.EXAM_SIGNUP}
-                buttonColor='#1677FF'
-                onButtonClick={() => zone.link_url && Taro.navigateTo({ url: zone.link_url })}
-              />
-            </View>
-          ))}
           <View className={styles.cardList}>
             {filtered.map(cert => (
               <View key={cert.id}>
