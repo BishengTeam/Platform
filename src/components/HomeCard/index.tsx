@@ -23,8 +23,13 @@ export function HomeCard({ items, onCardClick }: Props) {
   const leftColumn = items.filter((_, i) => i % 2 === 0)
   const rightColumn = items.filter((_, i) => i % 2 === 1)
 
-  const renderCard = (item: HomeCardItem) => {
-    const isTall = item.tall || (item.cover_url ? true : false)
+  const renderCard = (item: HomeCardItem, rowIndex: number, isLeftColumn: boolean) => {
+    // tall 判定：显式值 > 位置自动错落（左列偶数行高、右列奇数行高）
+    const isTall = item.tall !== undefined
+      ? item.tall
+      : isLeftColumn
+        ? (rowIndex % 2 === 0)
+        : (rowIndex % 2 === 1)
     const coverCls = isTall ? styles.coverTall : styles.coverShort
     const coverStyle: Record<string, string> = {}
     if (item.cover_url) {
@@ -64,10 +69,10 @@ export function HomeCard({ items, onCardClick }: Props) {
   return (
     <View className={styles.waterfall}>
       <View className={styles.column}>
-        {leftColumn.map(renderCard)}
+        {leftColumn.map((item, i) => renderCard(item, i, true))}
       </View>
       <View className={styles.column}>
-        {rightColumn.map(renderCard)}
+        {rightColumn.map((item, i) => renderCard(item, i, false))}
       </View>
     </View>
   )
