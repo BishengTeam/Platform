@@ -16,13 +16,16 @@ import type { QuizCategory } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
-const MAIN_TABS = [STRINGS.TRAINING_TAB_TECH, STRINGS.TRAINING_TAB_QUIZ]
+const MAIN_TABS = [STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
 
-const TECH_TAGS: TagFilterItem[] = [
-  { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
-  { label: STRINGS.STUDY_TAG_BASIC, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#E8F2FF' },
-  { label: STRINGS.STUDY_TAG_ADVANCED, activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
-  { label: STRINGS.STUDY_TAG_PRACTICAL, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+// 标签颜色循环池，供动态分类标签复用
+const TAG_COLORS: Omit<TagFilterItem, 'label'>[] = [
+  { activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+  { activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
+  { activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
+  { activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
+  { activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
+  { activeColor: '#FF4D4F', activeBg: '#FF4D4F', activeText: '#ffffff', inactiveBg: '#FFF1F0' },
 ]
 
 const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
@@ -44,12 +47,28 @@ export default function TrainingPage() {
     getStudyZone().then((data: StudyZoneResponse) => {
       setAllCourses(data.courses)
       setZoneBanner(data.zones[0] ?? null)
-    }).catch(() => {})
+    }).catch((err) => {
+      console.error('[TrainingPage] 课程数据加载失败:', err)
+    })
     getQuizCategories().then((cats) => {
       setQuizCategories(cats)
       setSelectedQuizId(cats[0]?.id || '')
-    }).catch(() => {})
+    }).catch((err) => {
+      console.error('[TrainingPage] 题库分类加载失败:', err)
+    })
   }, [])
+
+  // 从课程数据动态提取分类标签：从 CourseBrief.category 去重后映射为 TagFilterItem
+  const courseTags = useMemo<TagFilterItem[]>(() => {
+    const categories = [...new Set(allCourses.map(c => c.category).filter(Boolean))]
+    return [
+      { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+      ...categories.map((cat, i) => ({
+        label: cat,
+        ...TAG_COLORS[i % TAG_COLORS.length],
+      })),
+    ]
+  }, [allCourses])
 
   const selectedQuiz = quizCategories.find(q => q.id === selectedQuizId) || quizCategories[0]
 
@@ -75,7 +94,7 @@ export default function TrainingPage() {
   const renderTechTab = () => (
     <View>
       <View className={styles.filterRow}>
-        <TagFilter tags={TECH_TAGS} activeTag={techTag} onChange={setTechTag} className={styles.tagSm} />
+        <TagFilter tags={courseTags} activeTag={techTag} onChange={setTechTag} className={styles.tagSm} />
       </View>
       <View className={styles.cardList}>
         {techCourses.map(course => (
@@ -87,7 +106,7 @@ export default function TrainingPage() {
             price={String(course.price) === '0' || course.price === 0 ? STRINGS.ORDERS_FREE : `¥${course.price}`}
             buttonText={STRINGS.STUDY_ENROLL}
             buttonColor='#52C41A'
-            onButtonClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}
+            onButtonClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}  // eslint-disable-line @typescript-eslint/restrict-template-expressions
           />
         ))}
       </View>

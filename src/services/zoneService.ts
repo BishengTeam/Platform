@@ -7,6 +7,8 @@ import {
   zoneIcons,
   quickQuestions,
   initialMessages,
+  homeCourses,
+  homeActivities,
   courseList,
   competitionBannerItems,
   ongoingCompetitions,
@@ -84,13 +86,28 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
         sort: idx,
       })),
       zones: {
-        cert: [{ id: 1, title: '认证专区', cover_url: null, description: 'H3CNE 等认证考试报名' }],
-        study: [{ id: 2, title: '学习专区', cover_url: null, description: '在线课程与培训' }],
-        competition: [{ id: 3, title: '竞赛专区', cover_url: null, description: '技术竞赛与挑战' }],
-        activity: [{ id: 4, title: '活动专区', cover_url: null, description: '线上线下活动' }],
-        employment: [{ id: 5, title: '就业专区', cover_url: null, description: '优质岗位推荐' }],
+        cert: [
+          { id: 1, title: 'H3CNE 认证', cover_url: null, description: '新华三网络工程师认证', gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'book-open', tag: '热门', tagColor: '#FF4D4F' },
+          { id: 2, title: '深信服认证', cover_url: null, description: '安全技术方向认证', gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '推荐', tagColor: '#52C41A' },
+          { id: 3, title: 'NISP 认证', cover_url: null, description: '国家信息安全水平考试', gradient: 'linear-gradient(135deg, #FA8C16, #FFC53D)', icon: 'award', tag: '国标', tagColor: '#FA8C16' },
+        ],
+        study: [
+          { id: 4, title: '网络基础课程', cover_url: null, description: '零基础入门到精通', gradient: 'linear-gradient(135deg, #722ED1, #9254DE)', icon: 'book-open', tag: '入门', tagColor: '#722ED1' },
+        ],
+        competition: [
+          { id: 5, title: '网络技术大赛', cover_url: null, description: '展示技术实力赢取奖金', gradient: 'linear-gradient(135deg, #FF4D4F, #FF7875)', icon: 'trophy', tag: '进行中', tagColor: '#FF4D4F' },
+        ],
+        activity: [
+          { id: 6, title: '线下实训营', cover_url: null, description: '7天集中培训', gradient: 'linear-gradient(135deg, #13C2C2, #36CFC9)', icon: 'users', tag: '线下', tagColor: '#13C2C2' },
+        ],
+        employment: [
+          { id: 7, title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'briefcase', tag: '急招', tagColor: '#1677FF' },
+          { id: 8, title: '安全运维工程师', cover_url: null, description: '深信服生态企业', gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '高薪', tagColor: '#52C41A' },
+        ],
       },
-    }
+      courses: homeCourses as any,
+      activities: homeActivities as any,
+    } as HomeAggregationResponse
   }
   const res = await get<HomeAggregationResponse>('/api/zones')
   return resolveMedia(res.data)

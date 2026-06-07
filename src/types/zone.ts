@@ -24,6 +24,10 @@ export interface ZoneBrief {
   cover_url: string | null
   description: string | null
   link_url: string | null
+  gradient?: string | null
+  icon?: string | null
+  tag?: string | null
+  tagColor?: string | null
   sort_order: number
 }
 
@@ -33,6 +37,10 @@ export interface ZoneSectionItem {
   title: string
   cover_url: string | null
   description: string | null
+  gradient?: string | null
+  icon?: string | null
+  tag?: string | null
+  tagColor?: string | null
 }
 
 /** 课程简要 */
