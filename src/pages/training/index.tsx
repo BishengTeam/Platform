@@ -123,7 +123,7 @@ export default function TrainingPage() {
             <Text className={styles.statsLabel}>正确率</Text>
           </View>
         </View>
-        <View className={styles.statsCta} onClick={() => Taro.navigateTo({ url: `/pages/${ROUTES.QUIZ_PRACTICE}` })}>
+        <View className={styles.statsCta} onClick={() => Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}` })}>
           <Text className={styles.statsCtaText}>开始练习</Text>
         </View>
       </View>

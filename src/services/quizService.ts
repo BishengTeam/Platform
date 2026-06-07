@@ -52,12 +52,11 @@ export async function getCheckinRecords(): Promise<{ date: string; completed: bo
 
 /** POST /api/quiz/submit — 提交单题答案 */
 export async function submitQuizAnswer(data: {
-  question_id: string
-  answer: number | number[]
-  is_correct: boolean
+  question_id: number
+  user_answer: string
 }): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/quiz/submit', data as unknown as Record<string, unknown>)
+  await post('/api/quiz/submit', { question_id: data.question_id, user_answer: data.user_answer })
 }
 
 // ---- 错题本写操作 ----

@@ -35,9 +35,9 @@ export default function QuizPracticePage() {
     const q = questions.find(q => q.id === questionId)
     if (q) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      submitQuizAnswer({ question_id: questionId, answer: optIndex, is_correct: optIndex === q.correctAnswer })
+      submitQuizAnswer({ question_id: Number(questionId), user_answer: String(optIndex) })
     }
-  }, [questions])
+  }, [questions, answers])
 
   const handleSelectMultiple = useCallback((questionId: string, optIndex: number) => {
     setAnswers(prev => {
@@ -47,11 +47,12 @@ export default function QuizPracticePage() {
     })
     const q = questions.find(q => q.id === questionId)
     if (q) {
-      const correct = q.correctAnswer as number[]
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      submitQuizAnswer({ question_id: questionId, answer: optIndex, is_correct: correct.includes(optIndex) })
+      const cur = (answers[questionId] as number[]) || []
+      const next = cur.includes(optIndex) ? cur.filter(i => i !== optIndex) : [...cur, optIndex]
+      submitQuizAnswer({ question_id: Number(questionId), user_answer: JSON.stringify(next.sort()) })
     }
-  }, [questions])
+  }, [questions, answers])
 
   const isCorrect = useMemo(() => {
     if (!currentQuestion || selectedAnswer === undefined) return null

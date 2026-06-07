@@ -126,8 +126,8 @@ export async function getCompetitionZone(): Promise<CompetitionZoneResponse> {
       zones: [],
       competitions: all.map((c, idx) => ({
         id: idx + 1,
-        competition_name: c.name,
-        school: c.school || '',
+        competition_name: c.title,
+        school: '',
         track: null,
         created_at: new Date().toISOString(),
       })),
@@ -185,9 +185,16 @@ export async function getEmploymentZone(): Promise<EmploymentZoneResponse> {
 // ================================================================
 
 /** POST /api/activities/{id}/enroll — 活动报名 */
-export async function enrollActivity(activityId: number): Promise<void> {
+export async function enrollActivity(
+  activityId: number,
+  name?: string,
+  phone?: string,
+  remark?: string,
+): Promise<void> {
   if (USE_MOCK) return
-  await post(`/api/activities/${activityId}/enroll`)
+  const body: Record<string, unknown> | undefined =
+    name || phone || remark ? { name: name || '', phone: phone || '', remark: remark || null } : undefined
+  await post(`/api/activities/${activityId}/enroll`, body)
 }
 
 /** POST /api/activities/{id}/remind — 活动预约提醒 */

@@ -26,7 +26,7 @@ export async function getCourseCategories() {
   return res.data
 }
 
-export async function getCourseById(id: string) {
+export async function getCourseById(id: number) {
   if (USE_MOCK) return courseList.find(c => c.id === id) || null
   const res = await get<any>(`/api/courses/${id}`)
   return res.data

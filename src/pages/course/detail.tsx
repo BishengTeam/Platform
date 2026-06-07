@@ -20,7 +20,7 @@ export default function CourseDetailPage() {
 
   const [course, setCourse] = useState(null)
   useEffect(() => {
-    if (courseId) getCourseById(courseId).then(setCourse).catch(() => {})
+    if (courseId) getCourseById(Number(courseId)).then(setCourse).catch(() => {})
   }, [courseId])
 
   const handleEnroll = () => {

@@ -67,7 +67,7 @@ export default function ConfirmPage() {
     setIsPaying(true)
 
     try {
-      const prepay = await prepayOrder(orderId)
+      const prepay = await prepayOrder(Number(orderId))
 
       if (prepay.timeStamp) {
         await Taro.requestPayment({

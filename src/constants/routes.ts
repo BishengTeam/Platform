@@ -51,7 +51,7 @@ export const ZONE_ROUTES: Record<string, string> = {
   learn: '/pages/training/index',
   compete: '/pages/activity-zone/index?tab=competition',
   activity: '/pages/activity-zone/index',
-  job: '/pages/employment-zone/index',
+  job: '/pages/activity-zone/index',
 }
 
 export const ZONE_ROUTE_KEYS = ['exam', 'learn', 'compete', 'activity', 'job'] as const

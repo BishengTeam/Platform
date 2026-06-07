@@ -26,7 +26,7 @@ export function PriceRow({
       <Text
         className={`${styles.value} ${isTotal ? styles.valueTotal : ''} ${isStrikethrough ? styles.strikethrough : ''} ${size === 'lg' && !isTotal ? styles.valueLg : ''} ${size === 'lg' && isTotal ? styles.valueTotalLg : ''}`}
       >
-        {value < 0 ? `-${prefix}${Math.abs(value).toFixed(2)}` : `${prefix}${value.toFixed(2)}`}
+        {prefix}{(value ?? 0).toFixed(2)}
       </Text>
     </View>
   )

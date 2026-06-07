@@ -89,7 +89,8 @@ export default function IndexPage() {
   }
 
   const handleGoEmploymentZone = () => {
-    Taro.navigateTo({ url: '/pages/employment-zone/index' })
+    Taro.setStorageSync('activityZoneTab', 'employment')
+    Taro.switchTab({ url: `/${ROUTES.ACTIVITY}` })
   }
 
   const handleGoCertZone = () => {

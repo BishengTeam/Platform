@@ -17,10 +17,6 @@ export default defineAppConfig({
       pages: ['index'],
     },
     {
-      root: 'pages/employment-zone',
-      pages: ['index'],
-    },
-    {
       root: 'pages/orders',
       pages: ['index'],
     },

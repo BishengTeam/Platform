@@ -46,9 +46,16 @@ export async function getCertDetail(certId: number): Promise<import('@/types').C
       passingScore: (oldCert as any)?.passingScore ?? 60,
     }
   }
-  // TODO: GET /api/cert/certifications/${certId}
   const res = await get<any>(`/api/cert/certifications/${certId}`)
-  return res.data as import('@/types').CertificationDetail
+  const data = res.data
+  return {
+    ...data,
+    price: data?.price ?? 0,
+    examCode: data?.examCode ?? '',
+    examDuration: data?.examDuration ?? '',
+    questionCount: data?.questionCount ?? 0,
+    passingScore: data?.passingScore ?? 0,
+  } as import('@/types').CertificationDetail
 }
 
 export async function getRegistrationTagFilters() {
@@ -135,7 +142,7 @@ export async function createOrder(data: {
 }
 
 /** POST /api/payment/prepay — 获取微信支付参数 */
-export async function prepayOrder(orderId: string): Promise<{
+export async function prepayOrder(orderId: number): Promise<{
   timeStamp: string
   nonceStr: string
   package: string
@@ -184,7 +191,7 @@ export async function submitCheckin(): Promise<void> {
 /** POST /api/coupons/validate — 验证考试券 */
 export async function validateCoupon(code: string): Promise<{ valid: boolean; message?: string }> {
   if (USE_MOCK) return { valid: true }
-  const res = await post<{ valid: boolean; message?: string }>('/api/coupons/validate', { code })
+  const res = await post<{ valid: boolean; message?: string }>('/api/coupons/validate', { coupon_code: code })
   return res.data
 }
 
@@ -303,7 +310,7 @@ export async function getSangforVerifyCode(): Promise<{ code: string }> {
 /** GET /api/cert/nisp/pinyin — NISP 拼音生成 */
 export async function getNispPinyin(text: string): Promise<{ pinyin: string }> {
   if (USE_MOCK) return { pinyin: 'zhangsan' }
-  const res = await get<{ pinyin: string }>('/api/cert/nisp/pinyin', { text } as unknown as Record<string, unknown>)
+  const res = await get<{ pinyin: string }>('/api/cert/nisp/pinyin', { name: text } as unknown as Record<string, unknown>)
   return res.data
 }
 
@@ -346,9 +353,9 @@ export async function getPrices(): Promise<Array<Record<string, unknown>>> {
 // ================================================================
 
 /** POST /api/collections — 通用添加收藏 */
-export async function addCollection(data: { type: string; target_id: number }): Promise<void> {
+export async function addCollection(data: { target_type: string; target_id: number }): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/collections', data as unknown as Record<string, unknown>)
+  await post('/api/collections', { target_type: data.target_type, target_id: data.target_id })
 }
 
 /** DELETE /api/collections/{id} — 通用取消收藏 */
@@ -411,7 +418,7 @@ export async function getJobs(): Promise<Array<Record<string, unknown>>> {
 /** POST /api/tickets — 创建工单 */
 export async function createTicket(data: { title: string; description: string; type?: string }): Promise<{ id: string }> {
   if (USE_MOCK) return { id: `TKT${Date.now()}` }
-  const res = await post<{ id: string }>('/api/tickets', data as unknown as Record<string, unknown>)
+  const res = await post<{ id: string }>('/api/tickets', { content: `${data.title}\n${data.description}` })
   return res.data
 }
 
@@ -427,7 +434,7 @@ export async function getTicketDetail(id: string): Promise<Record<string, unknow
 // ================================================================
 
 /** POST /api/share — 生成分享链接 */
-export async function createShare(data: { type: string; target_id: number }): Promise<{ code: string; url: string }> {
+export async function createShare(data: { target_type: string; target_id: number }): Promise<{ code: string; url: string }> {
   if (USE_MOCK) return { code: 'mock_share_code', url: '' }
   const res = await post<{ code: string; url: string }>('/api/share', data as unknown as Record<string, unknown>)
   return res.data
@@ -458,7 +465,7 @@ export async function getMediaUrl(fileId: string): Promise<{ url: string }> {
 /** POST /api/coupons/assign — 下发优惠券 */
 export async function assignCoupon(data: { coupon_id?: string; user_id?: string }): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/coupons/assign', data as unknown as Record<string, unknown>)
+  await post('/api/coupons/assign', { coupon_code: data.coupon_id || '' })
 }
 
 /** POST /api/coupons/validate — 核销优惠券 */

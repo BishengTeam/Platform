@@ -4,6 +4,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
+import { createShare } from '@/services/dataService'
 import styles from './share.module.scss'
 
 const SHARE_OPTIONS = [
@@ -25,7 +26,12 @@ export default function SharePage() {
       return
     }
     if (label === STRINGS.MINE_SHARE_COURSE) {
-      Taro.showShareMenu({ withShareTicket: true })
+      createShare({ target_type: 'course', target_id: 1 }).then(res => {
+        Taro.setClipboardData({ data: res.code })
+        Taro.showToast({ title: '\u5206\u4eab\u7801\u5df2\u590d\u5236', icon: 'success' })
+      }).catch(() => {
+        Taro.showShareMenu({ withShareTicket: true })
+      })
       return
     }
     if (label === STRINGS.MINE_SHARE_POSTER) {

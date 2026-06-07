@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getPointsBalance, getPointRecords, getCoupons } from '@/services/dataService'
+import { getPointsBalance, getPointRecords, getCoupons, redeemPoints } from '@/services/dataService'
 import styles from './points.module.scss'
 
 export default function PointsPage() {
@@ -27,7 +28,15 @@ export default function PointsPage() {
             <Text className={styles.balanceLabel}>{STRINGS.MINE_POINTS_BALANCE}</Text>
             <Text className={styles.balanceValue}>{balance}</Text>
             <Text className={styles.balanceTip}>{STRINGS.MINE_POINTS_REDEEM_TIP}</Text>
-            <Button size='sm' variant='secondary'>{STRINGS.MINE_POINTS_REDEEM}</Button>
+            <Button size='sm' variant='secondary' onClick={() => {
+            redeemPoints({ item_id: 'exam_fee', points: 50 }).then(() => {
+              getPointsBalance().then(setBalance).catch(() => {})
+              getPointRecords().then(setRecords).catch(() => {})
+              Taro.showToast({ title: STRINGS.MINE_POINTS_REDEEM + '成功', icon: 'success' })
+            }).catch(() => {
+              Taro.showToast({ title: '兑换失败', icon: 'none' })
+            })
+          }}>{STRINGS.MINE_POINTS_REDEEM}</Button>
           </View>
 
           {coupons.length > 0 && (

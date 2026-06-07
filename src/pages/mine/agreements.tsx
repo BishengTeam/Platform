@@ -135,7 +135,18 @@ export default function AgreementsPage() {
 
                 {item.status === 'pending_sign' && signingId !== item.id && (
                   <View className={styles.cardFooter}>
-                    <Button size='sm' variant='secondary'>
+                    <Button
+                      size='sm'
+                      variant='secondary'
+                      onClick={() => {
+                        Taro.showModal({
+                          title: item.title,
+                          content: item.content,
+                          showCancel: false,
+                          confirmText: '\u5173\u95ed',
+                        })
+                      }}
+                    >
                       {STRINGS.MINE_AGREEMENTS_DETAIL}
                     </Button>
                     <Button size='sm' onClick={() => setSigningId(item.id)}>
