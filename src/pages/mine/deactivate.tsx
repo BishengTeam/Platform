@@ -5,6 +5,9 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
+import { ROUTES } from '@/constants/routes'
+import { deleteAccount } from '@/services/dataService'
+import { removeToken } from '@/utils/request'
 import styles from './deactivate.module.scss'
 
 const CONDITIONS = [
@@ -17,6 +20,7 @@ const CONDITIONS = [
 export default function DeactivatePage() {
   const [step, setStep] = useState<'check' | 'unbind' | 'confirm'>('check')
   const [checking, setChecking] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const handleCheck = () => {
     setChecking(true)
@@ -24,6 +28,23 @@ export default function DeactivatePage() {
       setChecking(false)
       setStep('unbind')
     }, 1500)
+  }
+
+  const handleConfirmDeactivate = async () => {
+    if (deleting) return
+    setDeleting(true)
+    try {
+      await deleteAccount()
+      removeToken()
+      Taro.showToast({ title: STRINGS.MINE_DEACTIVATE_SUCCESS, icon: 'success' })
+      setTimeout(() => {
+        Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
+      }, 800)
+    } catch {
+      Taro.showToast({ title: '注销失败，请重试', icon: 'none' })
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -103,9 +124,10 @@ export default function DeactivatePage() {
                 <Button
                   variant='gradient'
                   size='lg'
-                  onClick={() => Taro.showToast({ title: STRINGS.MINE_DEACTIVATE_SUCCESS, icon: 'success' })}
+                  onClick={handleConfirmDeactivate}
+                  disabled={deleting}
                 >
-                  {STRINGS.MINE_DEACTIVATE_CONFIRM}
+                  {deleting ? '注销中...' : STRINGS.MINE_DEACTIVATE_CONFIRM}
                 </Button>
               </View>
             </>

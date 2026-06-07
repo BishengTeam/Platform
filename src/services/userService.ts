@@ -90,7 +90,7 @@ export async function getPointRecords() {
 
 export async function getAgreements() {
   if (USE_MOCK) return agreements
-  const res = await get<any>(`/api/agreements`)
+  const res = await get<any>(`/agreements`)
   const data = res.data as any
   return data?.items || data || []
 }
@@ -232,17 +232,17 @@ export async function sendChatMessage(message: string): Promise<{ reply: string 
   return res.data
 }
 
-/** POST /api/agreements — 创建协议 */
+/** POST /agreements — 创建协议 */
 export async function createAgreement(data: { type: string; content?: string }): Promise<{ id: string }> {
   if (USE_MOCK) return { id: `AGR${Date.now()}` }
-  const res = await post<{ id: string }>('/api/agreements', data as unknown as Record<string, unknown>)
+  const res = await post<{ id: string }>('/agreements', data as unknown as Record<string, unknown>)
   return res.data
 }
 
-/** PUT /api/agreements/{id}/sign — 签名提交 */
+/** PUT /agreements/{id}/sign — 签名提交 */
 export async function signAgreement(id: string, signatureImage: string): Promise<void> {
   if (USE_MOCK) return
-  await put(`/api/agreements/${id}/sign`, { signature_image: signatureImage })
+  await put(`/agreements/${id}/sign`, { signature_image: signatureImage })
 }
 
 /** GET /api/coupons — 获取优惠券列表 */
