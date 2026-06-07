@@ -23,7 +23,8 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      setNickname(profile.nickname || '')
+      // nickname 已从后端 UserProfile 移除，使用 real_name 作为显示名
+      setNickname(profile.real_name || '')
       setPhone(profile.phone || '')
       setEmail(profile.email || '')
       setRealName(profile.real_name || '')
@@ -45,7 +46,8 @@ export default function EditProfilePage() {
       return
     }
     try {
-      await updateUserProfile({ nickname, phone, email, real_name: realName, id_card: idCard })
+      // nickname 字段后端已移除，仅发送 real_name
+      await updateUserProfile({ phone, email, real_name: realName, id_card: idCard })
     } catch {
       Taro.showToast({ title: '保存失败，请重试', icon: 'none' })
       return

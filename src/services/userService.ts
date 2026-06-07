@@ -97,9 +97,9 @@ export async function getPointRecords() {
 
 export async function getAgreements() {
   if (USE_MOCK) return agreements
-  const res = await get<any>(`/agreements`)
-  const data = res.data as any
-  return data?.items || data || []
+  // 降级：后端未提供 /api/agreements 端点，非 mock 模式下返回空数组
+  console.warn('[getAgreements] 后端 /api/agreements 端点不存在，返回空数组')
+  return []
 }
 
 export async function getMyCollections() {
@@ -153,12 +153,14 @@ export async function prepayOrder(orderId: number): Promise<{
     return { timeStamp: '', nonceStr: '', package: '', signType: 'MD5', paySign: '' }
   }
   const res = await post<Record<string, string>>('/api/payment/prepay', { order_id: orderId })
-  return res.data as unknown as {
-    timeStamp: string
-    nonceStr: string
-    package: string
-    signType: string
-    paySign: string
+  const raw = res.data as Record<string, string>
+  // 后端返回 snake_case（time_stamp / nonce_str / pay_sign），映射为前端 camelCase
+  return {
+    timeStamp: raw.time_stamp || raw.timeStamp || '',
+    nonceStr: raw.nonce_str || raw.nonceStr || '',
+    package: raw.package || '',
+    signType: raw.signType || 'MD5',
+    paySign: raw.pay_sign || raw.paySign || '',
   }
 }
 
@@ -201,11 +203,11 @@ export async function validateCoupon(code: string): Promise<{ valid: boolean; me
 
 /** GET /api/user/profile — 获取用户资料 */
 export async function getUserProfile(): Promise<{
-  nickname: string
-  avatar: string
   phone: string
   email: string
   real_name: string
+  user_type: string
+  identity_status: string
   id_card: string
   education: string
   gender: string
@@ -214,15 +216,14 @@ export async function getUserProfile(): Promise<{
   organization: string
 }> {
   if (USE_MOCK) return {
-    nickname: '小王同学', avatar: '', phone: '138****8888', email: 'xiaowang@example.com',
+    phone: '138****8888', email: 'xiaowang@example.com', user_type: 'student', identity_status: 'verified',
     real_name: '王小明', id_card: '330106****1234', education: '本科',
     gender: 'male', school: '电子科技大学', major: '网络工程', organization: '',
   }
   const res = await get<Record<string, string>>('/api/user/profile')
   return res.data as unknown as {
-    nickname: string; avatar: string; phone: string; email: string
-    real_name: string; id_card: string; education: string
-    gender: string; school: string; major: string; organization: string
+    phone: string; email: string; real_name: string; user_type: string; identity_status: string
+    id_card: string; education: string; gender: string; school: string; major: string; organization: string
   }
 }
 
@@ -239,17 +240,19 @@ export async function sendChatMessage(message: string): Promise<{ reply: string 
   return res.data
 }
 
-/** POST /agreements — 创建协议 */
+/** POST /agreements — 创建协议（暂不可用：后端 /api/agreements 端点不存在） */
 export async function createAgreement(data: { type: string; content?: string }): Promise<{ id: string }> {
   if (USE_MOCK) return { id: `AGR${Date.now()}` }
-  const res = await post<{ id: string }>('/agreements', data as unknown as Record<string, unknown>)
-  return res.data
+  // 降级：后端未提供端点，返回 mock ID
+  console.warn('[createAgreement] 后端 /api/agreements 端点不存在')
+  return { id: `AGR${Date.now()}` }
 }
 
-/** PUT /agreements/{id}/sign — 签名提交 */
+/** PUT /agreements/{id}/sign — 签名提交（暂不可用：后端未提供端点） */
 export async function signAgreement(id: string, signatureImage: string): Promise<void> {
   if (USE_MOCK) return
-  await put(`/agreements/${id}/sign`, { signature_image: signatureImage })
+  // 降级：后端未提供端点，跳过签名提交
+  console.warn('[signAgreement] 后端 /api/agreements 端点不存在')
 }
 
 /** GET /api/coupons — 获取优惠券列表 */

@@ -57,10 +57,8 @@ export default function IndexPage() {
     getHomeAggregation().then((data) => {
       console.log('[IndexPage] 首页数据加载成功:', JSON.stringify({
         banners: data.banners?.length,
-        courses: data.courses?.length,
-        activities: data.activities?.length,
         zoneKeys: data.zones ? Object.keys(data.zones) : [],
-        zoneCounts: data.zones ? Object.fromEntries(Object.entries(data.zones).map(([k, v]) => [k, v?.length ?? 0])) : {},
+        zoneCounts: data.zones ? Object.fromEntries(Object.entries(data.zones).map(([k, v]) => [k, v?.items?.length ?? 0])) : {},
       }))
       setHomeData(data)
     }).catch((err) => {
@@ -141,27 +139,27 @@ export default function IndexPage() {
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_ONLINE_COURSES} onViewAll={handleGoStudyZone} />
-            <HomeCard items={homeData?.courses ?? []} onCardClick={handleGoStudyZone} />
+            <HomeCard items={homeData?.zones['study']?.courses ?? []} onCardClick={handleGoStudyZone} />
           </View>
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
-            <HomeCard items={homeData?.activities ?? []} onCardClick={handleGoActivityZone} />
+            <HomeCard items={homeData?.zones['activity']?.activities ?? []} onCardClick={handleGoActivityZone} />
           </View>
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
-            <HomeCard items={homeData?.zones['cert'] ?? []} onCardClick={handleGoCertZone} />
+            <HomeCard items={homeData?.zones['cert']?.items ?? []} onCardClick={handleGoCertZone} />
           </View>
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[2]} onViewAll={handleGoCompetitionZone} />
-            <HomeCard items={homeData?.zones['competition'] ?? []} onCardClick={handleGoCompetitionZone} />
+            <HomeCard items={homeData?.zones['competition']?.items ?? []} onCardClick={handleGoCompetitionZone} />
           </View>
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
-            <HomeCard items={homeData?.zones['employment'] ?? []} onCardClick={handleGoEmploymentZone} />
+            <HomeCard items={homeData?.zones['employment']?.items ?? []} onCardClick={handleGoEmploymentZone} />
           </View>
         </View>
 

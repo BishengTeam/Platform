@@ -28,8 +28,7 @@ export {
 // Zone
 export {
   getHomeAggregation, getCourseList, getActivityList,
-  getJobList, getCertificationList,
-  getCompetitionZone,
+  getJobList, getCertificationList, getCompetitionList,
   enrollActivity, remindActivity, signupCompetition, applyJob,
   getZoneIcons, getQuickQuestions, getInitialMessages,
   getContactList, getOrderItems, getProfileFunctions, getExamBannerItems,

@@ -19,6 +19,18 @@ import {
   examBannerItems,
 } from '@/constants/mock'
 
+/** 从竞赛 mock 数据派生 CompetitionBrief 列表（用于聚合端点覆盖前） */
+function mockCompetitionBriefs(): import('@/types').CompetitionBrief[] {
+  const all = [...ongoingCompetitions, ...upcomingCompetitions]
+  return all.map(c => ({
+    id: c.id,
+    competition_name: c.title,
+    school: '',
+    track: null,
+    created_at: c.startTime,
+  })) as import('@/types').CompetitionBrief[]
+}
+
 import { get, post, resolveUrl } from '@/utils/request'
 
 /**
@@ -44,9 +56,11 @@ function resolveMedia<T>(data: T): T {
 
 import type {
   HomeAggregationResponse,
-  CompetitionZoneResponse,
+  ZoneSectionData,
+  TrainingBrief,
   CourseBrief,
   ActivityBrief,
+  CompetitionBrief,
   JobBrief,
   CertificationResponse,
 } from '@/types'
@@ -80,27 +94,37 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
         sort: idx,
       })),
       zones: {
-        cert: [
-          { id: 1, title: 'H3CNE 认证', cover_url: null, description: '新华三网络工程师认证', gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'book-open', tag: '热门', tagColor: '#FF4D4F' },
-          { id: 2, title: '深信服认证', cover_url: null, description: '安全技术方向认证', gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '推荐', tagColor: '#52C41A' },
-          { id: 3, title: 'NISP 认证', cover_url: null, description: '国家信息安全水平考试', gradient: 'linear-gradient(135deg, #FA8C16, #FFC53D)', icon: 'award', tag: '国标', tagColor: '#FA8C16' },
-        ],
-        study: [
-          { id: 4, title: '网络基础课程', cover_url: null, description: '零基础入门到精通', gradient: 'linear-gradient(135deg, #722ED1, #9254DE)', icon: 'book-open', tag: '入门', tagColor: '#722ED1' },
-        ],
-        competition: [
-          { id: 5, title: '网络技术大赛', cover_url: null, description: '展示技术实力赢取奖金', gradient: 'linear-gradient(135deg, #FF4D4F, #FF7875)', icon: 'trophy', tag: '进行中', tagColor: '#FF4D4F' },
-        ],
-        activity: [
-          { id: 6, title: '线下实训营', cover_url: null, description: '7天集中培训', gradient: 'linear-gradient(135deg, #13C2C2, #36CFC9)', icon: 'users', tag: '线下', tagColor: '#13C2C2' },
-        ],
-        employment: [
-          { id: 7, title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'briefcase', tag: '急招', tagColor: '#1677FF' },
-          { id: 8, title: '安全运维工程师', cover_url: null, description: '深信服生态企业', gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '高薪', tagColor: '#52C41A' },
-        ],
+        cert: {
+          items: [
+            { id: 1, zone_type: 'cert', title: 'H3CNE 认证', cover_url: null, description: '新华三网络工程师认证', link_url: null, gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'book-open', tag: '热门', tagColor: '#FF4D4F', sort_order: 0 },
+            { id: 2, zone_type: 'cert', title: '深信服认证', cover_url: null, description: '安全技术方向认证', link_url: null, gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '推荐', tagColor: '#52C41A', sort_order: 1 },
+            { id: 3, zone_type: 'cert', title: 'NISP 认证', cover_url: null, description: '国家信息安全水平考试', link_url: null, gradient: 'linear-gradient(135deg, #FA8C16, #FFC53D)', icon: 'award', tag: '国标', tagColor: '#FA8C16', sort_order: 2 },
+          ],
+        },
+        study: {
+          items: [
+            { id: 4, zone_type: 'study', title: '网络基础课程', cover_url: null, description: '零基础入门到精通', link_url: null, gradient: 'linear-gradient(135deg, #722ED1, #9254DE)', icon: 'book-open', tag: '入门', tagColor: '#722ED1', sort_order: 0 },
+          ],
+          courses: homeCourses as any,
+        },
+        competition: {
+          items: [
+            { id: 5, zone_type: 'competition', title: '网络技术大赛', cover_url: null, description: '展示技术实力赢取奖金', link_url: null, gradient: 'linear-gradient(135deg, #FF4D4F, #FF7875)', icon: 'trophy', tag: '进行中', tagColor: '#FF4D4F', sort_order: 0 },
+          ],
+        },
+        activity: {
+          items: [
+            { id: 6, zone_type: 'activity', title: '线下实训营', cover_url: null, description: '7天集中培训', link_url: null, gradient: 'linear-gradient(135deg, #13C2C2, #36CFC9)', icon: 'users', tag: '线下', tagColor: '#13C2C2', sort_order: 0 },
+          ],
+          activities: homeActivities as any,
+        },
+        employment: {
+          items: [
+            { id: 7, zone_type: 'employment', title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', link_url: null, gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'briefcase', tag: '急招', tagColor: '#1677FF', sort_order: 0 },
+            { id: 8, zone_type: 'employment', title: '安全运维工程师', cover_url: null, description: '深信服生态企业', link_url: null, gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '高薪', tagColor: '#52C41A', sort_order: 1 },
+          ],
+        },
       },
-      courses: homeCourses as any,
-      activities: homeActivities as any,
     } as HomeAggregationResponse
   }
   const res = await get<HomeAggregationResponse>('/api/zones')
@@ -135,30 +159,11 @@ export async function getCertificationList(): Promise<CertificationResponse[]> {
   return res.data?.items || res.data || []
 }
 
-/** GET /api/zones/competition — 竞赛专区 */
-export async function getCompetitionZone(): Promise<CompetitionZoneResponse> {
-  if (USE_MOCK) {
-    const all = [...ongoingCompetitions, ...upcomingCompetitions, ...endedCompetitions]
-    return {
-      zones: [],
-      competitions: all.map((c, idx) => ({
-        id: idx + 1,
-        competition_name: c.title,
-        school: '',
-        track: null,
-        created_at: new Date().toISOString(),
-      })),
-    }
-  }
-  const res = await get<CompetitionZoneResponse>('/api/zones/competition')
-  return resolveMedia(res.data)
-}
-
 // ================================================================
 // 活动报名 / 竞赛报名 / 就业投递
 // ================================================================
 
-/** POST /api/activities/{id}/enroll — 活动报名 */
+/** POST /api/activities/{activity_id}/enroll — 活动报名 */
 export async function enrollActivity(
   activityId: number,
   name?: string,
@@ -171,7 +176,7 @@ export async function enrollActivity(
   await post(`/api/activities/${activityId}/enroll`, body)
 }
 
-/** POST /api/activities/{id}/remind — 活动预约提醒 */
+/** POST /api/activities/{activity_id}/remind — 活动预约提醒 */
 export async function remindActivity(activityId: number): Promise<void> {
   if (USE_MOCK) return
   await post(`/api/activities/${activityId}/remind`)
@@ -193,4 +198,21 @@ export async function signupCompetition(
 export async function applyJob(jobId: number): Promise<void> {
   if (USE_MOCK) return
   await post(`/api/jobs/${jobId}/apply`)
+}
+
+// ================================================================
+// 竞赛列表（Phase 5 补充 — 代替已移除的 getCompetitionZone）
+// ================================================================
+/** GET /api/competition/tracks → CompetitionBrief[] — 竞赛列表 */
+export async function getCompetitionList(): Promise<CompetitionBrief[]> {
+  if (USE_MOCK) return mockCompetitionBriefs()
+  const res = await get<any>('/api/competition/tracks')
+  const raw: any[] = res.data?.items || res.data || []
+  return raw.map((item: any) => ({
+    id: item.id ?? 0,
+    competition_name: item.competition_name || item.name || item.title || '',
+    school: item.school || '',
+    track: item.track ?? null,
+    created_at: item.created_at || item.start_time || '',
+  }))
 }

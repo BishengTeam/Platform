@@ -31,7 +31,8 @@ export default function PersonalInfoPage() {
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      setNickname(profile.nickname || '')
+      // nickname 已从后端 UserProfile 移除，使用 real_name 作为显示名
+      setNickname(profile.real_name || '')
       setPhone(profile.phone || '')
       setEmail(profile.email || '')
       setRealName(profile.real_name || '')

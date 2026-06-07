@@ -31,18 +31,6 @@ export interface ZoneBrief {
   sort_order: number
 }
 
-/** Zone 专区卡片（精简版，首页聚合使用，无 zone_type/link_url） */
-export interface ZoneSectionItem {
-  id: number
-  title: string
-  cover_url: string | null
-  description: string | null
-  gradient?: string | null
-  icon?: string | null
-  tag?: string | null
-  tagColor?: string | null
-}
-
 /** 课程简要 */
 export interface CourseBrief {
   id: number
@@ -98,6 +86,23 @@ export interface CertificationResponse {
   pay_first: boolean
 }
 
+/** 训练/培训简要 */
+export interface TrainingBrief {
+  id: number
+  title: string
+  description: string | null
+  cover_url: string | null
+}
+
+/** 单个专区的聚合数据块 */
+export interface ZoneSectionData {
+  items: ZoneBrief[]
+  courses?: CourseBrief[] | null
+  activities?: ActivityBrief[] | null
+  certifications?: CertificationResponse[] | null
+  trainings?: TrainingBrief[] | null
+}
+
 // ============================================================
 // 聚合响应体
 // ============================================================
@@ -105,39 +110,7 @@ export interface CertificationResponse {
 /** GET /api/zones 首页聚合 */
 export interface HomeAggregationResponse {
   banners: BannerBrief[]
-  zones: Record<string, ZoneSectionItem[]> // key = "cert"|"study"|"competition"|"activity"|"employment"
-  courses: CourseBrief[]
-  activities: ActivityBrief[]
-}
-
-/** GET /api/zones/cert 认证专区 */
-export interface CertZoneResponse {
-  zones: ZoneBrief[]
-  certifications: CertificationResponse[]
-}
-
-/** GET /api/zones/study 学习专区 */
-export interface StudyZoneResponse {
-  zones: ZoneBrief[]
-  courses: CourseBrief[]
-}
-
-/** GET /api/zones/competition 竞赛专区 */
-export interface CompetitionZoneResponse {
-  zones: ZoneBrief[]
-  competitions: CompetitionBrief[]
-}
-
-/** GET /api/zones/activity 活动专区 */
-export interface ActivityZoneResponse {
-  zones: ZoneBrief[]
-  activities: ActivityBrief[]
-}
-
-/** GET /api/zones/employment 就业专区 */
-export interface EmploymentZoneResponse {
-  zones: ZoneBrief[]
-  jobs: JobBrief[]
+  zones: Record<string, ZoneSectionData> // key = "cert"|"study"|"competition"|"activity"|"employment"
 }
 
 // ============================================================
