@@ -1,8 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Button as TaroButton } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
+import { useIdentityCheck } from '@/hooks/useIdentityCheck'
+import { usePhoneDecrypt } from '@/hooks/usePhoneDecrypt'
 import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
@@ -30,7 +32,13 @@ export default function RegistrationFormPage() {
   const [language, setLanguage] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [identityType, setIdentityType] = useState<'personal' | 'enterprise'>('personal')
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
+
+  const identity = useIdentityCheck()
+  const [identityName, setIdentityName] = useState('')
+  const [identityIdCard, setIdentityIdCard] = useState('')
+  const { decrypting, handleGetPhoneNumber } = usePhoneDecrypt()
 
   useLoad((options) => {
     setCertId(options?.cert_id || '')
@@ -81,6 +89,7 @@ export default function RegistrationFormPage() {
         language: language || undefined,
         first_name: firstName.trim() || undefined,
         last_name: lastName.trim() || undefined,
+        identity_type: identityType,
       },
       attachments: [idPhotoPath].filter(Boolean),
     })
@@ -105,6 +114,76 @@ export default function RegistrationFormPage() {
 
   const handlePickExamDate = () => {
     Taro.showToast({ title: STRINGS.FORM_PICK_EXAM_DATE, icon: 'none' })
+  }
+
+  // 实名认证检查：查询中
+  if (identity.phase === 'checking') {
+    return (
+      <AuthGuard>
+        <View className={styles.page}>
+          <PageHeader title={STRINGS.IDENTITY_CHECK_TITLE} shouldShowBack />
+          <View className={styles.body}>
+            <View className={styles.loadingWrap}>
+              <Text className={styles.loadingText}>加载中...</Text>
+            </View>
+          </View>
+        </View>
+      </AuthGuard>
+    )
+  }
+
+  // 实名认证检查：未认证，展示认证表单
+  if (identity.phase === 'unverified' || identity.phase === 'submitting') {
+    const handleIdentitySubmit = async () => {
+      if (!identityName.trim() || !identityIdCard.trim()) {
+        Taro.showToast({ title: '请填写完整信息', icon: 'none' })
+        return
+      }
+      const ok = await identity.submit(identityName.trim(), identityIdCard.trim())
+      if (!ok) {
+        Taro.showToast({ title: STRINGS.IDENTITY_CHECK_FAILED, icon: 'none' })
+      }
+    }
+
+    return (
+      <AuthGuard>
+        <View className={styles.page}>
+          <PageHeader title={STRINGS.IDENTITY_CHECK_TITLE} shouldShowBack />
+          <View className={styles.body}>
+            <View className={styles.section}>
+              <Text className={styles.sectionTitle}>{STRINGS.IDENTITY_CHECK_DESC}</Text>
+            </View>
+            <View className={styles.section}>
+              <FormInput
+                label={STRINGS.FORM_REAL_NAME}
+                required
+                placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER}
+                value={identityName}
+                onChange={setIdentityName}
+              />
+              <FormInput
+                label={STRINGS.FORM_ID_CARD}
+                required
+                placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER}
+                value={identityIdCard}
+                type='idcard'
+                maxlength={18}
+                onChange={setIdentityIdCard}
+              />
+            </View>
+            <View className={styles.btnWrap}>
+              <Button
+                variant='gradient'
+                size='lg'
+                onClick={handleIdentitySubmit}
+              >
+                {identity.phase === 'submitting' ? STRINGS.IDENTITY_CHECK_SUBMITTING : STRINGS.IDENTITY_CHECK_SUBMIT}
+              </Button>
+            </View>
+          </View>
+        </View>
+      </AuthGuard>
+    )
   }
 
   if (!cert) {
@@ -148,6 +227,24 @@ export default function RegistrationFormPage() {
               onChange={setRealName}
             />
 
+            <View className={styles.identityRow}>
+              <Text className={styles.identityLabel}>{STRINGS.FORM_IDENTITY_TYPE}</Text>
+              <View className={styles.identityToggle}>
+                <View
+                  className={`${styles.identityOption} ${identityType === 'personal' ? styles.identityActive : ''}`}
+                  onClick={() => setIdentityType('personal')}
+                >
+                  <Text>{STRINGS.FORM_IDENTITY_PERSONAL}</Text>
+                </View>
+                <View
+                  className={`${styles.identityOption} ${identityType === 'enterprise' ? styles.identityActive : ''}`}
+                  onClick={() => setIdentityType('enterprise')}
+                >
+                  <Text>{STRINGS.FORM_IDENTITY_ENTERPRISE}</Text>
+                </View>
+              </View>
+            </View>
+
             <FormInput
               label={STRINGS.FORM_PHONE}
               required
@@ -158,6 +255,19 @@ export default function RegistrationFormPage() {
               error={errors.phone}
               onChange={setPhone}
             />
+            <View className={styles.phoneAuthRow}>
+              <TaroButton
+                className={styles.phoneAuthBtn}
+                openType='getPhoneNumber'
+                disabled={decrypting}
+                onGetPhoneNumber={async (e) => {
+                  const phoneStr = await handleGetPhoneNumber(e)
+                  if (phoneStr) setPhone(phoneStr)
+                }}
+              >
+                {decrypting ? STRINGS.FORM_PHONE_WECHAT_AUTHING : STRINGS.FORM_PHONE_WECHAT_AUTH}
+              </TaroButton>
+            </View>
             <FormInput
               label={STRINGS.FORM_EMAIL}
               placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER}

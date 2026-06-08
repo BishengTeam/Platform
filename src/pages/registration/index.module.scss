@@ -77,3 +77,15 @@
   color: $color-primary;
   font-weight: 600;
 }
+
+.loadingWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 0;
+}
+
+.loadingText {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}

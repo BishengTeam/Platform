@@ -239,3 +239,39 @@
   font-size: $font-sm;
   color: $color-primary;
 }
+
+// ---- Phone Auth ----
+.phoneAuthRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -$spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.phoneAuthBtn {
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: $font-xs !important;
+  color: $color-primary !important;
+  background: transparent !important;
+  border: none !important;
+  line-height: 1 !important;
+  min-height: auto !important;
+
+  &::after {
+    border: none !important;
+  }
+}
+
+// ---- Loading ----
+.loadingWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 0;
+}
+
+.loadingText {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}

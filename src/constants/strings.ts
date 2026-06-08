@@ -132,6 +132,19 @@ export const STRINGS = {
   REGISTRATION_TITLE: '认证专区',
   REGISTRATION_SEARCH_PLACEHOLDER: '搜索认证项目',
   REGISTRATION_TAG_ALL: '全部',
+  REGISTRATION_LOADING: '加载中...',
+  REGISTRATION_EMPTY: '暂无认证项目',
+
+  // ---- Phone Decrypt ----
+  FORM_PHONE_WECHAT_AUTH: '微信一键授权',
+  FORM_PHONE_WECHAT_AUTHING: '获取中...',
+
+  // ---- Identity Check ----
+  IDENTITY_CHECK_TITLE: '实名认证',
+  IDENTITY_CHECK_DESC: '根据相关规定，报名认证考试需先完成实名认证',
+  IDENTITY_CHECK_SUBMIT: '提交认证',
+  IDENTITY_CHECK_SUBMITTING: '提交中...',
+  IDENTITY_CHECK_FAILED: '认证提交失败，请重试',
 
   // ---- Registration Form ----
   FORM_TITLE: '报名信息',

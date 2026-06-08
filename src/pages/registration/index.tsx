@@ -5,6 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
+import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
 import type { CertificationResponse } from '@/types'
@@ -33,6 +34,7 @@ export default function RegistrationIndexPage() {
 
   const [certifications, setCertifications] = useState<CertificationResponse[]>([])
   const [tagFilters, setTagFilters] = useState<TagFilterItem[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getCertificationList().then((data) => {
@@ -50,7 +52,7 @@ export default function RegistrationIndexPage() {
         })),
       ]
       setTagFilters(tags)
-    }).catch(() => {})
+    }).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
   const filtered = useMemo(() => {
@@ -98,18 +100,26 @@ export default function RegistrationIndexPage() {
             <TagFilter tags={tagFilters} activeTag={activeTag} onChange={setActiveTag} />
           </View>
           <View className={styles.cardList}>
-            {filtered.map(cert => (
-              <View key={cert.id}>
-                <ZoneCard
-                  title={cert.name}
-                  subtitle={cert.chinese_name}
-                  tags={[cert.code, cert.vendor]}
-                  buttonText={STRINGS.EXAM_SIGNUP}
-                  buttonColor='#1677FF'
-                  onButtonClick={() => handleCardClick(cert)}
-                />
+            {loading ? (
+              <View className={styles.loadingWrap}>
+                <Text className={styles.loadingText}>{STRINGS.REGISTRATION_LOADING}</Text>
               </View>
-            ))}
+            ) : filtered.length === 0 ? (
+              <EmptyState title={STRINGS.REGISTRATION_EMPTY} />
+            ) : (
+              filtered.map(cert => (
+                <View key={cert.id}>
+                  <ZoneCard
+                    title={cert.name}
+                    subtitle={cert.chinese_name}
+                    tags={[cert.code, cert.vendor]}
+                    buttonText={STRINGS.EXAM_SIGNUP}
+                    buttonColor='#1677FF'
+                    onButtonClick={() => handleCardClick(cert)}
+                  />
+                </View>
+              ))
+            )}
           </View>
         </View>
       </View>
