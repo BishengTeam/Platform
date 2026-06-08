@@ -19,10 +19,10 @@ function pickIdCard(p: any): string {
  * 实名认证检查网关（v4 — 阻断时弹出提示并跳回）
  *
  *   verified     → 渲染 children
- *   pending      → modal 提示 → 跳回首页
- *   rejected     → modal 提示 → 跳回首页
- *   无资料       → modal 提示 → 跳回首页
- *   unverified   → 尝试自动提交，失败则提示跳回
+ *   pending      → modal → 跳首页
+ *   rejected     → modal → 跳个人资料
+ *   无资料       → modal → 跳个人资料
+ *   unverified   → 自动提交，失败则 modal → 跳个人资料
  */
 export function IdentityCheckGate({ children }: Props) {
   const identity = useIdentityCheck()
@@ -30,6 +30,7 @@ export function IdentityCheckGate({ children }: Props) {
 
   useEffect(() => {
     if (handled) return
+    if (identity.phase === 'checking') return
 
     getUserProfile()
       .then((profile: any) => {
