@@ -152,10 +152,10 @@ export async function getJobList(): Promise<JobBrief[]> {
   return res.data?.items || res.data || []
 }
 
-/** GET /api/cert/certifications — 认证列表 */
+/** GET /api/cert — 认证列表（分页，默认 page=1） */
 export async function getCertificationList(): Promise<CertificationResponse[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/cert/certifications')
+  const res = await get<any>('/api/cert', { page: 1 })
   return res.data?.items || res.data || []
 }
 
