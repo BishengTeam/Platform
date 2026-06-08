@@ -268,13 +268,19 @@ export async function getUserProfile() {
       user_type: 'social',
       gender: 'male',
       phone: '138****1234',
+      phone_raw: '13812348888',
       email: 'zhangsan@example.com',
       id_card: '110101199001011234',
+      id_card_raw: '110101199001011234',
       identity_status: 'verified',
       education: '本科',
       school: '清华大学',
       major: '计算机科学与技术',
       organization: '新华三集团',
+      pinyin: 'zhangsan',
+      first_name: 'San',
+      last_name: 'Zhang',
+      age: 35,
     }
   }
   const res = await get<any>('/api/user/profile')
