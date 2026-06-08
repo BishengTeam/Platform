@@ -13,7 +13,6 @@ import styles from './edit-profile.module.scss'
 const MAX_EDITS = 3
 
 const idMap = STRINGS.IDENTITY_STATUS_MAP
-const genderMap = STRINGS.GENDER_MAP
 
 export default function EditProfilePage() {
   const [nickname, setNickname] = useState('')
@@ -27,7 +26,7 @@ export default function EditProfilePage() {
   const [school, setSchool] = useState('')
   const [major, setMajor] = useState('')
   const [organization, setOrganization] = useState('')
-  const [editCount, setEditCount] = useState(2)
+  const [editCount, setEditCount] = useState(0) // TODO: 后续从 profile.edit_count 获取
   const [isReadonly, setIsReadonly] = useState(false)
   const [identityStatus, setIdentityStatus] = useState('')
   const [loading, setLoading] = useState(true)
@@ -105,7 +104,7 @@ export default function EditProfilePage() {
           <View className={styles.section}>
             <FormInput label='昵称' placeholder='' value={nickname} onChange={setNickname} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_REAL_NAME} placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={realName} onChange={setRealName} disabled={isReadonly} />
-            <FormInput label='性别' placeholder='请输入性别' value={genderMap[gender] || gender} onChange={setGender} disabled={isReadonly} />
+            <FormInput label='性别' placeholder='请输入性别' value={gender} onChange={setGender} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} disabled={isReadonly} />
             {isStudent && (
               <>
