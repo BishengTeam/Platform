@@ -39,7 +39,7 @@ export function IdentityCheckGate({ children }: Props) {
             title: '提示',
             content: STRINGS.IDENTITY_PROFILE_INCOMPLETE,
             showCancel: false,
-            success: () => Taro.switchTab({ url: '/pages/index/index' }),
+            success: () => Taro.switchTab({ url: '/pages/profile/index' }),
           })
           setHandled(true)
           return
@@ -72,7 +72,7 @@ export function IdentityCheckGate({ children }: Props) {
             title: STRINGS.IDENTITY_REJECTED_TITLE,
             content: reason,
             showCancel: false,
-            success: () => Taro.switchTab({ url: '/pages/index/index' }),
+            success: () => Taro.switchTab({ url: '/pages/profile/index' }),
           })
           setHandled(true)
           return
@@ -86,7 +86,7 @@ export function IdentityCheckGate({ children }: Props) {
               title: '提示',
               content: '实名认证需要您的身份证信息，请先在个人资料中完善',
               showCancel: false,
-              success: () => Taro.switchTab({ url: '/pages/index/index' }),
+              success: () => Taro.switchTab({ url: '/pages/profile/index' }),
             })
             setHandled(true)
             return
@@ -98,7 +98,7 @@ export function IdentityCheckGate({ children }: Props) {
                 title: STRINGS.IDENTITY_REJECTED_TITLE,
                 content: STRINGS.IDENTITY_CHECK_FAILED,
                 showCancel: false,
-                success: () => Taro.switchTab({ url: '/pages/index/index' }),
+                success: () => Taro.switchTab({ url: '/pages/profile/index' }),
               })
             }
             // 成功 → phase 变为 verified，children 自然渲染
@@ -112,7 +112,7 @@ export function IdentityCheckGate({ children }: Props) {
           title: '提示',
           content: '加载用户信息失败，请稍后重试',
           showCancel: false,
-          success: () => Taro.switchTab({ url: '/pages/index/index' }),
+          success: () => Taro.switchTab({ url: '/pages/profile/index' }),
         })
         setHandled(true)
       })
