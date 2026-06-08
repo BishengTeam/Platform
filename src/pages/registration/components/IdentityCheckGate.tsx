@@ -46,6 +46,8 @@ export function IdentityCheckGate({ children }: Props) {
       setPhase('verified')
     } else if (identity.phase === 'pending') {
       setPhase('pending')
+    } else if (identity.phase === 'rejected') {
+      setPhase('failed') // rejected → 展示失败UI，可重新提交
     } else if (identity.phase === 'unverified') {
       // 自动提交：需要 id_card_raw
       getUserProfile().then((profile: any) => {
@@ -96,26 +98,53 @@ export function IdentityCheckGate({ children }: Props) {
     )
   }
 
-  // ---- 审核中 ----
+  // ---- 审核中（阻断） ----
   if (phase === 'pending') {
     return (
       <GateWrapper>
-        <View className={styles.section}><Text className={styles.sectionTitle}>您的实名认证正在审核中，部分信息需手动填写</Text></View>
-        <View className={styles.btnWrap}><Button variant='gradient' size='lg' onClick={() => setPhase('verified')}>继续报名</Button></View>
+        <View className={styles.section}>
+          <Text className={styles.sectionTitle}>{STRINGS.IDENTITY_PENDING_TITLE}</Text>
+          <Text className={styles.sectionDesc}>{STRINGS.IDENTITY_PENDING_DESC}</Text>
+        </View>
+        <View className={styles.btnWrap}>
+          <Button variant='gradient' size='lg' onClick={() => Taro.navigateBack()}>返回</Button>
+        </View>
+      </GateWrapper>
+    )
+  }
+
+  // ---- 拒绝 / 失败（阻断 + 可重新提交） ----
+  if (phase === 'failed') {
+    return (
+      <GateWrapper>
+        <View className={styles.section}>
+          <Text className={styles.sectionTitle}>{STRINGS.IDENTITY_REJECTED_TITLE}</Text>
+          <Text className={styles.sectionDesc}>
+            {identity.rejectReason
+              ? `${STRINGS.IDENTITY_REJECTED_DESC}：${identity.rejectReason}`
+              : STRINGS.IDENTITY_REJECTED_DESC}
+          </Text>
+        </View>
+        <View className={styles.section}>
+          <FormInput label={STRINGS.FORM_REAL_NAME} required placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={manualName} onChange={setManualName} />
+          <FormInput label={STRINGS.FORM_ID_CARD} required placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value={manualIdCard} type='idcard' maxlength={18} onChange={setManualIdCard} />
+        </View>
+        <View className={styles.btnWrap}>
+          <Button variant='gradient' size='lg' onClick={handleRetry}>{STRINGS.IDENTITY_RETRY_SUBMIT}</Button>
+        </View>
       </GateWrapper>
     )
   }
 
   // ---- 手动填写表单（无明文身份证时） ----
-  if (phase === 'manual' || phase === 'failed') {
+  if (phase === 'manual') {
     return (
       <GateWrapper>
-        {phase === 'failed' && <View className={styles.section}><Text className={styles.sectionTitle}>{STRINGS.IDENTITY_CHECK_FAILED}</Text></View>}
         <View className={styles.section}>
           <FormInput label={STRINGS.FORM_REAL_NAME} required placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={manualName} onChange={setManualName} />
           <FormInput label={STRINGS.FORM_ID_CARD} required placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value={manualIdCard} type='idcard' maxlength={18} onChange={setManualIdCard} />
         </View>
-        <View className={styles.btnWrap}><Button variant='gradient' size='lg' onClick={phase === 'failed' ? handleRetry : handleManualSubmit}>提交认证</Button></View>
+        <View className={styles.btnWrap}><Button variant='gradient' size='lg' onClick={handleManualSubmit}>{STRINGS.IDENTITY_CHECK_SUBMIT}</Button></View>
       </GateWrapper>
     )
   }

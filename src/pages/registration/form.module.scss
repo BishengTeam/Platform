@@ -28,13 +28,18 @@
 .section {
   padding: $spacing-md $spacing-lg 0;
 }
-
 .sectionTitle {
   font-size: $font-lg;
   font-weight: 600;
   color: $color-text;
   margin-bottom: $spacing-sm;
   display: block;
+}
+
+.sectionDesc {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
 }
 
 .summaryCard {
