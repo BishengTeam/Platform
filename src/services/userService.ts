@@ -25,8 +25,8 @@ const USE_MOCK = false
 
 export async function getCertifications() {
   if (USE_MOCK) return certifications
-  const res = await get<any>(`/api/cert`, { page: 1 })
-  return res.data?.items || res.data || []
+  const res = await get<any[]>(`/api/cert/certifications`)
+  return res.data
 }
 
 /**
@@ -48,7 +48,7 @@ export async function getCertDetail(certId: number): Promise<import('@/types').C
       passingScore: (oldCert as any)?.passingScore ?? 60,
     }
   }
-  const res = await get<any>(`/api/cert/${certId}`)
+  const res = await get<any>(`/api/cert/certifications/${certId}`)
   const data = res.data
   return {
     ...data,
@@ -62,8 +62,8 @@ export async function getCertDetail(certId: number): Promise<import('@/types').C
 
 export async function getRegistrationTagFilters() {
   if (USE_MOCK) return registrationTagFilters
-  const res = await get<any[]>(`/api/cert/tags`)
-  return res.data?.items || res.data || []
+  const res = await get<any[]>(`/api/cert/certifications/tags`)
+  return res.data
 }
 
 // ---- 订单数据映射 ----
