@@ -7,7 +7,6 @@ import { FormInput } from '@/components/FormInput'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { getUserProfile, updateUserProfile } from '@/services/dataService'
-import { autoPinyin } from '@/utils/pinyin'
 import styles from './edit-profile.module.scss'
 
 const MAX_EDITS = 3
@@ -30,8 +29,6 @@ export default function EditProfilePage() {
   const [school, setSchool] = useState('')
   const [major, setMajor] = useState('')
   const [organization, setOrganization] = useState('')
-  const [country, setCountry] = useState('中国')
-  const [language, setLanguage] = useState('中文')
   const [editCount, setEditCount] = useState(2)
   const [isReadonly, setIsReadonly] = useState(false)
   const [identityStatus, setIdentityStatus] = useState('')
@@ -50,8 +47,6 @@ export default function EditProfilePage() {
       setSchool(profile.school || '')
       setMajor(profile.major || '')
       setOrganization(profile.organization || '')
-      setCountry(profile.country || '中国')
-      setLanguage(profile.language || '中文')
       setIdentityStatus(profile.identity_status || '')
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
@@ -77,10 +72,8 @@ export default function EditProfilePage() {
         email,
         gender,
         education,
-        country,
-        language,
         ...(isStudent ? { school, major } : { organization }),
-      } as any)
+      })
     } catch {
       Taro.showToast({ title: '保存失败，请重试', icon: 'none' })
       return
@@ -128,15 +121,6 @@ export default function EditProfilePage() {
             {!isStudent && (
               <FormInput label={STRINGS.FORM_ORGANIZATION} placeholder={STRINGS.FORM_ORGANIZATION_PLACEHOLDER} value={organization} onChange={setOrganization} disabled={isReadonly} />
             )}
-
-            <FormInput label={STRINGS.FORM_COUNTRY} placeholder='中国' value={country} onChange={setCountry} disabled={isReadonly} />
-            <FormInput label={STRINGS.FORM_LANGUAGE} placeholder='中文' value={language} onChange={setLanguage} disabled={isReadonly} />
-
-            {/* 推导字段（只读展示） */}
-            <FormInput label={STRINGS.FORM_FIRST_NAME} placeholder={realName ? realName.charAt(0) : '-'} value={realName ? realName.charAt(0) : '-'} onChange={() => {}} disabled />
-            <FormInput label={STRINGS.FORM_LAST_NAME} placeholder={realName ? realName.slice(1) || '-' : '-'} value={realName ? realName.slice(1) || '-' : '-'} onChange={() => {}} disabled />
-            <FormInput label={STRINGS.FORM_PINYIN} placeholder={realName ? autoPinyin(realName) : '-'} value={realName ? autoPinyin(realName) : '-'} onChange={() => {}} disabled />
-            <FormInput label={STRINGS.FORM_AGE} placeholder='从身份证自动计算' value={(() => { if (idCard.length < 18) return '-'; const n = new Date(); let a = n.getFullYear() - parseInt(idCard.slice(6, 10)); if (n.getMonth() + 1 < parseInt(idCard.slice(10, 12)) || (n.getMonth() + 1 === parseInt(idCard.slice(10, 12)) && n.getDate() < parseInt(idCard.slice(12, 14)))) a--; return '' + a; })()} onChange={() => {}} disabled />
           </View>
 
           <View className={styles.btnWrap}>
