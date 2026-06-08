@@ -22,7 +22,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/registration',
-      pages: ['index', 'form', 'form-sangfor', 'form-nisp', 'form-renshe', 'xuexin-guide', 'confirm'],
+      pages: ['index', 'form', 'xuexin-guide', 'confirm'],
     },
     {
       root: 'pages/payment',

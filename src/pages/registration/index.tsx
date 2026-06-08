@@ -23,9 +23,9 @@ const VENDOR_ALL = STRINGS.REGISTRATION_TAG_ALL
 
 const VENDOR_ROUTE_MAP: Record<string, string> = {
   'H3C': 'form',
-  '深信服': 'form-sangfor',
-  'NISP': 'form-nisp',
-  '人社': 'form-renshe',
+  '深信服': 'form',
+  'NISP': 'form',
+  '人社': 'form',
 }
 
 export default function RegistrationIndexPage() {
