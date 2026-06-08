@@ -50,7 +50,7 @@ export {
   addFavorite, removeFavorite, submitCheckin,
   validateCoupon,
   getUserProfile, updateUserProfile, sendChatMessage,
-  createAgreement, signAgreement, getCoupons, getTickets,
+  signAgreement, getCoupons, getTickets,
   uploadFile,
   getSangforCoupons, getSangforVerifyCode,
   getNispPinyin, getNispTemplate,

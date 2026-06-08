@@ -5,7 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getAgreements, createAgreement, signAgreement } from '@/services/dataService'
+import { getAgreements, signAgreement } from '@/services/dataService'
 import type { Agreement } from '@/types'
 import styles from './agreements.module.scss'
 
@@ -36,16 +36,6 @@ export default function AgreementsPage() {
   useEffect(() => {
     loadAgreements()
   }, [loadAgreements])
-
-  const handleCreateAgreement = async () => {
-    try {
-      const { id } = await createAgreement({ type: 'training' })
-      Taro.showToast({ title: `${STRINGS.MINE_AGREEMENTS_CREATE} #${id}`, icon: 'success' })
-      await loadAgreements()
-    } catch {
-      Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_CREATE_FAIL, icon: 'none' })
-    }
-  }
 
   const handleSignCanvas = (agreementId: string) => {
     // Canvas signature would use Taro.createCanvasContext in production
@@ -82,13 +72,6 @@ export default function AgreementsPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_AGREEMENTS_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          {!loading && (
-            <View className={styles.card}>
-              <Button size='sm' onClick={handleCreateAgreement}>
-                {STRINGS.MINE_AGREEMENTS_CREATE}
-              </Button>
-            </View>
-          )}
           {items.map(item => {
             const statusInfo = STATUS_MAP[item.status]
             return (

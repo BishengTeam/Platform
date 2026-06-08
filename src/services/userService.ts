@@ -281,7 +281,7 @@ export async function getUserProfile() {
   return res.data
 }
 
-/** PUT /api/user/profile — 更新用户资料 */
+/** PUT /api/user/profile — 更新用户资料（仅接受后端 UserProfileUpdate schema 中的字段） */
 export async function updateUserProfile(data: {
   phone?: string
   email?: string
@@ -290,7 +290,6 @@ export async function updateUserProfile(data: {
   school?: string
   major?: string
   organization?: string
-  id_card?: string
 }) {
   if (USE_MOCK) return
   const res = await put<any>('/api/user/profile', data as unknown as Record<string, unknown>)
@@ -330,7 +329,15 @@ export async function getCoupons(): Promise<Array<{ id: string; name: string; di
   if (USE_MOCK) return []
   const res = await get<any>('/api/coupons')
   const data = res.data as any
-  return data?.items || data || []
+  const items: any[] = data?.items || data || []
+  return items.map((c: any) => ({
+    id: String(c.id),
+    name: c.type || c.code || '',
+    discount: c.value || 0,
+    valid_until: c.valid_to || '',
+    amount: c.value || 0,
+    expire_at: c.valid_to || '',
+  }))
 }
 
 export async function getTickets(): Promise<Array<{ id: string; title: string; status: string; created_at: string }>> {

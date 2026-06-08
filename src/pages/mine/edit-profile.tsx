@@ -20,7 +20,7 @@ const STATUS_LABELS: Record<string, string> = {
 export default function EditProfilePage() {
   const [nickname, setNickname] = useState('')
   const [realName, setRealName] = useState('')
-  const [idCard, setIdCard] = useState('')
+  const [idCard, setIdCard] = useState('')   // 只读展示，修改需走实名认证接口
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [gender, setGender] = useState('')
@@ -31,7 +31,6 @@ export default function EditProfilePage() {
   const [organization, setOrganization] = useState('')
   const [editCount, setEditCount] = useState(2)
   const [isReadonly, setIsReadonly] = useState(false)
-  const [idCardEdited, setIdCardEdited] = useState(false)
   const [identityStatus, setIdentityStatus] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -67,21 +66,17 @@ export default function EditProfilePage() {
       return
     }
     try {
+      // id_card 不在后端 UserProfileUpdate 中，仅通过实名认证接口提交
       await updateUserProfile({
         phone,
         email,
         gender,
         education,
         ...(isStudent ? { school, major } : { organization }),
-        ...(idCard && !idCardEdited ? { id_card: idCard } : {}),
       })
     } catch {
       Taro.showToast({ title: '保存失败，请重试', icon: 'none' })
       return
-    }
-    if (idCard && !idCardEdited) {
-      setIdCardEdited(true)
-      setIdentityStatus('verified')
     }
     setEditCount(prev => {
       const next = prev + 1
@@ -112,7 +107,7 @@ export default function EditProfilePage() {
           <View className={styles.section}>
             <FormInput label={STRINGS.FORM_NICKNAME} placeholder='' value={nickname} onChange={setNickname} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_REAL_NAME} placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={realName} onChange={setRealName} disabled={isReadonly} />
-            <FormInput label={STRINGS.FORM_ID_CARD} placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value={idCard} type='idcard' disabled={idCardEdited || isReadonly} />
+            <FormInput label={STRINGS.FORM_ID_CARD} placeholder='修改需通过实名认证' value={idCard} type='idcard' disabled />
             <FormInput label={STRINGS.FORM_PHONE} placeholder={STRINGS.FORM_PHONE_PLACEHOLDER} value={phone} onChange={setPhone} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_GENDER} placeholder='请输入性别' value={gender} onChange={setGender} disabled={isReadonly} />

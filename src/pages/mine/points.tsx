@@ -29,7 +29,7 @@ export default function PointsPage() {
             <Text className={styles.balanceValue}>{balance}</Text>
             <Text className={styles.balanceTip}>{STRINGS.MINE_POINTS_REDEEM_TIP}</Text>
             <Button size='sm' variant='secondary' onClick={() => {
-            redeemPoints({ item_id: 'exam_fee', points: 50 }).then(() => {
+            redeemPoints({ redeem_type: 'exam_discount', amount: 50 }).then(() => {
               getPointsBalance().then(setBalance).catch(() => {})
               getPointRecords().then(setRecords).catch(() => {})
               Taro.showToast({ title: STRINGS.MINE_POINTS_REDEEM + '成功', icon: 'success' })
