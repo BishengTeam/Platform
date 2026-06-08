@@ -15,21 +15,18 @@ interface Props {
 
 /**
  * 价格明细 + 提交按钮区域
- * price 为 0 时不展示价格区域
  */
 export function PriceSummary({ price, submitText, submitting, onSubmit }: Props) {
   return (
     <>
-      {price > 0 && (
-        <View className={styles.section}>
-          <Text className={styles.sectionTitle}>{STRINGS.FORM_PRICE_DETAIL}</Text>
-          <View className={styles.priceCard}>
-            <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={price} />
-            <View className={styles.divider} />
-            <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={price} isTotal />
-          </View>
+      <View className={styles.section}>
+        <Text className={styles.sectionTitle}>{STRINGS.FORM_PRICE_DETAIL}</Text>
+        <View className={styles.priceCard}>
+          <PriceRow label={STRINGS.FORM_PRICE_EXAM_FEE} value={price} />
+          <View className={styles.divider} />
+          <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={price} isTotal />
         </View>
-      )}
+      </View>
       <View className={styles.btnWrap}>
         <Button variant='gradient' size='lg' onClick={onSubmit}>
           {submitting ? STRINGS.IDENTITY_CHECK_SUBMITTING : (submitText || STRINGS.FORM_SUBMIT)}
