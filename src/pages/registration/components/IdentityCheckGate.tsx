@@ -1,170 +1,138 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { Button } from '@/components/Button'
-import { FormInput } from '@/components/FormInput'
 import { useIdentityCheck } from '@/hooks/useIdentityCheck'
 import { getUserProfile } from '@/services/dataService'
 import { STRINGS } from '@/constants/strings'
-import { ROUTES } from '@/constants/routes'
 import styles from '../form.module.scss'
-
-type GatePhase =
-  | 'loading_profile' | 'profile_incomplete' | 'checking_identity'
-  | 'verifying' | 'verified' | 'pending' | 'failed' | 'manual'
 
 interface Props { children: ReactNode }
 
-/** 仅使用 id_card_raw，绝不 fallback 到脱敏值 */
 function pickIdCard(p: any): string {
   return p?.id_card_raw || ''
 }
 
+/**
+ * 实名认证检查网关（v4 — 阻断时弹出提示并跳回）
+ *
+ *   verified     → 渲染 children
+ *   pending      → modal 提示 → 跳回首页
+ *   rejected     → modal 提示 → 跳回首页
+ *   无资料       → modal 提示 → 跳回首页
+ *   unverified   → 尝试自动提交，失败则提示跳回
+ */
 export function IdentityCheckGate({ children }: Props) {
   const identity = useIdentityCheck()
-  const [phase, setPhase] = useState<GatePhase>('loading_profile')
-  const [manualName, setManualName] = useState('')
-  const [manualIdCard, setManualIdCard] = useState('')
+  const [handled, setHandled] = useState(false)
 
-  // 1. 加载用户资料
   useEffect(() => {
+    if (handled) return
+
     getUserProfile()
       .then((profile: any) => {
-        if (!profile?.real_name) { setPhase('profile_incomplete'); return }
-        setPhase('checking_identity')
-      })
-      .catch(() => setPhase('profile_incomplete'))
-  }, [])
-
-  // 2. 身份认证状态变化时处理
-  useEffect(() => {
-    if (phase !== 'checking_identity') return
-    if (identity.phase === 'verified') {
-      setPhase('verified')
-    } else if (identity.phase === 'pending') {
-      setPhase('pending')
-    } else if (identity.phase === 'rejected') {
-      setPhase('failed') // rejected → 展示失败UI，可重新提交
-    } else if (identity.phase === 'unverified') {
-      // 自动提交：需要 id_card_raw
-      getUserProfile().then((profile: any) => {
-        const rawIdCard = pickIdCard(profile)
-        if (!rawIdCard) {
-          setPhase('manual') // 无明文身份证，回退到手填
+        // 资料不完整
+        if (!profile?.real_name) {
+          Taro.showModal({
+            title: '提示',
+            content: STRINGS.IDENTITY_PROFILE_INCOMPLETE,
+            showCancel: false,
+            success: () => Taro.switchTab({ url: '/pages/index/index' }),
+          })
+          setHandled(true)
           return
         }
-        setPhase('verifying')
-        const userType = (profile?.user_type === 'enterprise' ? 'enterprise' : 'student') as 'student' | 'enterprise'
-        identity.submit(userType, profile?.real_name || '', rawIdCard).then((ok) => {
-          setPhase(ok ? 'verified' : 'failed')
+
+        // 已认证 → 什么都不做，children 自然渲染
+        if (identity.phase === 'verified') {
+          setHandled(true)
+          return
+        }
+
+        // 审核中
+        if (identity.phase === 'pending') {
+          Taro.showModal({
+            title: STRINGS.IDENTITY_PENDING_TITLE,
+            content: STRINGS.IDENTITY_PENDING_DESC,
+            showCancel: false,
+            success: () => Taro.switchTab({ url: '/pages/index/index' }),
+          })
+          setHandled(true)
+          return
+        }
+
+        // 已拒绝
+        if (identity.phase === 'rejected') {
+          const reason = identity.rejectReason
+            ? `${STRINGS.IDENTITY_REJECTED_DESC}：${identity.rejectReason}`
+            : STRINGS.IDENTITY_REJECTED_DESC
+          Taro.showModal({
+            title: STRINGS.IDENTITY_REJECTED_TITLE,
+            content: reason,
+            showCancel: false,
+            success: () => Taro.switchTab({ url: '/pages/index/index' }),
+          })
+          setHandled(true)
+          return
+        }
+
+        // unverified → 尝试自动提交
+        if (identity.phase === 'unverified') {
+          const rawIdCard = pickIdCard(profile)
+          if (!rawIdCard) {
+            Taro.showModal({
+              title: '提示',
+              content: '实名认证需要您的身份证信息，请先在个人资料中完善',
+              showCancel: false,
+              success: () => Taro.switchTab({ url: '/pages/index/index' }),
+            })
+            setHandled(true)
+            return
+          }
+          const userType = (profile?.user_type === 'enterprise' ? 'enterprise' : 'student') as 'student' | 'enterprise'
+          identity.submit(userType, profile?.real_name || '', rawIdCard).then((ok) => {
+            if (!ok) {
+              Taro.showModal({
+                title: STRINGS.IDENTITY_REJECTED_TITLE,
+                content: STRINGS.IDENTITY_CHECK_FAILED,
+                showCancel: false,
+                success: () => Taro.switchTab({ url: '/pages/index/index' }),
+              })
+            }
+            // 成功 → phase 变为 verified，children 自然渲染
+            setHandled(ok)
+          })
+          return
+        }
+      })
+      .catch(() => {
+        Taro.showModal({
+          title: '提示',
+          content: '加载用户信息失败，请稍后重试',
+          showCancel: false,
+          success: () => Taro.switchTab({ url: '/pages/index/index' }),
         })
-      }).catch(() => setPhase('manual'))
-    }
-  }, [identity.phase, phase])
+        setHandled(true)
+      })
+  }, [identity.phase, handled])
 
-  // 失败后重试
-  const handleRetry = useCallback(async () => {
-    setPhase('verifying')
-    try { identity.submit('student', manualName.trim(), manualIdCard.trim()).then(ok => setPhase(ok ? 'verified' : 'failed')) }
-    catch { setPhase('failed') }
-  }, [identity, manualName, manualIdCard])
-
-  // 手动提交
-  const handleManualSubmit = useCallback(async () => {
-    if (!manualName.trim() || !manualIdCard.trim()) {
-      Taro.showToast({ title: '请填写完整信息', icon: 'none' })
-      return
-    }
-    setPhase('verifying')
-    try { identity.submit('student', manualName.trim(), manualIdCard.trim()).then(ok => setPhase(ok ? 'verified' : 'failed')) }
-    catch { setPhase('failed') }
-  }, [identity, manualName, manualIdCard])
-
-  // ---- 加载中 ----
-  if (phase === 'loading_profile' || phase === 'checking_identity') {
-    return <GateWrapper><View className={styles.loadingWrap}><Text className={styles.loadingText}>加载中...</Text></View></GateWrapper>
-  }
-
-  // ---- 资料不完整 ----
-  if (phase === 'profile_incomplete') {
+  // 非 verified 且未处理完 → 加载中
+  if (identity.phase !== 'verified' || !handled) {
     return (
-      <GateWrapper>
-        <View className={styles.section}><Text className={styles.sectionTitle}>{STRINGS.IDENTITY_PROFILE_INCOMPLETE}</Text></View>
-        <View className={styles.btnWrap}><Button variant='gradient' size='lg' onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_PROFILE}` })}>{STRINGS.IDENTITY_GOTO_PROFILE}</Button></View>
-      </GateWrapper>
+      <AuthGuard>
+        <View className={styles.page}>
+          <PageHeader title={STRINGS.IDENTITY_CHECK_TITLE} shouldShowBack />
+          <View className={styles.body}>
+            <View className={styles.loadingWrap}>
+              <Text className={styles.loadingText}>加载中...</Text>
+            </View>
+          </View>
+        </View>
+      </AuthGuard>
     )
-  }
-
-  // ---- 审核中（阻断） ----
-  if (phase === 'pending') {
-    return (
-      <GateWrapper>
-        <View className={styles.section}>
-          <Text className={styles.sectionTitle}>{STRINGS.IDENTITY_PENDING_TITLE}</Text>
-          <Text className={styles.sectionDesc}>{STRINGS.IDENTITY_PENDING_DESC}</Text>
-        </View>
-        <View className={styles.btnWrap}>
-          <Button variant='gradient' size='lg' onClick={() => Taro.navigateBack()}>返回</Button>
-        </View>
-      </GateWrapper>
-    )
-  }
-
-  // ---- 拒绝 / 失败（阻断 + 可重新提交） ----
-  if (phase === 'failed') {
-    return (
-      <GateWrapper>
-        <View className={styles.section}>
-          <Text className={styles.sectionTitle}>{STRINGS.IDENTITY_REJECTED_TITLE}</Text>
-          <Text className={styles.sectionDesc}>
-            {identity.rejectReason
-              ? `${STRINGS.IDENTITY_REJECTED_DESC}：${identity.rejectReason}`
-              : STRINGS.IDENTITY_REJECTED_DESC}
-          </Text>
-        </View>
-        <View className={styles.section}>
-          <FormInput label={STRINGS.FORM_REAL_NAME} required placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={manualName} onChange={setManualName} />
-          <FormInput label={STRINGS.FORM_ID_CARD} required placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value={manualIdCard} type='idcard' maxlength={18} onChange={setManualIdCard} />
-        </View>
-        <View className={styles.btnWrap}>
-          <Button variant='gradient' size='lg' onClick={handleRetry}>{STRINGS.IDENTITY_RETRY_SUBMIT}</Button>
-        </View>
-      </GateWrapper>
-    )
-  }
-
-  // ---- 手动填写表单（无明文身份证时） ----
-  if (phase === 'manual') {
-    return (
-      <GateWrapper>
-        <View className={styles.section}>
-          <FormInput label={STRINGS.FORM_REAL_NAME} required placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={manualName} onChange={setManualName} />
-          <FormInput label={STRINGS.FORM_ID_CARD} required placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value={manualIdCard} type='idcard' maxlength={18} onChange={setManualIdCard} />
-        </View>
-        <View className={styles.btnWrap}><Button variant='gradient' size='lg' onClick={handleManualSubmit}>{STRINGS.IDENTITY_CHECK_SUBMIT}</Button></View>
-      </GateWrapper>
-    )
-  }
-
-  // ---- 提交认证中 ----
-  if (phase === 'verifying') {
-    return <GateWrapper><View className={styles.loadingWrap}><Text className={styles.loadingText}>{STRINGS.IDENTITY_VERIFYING}</Text></View></GateWrapper>
   }
 
   return <>{children}</>
-}
-
-/** 通用外壳 */
-function GateWrapper({ children }: { children: ReactNode }) {
-  return (
-    <AuthGuard>
-      <View className={styles.page}>
-        <PageHeader title={STRINGS.IDENTITY_CHECK_TITLE} shouldShowBack />
-        <View className={styles.body}>{children}</View>
-      </View>
-    </AuthGuard>
-  )
 }
