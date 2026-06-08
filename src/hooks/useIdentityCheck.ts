@@ -6,14 +6,14 @@ type IdentityPhase = 'checking' | 'verified' | 'unverified' | 'submitting'
 interface IdentityState {
   phase: IdentityPhase
   realName?: string
-  idCard?: string
+  idCardNumber?: string
 }
 
 /**
  * 实名认证检查 hook
  *
  * - 进入页面时自动查询认证状态
- * - 未认证时提供 submit(name, idCard) 方法触发认证
+ * - 未认证时提供 submit(userType, realName, idCardNumber) 方法触发认证
  * - phase === 'checking' 时尚未确定认证状态
  */
 export function useIdentityCheck() {
@@ -23,7 +23,7 @@ export function useIdentityCheck() {
     getIdentityStatus()
       .then((res) => {
         if (res.status === 'verified') {
-          setState({ phase: 'verified', realName: res.real_name, idCard: res.id_card })
+          setState({ phase: 'verified', realName: res.real_name, idCardNumber: res.id_card_number })
         } else {
           setState({ phase: 'unverified' })
         }
@@ -34,11 +34,16 @@ export function useIdentityCheck() {
       })
   }, [])
 
-  const submit = useCallback(async (realName: string, idCard: string) => {
+  /** 提交实名认证，需传入身份类型、姓名、身份证号 */
+  const submit = useCallback(async (userType: 'student' | 'enterprise', realName: string, idCardNumber: string) => {
     setState((s) => ({ ...s, phase: 'submitting' }))
     try {
-      await submitIdentity({ real_name: realName, id_card: idCard })
-      setState({ phase: 'verified', realName, idCard })
+      await submitIdentity({
+        user_type: userType,
+        real_name: realName,
+        id_card_number: idCardNumber,
+      })
+      setState({ phase: 'verified', realName, idCardNumber })
       return true
     } catch {
       setState((s) => ({ ...s, phase: 'unverified' }))
@@ -49,7 +54,7 @@ export function useIdentityCheck() {
   return {
     phase: state.phase,
     realName: state.realName,
-    idCard: state.idCard,
+    idCardNumber: state.idCardNumber,
     submit,
   }
 }
