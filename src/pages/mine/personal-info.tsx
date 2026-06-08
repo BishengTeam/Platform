@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -8,6 +8,7 @@ import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getUserProfile } from '@/services/dataService'
+import { autoPinyin } from '@/utils/pinyin'
 import styles from './personal-info.module.scss'
 
 interface InfoRow {
@@ -65,6 +66,26 @@ export default function PersonalInfoPage() {
 
   const isStudent = userType === 'student'
 
+  // 推导字段
+  const derived = useMemo(() => {
+    const raw = (profileRawIdCard: string) => {
+      if (!profileRawIdCard || profileRawIdCard.length < 18) return null
+      const by = parseInt(profileRawIdCard.slice(6, 10))
+      const bm = parseInt(profileRawIdCard.slice(10, 12))
+      const bd = parseInt(profileRawIdCard.slice(12, 14))
+      const n = new Date()
+      let age = n.getFullYear() - by
+      if (n.getMonth() + 1 < bm || (n.getMonth() + 1 === bm && n.getDate() < bd)) age--
+      return age > 0 && age < 150 ? `${age}` : null
+    }
+    const name = realName || ''
+    const firstName = name.charAt(0) || '-'
+    const lastName = name.slice(1) || '-'
+    const pinyin = name ? autoPinyin(name) : '-'
+    const ageStr = raw(idCard) || '-'
+    return { firstName, lastName, pinyin, ageStr }
+  }, [realName, idCard])
+
   const infoRows: InfoRow[] = [
     { label: STRINGS.FORM_NICKNAME, value: nickname, icon: 'user' },
     { label: STRINGS.FORM_REAL_NAME, value: realName, icon: 'shield' },
@@ -82,6 +103,13 @@ export default function PersonalInfoPage() {
       : [
           { label: STRINGS.FORM_ORGANIZATION, value: organization || '-', icon: 'briefcase' },
         ]),
+    // 推导字段（只读展示）
+    { label: STRINGS.FORM_FIRST_NAME, value: derived.firstName, icon: 'type' },
+    { label: STRINGS.FORM_LAST_NAME, value: derived.lastName, icon: 'type' },
+    { label: STRINGS.FORM_PINYIN, value: derived.pinyin, icon: 'type' },
+    { label: STRINGS.FORM_COUNTRY, value: '中国', icon: 'globe' },
+    { label: STRINGS.FORM_LANGUAGE, value: '中文', icon: 'message-circle' },
+    { label: STRINGS.FORM_AGE, value: derived.ageStr, icon: 'calendar' },
   ]
 
   if (loading) return null
