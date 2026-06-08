@@ -8,7 +8,7 @@ import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { useIdentityCheck } from '@/hooks/useIdentityCheck'
 import { STRINGS } from '@/constants/strings'
-import styles from './form.module.scss'
+import styles from '../form.module.scss'
 
 interface Props {
   children: ReactNode

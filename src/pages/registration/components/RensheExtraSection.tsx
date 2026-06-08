@@ -3,7 +3,7 @@ import { FormInput } from '@/components/FormInput'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import type { ValidationResult } from '@/utils/validator'
-import styles from './form.module.scss'
+import styles from '../form.module.scss'
 
 export interface RensheExtraSectionProps {
   branch: string; setBranch: (v: string) => void

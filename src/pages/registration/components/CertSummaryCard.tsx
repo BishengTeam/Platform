@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { View, Text } from '@tarojs/components'
 import type { CertificationDetail } from '@/types'
 import { STRINGS } from '@/constants/strings'
-import styles from './form.module.scss'
+import styles from '../form.module.scss'
 
 interface MetaItem {
   label: string

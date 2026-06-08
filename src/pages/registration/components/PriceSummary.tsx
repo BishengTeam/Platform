@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { PriceRow } from '@/components/PriceRow'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import styles from './form.module.scss'
+import styles from '../form.module.scss'
 
 interface Props {
   price: number

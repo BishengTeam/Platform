@@ -3,7 +3,7 @@ import { View, Text, Button as TaroButton } from '@tarojs/components'
 import { FormInput } from '@/components/FormInput'
 import { STRINGS } from '@/constants/strings'
 import type { ValidationResult } from '@/utils/validator'
-import styles from './form.module.scss'
+import styles from '../form.module.scss'
 
 interface Props {
   realName: string

@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { FormInput } from '@/components/FormInput'
 import { STRINGS } from '@/constants/strings'
 import type { ValidationResult } from '@/utils/validator'
-import styles from './form.module.scss'
+import styles from '../form.module.scss'
 
 export interface SangforExtraSectionProps {
   mailingAddress: string; setMailingAddress: (v: string) => void
