@@ -84,7 +84,7 @@ export default function SangforFormPage() {
       },
     })
 
-    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.order_id}` })
+    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.id}` })
   }
 
   if (!cert) {

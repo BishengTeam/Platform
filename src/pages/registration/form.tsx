@@ -85,7 +85,7 @@ export default function RegistrationFormPage() {
       attachments: [idPhotoPath].filter(Boolean),
     })
 
-    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.order_id}` })
+    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.id}` })
   }
 
   const handleChooseIdPhoto = () => {

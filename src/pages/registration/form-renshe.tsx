@@ -57,7 +57,7 @@ export default function RensheFormPage() {
       extra_data: { branch },
     })
 
-    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.order_id}` })
+    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.id}` })
   }
 
   if (!cert) {

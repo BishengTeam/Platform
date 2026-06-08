@@ -13,6 +13,8 @@ import {
   registeredExams,
 } from '@/constants/mock'
 
+import type { OrderBackendItem, Order } from '@/types/orders'
+
 import { get, post, put, del, getToken } from '@/utils/request'
 
 import { getCertificationList } from './zoneService'
@@ -64,13 +66,50 @@ export async function getRegistrationTagFilters() {
   return res.data
 }
 
+// ---- 订单数据映射 ----
+
+/** 后端状态 → 前端展示状态 */
+function mapBackendStatus(status: string): Order['status'] {
+  switch (status) {
+    case 'pending':
+      return 'pending'
+    case 'paid':
+    case 'completed':
+      return 'enrolled'
+    case 'refunded':
+    case 'closed':
+      return 'cancelled'
+    default:
+      return 'pending'
+  }
+}
+
+/** 后端订单对象 → 前端 Order 展示对象 */
+function toOrder(item: OrderBackendItem): Order {
+  const date = item.created_at
+    ? item.created_at.slice(0, 10)
+    : ''
+  const amount = item.price != null
+    ? `¥${(item.price / 100).toFixed(2)}`
+    : '免费'
+  return {
+    id: String(item.id),
+    title: item.candidate_name || item.cert_type,
+    description: `${item.cert_type}（${item.candidate_phone}）`,
+    status: mapBackendStatus(item.status),
+    date,
+    amount,
+  }
+}
+
 // ---- 用户 ----
 
 export async function getOrders() {
   if (USE_MOCK) return orders
   const res = await get<any>(`/api/orders`)
   const data = res.data as any
-  return data?.items || data || []
+  const items: OrderBackendItem[] = data?.items || data || []
+  return items.map(toOrder)
 }
 
 export async function getOrderDetail(id: number) {
@@ -132,303 +171,263 @@ export async function createOrder(data: {
   cert_type: string
   candidate_name: string
   candidate_phone: string
-  candidate_idcard: string
+  candidate_idcard?: string
   extra_data?: Record<string, unknown>
   attachments?: string[]
-}): Promise<{ order_id: string }> {
-  if (USE_MOCK) return { order_id: `ORD${Date.now()}` }
-  const res = await post<{ order_id: string }>('/api/orders', data as unknown as Record<string, unknown>)
+}): Promise<{ id: number; status: string; created_at: string }> {
+  if (USE_MOCK) return { id: Math.floor(Math.random() * 10000), status: 'pending', created_at: new Date().toISOString() }
+  const res = await post<{ id: number; status: string; created_at: string }>('/api/orders', data as unknown as Record<string, unknown>)
   return res.data
 }
 
-/** POST /api/payment/prepay — 获取微信支付参数 */
+/** POST /api/orders/{id}/pay — 预支付（获取微信支付参数） */
 export async function prepayOrder(orderId: number): Promise<{
-  timeStamp: string
-  nonceStr: string
-  package: string
-  signType: string
-  paySign: string
+  prepay_id: string
+  time_stamp: string
+  nonce_str: string
+  sign_type: string
+  pay_sign: string
 }> {
   if (USE_MOCK) {
-    return { timeStamp: '', nonceStr: '', package: '', signType: 'MD5', paySign: '' }
+    return {
+      prepay_id: 'prepay_mock_' + orderId,
+      time_stamp: String(Math.floor(Date.now() / 1000)),
+      nonce_str: Math.random().toString(36).slice(2),
+      sign_type: 'RSA',
+      pay_sign: 'mock_sign',
+    }
   }
-  const res = await post<Record<string, string>>('/api/payment/prepay', { order_id: orderId })
-  const raw = res.data as Record<string, string>
-  // 后端返回 snake_case（time_stamp / nonce_str / pay_sign），映射为前端 camelCase
-  return {
-    timeStamp: raw.time_stamp || raw.timeStamp || '',
-    nonceStr: raw.nonce_str || raw.nonceStr || '',
-    package: raw.package || '',
-    signType: raw.signType || 'MD5',
-    paySign: raw.pay_sign || raw.paySign || '',
-  }
-}
-
-// ================================================================
-// P1 — 题库提交 / 收藏 / 打卡
-// ================================================================
-
-/** POST /api/quiz/collections — 收藏题目 */
-export async function addFavorite(questionId: number): Promise<void> {
-  if (USE_MOCK) return
-  await post('/api/quiz/collections', { question_id: questionId })
-}
-
-/** DELETE /api/quiz/collections/{id} — 取消收藏 */
-export async function removeFavorite(questionId: number): Promise<void> {
-  if (USE_MOCK) return
-  await del(`/api/quiz/collections/${questionId}`)
-}
-
-/** POST /api/quiz/checkin — 打卡 */
-export async function submitCheckin(): Promise<void> {
-  if (USE_MOCK) return
-  await post('/api/quiz/checkin', { questions_completed: 1 })
-}
-
-// ================================================================
-// P1 — 深信服 / NISP 特殊
-// ================================================================
-
-/** POST /api/coupons/validate — 验证考试券 */
-export async function validateCoupon(code: string): Promise<{ valid: boolean; message?: string }> {
-  if (USE_MOCK) return { valid: true }
-  const res = await post<{ valid: boolean; message?: string }>('/api/coupons/validate', { coupon_code: code })
+  const res = await post<any>(`/api/orders/${orderId}/pay`)
   return res.data
 }
 
 // ================================================================
-// P2 — 用户资料 / AI / 协议 / 工单
+// 收藏
 // ================================================================
 
-/** GET /api/user/profile — 获取用户资料 */
-export async function getUserProfile(): Promise<{
-  phone: string
-  email: string
-  real_name: string
-  user_type: string
-  identity_status: string
-  id_card: string
-  education: string
-  gender: string
-  school: string
-  major: string
-  organization: string
-}> {
-  if (USE_MOCK) return {
-    phone: '138****8888', email: 'xiaowang@example.com', user_type: 'student', identity_status: 'verified',
-    real_name: '王小明', id_card: '330106****1234', education: '本科',
-    gender: 'male', school: '电子科技大学', major: '网络工程', organization: '',
+export async function addFavorite(courseId: number): Promise<void> {
+  if (USE_MOCK) return
+  await post(`/api/collections`, { resource_type: 'course', resource_id: courseId })
+}
+
+export async function removeFavorite(courseId: number): Promise<void> {
+  if (USE_MOCK) return
+  await del(`/api/collections`, { resource_type: 'course', resource_id: courseId })
+}
+
+// ================================================================
+// 打卡
+// ================================================================
+
+export async function submitCheckin(): Promise<{ streak: number }> {
+  if (USE_MOCK) return { streak: 3 }
+  const res = await post<{ streak: number }>('/api/checkin')
+  return res.data
+}
+
+// ================================================================
+// 优惠券
+// ================================================================
+
+export async function validateCoupon(code: string): Promise<{ valid: boolean; discount?: number }> {
+  if (USE_MOCK) return { valid: code === 'MOCK100', discount: 100 }
+  const res = await post<{ valid: boolean; discount?: number }>('/api/coupons/validate', { coupon_code: code })
+  return res.data
+}
+
+// ================================================================
+// 用户资料
+// ================================================================
+
+/** GET /api/user/profile — 用户资料 */
+export async function getUserProfile() {
+  if (USE_MOCK) {
+    return {
+      real_name: '张三',
+      user_type: 'social',
+      gender: 'male',
+      phone: '138****1234',
+      identity_status: 'verified',
+    }
   }
-  const res = await get<Record<string, string>>('/api/user/profile')
-  return res.data as unknown as {
-    phone: string; email: string; real_name: string; user_type: string; identity_status: string
-    id_card: string; education: string; gender: string; school: string; major: string; organization: string
-  }
+  const res = await get<any>('/api/user/profile')
+  return res.data
 }
 
 /** PUT /api/user/profile — 更新用户资料 */
-export async function updateUserProfile(data: Record<string, unknown>): Promise<void> {
+export async function updateUserProfile(data: { real_name?: string; gender?: string; avatar?: string }) {
   if (USE_MOCK) return
-  await put('/api/user/profile', data)
-}
-
-/** POST /api/chat — 发送 AI 对话消息（非流式 fallback） */
-export async function sendChatMessage(message: string): Promise<{ reply: string }> {
-  if (USE_MOCK) return { reply: '收到您的消息，AI 助手正在处理中...' }
-  const res = await post<{ reply: string }>('/api/chat', { message })
+  const res = await put<any>('/api/user/profile', data as unknown as Record<string, unknown>)
   return res.data
 }
 
-/** POST /agreements — 创建协议（暂不可用：后端 /api/agreements 端点不存在） */
-export async function createAgreement(data: { type: string; content?: string }): Promise<{ id: string }> {
-  if (USE_MOCK) return { id: `AGR${Date.now()}` }
-  // 降级：后端未提供端点，返回 mock ID
-  console.warn('[createAgreement] 后端 /api/agreements 端点不存在')
-  return { id: `AGR${Date.now()}` }
+// ================================================================
+// AI 聊天
+// ================================================================
+
+export async function sendChatMessage(content: string): Promise<{ reply: string }> {
+  if (USE_MOCK) return { reply: `您好，关于"${content}"的问题，我们已收到，请稍候...` }
+  const res = await post<{ reply: string }>('/api/chat', { content })
+  return res.data
 }
 
-/** PUT /agreements/{id}/sign — 签名提交（暂不可用：后端未提供端点） */
-export async function signAgreement(id: string, signatureImage: string): Promise<void> {
+// ================================================================
+// 协议
+// ================================================================
+
+export async function createAgreement(type: string): Promise<{ id: string; url: string }> {
+  if (USE_MOCK) return { id: 'mock_agreement', url: '' }
+  const res = await post<{ id: string; url: string }>('/api/agreements/sign', { agreement_type: type })
+  return res.data
+}
+
+export async function signAgreement(agreementId: string): Promise<void> {
   if (USE_MOCK) return
-  // 降级：后端未提供端点，跳过签名提交
-  console.warn('[signAgreement] 后端 /api/agreements 端点不存在')
+  await post(`/api/agreements/${agreementId}/sign`)
 }
 
-/** GET /api/coupons — 获取优惠券列表 */
-export async function getCoupons(): Promise<Array<{ id: string; name: string; amount: number; expire_at: string }>> {
+// ================================================================
+// 优惠券列表 / 工单
+// ================================================================
+
+export async function getCoupons(): Promise<Array<{ id: string; name: string; discount: number; valid_until: string }>> {
   if (USE_MOCK) return []
   const res = await get<any>('/api/coupons')
   const data = res.data as any
-  return (data?.items || data || []) as Array<{ id: string; name: string; amount: number; expire_at: string }>
+  return data?.items || data || []
 }
 
-/** GET /api/tickets — 获取工单列表 */
 export async function getTickets(): Promise<Array<{ id: string; title: string; status: string; created_at: string }>> {
-  if (USE_MOCK) return [
-    { id: 'T001', title: '考试报名咨询', status: '处理中', created_at: '2026-06-01' },
-  ]
+  if (USE_MOCK) return []
   const res = await get<any>('/api/tickets')
   const data = res.data as any
-  return (data?.items || data || []) as Array<{ id: string; title: string; status: string; created_at: string }>
+  return data?.items || data || []
 }
 
-/**
- * POST /api/upload — 文件上传
- * 调用方需先通过 Taro.chooseImage 获取 filePath，再调用此函数
- */
-export async function uploadFile(filePath: string, token?: string): Promise<{ url: string }> {
+// ================================================================
+// 文件上传
+// ================================================================
+
+export async function uploadFile(filePath: string): Promise<{ url: string }> {
   if (USE_MOCK) return { url: filePath }
   const Taro = require('@tarojs/taro').default
-  const authToken = token || getToken()
+  const token = getToken()
   const res = await Taro.uploadFile({
     url: '/api/upload',
     filePath,
     name: 'file',
-    header: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    header: { Authorization: token ? `Bearer ${token}` : '' },
   })
-  const data = JSON.parse(res.data) as { code: number; data: { url: string }; message: string }
+  const data = JSON.parse(res.data)
   if (data.code !== 0) throw new Error(data.message || '上传失败')
   return data.data
 }
 
 // ================================================================
-// 深信服 / NISP / 认证导出
+// 深信服 / NISP 报名
 // ================================================================
 
-/** GET /api/cert/sangfor/coupons — 深信服考试券列表 */
-export async function getSangforCoupons(): Promise<Array<Record<string, unknown>>> {
-  if (USE_MOCK) return []
-  const res = await get<Array<Record<string, unknown>>>('/api/cert/sangfor/coupons')
-  return res.data
+export async function getSangforCoupons(): Promise<Array<{ id: string; name: string; discount: number; valid_until: string }>> {
+  return getCoupons()
 }
 
-/** GET /api/cert/sangfor/verify-code — 深信服动态验证码下发 */
-export async function getSangforVerifyCode(): Promise<{ code: string }> {
-  if (USE_MOCK) return { code: '123456' }
-  const res = await get<{ code: string }>('/api/cert/sangfor/verify-code')
-  return res.data
+export async function getSangforVerifyCode(phone: string): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/sms/verify-code', { phone })
 }
 
-/** GET /api/cert/nisp/pinyin — NISP 拼音生成 */
-export async function getNispPinyin(text: string): Promise<{ pinyin: string }> {
+export async function getNispPinyin(name: string): Promise<{ pinyin: string }> {
   if (USE_MOCK) return { pinyin: 'zhangsan' }
-  const res = await get<{ pinyin: string }>('/api/cert/nisp/pinyin', { name: text } as unknown as Record<string, unknown>)
+  const res = await get<{ pinyin: string }>('/api/utils/pinyin', { text: name })
   return res.data
 }
 
-/** GET /api/cert/nisp/template — NISP 模板文件 */
-export async function getNispTemplate(): Promise<{ url: string }> {
-  if (USE_MOCK) return { url: '' }
-  const res = await get<{ url: string }>('/api/cert/nisp/template')
+export async function getNispTemplate(): Promise<Record<string, unknown>> {
+  if (USE_MOCK) return {}
+  const res = await get<Record<string, unknown>>('/api/system/template/nisp')
   return res.data
 }
 
 // ================================================================
-// 积分扩展 — 领取 / 兑换
+// 积分
 // ================================================================
 
-/** POST /api/points/claim — 领取积分 */
-export async function claimPoints(pointId?: string): Promise<void> {
+export async function claimPoints(amount: number): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/points/claim', pointId ? { point_id: pointId } : undefined)
+  await post('/api/points/claim', { amount })
 }
 
-/** POST /api/points/redeem — 积分兑换 */
-export async function redeemPoints(data: { item_id: string; points: number }): Promise<void> {
+export async function redeemPoints(amount: number): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/points/redeem', data as unknown as Record<string, unknown>)
+  await post('/api/points/redeem', { amount })
 }
 
-// ================================================================
-// 价格配置
-// ================================================================
-
-/** GET /api/prices — 价格配置列表 */
-export async function getPrices(): Promise<Array<Record<string, unknown>>> {
+export async function getPrices(): Promise<Array<{ cert_type: string; price: number }>> {
   if (USE_MOCK) return []
-  const res = await get<Array<Record<string, unknown>>>('/api/prices')
-  return res.data
+  const res = await get<any>('/api/price-config')
+  const data = res.data as any
+  return data?.items || data || []
 }
 
 // ================================================================
-// 通用收藏（区别于题库收藏 /api/quiz/collections）
+// 收藏扩展
 // ================================================================
 
-/** POST /api/collections — 通用添加收藏 */
-export async function addCollection(data: { target_type: string; target_id: number }): Promise<void> {
+export async function addCollection(type: string, id: number): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/collections', { target_type: data.target_type, target_id: data.target_id })
+  await post('/api/collections', { resource_type: type, resource_id: id })
 }
 
-/** DELETE /api/collections/{id} — 通用取消收藏 */
-export async function removeCollection(id: number): Promise<void> {
+export async function removeCollection(type: string, id: number): Promise<void> {
   if (USE_MOCK) return
-  await del(`/api/collections/${id}`)
+  await del('/api/collections', { resource_type: type, resource_id: id })
 }
 
 // ================================================================
-// 活动扩展
+// 活动 / 竞赛 / 就业 (专区详细列表)
 // ================================================================
 
-/** GET /api/activities — 活动列表（独立端点） */
-export async function getActivities(): Promise<Array<Record<string, unknown>>> {
+export async function getActivities(): Promise<any[]> {
   if (USE_MOCK) return []
-  const res = await get<Array<Record<string, unknown>>>('/api/activities')
-  return res.data
+  const res = await get<any>('/api/activities')
+  const data = res.data as any
+  return data?.items || data || []
 }
 
-/** POST /api/activities/register — 活动报名（主端点，含报名人信息） */
-export async function registerActivity(data: { activity_id: number; name: string; phone: string; remark?: string }): Promise<void> {
+export async function registerActivity(activityId: number): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/activities/register', data as unknown as Record<string, unknown>)
+  await post(`/api/activities/${activityId}/register`)
 }
 
-// ================================================================
-// 竞赛扩展
-// ================================================================
-
-/** GET /api/competition/stats — 按学校统计竞赛报名 */
-export async function getCompetitionStats(): Promise<Array<Record<string, unknown>>> {
-  if (USE_MOCK) return []
-  const res = await get<Array<Record<string, unknown>>>('/api/competition/stats')
+export async function getCompetitionStats(): Promise<any> {
+  if (USE_MOCK) return { total: 0 }
+  const res = await get<any>('/api/competition/stats')
   return res.data
 }
 
-/** GET /api/competition/tracks — 竞赛赛道列表 */
-export async function getCompetitionTracks(): Promise<Array<Record<string, unknown>>> {
+export async function getCompetitionTracks(): Promise<any[]> {
   if (USE_MOCK) return []
-  const res = await get<Array<Record<string, unknown>>>('/api/competition/tracks')
-  return res.data
+  const res = await get<any>('/api/competition/tracks')
+  const data = res.data as any
+  return data?.items || data || []
 }
 
-// ================================================================
-// 岗位列表
-// ================================================================
-
-/** GET /api/jobs — 岗位列表 */
-export async function getJobs(): Promise<Array<Record<string, unknown>>> {
+export async function getJobs(): Promise<any[]> {
   if (USE_MOCK) return []
   const res = await get<any>('/api/jobs')
   const data = res.data as any
-  return (data?.items || data || []) as Array<Record<string, unknown>>
+  return data?.items || data || []
 }
 
-// ================================================================
-// 工单扩展
-// ================================================================
-
-/** POST /api/tickets — 创建工单 */
-export async function createTicket(data: { title: string; description: string; type?: string }): Promise<{ id: string }> {
-  if (USE_MOCK) return { id: `TKT${Date.now()}` }
-  const res = await post<{ id: string }>('/api/tickets', { content: `${data.title}\n${data.description}` })
+export async function createTicket(data: { title: string; description: string }): Promise<{ id: string }> {
+  if (USE_MOCK) return { id: 'mock_ticket' }
+  const res = await post<{ id: string }>('/api/tickets', data as unknown as Record<string, unknown>)
   return res.data
 }
 
-/** GET /api/tickets/{id} — 工单详情 */
-export async function getTicketDetail(id: string): Promise<Record<string, unknown>> {
-  if (USE_MOCK) return { id, title: '考试报名咨询', status: '处理中', created_at: '2026-06-01' }
-  const res = await get<Record<string, unknown>>(`/api/tickets/${id}`)
+export async function getTicketDetail(ticketId: string): Promise<Record<string, unknown>> {
+  if (USE_MOCK) return {}
+  const res = await get<Record<string, unknown>>(`/api/tickets/${ticketId}`)
   return res.data
 }
 

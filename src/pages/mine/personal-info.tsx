@@ -21,12 +21,19 @@ function maskIdCard(id: string): string {
   return id.slice(0, 6) + '****' + id.slice(-4)
 }
 
+const IDENTITY_STATUS_LABELS: Record<string, string> = {
+  pending: '审核中',
+  verified: '已认证',
+  rejected: '未通过',
+}
+
 export default function PersonalInfoPage() {
   const [nickname, setNickname] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [realName, setRealName] = useState('')
   const [idCard, setIdCard] = useState('')
+  const [identityStatus, setIdentityStatus] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -37,6 +44,7 @@ export default function PersonalInfoPage() {
       setEmail(profile.email || '')
       setRealName(profile.real_name || '')
       setIdCard(maskIdCard(profile.id_card || ''))
+      setIdentityStatus(IDENTITY_STATUS_LABELS[profile.identity_status || ''] || '未认证')
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
     }).finally(() => {
@@ -48,6 +56,7 @@ export default function PersonalInfoPage() {
     { label: STRINGS.FORM_NICKNAME, value: nickname, icon: 'user' },
     { label: STRINGS.FORM_REAL_NAME, value: realName, icon: 'shield' },
     { label: STRINGS.FORM_ID_CARD, value: idCard, icon: 'clipboard' },
+    { label: '认证状态', value: identityStatus, icon: 'check-circle' },
     { label: STRINGS.FORM_PHONE, value: phone, icon: 'phone' },
     { label: STRINGS.FORM_EMAIL, value: email, icon: 'mail' },
   ]
