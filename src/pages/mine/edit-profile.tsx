@@ -5,22 +5,20 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { FormInput } from '@/components/FormInput'
 import { Button } from '@/components/Button'
+import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { getUserProfile, updateUserProfile } from '@/services/dataService'
 import styles from './edit-profile.module.scss'
 
 const MAX_EDITS = 3
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: '审核中',
-  verified: '已认证',
-  rejected: '未通过',
-}
+const idMap = STRINGS.IDENTITY_STATUS_MAP
+const genderMap = STRINGS.GENDER_MAP
 
 export default function EditProfilePage() {
   const [nickname, setNickname] = useState('')
   const [realName, setRealName] = useState('')
-  const [idCard, setIdCard] = useState('')   // 只读展示，修改需走实名认证接口
+  const [idCard, setIdCard] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [gender, setGender] = useState('')
@@ -50,13 +48,12 @@ export default function EditProfilePage() {
       setIdentityStatus(profile.identity_status || '')
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
-    }).finally(() => {
-      setLoading(false)
-    })
+    }).finally(() => setLoading(false))
   }, [])
 
   const isStudent = userType === 'student'
   const remaining = MAX_EDITS - editCount
+  const displayIdentityStatus = idMap[identityStatus] || identityStatus || '未认证'
 
   const handleSave = async () => {
     if (isReadonly) return
@@ -66,9 +63,7 @@ export default function EditProfilePage() {
       return
     }
     try {
-      // id_card 不在后端 UserProfileUpdate 中，仅通过实名认证接口提交
       await updateUserProfile({
-        phone,
         email,
         gender,
         education,
@@ -92,25 +87,25 @@ export default function EditProfilePage() {
         <PageHeader title={STRINGS.MINE_EDIT_PROFILE_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
           {!loading && (<>
-          <View className={styles.editCount}>
-            <Text className={styles.editCountText}>
-              {STRINGS.MINE_PROFILE_EDIT_COUNT}: {remaining}/{MAX_EDITS}
+
+          {/* 修改次数 Banner */}
+          <View className={styles.quotaBanner}>
+            <Icon name='info' size={20} color='#1677FF' />
+            <Text className={styles.quotaText}>
+              {STRINGS.MINE_PROFILE_QUOTA_BANNER.replace('{remaining}', String(remaining)).replace('{max}', String(MAX_EDITS))}
             </Text>
           </View>
 
-          <View className={styles.editCount}>
-            <Text className={styles.editCountText}>
-              认证状态: {STATUS_LABELS[identityStatus] || '未认证'}
-            </Text>
+          {/* 认证状态 */}
+          <View className={styles.identityStatusRow}>
+            <Text className={styles.identityStatusLabel}>认证状态</Text>
+            <Text className={styles.identityStatusValue}>{displayIdentityStatus}</Text>
           </View>
 
           <View className={styles.section}>
-            <FormInput label={STRINGS.FORM_NICKNAME} placeholder='' value={nickname} onChange={setNickname} disabled={isReadonly} />
+            <FormInput label='昵称' placeholder='' value={nickname} onChange={setNickname} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_REAL_NAME} placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={realName} onChange={setRealName} disabled={isReadonly} />
-            <FormInput label={STRINGS.FORM_ID_CARD} placeholder='修改需通过实名认证' value={idCard} type='idcard' disabled />
-            <FormInput label={STRINGS.FORM_PHONE} placeholder={STRINGS.FORM_PHONE_PLACEHOLDER} value={phone} onChange={setPhone} disabled={isReadonly} />
-            <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} disabled={isReadonly} />
-            <FormInput label={STRINGS.FORM_GENDER} placeholder='请输入性别' value={gender} onChange={setGender} disabled={isReadonly} />
+            <FormInput label='性别' placeholder='请输入性别' value={genderMap[gender] || gender} onChange={setGender} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} disabled={isReadonly} />
             {isStudent && (
               <>
@@ -121,6 +116,11 @@ export default function EditProfilePage() {
             {!isStudent && (
               <FormInput label={STRINGS.FORM_ORGANIZATION} placeholder={STRINGS.FORM_ORGANIZATION_PLACEHOLDER} value={organization} onChange={setOrganization} disabled={isReadonly} />
             )}
+
+            {/* 安全字段：只读展示 */}
+            <FormInput label={STRINGS.FORM_ID_CARD} placeholder='修改需通过实名认证' value={idCard} type='idcard' disabled />
+            <FormInput label={STRINGS.FORM_PHONE} placeholder='手机号通过微信授权获取' value={phone} disabled />
+            <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} disabled={isReadonly} />
           </View>
 
           <View className={styles.btnWrap}>

@@ -283,7 +283,6 @@ export async function getUserProfile() {
 
 /** PUT /api/user/profile — 更新用户资料（仅接受后端 UserProfileUpdate schema 中的字段） */
 export async function updateUserProfile(data: {
-  phone?: string
   email?: string
   gender?: string
   education?: string

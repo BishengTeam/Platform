@@ -535,6 +535,23 @@ export const STRINGS = {
   MINE_EDIT_PROFILE_TITLE: '编辑资料',
   MINE_PROFILE_EDIT_COUNT: '修改次数',
   MINE_PROFILE_SAVE: '保存',
+  MINE_PROFILE_QUOTA_BANNER: '本月还可修改 {remaining} 次（共 {max} 次）',
+
+  // ---- 状态映射 ----
+  IDENTITY_STATUS_MAP: {
+    pending: '审核中',
+    verified: '已认证',
+    rejected: '未通过',
+  } as Record<string, string>,
+  GENDER_MAP: {
+    male: '男',
+    female: '女',
+  } as Record<string, string>,
+  USER_TYPE_MAP: {
+    student: '学生',
+    enterprise: '企业',
+    social: '社会人士',
+  } as Record<string, string>,
   FORM_NICKNAME: '昵称',
   MINE_POINTS_TITLE: '积分优惠',
   MINE_POINTS_BALANCE: '我的积分',

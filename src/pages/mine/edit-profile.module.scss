@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg;
+  background: #f6f8fa;
 }
 
 .body {
@@ -14,19 +14,54 @@
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
-.editCount {
-  padding: $spacing-md $spacing-lg;
+// ---- 修改次数 Banner ----
+.quotaBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px $spacing-lg;
+  padding: 16px 20px;
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 12px;
 }
 
-.editCountText {
-  font-size: $font-sm;
+.quotaText {
+  font-size: 24px;
+  color: #0050b3;
+}
+
+// ---- 认证状态行 ----
+.identityStatusRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 $spacing-lg 8px;
+  padding: 12px 20px;
+  background: $color-white;
+  border-radius: 12px;
+}
+
+.identityStatusLabel {
+  font-size: 26px;
+  color: $color-text;
+}
+
+.identityStatusValue {
+  font-size: 26px;
   color: $color-text-tertiary;
 }
 
+// ---- 表单区 ----
 .section {
-  padding: 0 $spacing-lg;
+  margin: 0 $spacing-lg;
+  padding: 20px;
+  background: $color-white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+// ---- 按钮 ----
 .btnWrap {
   display: flex;
   justify-content: center;

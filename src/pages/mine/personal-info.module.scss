@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg;
+  background: #f6f8fa;
 }
 
 .body {
@@ -14,18 +14,69 @@
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
+// ---- 认证状态标签 ----
+.statusBar {
+  display: flex;
+  justify-content: center;
+  padding: 20px $spacing-lg 8px;
+}
+
+.statusBadge {
+  padding: 8px 24px;
+  border-radius: 20px;
+  border: 2px solid;
+
+  &.statusPending {
+    background: #fff7e6;
+    border-color: #ffd591;
+  }
+  &.statusVerified {
+    background: #f0fff4;
+    border-color: #b7eb8f;
+  }
+  &.statusRejected {
+    background: #fff1f0;
+    border-color: #ffa39e;
+  }
+}
+
+.statusText {
+  font-size: 24px;
+  font-weight: 600;
+
+  .statusPending & { color: #fa8c16; }
+  .statusVerified & { color: #52c41a; }
+  .statusRejected & { color: #ff4d4f; }
+}
+
+// ---- 卡片 ----
 .card {
-  margin: $spacing-md $spacing-lg;
+  margin: 12px $spacing-lg;
   background: $color-white;
   border-radius: 16px;
   overflow: hidden;
-  padding: $spacing-md 0;
+  padding: 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px $spacing-lg 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cardTitle {
+  font-size: 28px;
+  font-weight: 600;
+  color: $color-text;
+}
+
+// ---- 行 ----
 .infoRow {
   display: flex;
   align-items: center;
-  gap: $spacing-md;
   padding: 18px $spacing-lg;
 }
 
@@ -36,12 +87,12 @@
 }
 
 .infoLabel {
-  font-size: $font-sm;
+  font-size: 22px;
   color: $color-text-tertiary;
 }
 
 .infoValue {
-  font-size: $font-lg;
+  font-size: 28px;
   color: $color-text;
 }
 
@@ -51,6 +102,7 @@
   margin: 0 $spacing-lg;
 }
 
+// ---- 按钮 ----
 .btnWrap {
   padding: $spacing-xl $spacing-lg;
 }

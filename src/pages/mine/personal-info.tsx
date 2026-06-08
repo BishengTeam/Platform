@@ -16,6 +16,16 @@ interface InfoRow {
   icon: string
 }
 
+const idMap = STRINGS.IDENTITY_STATUS_MAP
+const genderMap = STRINGS.GENDER_MAP
+
+/** 认证状态 → 标签样式类名 */
+function statusClass(s: string): string {
+  if (s === 'verified') return styles.statusVerified
+  if (s === 'rejected') return styles.statusRejected
+  return styles.statusPending
+}
+
 export default function PersonalInfoPage() {
   const [nickname, setNickname] = useState('')
   const [realName, setRealName] = useState('')
@@ -47,31 +57,55 @@ export default function PersonalInfoPage() {
       setOrganization(profile.organization || '')
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
-    }).finally(() => {
-      setLoading(false)
-    })
+    }).finally(() => setLoading(false))
   }, [])
 
   const isStudent = userType === 'student'
+  const displayGender = genderMap[gender] || gender || '-'
+  const displayStatus = idMap[identityStatus] || identityStatus || '未认证'
 
-  const infoRows: InfoRow[] = [
-    { label: STRINGS.FORM_NICKNAME, value: nickname, icon: 'user' },
-    { label: STRINGS.FORM_REAL_NAME, value: realName, icon: 'shield' },
-    { label: STRINGS.FORM_ID_CARD, value: idCard, icon: 'clipboard' },
-    { label: '认证状态', value: identityStatus, icon: 'check-circle' },
-    { label: STRINGS.FORM_PHONE, value: phone, icon: 'phone' },
-    { label: STRINGS.FORM_EMAIL, value: email, icon: 'mail' },
-    { label: STRINGS.FORM_GENDER, value: gender || '-', icon: 'user' },
-    { label: STRINGS.FORM_EDUCATION, value: education || '-', icon: 'book' },
-    ...(isStudent
-      ? [
-          { label: '学校', value: school || '-', icon: 'home' },
-          { label: STRINGS.FORM_MAJOR, value: major || '-', icon: 'bookmark' },
-        ]
-      : [
-          { label: STRINGS.FORM_ORGANIZATION, value: organization || '-', icon: 'briefcase' },
-        ]),
+  const identityRows: InfoRow[] = [
+    { label: '昵称', value: nickname, icon: 'user' },
+    { label: '真实姓名', value: realName, icon: 'shield' },
+    { label: '性别', value: displayGender, icon: 'user' },
   ]
+
+  const securityRows: InfoRow[] = [
+    { label: '身份证号', value: idCard, icon: 'clipboard' },
+    { label: '手机号', value: phone, icon: 'phone' },
+    { label: '邮箱', value: email || '-', icon: 'mail' },
+  ]
+
+  const affiliationRows: InfoRow[] = isStudent
+    ? [
+        { label: '学校', value: school || '-', icon: 'home' },
+        { label: '专业', value: major || '-', icon: 'bookmark' },
+        { label: '学历', value: education || '-', icon: 'book' },
+      ]
+    : [
+        { label: '单位', value: organization || '-', icon: 'briefcase' },
+        { label: '学历', value: education || '-', icon: 'book' },
+      ]
+
+  const renderCard = (title: string, rows: InfoRow[], icon: string) => (
+    <View className={styles.card}>
+      <View className={styles.cardHead}>
+        <Icon name={icon} size={22} color='#333' />
+        <Text className={styles.cardTitle}>{title}</Text>
+      </View>
+      {rows.map((row, i) => (
+        <View key={row.label}>
+          {i > 0 && <View className={styles.divider} />}
+          <View className={styles.infoRow}>
+            <View className={styles.infoText}>
+              <Text className={styles.infoLabel}>{row.label}</Text>
+              <Text className={styles.infoValue}>{row.value}</Text>
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  )
 
   if (loading) return null
 
@@ -80,20 +114,22 @@ export default function PersonalInfoPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_PROFILE_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          <View className={styles.card}>
-            {infoRows.map((row, index) => (
-              <View key={row.label}>
-                {index > 0 && <View className={styles.divider} />}
-                <View className={styles.infoRow}>
-                  <Icon name={row.icon} size={28} color='#666666' />
-                  <View className={styles.infoText}>
-                    <Text className={styles.infoLabel}>{row.label}</Text>
-                    <Text className={styles.infoValue}>{row.value}</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
+
+          {/* 认证状态标签 */}
+          <View className={styles.statusBar}>
+            <View className={`${styles.statusBadge} ${statusClass(identityStatus)}`}>
+              <Text className={styles.statusText}>{displayStatus}</Text>
+            </View>
           </View>
+
+          {/* 卡片 A：核心身份 */}
+          {renderCard('核心身份', identityRows, 'user')}
+
+          {/* 卡片 B：认证与安全 */}
+          {renderCard('认证与安全', securityRows, 'lock')}
+
+          {/* 卡片 C：组织背景 */}
+          {renderCard(isStudent ? '教育背景' : '组织背景', affiliationRows, isStudent ? 'book' : 'briefcase')}
 
           <View className={styles.btnWrap}>
             <Button variant='gradient' size='lg' onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` })}>
