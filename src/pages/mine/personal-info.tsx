@@ -29,28 +29,41 @@ const IDENTITY_STATUS_LABELS: Record<string, string> = {
 
 export default function PersonalInfoPage() {
   const [nickname, setNickname] = useState('')
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
   const [realName, setRealName] = useState('')
   const [idCard, setIdCard] = useState('')
   const [identityStatus, setIdentityStatus] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [gender, setGender] = useState('')
+  const [userType, setUserType] = useState('')
+  const [education, setEducation] = useState('')
+  const [school, setSchool] = useState('')
+  const [major, setMajor] = useState('')
+  const [organization, setOrganization] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      // nickname 已从后端 UserProfile 移除，使用 real_name 作为显示名
       setNickname(profile.real_name || '')
-      setPhone(profile.phone || '')
-      setEmail(profile.email || '')
       setRealName(profile.real_name || '')
       setIdCard(maskIdCard(profile.id_card || ''))
       setIdentityStatus(IDENTITY_STATUS_LABELS[profile.identity_status || ''] || '未认证')
+      setPhone(profile.phone || '')
+      setEmail(profile.email || '')
+      setGender(profile.gender || '')
+      setUserType(profile.user_type || '')
+      setEducation(profile.education || '')
+      setSchool(profile.school || '')
+      setMajor(profile.major || '')
+      setOrganization(profile.organization || '')
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
     }).finally(() => {
       setLoading(false)
     })
   }, [])
+
+  const isStudent = userType === 'student'
 
   const infoRows: InfoRow[] = [
     { label: STRINGS.FORM_NICKNAME, value: nickname, icon: 'user' },
@@ -59,6 +72,16 @@ export default function PersonalInfoPage() {
     { label: '认证状态', value: identityStatus, icon: 'check-circle' },
     { label: STRINGS.FORM_PHONE, value: phone, icon: 'phone' },
     { label: STRINGS.FORM_EMAIL, value: email, icon: 'mail' },
+    { label: STRINGS.FORM_GENDER, value: gender || '-', icon: 'user' },
+    { label: STRINGS.FORM_EDUCATION, value: education || '-', icon: 'book' },
+    ...(isStudent
+      ? [
+          { label: '学校', value: school || '-', icon: 'home' },
+          { label: STRINGS.FORM_MAJOR, value: major || '-', icon: 'bookmark' },
+        ]
+      : [
+          { label: STRINGS.FORM_ORGANIZATION, value: organization || '-', icon: 'briefcase' },
+        ]),
   ]
 
   if (loading) return null

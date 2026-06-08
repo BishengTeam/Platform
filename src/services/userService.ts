@@ -136,16 +136,37 @@ export async function getPointRecords() {
 
 export async function getAgreements() {
   if (USE_MOCK) return agreements
-  // 降级：后端未提供 /api/agreements 端点，非 mock 模式下返回空数组
-  console.warn('[getAgreements] 后端 /api/agreements 端点不存在，返回空数组')
-  return []
+  const res = await get<any>(`/api/agreements`)
+  const data = res.data as any
+  const items: any[] = data?.items || data || []
+  return items.map((item: any) => ({
+    id: String(item.id),
+    title: item.type || '',
+    status: item.status,
+    content: item.content || '',
+    createdAt: item.created_at || '',
+    signedAt: item.status !== 'pending_sign' ? item.updated_at || undefined : undefined,
+  }))
 }
 
 export async function getMyCollections() {
   if (USE_MOCK) return myCollections
   const res = await get<any>(`/api/collections`)
   const data = res.data as any
-  return data?.items || data || []
+  const items: any[] = data?.items || data || []
+  // 后端返回平级列表，按 target_type 拆分为 courses / materials
+  const courses = items.filter((i: any) => i.target_type === 'course').map((i: any) => ({
+    id: String(i.target_id),
+    title: '',
+    instructor: '',
+    price: 0,
+  }))
+  const materials = items.filter((i: any) => i.target_type === 'material').map((i: any) => ({
+    id: String(i.target_id),
+    title: '',
+    type: '',
+  }))
+  return { courses, materials }
 }
 
 export async function getRegisteredExams(): Promise<Array<{id: string; name: string; examCode: string; date: string; status: string; link: string}>> {
@@ -247,7 +268,13 @@ export async function getUserProfile() {
       user_type: 'social',
       gender: 'male',
       phone: '138****1234',
+      email: 'zhangsan@example.com',
+      id_card: '110101199001011234',
       identity_status: 'verified',
+      education: '本科',
+      school: '清华大学',
+      major: '计算机科学与技术',
+      organization: '新华三集团',
     }
   }
   const res = await get<any>('/api/user/profile')
@@ -255,7 +282,16 @@ export async function getUserProfile() {
 }
 
 /** PUT /api/user/profile — 更新用户资料 */
-export async function updateUserProfile(data: { real_name?: string; gender?: string; avatar?: string }) {
+export async function updateUserProfile(data: {
+  phone?: string
+  email?: string
+  gender?: string
+  education?: string
+  school?: string
+  major?: string
+  organization?: string
+  id_card?: string
+}) {
   if (USE_MOCK) return
   const res = await put<any>('/api/user/profile', data as unknown as Record<string, unknown>)
   return res.data
@@ -275,15 +311,15 @@ export async function sendChatMessage(content: string): Promise<{ reply: string 
 // 协议
 // ================================================================
 
-export async function createAgreement(type: string): Promise<{ id: string; url: string }> {
-  if (USE_MOCK) return { id: 'mock_agreement', url: '' }
-  const res = await post<{ id: string; url: string }>('/api/agreements/sign', { agreement_type: type })
-  return res.data
+export async function createAgreement(data: { type: string; content?: string }): Promise<{ id: string }> {
+  if (USE_MOCK) return { id: 'mock_agreement' }
+  const res = await post<{ id: number }>('/api/agreements', { type: data.type, content: data.content })
+  return { id: String(res.data.id) }
 }
 
-export async function signAgreement(agreementId: string): Promise<void> {
+export async function signAgreement(agreementId: string, signatureImage: string): Promise<void> {
   if (USE_MOCK) return
-  await post(`/api/agreements/${agreementId}/sign`)
+  await put(`/api/agreements/${agreementId}/sign`, { signature_image: signatureImage })
 }
 
 // ================================================================

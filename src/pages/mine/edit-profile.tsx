@@ -11,24 +11,44 @@ import styles from './edit-profile.module.scss'
 
 const MAX_EDITS = 3
 
+const STATUS_LABELS: Record<string, string> = {
+  pending: '审核中',
+  verified: '已认证',
+  rejected: '未通过',
+}
+
 export default function EditProfilePage() {
   const [nickname, setNickname] = useState('')
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
   const [realName, setRealName] = useState('')
   const [idCard, setIdCard] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [gender, setGender] = useState('')
+  const [userType, setUserType] = useState('')
+  const [education, setEducation] = useState('')
+  const [school, setSchool] = useState('')
+  const [major, setMajor] = useState('')
+  const [organization, setOrganization] = useState('')
   const [editCount, setEditCount] = useState(2)
   const [isReadonly, setIsReadonly] = useState(false)
+  const [idCardEdited, setIdCardEdited] = useState(false)
+  const [identityStatus, setIdentityStatus] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      // nickname 已从后端 UserProfile 移除，使用 real_name 作为显示名
       setNickname(profile.real_name || '')
-      setPhone(profile.phone || '')
-      setEmail(profile.email || '')
       setRealName(profile.real_name || '')
       setIdCard(profile.id_card || '')
+      setPhone(profile.phone || '')
+      setEmail(profile.email || '')
+      setGender(profile.gender || '')
+      setUserType(profile.user_type || '')
+      setEducation(profile.education || '')
+      setSchool(profile.school || '')
+      setMajor(profile.major || '')
+      setOrganization(profile.organization || '')
+      setIdentityStatus(profile.identity_status || '')
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
     }).finally(() => {
@@ -36,6 +56,7 @@ export default function EditProfilePage() {
     })
   }, [])
 
+  const isStudent = userType === 'student'
   const remaining = MAX_EDITS - editCount
 
   const handleSave = async () => {
@@ -46,11 +67,21 @@ export default function EditProfilePage() {
       return
     }
     try {
-      // nickname 字段后端已移除，仅发送 real_name
-      await updateUserProfile({ phone, email, real_name: realName, id_card: idCard })
+      await updateUserProfile({
+        phone,
+        email,
+        gender,
+        education,
+        ...(isStudent ? { school, major } : { organization }),
+        ...(idCard && !idCardEdited ? { id_card: idCard } : {}),
+      })
     } catch {
       Taro.showToast({ title: '保存失败，请重试', icon: 'none' })
       return
+    }
+    if (idCard && !idCardEdited) {
+      setIdCardEdited(true)
+      setIdentityStatus('verified')
     }
     setEditCount(prev => {
       const next = prev + 1
@@ -72,12 +103,29 @@ export default function EditProfilePage() {
             </Text>
           </View>
 
+          <View className={styles.editCount}>
+            <Text className={styles.editCountText}>
+              认证状态: {STATUS_LABELS[identityStatus] || '未认证'}
+            </Text>
+          </View>
+
           <View className={styles.section}>
             <FormInput label={STRINGS.FORM_NICKNAME} placeholder='' value={nickname} onChange={setNickname} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_REAL_NAME} placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={realName} onChange={setRealName} disabled={isReadonly} />
-            <FormInput label={STRINGS.FORM_ID_CARD} placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value={idCard} type='idcard' disabled />
+            <FormInput label={STRINGS.FORM_ID_CARD} placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value={idCard} type='idcard' disabled={idCardEdited || isReadonly} />
             <FormInput label={STRINGS.FORM_PHONE} placeholder={STRINGS.FORM_PHONE_PLACEHOLDER} value={phone} onChange={setPhone} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} disabled={isReadonly} />
+            <FormInput label={STRINGS.FORM_GENDER} placeholder='请输入性别' value={gender} onChange={setGender} disabled={isReadonly} />
+            <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} disabled={isReadonly} />
+            {isStudent && (
+              <>
+                <FormInput label='学校' placeholder='请输入学校名称' value={school} onChange={setSchool} disabled={isReadonly} />
+                <FormInput label={STRINGS.FORM_MAJOR} placeholder={STRINGS.FORM_MAJOR_PLACEHOLDER} value={major} onChange={setMajor} disabled={isReadonly} />
+              </>
+            )}
+            {!isStudent && (
+              <FormInput label={STRINGS.FORM_ORGANIZATION} placeholder={STRINGS.FORM_ORGANIZATION_PLACEHOLDER} value={organization} onChange={setOrganization} disabled={isReadonly} />
+            )}
           </View>
 
           <View className={styles.btnWrap}>
