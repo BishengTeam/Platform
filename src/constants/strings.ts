@@ -145,6 +145,9 @@ export const STRINGS = {
   IDENTITY_CHECK_SUBMIT: '提交认证',
   IDENTITY_CHECK_SUBMITTING: '提交中...',
   IDENTITY_CHECK_FAILED: '认证提交失败，请重试',
+  IDENTITY_PROFILE_INCOMPLETE: '请先完善个人信息（姓名、身份证号等），才能报名认证考试',
+  IDENTITY_GOTO_PROFILE: '去完善资料',
+  IDENTITY_VERIFYING: '正在提交实名认证...',
 
   // ---- Registration Form ----
   FORM_TITLE: '报名信息',
