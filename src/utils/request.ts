@@ -105,12 +105,14 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
     // 后端认证错误码: 40100-40199，HTTP 401
     if (result.code === 40100 || res.statusCode === 401) {
       console.warn('[Request] 401 detected — message:', result.message, 'code:', result.code)
-      console.warn('[Request] 401 full response:', JSON.stringify(res.data))
       removeToken()
-      Taro.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
-      // 跳转登录页
-      Taro.reLaunch({ url: '/pages/auth/index' })
-      // 中断调用链，避免后续代码拿到 null/error 数据而崩溃
+      const msg = result.message || '登录已过期，请重新登录'
+      Taro.showModal({
+        title: '提示',
+        content: msg,
+        showCancel: false,
+        success: () => Taro.reLaunch({ url: '/pages/auth/index' }),
+      })
       throw new Error('UNAUTHORIZED')
     }
     Taro.showToast({ title: result.message || '请求失败', icon: 'none' })

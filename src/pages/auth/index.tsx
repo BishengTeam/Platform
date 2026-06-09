@@ -36,9 +36,12 @@ export default function AuthPage() {
               console.log('[Auth] reLaunching to:', `/${ROUTES.INDEX}`)
               Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
             })
-            .catch(() => {
+            .catch((err: any) => {
               setIsLoggingIn(false)
-              Taro.showToast({ title: '登录失败，请重试', icon: 'none' })
+              // 40100 由 request.ts 已弹 modal，不重复提示
+              if (err?.message !== 'UNAUTHORIZED') {
+                Taro.showToast({ title: '登录失败，请重试', icon: 'none' })
+              }
             })
         } else {
           setIsLoggingIn(false)
