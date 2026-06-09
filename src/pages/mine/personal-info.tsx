@@ -46,10 +46,13 @@ export default function PersonalInfoPage() {
   const displayIdCard = realname.id_card_number || '-'
   const displayEducation = isStudent ? (student?.education || '-') : '-'
 
+  const displayAge = realname.age != null ? `${realname.age} 岁` : '-'
+
   const identityRows: InfoRow[] = [
     { label: '昵称', value: l1.nickname || '-', icon: 'user' },
     { label: '真实姓名', value: realname.real_name || '-', icon: 'shield' },
     { label: '性别', value: displayGender, icon: 'user' },
+    { label: '年龄', value: displayAge, icon: 'calendar' },
   ]
 
   const securityRows: InfoRow[] = [
