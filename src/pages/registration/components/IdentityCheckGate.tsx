@@ -64,6 +64,18 @@ export function IdentityCheckGate({ children }: Props) {
           return
         }
 
+        // 无认证记录
+        if (identity.phase === 'null') {
+          Taro.showModal({
+            title: '提示',
+            content: '请先完善个人资料（姓名、身份证号等），才能报名认证考试',
+            showCancel: false,
+            success: () => Taro.switchTab({ url: '/pages/profile/index' }),
+          })
+          setHandled(true)
+          return
+        }
+
         // 已拒绝
         if (identity.phase === 'rejected') {
           const reason = identity.rejectReason

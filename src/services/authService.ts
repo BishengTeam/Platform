@@ -19,7 +19,7 @@ export interface IdentityInfo {
   id_card_front_oss: string | null
   id_card_back_oss: string | null
   student_card_oss: string | null
-  status: 'pending' | 'verified' | 'rejected'
+  status: 'pending' | 'verified' | 'rejected' | null
   reject_reason: string | null
   verified_at: string | null
   created_at: string

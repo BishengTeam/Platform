@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getIdentityStatus, submitIdentity } from '@/services/authService'
 
-type IdentityPhase = 'checking' | 'verified' | 'pending' | 'rejected' | 'unverified' | 'submitting'
+type IdentityPhase = 'checking' | 'verified' | 'pending' | 'rejected' | 'null' | 'unverified' | 'submitting'
 
 interface IdentityState {
   phase: IdentityPhase
@@ -19,7 +19,8 @@ interface IdentityState {
  *     verified   — 已认证通过
  *     pending    — 审核中，阻断所有敏感操作
  *     rejected   — 已拒绝，阻断，展示原因后可重新提交
- *     unverified — 不存在认证记录，引导提交
+ *     null       — 无认证记录，引导完善个人资料
+ *     unverified — 异常状态，引导提交
  *     submitting — 提交中
  */
 export function useIdentityCheck() {
@@ -34,6 +35,8 @@ export function useIdentityCheck() {
           setState({ phase: 'pending' })
         } else if (res.status === 'rejected') {
           setState({ phase: 'rejected', rejectReason: res.reject_reason || undefined })
+        } else if (res.status === null) {
+          setState({ phase: 'null' })
         } else {
           setState({ phase: 'unverified' })
         }
