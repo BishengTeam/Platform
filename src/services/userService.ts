@@ -14,6 +14,7 @@ import {
 } from '@/constants/mock'
 
 import type { OrderBackendItem, Order } from '@/types/orders'
+import type { UserProfileDetail, UserProfileUpdatePayload } from '@/types/profile'
 
 import { get, post, put, del, getToken } from '@/utils/request'
 
@@ -261,7 +262,7 @@ export async function validateCoupon(code: string): Promise<{ valid: boolean; di
 // ================================================================
 
 /** GET /api/user/profile — 用户资料 */
-export async function getUserProfile() {
+export async function getUserProfile(): Promise<UserProfileDetail> {
   if (USE_MOCK) {
     return {
       real_name: '张三',
@@ -281,23 +282,16 @@ export async function getUserProfile() {
       first_name: 'San',
       last_name: 'Zhang',
       age: 35,
-    }
+    } as UserProfileDetail
   }
-  const res = await get<any>('/api/user/profile')
+  const res = await get<UserProfileDetail>('/api/user/profile')
   return res.data
 }
 
 /** PUT /api/user/profile — 更新用户资料（仅接受后端 UserProfileUpdate schema 中的字段） */
-export async function updateUserProfile(data: {
-  email?: string
-  gender?: string
-  education?: string
-  school?: string
-  major?: string
-  organization?: string
-}) {
+export async function updateUserProfile(data: UserProfileUpdatePayload): Promise<UserProfileDetail> {
   if (USE_MOCK) return
-  const res = await put<any>('/api/user/profile', data as unknown as Record<string, unknown>)
+  const res = await put<UserProfileDetail>('/api/user/profile', data as unknown as Record<string, unknown>)
   return res.data
 }
 

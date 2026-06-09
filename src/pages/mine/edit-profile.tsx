@@ -15,7 +15,6 @@ const MAX_EDITS = 3
 const idMap = STRINGS.IDENTITY_STATUS_MAP
 
 export default function EditProfilePage() {
-  const [nickname, setNickname] = useState('')
   const [realName, setRealName] = useState('')
   const [idCard, setIdCard] = useState('')
   const [phone, setPhone] = useState('')
@@ -33,10 +32,9 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      setNickname(profile.real_name || '')
       setRealName(profile.real_name || '')
-      setIdCard(profile.id_card || '')
-      setPhone(profile.phone || '')
+      setIdCard(profile.id_card_raw || profile.id_card || '')
+      setPhone(profile.phone_raw || profile.phone || '')
       setEmail(profile.email || '')
       setGender(profile.gender || '')
       setUserType(profile.user_type || '')
@@ -53,6 +51,7 @@ export default function EditProfilePage() {
   const isStudent = userType === 'student'
   const remaining = MAX_EDITS - editCount
   const displayIdentityStatus = idMap[identityStatus] || identityStatus || '未认证'
+  const isIdCardDisabled = identityStatus === 'verified' || identityStatus === 'pending'
 
   const handleSave = async () => {
     if (isReadonly) return
@@ -66,6 +65,7 @@ export default function EditProfilePage() {
         email,
         gender,
         education,
+        id_card: idCard,
         ...(isStudent ? { school, major } : { organization }),
       })
     } catch {
@@ -102,7 +102,6 @@ export default function EditProfilePage() {
           </View>
 
           <View className={styles.section}>
-            <FormInput label='昵称' placeholder='' value={nickname} onChange={setNickname} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_REAL_NAME} placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={realName} onChange={setRealName} disabled={isReadonly} />
             <FormInput label='性别' placeholder='请输入性别' value={gender} onChange={setGender} disabled={isReadonly} />
             <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} disabled={isReadonly} />
@@ -117,7 +116,7 @@ export default function EditProfilePage() {
             )}
 
             {/* 安全字段：只读展示 */}
-            <FormInput label={STRINGS.FORM_ID_CARD} placeholder='修改需通过实名认证' value={idCard} type='idcard' disabled />
+            <FormInput label={STRINGS.FORM_ID_CARD} placeholder={isIdCardDisabled ? '修改需通过实名认证' : '请输入身份证号'} value={idCard} type='idcard' disabled={isIdCardDisabled} />
             <FormInput label={STRINGS.FORM_PHONE} placeholder='手机号通过微信授权获取' value={phone} disabled />
             <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} disabled={isReadonly} />
           </View>
