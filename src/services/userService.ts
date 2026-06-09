@@ -202,7 +202,7 @@ export async function createOrder(data: {
   return res.data
 }
 
-/** POST /api/orders/{id}/pay — 预支付（获取微信支付参数） */
+/** POST /api/payment/prepay — 预支付（获取微信支付参数） */
 export async function prepayOrder(orderId: number): Promise<{
   prepay_id: string
   time_stamp: string
@@ -219,7 +219,7 @@ export async function prepayOrder(orderId: number): Promise<{
       pay_sign: 'mock_sign',
     }
   }
-  const res = await post<any>(`/api/orders/${orderId}/pay`)
+  const res = await post<any>('/api/payment/prepay', { order_id: orderId })
   return res.data
 }
 
@@ -229,12 +229,12 @@ export async function prepayOrder(orderId: number): Promise<{
 
 export async function addFavorite(courseId: number): Promise<void> {
   if (USE_MOCK) return
-  await post(`/api/collections`, { resource_type: 'course', resource_id: courseId })
+  await post(`/api/collections`, { target_type: 'course', target_id: courseId })
 }
 
 export async function removeFavorite(courseId: number): Promise<void> {
   if (USE_MOCK) return
-  await del(`/api/collections`, { resource_type: 'course', resource_id: courseId })
+  await del(`/api/collections`, { target_type: 'course', target_id: courseId })
 }
 
 // ================================================================
@@ -243,7 +243,7 @@ export async function removeFavorite(courseId: number): Promise<void> {
 
 export async function submitCheckin(): Promise<{ streak: number }> {
   if (USE_MOCK) return { streak: 3 }
-  const res = await post<{ streak: number }>('/api/checkin')
+  const res = await post<{ streak: number }>('/api/quiz/checkin')
   return res.data
 }
 
@@ -301,7 +301,7 @@ export async function updateUserProfile(data: UserProfileUpdatePayload): Promise
 
 export async function sendChatMessage(content: string): Promise<{ reply: string }> {
   if (USE_MOCK) return { reply: `您好，关于"${content}"的问题，我们已收到，请稍候...` }
-  const res = await post<{ reply: string }>('/api/chat', { content })
+  const res = await post<{ reply: string }>('/api/chat', { message: content })
   return res.data
 }
 
@@ -375,18 +375,18 @@ export async function getSangforCoupons(): Promise<Array<{ id: string; name: str
 
 export async function getSangforVerifyCode(phone: string): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/sms/verify-code', { phone })
+  await post('/api/cert/sangfor/verify-code', { phone })
 }
 
 export async function getNispPinyin(name: string): Promise<{ pinyin: string }> {
   if (USE_MOCK) return { pinyin: 'zhangsan' }
-  const res = await get<{ pinyin: string }>('/api/utils/pinyin', { text: name })
+  const res = await get<{ pinyin: string }>('/api/cert/nisp/pinyin', { text: name })
   return res.data
 }
 
 export async function getNispTemplate(): Promise<Record<string, unknown>> {
   if (USE_MOCK) return {}
-  const res = await get<Record<string, unknown>>('/api/system/template/nisp')
+  const res = await get<Record<string, unknown>>('/api/cert/nisp/template')
   return res.data
 }
 
@@ -406,7 +406,7 @@ export async function redeemPoints(amount: number): Promise<void> {
 
 export async function getPrices(): Promise<Array<{ cert_type: string; price: number }>> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/price-config')
+  const res = await get<any>('/api/prices')
   const data = res.data as any
   return data?.items || data || []
 }
@@ -417,12 +417,12 @@ export async function getPrices(): Promise<Array<{ cert_type: string; price: num
 
 export async function addCollection(type: string, id: number): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/collections', { resource_type: type, resource_id: id })
+  await post('/api/collections', { target_type: type, target_id: id })
 }
 
 export async function removeCollection(type: string, id: number): Promise<void> {
   if (USE_MOCK) return
-  await del('/api/collections', { resource_type: type, resource_id: id })
+  await del('/api/collections', { target_type: type, target_id: id })
 }
 
 // ================================================================
@@ -463,7 +463,7 @@ export async function getJobs(): Promise<any[]> {
 
 export async function createTicket(data: { title: string; description: string }): Promise<{ id: string }> {
   if (USE_MOCK) return { id: 'mock_ticket' }
-  const res = await post<{ id: string }>('/api/tickets', data as unknown as Record<string, unknown>)
+  const res = await post<{ id: string }>('/api/tickets', { content: data.title + '\n' + data.description } as unknown as Record<string, unknown>)
   return res.data
 }
 
@@ -480,8 +480,8 @@ export async function getTicketDetail(ticketId: string): Promise<Record<string, 
 /** POST /api/share — 生成分享链接 */
 export async function createShare(data: { target_type: string; target_id: number }): Promise<{ code: string; url: string }> {
   if (USE_MOCK) return { code: 'mock_share_code', url: '' }
-  const res = await post<{ code: string; url: string }>('/api/share', data as unknown as Record<string, unknown>)
-  return res.data
+  const res = await post<{ code: string; share_url: string }>('/api/share', data as unknown as Record<string, unknown>)
+  return { code: res.data.code, url: res.data.share_url }
 }
 
 /** GET /api/share/{code} — 分享追踪（通过分享码获取目标信息） */

@@ -15,6 +15,7 @@ export interface QuizQuestion {
   categoryId: string
   stem: string
   options: QuizOption[]
+  /** C 端答题列表不返回正确答案，仅答题提交后由 QuizSubmitResponse 返回 */
   correctAnswer: number | number[]
   type: 'single' | 'multiple'
   explanation: string

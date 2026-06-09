@@ -32,10 +32,10 @@ export async function getCourseById(id: number) {
   return res.data
 }
 
-/** GET /api/courses/me — 我的课程，适配后端 CourseEnrollmentResponse → MyCourse */
+/** GET /api/courses/my — 我的课程，适配后端 CourseEnrollmentResponse → MyCourse */
 export async function getMyCourses() {
   if (USE_MOCK) return myCourses
-  const res = await get<any>(`/api/courses/me`)
+  const res = await get<any>(`/api/courses/my`)
   const data = res.data as any
   const items = data?.items || data || []
   return items.map((item: any) => ({

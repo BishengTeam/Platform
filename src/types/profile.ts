@@ -59,5 +59,4 @@ export interface UserProfileUpdatePayload {
   school?: string
   major?: string
   organization?: string
-  id_card?: string
 }

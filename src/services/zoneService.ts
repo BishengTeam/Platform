@@ -96,32 +96,32 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
       zones: {
         cert: {
           items: [
-            { id: 1, zone_type: 'cert', title: 'H3CNE 认证', cover_url: null, description: '新华三网络工程师认证', link_url: null, gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'book-open', tag: '热门', tagColor: '#FF4D4F', sort_order: 0 },
-            { id: 2, zone_type: 'cert', title: '深信服认证', cover_url: null, description: '安全技术方向认证', link_url: null, gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '推荐', tagColor: '#52C41A', sort_order: 1 },
-            { id: 3, zone_type: 'cert', title: 'NISP 认证', cover_url: null, description: '国家信息安全水平考试', link_url: null, gradient: 'linear-gradient(135deg, #FA8C16, #FFC53D)', icon: 'award', tag: '国标', tagColor: '#FA8C16', sort_order: 2 },
+            { id: 1, zone_type: 'cert', title: 'H3CNE 认证', cover_url: null, description: '新华三网络工程师认证', link_url: null, sort_order: 0 },
+            { id: 2, zone_type: 'cert', title: '深信服认证', cover_url: null, description: '安全技术方向认证', link_url: null, sort_order: 1 },
+            { id: 3, zone_type: 'cert', title: 'NISP 认证', cover_url: null, description: '国家信息安全水平考试', link_url: null, sort_order: 2 },
           ],
         },
         study: {
           items: [
-            { id: 4, zone_type: 'study', title: '网络基础课程', cover_url: null, description: '零基础入门到精通', link_url: null, gradient: 'linear-gradient(135deg, #722ED1, #9254DE)', icon: 'book-open', tag: '入门', tagColor: '#722ED1', sort_order: 0 },
+            { id: 4, zone_type: 'study', title: '网络基础课程', cover_url: null, description: '零基础入门到精通', link_url: null, sort_order: 0 },
           ],
           courses: homeCourses as any,
         },
         competition: {
           items: [
-            { id: 5, zone_type: 'competition', title: '网络技术大赛', cover_url: null, description: '展示技术实力赢取奖金', link_url: null, gradient: 'linear-gradient(135deg, #FF4D4F, #FF7875)', icon: 'trophy', tag: '进行中', tagColor: '#FF4D4F', sort_order: 0 },
+            { id: 5, zone_type: 'competition', title: '网络技术大赛', cover_url: null, description: '展示技术实力赢取奖金', link_url: null, sort_order: 0 },
           ],
         },
         activity: {
           items: [
-            { id: 6, zone_type: 'activity', title: '线下实训营', cover_url: null, description: '7天集中培训', link_url: null, gradient: 'linear-gradient(135deg, #13C2C2, #36CFC9)', icon: 'users', tag: '线下', tagColor: '#13C2C2', sort_order: 0 },
+            { id: 6, zone_type: 'activity', title: '线下实训营', cover_url: null, description: '7天集中培训', link_url: null, sort_order: 0 },
           ],
           activities: homeActivities as any,
         },
         employment: {
           items: [
-            { id: 7, zone_type: 'employment', title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', link_url: null, gradient: 'linear-gradient(135deg, #1677FF, #4096FF)', icon: 'briefcase', tag: '急招', tagColor: '#1677FF', sort_order: 0 },
-            { id: 8, zone_type: 'employment', title: '安全运维工程师', cover_url: null, description: '深信服生态企业', link_url: null, gradient: 'linear-gradient(135deg, #52C41A, #73D13D)', icon: 'shield', tag: '高薪', tagColor: '#52C41A', sort_order: 1 },
+            { id: 7, zone_type: 'employment', title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', link_url: null, sort_order: 0 },
+            { id: 8, zone_type: 'employment', title: '安全运维工程师', cover_url: null, description: '深信服生态企业', link_url: null, sort_order: 1 },
           ],
         },
       },
@@ -166,13 +166,14 @@ export async function getCertificationList(): Promise<CertificationResponse[]> {
 /** POST /api/activities/{activity_id}/enroll — 活动报名 */
 export async function enrollActivity(
   activityId: number,
-  name?: string,
-  phone?: string,
+  name: string = '',
+  phone: string = '',
   remark?: string,
 ): Promise<void> {
   if (USE_MOCK) return
-  const body: Record<string, unknown> | undefined =
-    name || phone || remark ? { name: name || '', phone: phone || '', remark: remark || null } : undefined
+  const body: Record<string, unknown> = {
+    activity_id: activityId, name, phone, remark: remark ?? null,
+  }
   await post(`/api/activities/${activityId}/enroll`, body)
 }
 

@@ -65,7 +65,6 @@ export default function EditProfilePage() {
         email,
         gender,
         education,
-        id_card: idCard,
         ...(isStudent ? { school, major } : { organization }),
       })
     } catch {
