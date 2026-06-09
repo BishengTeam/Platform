@@ -103,6 +103,7 @@ export default function RegistrationFormPage() {
     getUserProfile().then(profile => {
       if (profile.profile.phone && !phone) setPhone(profile.profile.phone)
       if (profile.realname.real_name && !realName) setRealName(profile.realname.real_name)
+      if (profile.realname.user_type === 'enterprise') setIdentityType('enterprise')
       if (!cert) return
       switch (cert.vendor) {
         case 'H3C':

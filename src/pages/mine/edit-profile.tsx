@@ -20,6 +20,7 @@ export default function EditProfilePage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   // Level 2 — 只读展示
+  const MAX_LEVEL2_EDITS = 5
   const [level2EditCount, setLevel2EditCount] = useState(0)
   const [isReadonly, setIsReadonly] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -30,7 +31,9 @@ export default function EditProfilePage() {
       setNickname(p.profile.nickname || '')
       setEmail(p.profile.email || '')
       setPhone(p.profile.phone || '')
-      setLevel2EditCount(p.level2_edit_count)
+      const count = p.level2_edit_count
+      setLevel2EditCount(count)
+      if (count >= MAX_LEVEL2_EDITS) setIsReadonly(true)
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
     }).finally(() => setLoading(false))
@@ -88,10 +91,15 @@ export default function EditProfilePage() {
             )}
           </View>
 
-          {/* L2 说明 */}
+          {/* L1 修改次数 + L2 说明 */}
           <View className={styles.quotaBanner}>
             <Icon name='info' size={20} color='#1677FF' />
-            <Text className={styles.quotaText}>{STRINGS.MINE_PROFILE_EDIT_TIP}</Text>
+            <Text className={styles.quotaText}>
+              {isReadonly
+                ? STRINGS.MINE_LEVEL2_EDIT_EXHAUSTED.replace('{max}', String(MAX_LEVEL2_EDITS)).replace('{days}', '--')
+                : `本月还可修改 ${MAX_LEVEL2_EDITS - level2EditCount} 次（共 ${MAX_LEVEL2_EDITS} 次）  |  ${STRINGS.MINE_PROFILE_EDIT_TIP}`
+              }
+            </Text>
           </View>
 
           <View className={styles.btnWrap}>
