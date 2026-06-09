@@ -101,20 +101,20 @@ export default function RegistrationFormPage() {
   // ---- 用户资料预填 ----
   useEffect(() => {
     getUserProfile().then(profile => {
-      if (profile.phone && !phone) setPhone(profile.phone)
-      if (profile.real_name && !realName) setRealName(profile.real_name)
+      if (profile.profile.phone && !phone) setPhone(profile.profile.phone)
+      if (profile.realname.real_name && !realName) setRealName(profile.realname.real_name)
       if (!cert) return
       switch (cert.vendor) {
         case 'H3C':
-          if (profile.email && !email) setEmail(profile.email)
+          if (profile.profile.email && !email) setEmail(profile.profile.email)
           break
         case '深信服':
-          if (profile.email && !email) setEmail(profile.email)
+          if (profile.profile.email && !email) setEmail(profile.profile.email)
           break
         case 'NISP':
-          if (profile.email && !nispEmail) setNispEmail(profile.email)
-          if (profile.school && !school) setSchool(profile.school)
-          if (profile.major && !major) setMajor(profile.major)
+          if (profile.profile.email && !nispEmail) setNispEmail(profile.profile.email)
+          if (profile.student?.school && !school) setSchool(profile.student.school)
+          if (profile.student?.major && !major) setMajor(profile.student.major)
           break
       }
     }).catch(() => {})

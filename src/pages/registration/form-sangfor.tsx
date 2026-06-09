@@ -51,9 +51,9 @@ export default function SangforFormPage() {
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      if (profile.phone && !phone) setPhone(profile.phone)
-      if (profile.real_name && !realName) setRealName(profile.real_name)
-      if (profile.email && !email) setEmail(profile.email)
+      if (profile.profile.phone && !phone) setPhone(profile.profile.phone)
+      if (profile.realname.real_name && !realName) setRealName(profile.realname.real_name)
+      if (profile.profile.email && !email) setEmail(profile.profile.email)
     }).catch(() => {})
   }, [])
 

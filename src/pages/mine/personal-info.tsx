@@ -8,6 +8,7 @@ import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getUserProfile } from '@/services/dataService'
+import type { UserProfileAggregated } from '@/types/profile'
 import styles from './personal-info.module.scss'
 
 interface InfoRow {
@@ -27,64 +28,45 @@ function statusClass(s: string): string {
 }
 
 export default function PersonalInfoPage() {
-  const [nickname, setNickname] = useState('')
-  const [realName, setRealName] = useState('')
-  const [idCard, setIdCard] = useState('')
-  const [identityStatus, setIdentityStatus] = useState('')
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
-  const [gender, setGender] = useState('')
-  const [userType, setUserType] = useState('')
-  const [education, setEducation] = useState('')
-  const [school, setSchool] = useState('')
-  const [major, setMajor] = useState('')
-  const [organization, setOrganization] = useState('')
+  const [profile, setProfile] = useState<UserProfileAggregated | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getUserProfile().then(profile => {
-      setNickname(profile.real_name || '')
-      setRealName(profile.real_name || '')
-      setIdCard(profile.id_card || '')
-      setIdentityStatus(profile.identity_status || '')
-      setPhone(profile.phone || '')
-      setEmail(profile.email || '')
-      setGender(profile.gender || '')
-      setUserType(profile.user_type || '')
-      setEducation(profile.education || '')
-      setSchool(profile.school || '')
-      setMajor(profile.major || '')
-      setOrganization(profile.organization || '')
-    }).catch(() => {
-      Taro.showToast({ title: '加载失败', icon: 'none' })
-    }).finally(() => setLoading(false))
+    getUserProfile().then(p => setProfile(p))
+      .catch(() => { Taro.showToast({ title: '加载失败', icon: 'none' }) })
+      .finally(() => setLoading(false))
   }, [])
 
-  const isStudent = userType === 'student'
-  const displayGender = genderMap[gender] || gender || '-'
-  const displayStatus = idMap[identityStatus] || identityStatus || '未认证'
+  if (loading || !profile) return null
+
+  const { profile: l1, realname, student, enterprise } = profile
+  const isStudent = realname.user_type === 'student'
+  const displayGender = genderMap[realname.gender || ''] || realname.gender || '-'
+  const displayStatus = idMap[realname.status || ''] || realname.status || '未认证'
+  const displayIdCard = realname.id_card_number || '-'
+  const displayEducation = isStudent ? (student?.education || '-') : '-'
 
   const identityRows: InfoRow[] = [
-    { label: '昵称', value: nickname, icon: 'user' },
-    { label: '真实姓名', value: realName, icon: 'shield' },
+    { label: '昵称', value: l1.nickname || '-', icon: 'user' },
+    { label: '真实姓名', value: realname.real_name || '-', icon: 'shield' },
     { label: '性别', value: displayGender, icon: 'user' },
   ]
 
   const securityRows: InfoRow[] = [
-    { label: '身份证号', value: idCard, icon: 'clipboard' },
-    { label: '手机号', value: phone, icon: 'phone' },
-    { label: '邮箱', value: email || '-', icon: 'mail' },
+    { label: '身份证号', value: displayIdCard, icon: 'clipboard' },
+    { label: '手机号', value: l1.phone || '-', icon: 'phone' },
+    { label: '邮箱', value: l1.email || '-', icon: 'mail' },
   ]
 
   const affiliationRows: InfoRow[] = isStudent
     ? [
-        { label: '学校', value: school || '-', icon: 'home' },
-        { label: '专业', value: major || '-', icon: 'bookmark' },
-        { label: '学历', value: education || '-', icon: 'book' },
+        { label: '学校', value: student?.school || '-', icon: 'home' },
+        { label: '专业', value: student?.major || '-', icon: 'bookmark' },
+        { label: '学历', value: student?.education || '-', icon: 'book' },
       ]
     : [
-        { label: '单位', value: organization || '-', icon: 'briefcase' },
-        { label: '学历', value: education || '-', icon: 'book' },
+        { label: '单位', value: enterprise?.organization || '-', icon: 'briefcase' },
+        { label: '学历', value: displayEducation, icon: 'book' },
       ]
 
   const renderCard = (title: string, rows: InfoRow[], icon: string) => (
@@ -117,7 +99,7 @@ export default function PersonalInfoPage() {
 
           {/* 认证状态标签 */}
           <View className={styles.statusBar}>
-            <View className={`${styles.statusBadge} ${statusClass(identityStatus)}`}>
+            <View className={`${styles.statusBadge} ${statusClass(realname.status || '')}`}>
               <Text className={styles.statusText}>{displayStatus}</Text>
             </View>
           </View>

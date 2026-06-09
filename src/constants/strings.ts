@@ -633,6 +633,13 @@ export const STRINGS = {
   MINE_PROFILE_EDIT_EXHAUSTED: '修改次数已用完',
   MINE_PROFILE_SAVE_SUCCESS: '保存成功',
 
+  // ---- Level 2 Edit Pages ----
+  MINE_EDIT_IDENTITY_TITLE: '编辑实名信息',
+  MINE_EDIT_STUDENT_TITLE: '编辑教育信息',
+  MINE_EDIT_ENTERPRISE_TITLE: '编辑企业信息',
+  MINE_LEVEL2_EDIT_EXHAUSTED: '本月修改次数已用完（共{max}次），{days}天后恢复',
+  MINE_PROFILE_EDIT_TIP: '教育/企业信息需单独提交审核',
+
   // ---- Share Page ----
   MINE_SHARE_APP_DESC: '分享小程序给微信好友',
   MINE_SHARE_COURSE_DESC: '推荐课程给朋友',

@@ -12,7 +12,7 @@ import styles from '../form.module.scss'
 interface Props { children: ReactNode }
 
 function pickIdCard(p: any): string {
-  return p?.id_card_raw || ''
+  return p?.realname?.id_card_raw || ''
 }
 
 /**
@@ -35,7 +35,7 @@ export function IdentityCheckGate({ children }: Props) {
     getUserProfile()
       .then((profile: any) => {
         // 资料不完整
-        if (!profile?.real_name) {
+        if (!profile?.realname?.real_name) {
           Taro.showModal({
             title: '提示',
             content: STRINGS.IDENTITY_PROFILE_INCOMPLETE,
@@ -104,8 +104,8 @@ export function IdentityCheckGate({ children }: Props) {
             setHandled(true)
             return
           }
-          const userType = (profile?.user_type === 'enterprise' ? 'enterprise' : 'student') as 'student' | 'enterprise'
-          identity.submit(userType, profile?.real_name || '', rawIdCard).then((ok) => {
+          const userType = (profile?.realname?.user_type === 'enterprise' ? 'enterprise' : 'student') as 'student' | 'enterprise'
+          identity.submit(userType, profile?.realname?.real_name || '', rawIdCard).then((ok) => {
             if (!ok) {
               Taro.showModal({
                 title: STRINGS.IDENTITY_REJECTED_TITLE,

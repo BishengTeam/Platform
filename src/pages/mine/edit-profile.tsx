@@ -8,74 +8,49 @@ import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { getUserProfile, updateUserProfile } from '@/services/dataService'
+import type { UserProfileAggregated } from '@/types/profile'
 import styles from './edit-profile.module.scss'
-
-const MAX_EDITS = 3
 
 const idMap = STRINGS.IDENTITY_STATUS_MAP
 
 export default function EditProfilePage() {
-  const [realName, setRealName] = useState('')
-  const [idCard, setIdCard] = useState('')
-  const [phone, setPhone] = useState('')
+  const [profile, setProfile] = useState<UserProfileAggregated | null>(null)
+  // Level 1 — 可编辑
+  const [nickname, setNickname] = useState('')
   const [email, setEmail] = useState('')
-  const [gender, setGender] = useState('')
-  const [userType, setUserType] = useState('')
-  const [education, setEducation] = useState('')
-  const [school, setSchool] = useState('')
-  const [major, setMajor] = useState('')
-  const [organization, setOrganization] = useState('')
-  const [editCount, setEditCount] = useState(0) // TODO: 后续从 profile.edit_count 获取
+  const [phone, setPhone] = useState('')
+  // Level 2 — 只读展示
+  const [level2EditCount, setLevel2EditCount] = useState(0)
   const [isReadonly, setIsReadonly] = useState(false)
-  const [identityStatus, setIdentityStatus] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getUserProfile().then(profile => {
-      setRealName(profile.real_name || '')
-      setIdCard(profile.id_card_raw || profile.id_card || '')
-      setPhone(profile.phone_raw || profile.phone || '')
-      setEmail(profile.email || '')
-      setGender(profile.gender || '')
-      setUserType(profile.user_type || '')
-      setEducation(profile.education || '')
-      setSchool(profile.school || '')
-      setMajor(profile.major || '')
-      setOrganization(profile.organization || '')
-      setIdentityStatus(profile.identity_status || '')
+    getUserProfile().then(p => {
+      setProfile(p)
+      setNickname(p.profile.nickname || '')
+      setEmail(p.profile.email || '')
+      setPhone(p.profile.phone || '')
+      setLevel2EditCount(p.level2_edit_count)
     }).catch(() => {
       Taro.showToast({ title: '加载失败', icon: 'none' })
     }).finally(() => setLoading(false))
   }, [])
 
-  const isStudent = userType === 'student'
-  const remaining = MAX_EDITS - editCount
-  const displayIdentityStatus = idMap[identityStatus] || identityStatus || '未认证'
-  const isIdCardDisabled = identityStatus === 'verified' || identityStatus === 'pending'
+  if (loading || !profile) return null
+
+  const { realname, student, enterprise } = profile
+  const isStudent = realname.user_type === 'student'
+  const displayIdentityStatus = idMap[realname.status || ''] || realname.status || '未认证'
+  const isIdCardDisabled = realname.status === 'verified' || realname.status === 'pending'
 
   const handleSave = async () => {
     if (isReadonly) return
-    if (remaining <= 0) {
-      Taro.showToast({ title: STRINGS.MINE_PROFILE_EDIT_EXHAUSTED, icon: 'none' })
-      setIsReadonly(true)
-      return
-    }
     try {
-      await updateUserProfile({
-        email,
-        gender,
-        education,
-        ...(isStudent ? { school, major } : { organization }),
-      })
+      await updateUserProfile({ nickname: nickname.trim() || undefined, email: email.trim() || undefined, phone: phone.trim() || undefined })
     } catch {
       Taro.showToast({ title: '保存失败，请重试', icon: 'none' })
       return
     }
-    setEditCount(prev => {
-      const next = prev + 1
-      if (next >= MAX_EDITS) setIsReadonly(true)
-      return next
-    })
     Taro.showToast({ title: STRINGS.MINE_PROFILE_SAVE_SUCCESS, icon: 'success' })
   }
 
@@ -84,16 +59,6 @@ export default function EditProfilePage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_EDIT_PROFILE_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          {!loading && (<>
-
-          {/* 修改次数 Banner */}
-          <View className={styles.quotaBanner}>
-            <Icon name='info' size={20} color='#1677FF' />
-            <Text className={styles.quotaText}>
-              {STRINGS.MINE_PROFILE_QUOTA_BANNER.replace('{remaining}', String(remaining)).replace('{max}', String(MAX_EDITS))}
-            </Text>
-          </View>
-
           {/* 认证状态 */}
           <View className={styles.identityStatusRow}>
             <Text className={styles.identityStatusLabel}>认证状态</Text>
@@ -101,23 +66,32 @@ export default function EditProfilePage() {
           </View>
 
           <View className={styles.section}>
-            <FormInput label={STRINGS.FORM_REAL_NAME} placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER} value={realName} onChange={setRealName} disabled={isReadonly} />
-            <FormInput label='性别' placeholder='请输入性别' value={gender} onChange={setGender} disabled={isReadonly} />
-            <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} disabled={isReadonly} />
+            {/* Level 1 — 可编辑 */}
+            <FormInput label='昵称' placeholder='请输入昵称' value={nickname} onChange={setNickname} disabled={isReadonly} />
+            <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} disabled={isReadonly} />
+            <FormInput label={STRINGS.FORM_PHONE} placeholder='手机号通过微信授权获取' value={phone} disabled />
+
+            {/* Level 2 — 只读展示 */}
+            <FormInput label={STRINGS.FORM_REAL_NAME} placeholder='-' value={realname.real_name || ''} disabled />
+            <FormInput label={STRINGS.FORM_ID_CARD} placeholder={isIdCardDisabled ? '修改需通过实名认证' : '-'} value={realname.id_card_number || ''} type='idcard' disabled />
+            <FormInput label='性别' placeholder='-' value={realname.gender || ''} disabled />
+            <FormInput label='年龄' placeholder='-' value={realname.age != null ? String(realname.age) : ''} disabled />
             {isStudent && (
               <>
-                <FormInput label='学校' placeholder='请输入学校名称' value={school} onChange={setSchool} disabled={isReadonly} />
-                <FormInput label={STRINGS.FORM_MAJOR} placeholder={STRINGS.FORM_MAJOR_PLACEHOLDER} value={major} onChange={setMajor} disabled={isReadonly} />
+                <FormInput label={STRINGS.FORM_EDUCATION} placeholder='-' value={student?.education || ''} disabled />
+                <FormInput label='学校' placeholder='-' value={student?.school || ''} disabled />
+                <FormInput label={STRINGS.FORM_MAJOR} placeholder='-' value={student?.major || ''} disabled />
               </>
             )}
             {!isStudent && (
-              <FormInput label={STRINGS.FORM_ORGANIZATION} placeholder={STRINGS.FORM_ORGANIZATION_PLACEHOLDER} value={organization} onChange={setOrganization} disabled={isReadonly} />
+              <FormInput label={STRINGS.FORM_ORGANIZATION} placeholder='-' value={enterprise?.organization || ''} disabled />
             )}
+          </View>
 
-            {/* 安全字段：只读展示 */}
-            <FormInput label={STRINGS.FORM_ID_CARD} placeholder={isIdCardDisabled ? '修改需通过实名认证' : '请输入身份证号'} value={idCard} type='idcard' disabled={isIdCardDisabled} />
-            <FormInput label={STRINGS.FORM_PHONE} placeholder='手机号通过微信授权获取' value={phone} disabled />
-            <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} disabled={isReadonly} />
+          {/* L2 说明 */}
+          <View className={styles.quotaBanner}>
+            <Icon name='info' size={20} color='#1677FF' />
+            <Text className={styles.quotaText}>{STRINGS.MINE_PROFILE_EDIT_TIP}</Text>
           </View>
 
           <View className={styles.btnWrap}>
@@ -125,7 +99,6 @@ export default function EditProfilePage() {
               {STRINGS.MINE_PROFILE_SAVE}
             </Button>
           </View>
-          </>)}
         </ScrollView>
       </View>
     </AuthGuard>

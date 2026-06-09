@@ -58,11 +58,11 @@ export default function NispFormPage() {
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      if (profile.phone && !phone) setPhone(profile.phone)
-      if (profile.real_name && !name) setName(profile.real_name)
-      if (profile.email && !email) setEmail(profile.email)
-      if (profile.school && !school) setSchool(profile.school)
-      if (profile.major && !major) setMajor(profile.major)
+      if (profile.profile.phone && !phone) setPhone(profile.profile.phone)
+      if (profile.realname.real_name && !name) setName(profile.realname.real_name)
+      if (profile.profile.email && !email) setEmail(profile.profile.email)
+      if (profile.student?.school && !school) setSchool(profile.student.school)
+      if (profile.student?.major && !major) setMajor(profile.student.major)
     }).catch(() => {})
   }, [])
 
