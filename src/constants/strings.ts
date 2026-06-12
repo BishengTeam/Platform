@@ -493,6 +493,7 @@ export const STRINGS = {
   QUIZ_RESULT_ACCURACY: '正确率',
   QUIZ_WRONG_BOOK_TITLE: '错题本',
   QUIZ_WRONG_BOOK_EMPTY: '暂无错题',
+  QUIZ_WRONG_BOOK_ADD: '加入错题本',
   QUIZ_WRONG_BOOK_REDO: '重新练习',
   QUIZ_WRONG_BOOK_REMOVE: '移出错题本',
   QUIZ_WRONG_COUNT: '错误次数',

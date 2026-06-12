@@ -5,7 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getQuizQuestions, submitQuizAnswer, addFavorite, removeFavorite } from '@/services/dataService'
+import { getQuizQuestions, submitQuizAnswer, addFavorite, removeFavorite, addWrongBook, removeWrongBook } from '@/services/dataService'
 import type { QuizQuestion } from '@/types'
 import styles from './practice.module.scss'
 
@@ -18,6 +18,7 @@ export default function QuizPracticePage() {
   const [mode, setMode] = useState<Mode>('practice')
   const [showResult, setShowResult] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [wrongBook, setWrongBook] = useState<Set<string>>(new Set())
 
   useLoad((options) => {
     const categoryId = options?.categoryId
@@ -100,6 +101,22 @@ export default function QuizPracticePage() {
     })
   }, [])
 
+  const handleToggleWrongBook = useCallback((id: number) => {
+    setWrongBook(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        removeWrongBook(id)
+      } else {
+        next.add(id)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        addWrongBook(id)
+      }
+      return next
+    })
+  }, [])
+
   const handleSubmit = () => setShowResult(true)
 
   if (showResult) {
@@ -161,9 +178,14 @@ export default function QuizPracticePage() {
               <Text className={styles.questionType}>
                 {currentQuestion.type === 'single' ? STRINGS.QUIZ_TYPE_SINGLE : STRINGS.QUIZ_TYPE_MULTIPLE}
               </Text>
-              <Text className={styles.favoriteBtn} onClick={() => handleToggleFavorite(currentQuestion.id)}>
-                {favorites.has(currentQuestion.id) ? STRINGS.QUIZ_UNCOLLECT : STRINGS.QUIZ_COLLECT}
-              </Text>
+              <View className={styles.headerActions}>
+                <Text className={styles.actionBtn} onClick={() => handleToggleFavorite(currentQuestion.id)}>
+                  {favorites.has(currentQuestion.id) ? STRINGS.QUIZ_UNCOLLECT : STRINGS.QUIZ_COLLECT}
+                </Text>
+                <Text className={styles.actionBtn} onClick={() => handleToggleWrongBook(currentQuestion.id)}>
+                  {wrongBook.has(currentQuestion.id) ? STRINGS.QUIZ_WRONG_BOOK_REMOVE : STRINGS.QUIZ_WRONG_BOOK_ADD}
+                </Text>
+              </View>
             </View>
             <Text className={styles.stem}>{currentQuestion.stem}</Text>
 

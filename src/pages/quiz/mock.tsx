@@ -5,7 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getQuizQuestions } from '@/services/dataService'
+import { getQuizQuestions, addFavorite, removeFavorite, addWrongBook, removeWrongBook } from '@/services/dataService'
 import type { QuizQuestion } from '@/types'
 import styles from './mock.module.scss'
 
@@ -15,6 +15,8 @@ export default function QuizMockPage() {
   const [answers, setAnswers] = useState<Record<string, number | number[]>>({})
   const [showResult, setShowResult] = useState(false)
   const [remainingTime, setRemainingTime] = useState(60 * 60)
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [wrongBook, setWrongBook] = useState<Set<string>>(new Set())
 
   useLoad((options) => {
     const categoryId = options?.categoryId
@@ -83,6 +85,35 @@ export default function QuizMockPage() {
   const handleNext = () => {
     if (currentIndex < questions.length - 1) setCurrentIndex(i => i + 1)
   }
+
+  const handleToggleFavorite = useCallback((id: number) => {
+    setFavorites(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+        removeFavorite(id)
+      } else {
+        next.add(id)
+        addFavorite(id)
+      }
+      return next
+    })
+  }, [])
+
+  const handleToggleWrongBook = useCallback((id: number) => {
+    setWrongBook(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+        removeWrongBook(id)
+      } else {
+        next.add(id)
+        addWrongBook(id)
+      }
+      return next
+    })
+  }, [])
+
   const handleSubmit = () => {
     if (timerRef.current) clearInterval(timerRef.current)
     setShowResult(true)
@@ -156,6 +187,14 @@ export default function QuizMockPage() {
               <Text className={styles.questionIndex}>
                 {currentIndex + 1}. {currentQuestion.type === 'single' ? STRINGS.QUIZ_TYPE_SINGLE : STRINGS.QUIZ_TYPE_MULTIPLE}
               </Text>
+              <View className={styles.headerActions}>
+                <Text className={styles.actionBtn} onClick={() => handleToggleFavorite(currentQuestion.id)}>
+                  {favorites.has(currentQuestion.id) ? STRINGS.QUIZ_UNCOLLECT : STRINGS.QUIZ_COLLECT}
+                </Text>
+                <Text className={styles.actionBtn} onClick={() => handleToggleWrongBook(currentQuestion.id)}>
+                  {wrongBook.has(currentQuestion.id) ? STRINGS.QUIZ_WRONG_BOOK_REMOVE : STRINGS.QUIZ_WRONG_BOOK_ADD}
+                </Text>
+              </View>
             </View>
             <Text className={styles.stem}>{currentQuestion.stem}</Text>
 

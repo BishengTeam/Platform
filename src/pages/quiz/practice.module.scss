@@ -101,7 +101,12 @@
   border-radius: $radius-sm;
 }
 
-.favoriteBtn {
+.headerActions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.actionBtn {
   font-size: $font-sm;
   color: $color-text-tertiary;
 }
@@ -198,6 +203,7 @@
   font-size: $font-sm;
   color: $color-text-secondary;
   line-height: 1.5;
+  display: block;
 }
 
 .navRow {

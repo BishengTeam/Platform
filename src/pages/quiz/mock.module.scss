@@ -73,6 +73,9 @@
 }
 
 .questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: $spacing-md;
 }
 
@@ -80,6 +83,16 @@
   font-size: $font-base;
   font-weight: 600;
   color: $color-text;
+}
+
+.headerActions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.actionBtn {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
 }
 
 .stem {
