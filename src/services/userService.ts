@@ -25,6 +25,7 @@ import type {
   UpdateEnterprisePayload,
 } from '@/types/profile'
 
+import type { CheckinStatus } from '@/types/quiz'
 import { get, post, put, del, getToken } from '@/utils/request'
 
 import { getCertificationList } from './zoneService'
@@ -250,9 +251,18 @@ export async function removeFavorite(courseId: number): Promise<void> {
 // 打卡
 // ================================================================
 
-export async function submitCheckin(): Promise<{ streak: number }> {
-  if (USE_MOCK) return { streak: 3 }
-  const res = await post<{ streak: number }>('/api/quiz/checkin')
+/** POST /api/quiz/checkin — 执行今日签到，返回签到状态 */
+export async function submitCheckin(): Promise<CheckinStatus> {
+  if (USE_MOCK) {
+    return {
+      id: 1,
+      checkinDate: new Date().toISOString().slice(0, 10),
+      checkedIn: true,
+      questionsCompleted: 0,
+      consecutiveDays: 3,
+    }
+  }
+  const res = await post<CheckinStatus>('/api/quiz/checkin', { questions_completed: 0 })
   return res.data
 }
 

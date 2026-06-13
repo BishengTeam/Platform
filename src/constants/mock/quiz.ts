@@ -124,7 +124,7 @@ export const quizQuestions: QuizQuestion[] = baseQuestions
 
 export const wrongBook: WrongQuestion[] = [
   {
-    id: 'q1', categoryId: 'cat-h3cne', type: 'single',
+    id: 'q1', recordId: 0, categoryId: 'cat-h3cne', type: 'single',
     stem: '以下关于OSPF协议的说法，正确的是？',
     options: [
       { label: 'A', text: 'OSPF使用TCP协议传输' },
@@ -136,7 +136,7 @@ export const wrongBook: WrongQuestion[] = [
     wrongDate: '2026-05-20', wrongCount: 3,
   },
   {
-    id: 'q4', categoryId: 'cat-h3cne', type: 'single',
+    id: 'q4', recordId: 0, categoryId: 'cat-h3cne', type: 'single',
     stem: 'TCP三次握手中，客户端发送的第一个报文标志位是什么？',
     options: [
       { label: 'A', text: 'ACK' },
@@ -154,14 +154,18 @@ export const favoriteQuestions: QuizQuestion[] = [quizQuestions[0], quizQuestion
 function generateCheckinData(): CheckinRecord[] {
   const records: CheckinRecord[] = []
   const today = new Date()
+  let consecutive = 0
   for (let i = 29; i >= 0; i--) {
     const d = new Date(today)
     d.setDate(d.getDate() - i)
     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const checkedIn = i > 0 && i < 8
     records.push({
-      date: dateStr,
-      completed: i > 0 && i < 8,
-      questionCount: i > 0 && i < 8 ? 10 : 0,
+      id: checkedIn ? i : null,
+      checkinDate: dateStr,
+      checkedIn,
+      questionsCompleted: checkedIn ? 10 : 0,
+      consecutiveDays: checkedIn ? ++consecutive : (consecutive = 0),
     })
   }
   return records

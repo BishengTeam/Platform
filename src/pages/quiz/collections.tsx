@@ -6,22 +6,22 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
-import { getFavoriteQuestions, removeFavorite } from '@/services/dataService'
+import { getFavoriteQuestions, removeQuizFavorite } from '@/services/dataService'
 import type { QuizQuestion } from '@/types'
 import styles from './collections.module.scss'
 
 export default function QuizCollectionsPage() {
-  const [items, setItems] = useState<QuizQuestion[]>([])
+  const [items, setItems] = useState<(QuizQuestion & { recordId: number })[]>([])
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     getFavoriteQuestions().then(setItems).catch(() => {})
   }, [])
 
-  const handleRemove = (id: number) => {
-    setItems(prev => prev.filter(item => item.id !== id))
+  const handleRemove = (recordId: number) => {
+    setItems(prev => prev.filter(item => item.recordId !== recordId))
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    removeFavorite(id)
+    removeQuizFavorite(recordId)
   }
 
   const handlePractice = (item: QuizQuestion) => {
@@ -53,7 +53,7 @@ export default function QuizCollectionsPage() {
               </View>
               <Text className={styles.stem}>{item.stem}</Text>
               <View className={styles.actions}>
-                <Button size='sm' variant='secondary' onClick={() => handleRemove(item.id)}>
+                <Button size='sm' variant='secondary' onClick={() => handleRemove(item.recordId)}>
                   {STRINGS.QUIZ_UNCOLLECT}
                 </Button>
                 <Button size='sm' onClick={() => handlePractice(item)}>

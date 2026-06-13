@@ -5,11 +5,14 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getQuizQuestions, submitQuizAnswer, addFavorite, removeFavorite, addWrongBook, removeWrongBook } from '@/services/dataService'
+import { getQuizQuestions, submitQuizAnswer, addQuizFavorite, removeQuizFavorite, addWrongBook, removeWrongBook } from '@/services/dataService'
 import type { QuizQuestion } from '@/types'
 import styles from './practice.module.scss'
 
 type Mode = 'practice' | 'mock' | 'challenge' | 'assessment'
+
+/** 单题提交判分结果 */
+type SubmitResult = { is_correct: boolean; correct_answer: string; explanation: string | null }
 
 export default function QuizPracticePage() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -19,6 +22,8 @@ export default function QuizPracticePage() {
   const [showResult, setShowResult] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [wrongBook, setWrongBook] = useState<Set<string>>(new Set())
+  /** 每题提交后的服务端判分结果，API 模式下以此来判定正误 */
+  const [submitResults, setSubmitResults] = useState<Record<string, SubmitResult>>({})
 
   useLoad((options) => {
     const categoryId = options?.categoryId
@@ -31,47 +36,37 @@ export default function QuizPracticePage() {
   const currentQuestion = questions[currentIndex]
   const selectedAnswer = currentQuestion ? answers[currentQuestion.id] : undefined
 
-  const handleSelectSingle = useCallback((questionId: string, optIndex: number) => {
+  const handleSelectSingle = useCallback((questionId: string, optIndex: number, label: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: optIndex }))
-    const q = questions.find(q => q.id === questionId)
-    if (q) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      submitQuizAnswer({ question_id: Number(questionId), user_answer: String(optIndex) })
-    }
-  }, [questions, answers])
+    submitQuizAnswer({ question_id: Number(questionId), user_answer: label })
+      .then(res => { setSubmitResults(prev => ({ ...prev, [questionId]: res })) })
+      .catch(() => {})
+  }, [])
 
-  const handleSelectMultiple = useCallback((questionId: string, optIndex: number) => {
+  const handleSelectMultiple = useCallback((questionId: string, optIndex: number, question: QuizQuestion) => {
+    let nextAnswer: number[]
     setAnswers(prev => {
       const cur = (prev[questionId] as number[]) || []
       const next = cur.includes(optIndex) ? cur.filter(i => i !== optIndex) : [...cur, optIndex]
+      nextAnswer = next
       return { ...prev, [questionId]: next }
     })
-    const q = questions.find(q => q.id === questionId)
-    if (q) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      const cur = (answers[questionId] as number[]) || []
-      const next = cur.includes(optIndex) ? cur.filter(i => i !== optIndex) : [...cur, optIndex]
-      submitQuizAnswer({ question_id: Number(questionId), user_answer: JSON.stringify(next.sort()) })
-    }
-  }, [questions, answers])
+    const labels = nextAnswer!.sort().map(i => question.options[i]?.label ?? String(i))
+    submitQuizAnswer({ question_id: Number(questionId), user_answer: labels.join(',') })
+      .then(res => { setSubmitResults(prev => ({ ...prev, [questionId]: res })) })
+      .catch(() => {})
+  }, [])
 
   const isCorrect = useMemo(() => {
     if (!currentQuestion || selectedAnswer === undefined) return null
-    if (currentQuestion.type === 'single') {
-      return selectedAnswer === currentQuestion.correctAnswer
-    }
-    const correct = currentQuestion.correctAnswer as number[]
-    const selected = (selectedAnswer as number[]) || []
-    return correct.length === selected.length && correct.every(c => selected.includes(c))
-  }, [currentQuestion, selectedAnswer])
+    const result = submitResults[currentQuestion.id]
+    if (!result) return null
+    return result.is_correct
+  }, [currentQuestion, selectedAnswer, submitResults])
 
   const correctCount = questions.filter(q => {
-    const ans = answers[q.id]
-    if (ans === undefined) return false
-    if (q.type === 'single') return ans === q.correctAnswer
-    const correct = q.correctAnswer as number[]
-    const selected = (ans as number[]) || []
-    return correct.length === selected.length && correct.every(c => selected.includes(c))
+    const result = submitResults[q.id]
+    return result?.is_correct === true
   }).length
 
   const handlePrev = () => {
@@ -90,12 +85,10 @@ export default function QuizPracticePage() {
       const next = new Set(prev)
       if (next.has(id)) {
         next.delete(id)
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        removeFavorite(id)
+        removeQuizFavorite(id)
       } else {
         next.add(id)
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        addFavorite(id)
+        addQuizFavorite(id)
       }
       return next
     })
@@ -203,8 +196,8 @@ export default function QuizPracticePage() {
                     key={opt.label}
                     className={optClass}
                     onClick={() => currentQuestion.type === 'single'
-                      ? handleSelectSingle(currentQuestion.id, idx)
-                      : handleSelectMultiple(currentQuestion.id, idx)
+                      ? handleSelectSingle(currentQuestion.id, idx, opt.label)
+                      : handleSelectMultiple(currentQuestion.id, idx, currentQuestion)
                     }
                   >
                     <View className={`${styles.optionLabel} ${isSelected ? styles.optionLabelActive : ''}`}>
@@ -221,7 +214,7 @@ export default function QuizPracticePage() {
                 <Text className={styles.feedbackText}>
                   {isCorrect ? STRINGS.QUIZ_FEEDBACK_CORRECT : STRINGS.QUIZ_FEEDBACK_WRONG}
                 </Text>
-                <Text className={styles.explanation}>{currentQuestion.explanation}</Text>
+                <Text className={styles.explanation}>{submitResults[currentQuestion.id]?.explanation || currentQuestion.explanation}</Text>
               </View>
             )}
           </View>

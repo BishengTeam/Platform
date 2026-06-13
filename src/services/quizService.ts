@@ -11,6 +11,7 @@
 import { quizCategories, quizQuestions, wrongBook, favoriteQuestions, checkinRecords } from '@/constants/mock'
 import { get, post, del } from '@/utils/request'
 import type { QuizCategory, QuizQuestion, QuizOption } from '@/types/quiz'
+import type { WrongQuestion, CheckinRecord, CheckinStatus } from '@/types/quiz'
 
 const USE_MOCK = false
 
@@ -73,29 +74,60 @@ export async function getQuizQuestions(categoryId?: string) {
   return items.map(toQuizQuestion)
 }
 
-export async function getWrongBook() {
+/** GET /api/quiz/wrong-book — 错题本列表（返回带 recordId 的 WrongQuestion） */
+export async function getWrongBook(): Promise<WrongQuestion[]> {
   if (USE_MOCK) return wrongBook
   const res = await get<any>('/api/quiz/wrong-book')
   const data = res.data as any
   const items: any[] = data?.items || data || []
-  return items.map(toQuizQuestion)
+  return items.map(item => ({
+    ...toQuizQuestion(item.question),
+    recordId: item.id as number,
+    wrongDate: (item.updated_at as string)?.slice(0, 10) ?? '',
+    wrongCount: (item.wrong_count as number) ?? 1,
+  }))
 }
 
-export async function getFavoriteQuestions() {
-  if (USE_MOCK) return favoriteQuestions
+/** GET /api/quiz/collections — 收藏列表（返回带 recordId 的 QuizQuestion） */
+export async function getFavoriteQuestions(): Promise<(QuizQuestion & { recordId: number })[]> {
+  if (USE_MOCK) return favoriteQuestions.map(q => ({ ...q, recordId: 0 }))
   const res = await get<any>('/api/quiz/collections')
   const data = res.data as any
   const items: any[] = data?.items || data || []
-  return items.map(toQuizQuestion)
+  return items.map(item => ({
+    ...toQuizQuestion(item.question),
+    recordId: item.id as number,
+  }))
 }
 
-export async function getCheckinRecords(): Promise<{ date: string; completed: boolean; consecutiveDays?: number }[]> {
+/** GET /api/quiz/checkin/calendar?days=30 — 打卡日历历史记录 */
+export async function getCheckinRecords(days = 30): Promise<CheckinRecord[]> {
   if (USE_MOCK) return checkinRecords
-  const res = await get<any>('/api/quiz/checkin')
+  const res = await get<any[]>('/api/quiz/checkin/calendar', { days })
   const data = res.data
   if (!data) return []
-  // 后端返回 QuizCheckinResponse: { checkin_date*, checked_in*, questions_completed*, consecutive_days* }
-  return [{ date: data.checkin_date ?? '', completed: data.checked_in ?? false, consecutiveDays: data.consecutive_days ?? 0 }]
+  // 后端返回 list[QuizCheckinResponse]: { checkin_date, checked_in, questions_completed, consecutive_days }
+  return data.map((item: any) => ({
+    id: item.id ?? null,
+    checkinDate: item.checkin_date ?? '',
+    checkedIn: item.checked_in ?? false,
+    questionsCompleted: item.questions_completed ?? 0,
+    consecutiveDays: item.consecutive_days ?? 0,
+  }))
+}
+
+/** GET /api/quiz/checkin — 今日签到状态 */
+export async function getCheckinStatus(): Promise<CheckinStatus | null> {
+  const res = await get<any>('/api/quiz/checkin')
+  const data = res.data
+  if (!data) return null
+  return {
+    id: data.id ?? null,
+    checkinDate: data.checkin_date ?? '',
+    checkedIn: data.checked_in ?? false,
+    questionsCompleted: data.questions_completed ?? 0,
+    consecutiveDays: data.consecutive_days ?? 0,
+  }
 }
 
 // ---- 题库提交 ----
@@ -126,6 +158,20 @@ export async function submitQuizAnswer(data: {
   }
   const res = await post<any>('/api/quiz/submit', { question_id: data.question_id, user_answer: data.user_answer })
   return res.data
+}
+
+// ---- 题库收藏写操作 ----
+
+/** POST /api/quiz/collections — 加入收藏（传 question_id） */
+export async function addQuizFavorite(questionId: number): Promise<void> {
+  if (USE_MOCK) return
+  await post('/api/quiz/collections', { question_id: questionId })
+}
+
+/** DELETE /api/quiz/collections/{id} — 取消收藏（传 record ID） */
+export async function removeQuizFavorite(id: number): Promise<void> {
+  if (USE_MOCK) return
+  await del(`/api/quiz/collections/${id}`)
 }
 
 // ---- 错题本写操作 ----

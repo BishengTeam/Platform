@@ -7,7 +7,7 @@ import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import { getWrongBook } from '@/services/dataService'
+import { getWrongBook, removeWrongBook } from '@/services/dataService'
 import type { WrongQuestion } from '@/types'
 import styles from './wrong-book.module.scss'
 
@@ -19,8 +19,10 @@ export default function WrongBookPage() {
     getWrongBook().then(setItems).catch(() => {})
   }, [])
 
-  const handleRemove = (id: string) => {
-    setItems(prev => prev.filter(item => item.id !== id))
+  const handleRemove = (recordId: number) => {
+    setItems(prev => prev.filter(item => item.recordId !== recordId))
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    removeWrongBook(recordId)
   }
 
   const handleRedo = (item: WrongQuestion) => {
@@ -66,7 +68,7 @@ export default function WrongBookPage() {
               </View>
               <Text className={styles.explanation}>{item.explanation}</Text>
               <View className={styles.actions}>
-                <Button size='sm' variant='secondary' onClick={() => handleRemove(item.id)}>
+                <Button size='sm' variant='secondary' onClick={() => handleRemove(item.recordId)}>
                   {STRINGS.QUIZ_WRONG_BOOK_REMOVE}
                 </Button>
                 <Button size='sm' onClick={() => handleRedo(item)}>

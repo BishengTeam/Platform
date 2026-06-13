@@ -29,9 +29,9 @@ const TAG_COLORS: Omit<TagFilterItem, 'label'>[] = [
 ]
 
 const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
-  { label: '刷题练习', icon: '📝', route: ROUTES.QUIZ_PRACTICE },
   { label: '模拟考试', icon: '📋', route: ROUTES.QUIZ_MOCK },
-  { label: '错题收藏', icon: '📕', route: ROUTES.QUIZ_WRONG_BOOK },
+  { label: '错题', icon: '📕', route: ROUTES.QUIZ_WRONG_BOOK },
+  { label: '收藏', icon: '⭐', route: ROUTES.QUIZ_COLLECTIONS },
 ]
 
 export default function TrainingPage() {
@@ -86,7 +86,7 @@ export default function TrainingPage() {
   }, [quizCategories])
 
   const handleQuizBottomNav = useCallback((item: QuizBottomItem) => {
-    Taro.navigateTo({ url: `/pages/${item.route}` })
+    Taro.navigateTo({ url: `/${item.route}` })
   }, [])
 
   const renderTechTab = () => (
@@ -132,15 +132,11 @@ export default function TrainingPage() {
             <Text className={styles.statsLabel}>已做题</Text>
           </View>
           <View className={styles.statsItem}>
-            <Text className={styles.statsValue}>0</Text>
-            <Text className={styles.statsLabel}>错题</Text>
-          </View>
-          <View className={styles.statsItem}>
             <Text className={styles.statsValue}>0%</Text>
             <Text className={styles.statsLabel}>正确率</Text>
           </View>
         </View>
-        <View className={styles.statsCta} onClick={() => Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}` })}>
+        <View className={styles.statsCta} onClick={() => Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}?categoryId=${selectedQuizId}` })}>
           <Text className={styles.statsCtaText}>开始练习</Text>
         </View>
       </View>

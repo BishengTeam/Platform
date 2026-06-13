@@ -5,9 +5,11 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getQuizQuestions, addFavorite, removeFavorite, addWrongBook, removeWrongBook } from '@/services/dataService'
+import { getQuizQuestions, addQuizFavorite, removeQuizFavorite, addWrongBook, removeWrongBook, submitQuizAnswer } from '@/services/dataService'
 import type { QuizQuestion } from '@/types'
 import styles from './mock.module.scss'
+
+type SubmitResult = { is_correct: boolean; correct_answer: string; explanation: string | null }
 
 export default function QuizMockPage() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -17,11 +19,11 @@ export default function QuizMockPage() {
   const [remainingTime, setRemainingTime] = useState(60 * 60)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [wrongBook, setWrongBook] = useState<Set<string>>(new Set())
+  const [submitResults, setSubmitResults] = useState<Record<string, SubmitResult>>({})
 
   useLoad((options) => {
     const categoryId = options?.categoryId
-    const qs = getQuizQuestions(categoryId || undefined)
-    setQuestions(qs)
+    getQuizQuestions(categoryId || undefined).then(setQuestions).catch(() => {})
   })
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -47,30 +49,32 @@ export default function QuizMockPage() {
   const currentQuestion = questions[currentIndex]
   const selectedAnswer = currentQuestion ? answers[currentQuestion.id] : undefined
 
-  const handleSelectSingle = useCallback((questionId: string, optIndex: number) => {
+  const handleSelectSingle = useCallback((questionId: string, optIndex: number, label: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: optIndex }))
+    submitQuizAnswer({ question_id: Number(questionId), user_answer: label })
+      .then(res => { setSubmitResults(prev => ({ ...prev, [questionId]: res })) })
+      .catch(() => {})
   }, [])
 
-  const handleSelectMultiple = useCallback((questionId: string, optIndex: number) => {
+  const handleSelectMultiple = useCallback((questionId: string, optIndex: number, question: QuizQuestion) => {
+    let nextAnswer: number[]
     setAnswers(prev => {
       const cur = (prev[questionId] as number[]) || []
       const next = cur.includes(optIndex) ? cur.filter(i => i !== optIndex) : [...cur, optIndex]
+      nextAnswer = next
       return { ...prev, [questionId]: next }
     })
+    const labels = nextAnswer!.sort().map(i => question.options[i]?.label ?? String(i))
+    submitQuizAnswer({ question_id: Number(questionId), user_answer: labels.join(',') })
+      .then(res => { setSubmitResults(prev => ({ ...prev, [questionId]: res })) })
+      .catch(() => {})
   }, [])
 
   const answeredCount = questions.filter(q => answers[q.id] !== undefined).length
 
   const correctCount = useMemo(() => {
     if (!showResult) return 0
-    return questions.filter(q => {
-      const ans = answers[q.id]
-      if (ans === undefined) return false
-      if (q.type === 'single') return ans === q.correctAnswer
-      const correct = q.correctAnswer as number[]
-      const selected = (ans as number[]) || []
-      return correct.length === selected.length && correct.every(c => selected.includes(c))
-    }).length
+    return questions.filter(q => submitResults[q.id]?.is_correct === true).length
   }, [showResult, questions, answers])
 
   const formatTime = (seconds: number) => {
@@ -91,10 +95,10 @@ export default function QuizMockPage() {
       const next = new Set(prev)
       if (next.has(id)) {
         next.delete(id)
-        removeFavorite(id)
+        removeQuizFavorite(id)
       } else {
         next.add(id)
-        addFavorite(id)
+        addQuizFavorite(id)
       }
       return next
     })
@@ -212,8 +216,8 @@ export default function QuizMockPage() {
                     key={opt.label}
                     className={optClass}
                     onClick={() => currentQuestion.type === 'single'
-                      ? handleSelectSingle(currentQuestion.id, idx)
-                      : handleSelectMultiple(currentQuestion.id, idx)
+                      ? handleSelectSingle(currentQuestion.id, idx, opt.label)
+                      : handleSelectMultiple(currentQuestion.id, idx, currentQuestion)
                     }
                   >
                     <View className={`${styles.optionLabel} ${isSelected ? styles.optionLabelActive : ''}`}>

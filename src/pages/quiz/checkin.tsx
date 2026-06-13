@@ -1,29 +1,30 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { getCheckinRecords, submitCheckin } from '@/services/dataService'
+import type { CheckinRecord } from '@/types/quiz'
 import styles from './checkin.module.scss'
 
 const WEEKDAYS = STRINGS.WEEKDAY_LABELS
 
 export default function QuizCheckinPage() {
-  const [records, setRecords] = useState<{ date: string; completed: boolean }[]>([])
+  const [records, setRecords] = useState<CheckinRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const today = new Date()
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
-  useEffect(() => {
+  useDidShow(() => {
     getCheckinRecords()
       .then(setRecords)
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [])
+  })
 
   const handleCheckin = () => {
     if (submitting) return
@@ -34,8 +35,10 @@ export default function QuizCheckinPage() {
       .finally(() => setSubmitting(false))
   }
 
-  const todayRecord = records.find(r => r.date === todayStr)
-  const streakDays = records.filter(r => r.completed).length
+  // 今日记录，从后端 calendar API 返回的列表中查找
+  const todayRecord = records.find(r => r.checkinDate === todayStr)
+  // 连续打卡天数：优先取今日记录的 consecutiveDays，否则取 0
+  const streakDays = todayRecord?.consecutiveDays ?? 0
 
   const calendarDays = useMemo(() => {
     const days: { date: string; day: number; completed: boolean; isToday: boolean; isPast: boolean }[] = []
@@ -46,11 +49,11 @@ export default function QuizCheckinPage() {
       const d = new Date(start)
       d.setDate(d.getDate() + i)
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-      const record = records.find(r => r.date === dateStr)
+      const record = records.find(r => r.checkinDate === dateStr)
       days.push({
         date: dateStr,
         day: d.getDate(),
-        completed: record?.completed || false,
+        completed: record?.checkedIn || false,
         isToday: dateStr === todayStr,
         isPast: d <= today,
       })
@@ -59,6 +62,8 @@ export default function QuizCheckinPage() {
   }, [records, todayStr])
 
   const completedDays = calendarDays.filter(d => d.completed).length
+  // 累计刷题：从后端日历数据中汇总每日 questionsCompleted
+  const totalQuestions = records.reduce((sum, r) => sum + (r.questionsCompleted || 0), 0)
 
   return (
     <AuthGuard>
@@ -77,7 +82,7 @@ export default function QuizCheckinPage() {
             </View>
             <View className={styles.statDivider} />
             <View className={styles.statItem}>
-              <Text className={styles.statValue}>{loading ? '-' : completedDays * 10}</Text>
+              <Text className={styles.statValue}>{loading ? '-' : totalQuestions}</Text>
               <Text className={styles.statLabel}>{STRINGS.QUIZ_CHECKIN_STATS_QUESTIONS}</Text>
             </View>
           </View>
@@ -112,10 +117,10 @@ export default function QuizCheckinPage() {
               <Button
                 variant='gradient'
                 size='lg'
-                disabled={todayRecord?.completed || submitting}
+                disabled={todayRecord?.checkedIn || submitting}
                 onClick={handleCheckin}
               >
-                {submitting ? '打卡中...' : todayRecord?.completed ? STRINGS.QUIZ_CHECKIN_TODAY : STRINGS.QUIZ_CHECKIN_BTN}
+                {submitting ? '打卡中...' : todayRecord?.checkedIn ? STRINGS.QUIZ_CHECKIN_TODAY : STRINGS.QUIZ_CHECKIN_BTN}
               </Button>
             </View>
           )}
