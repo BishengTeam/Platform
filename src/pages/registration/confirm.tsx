@@ -51,8 +51,9 @@ export default function ConfirmPage() {
     setOrderId(id)
     if (id) {
       getOrderDetail(Number(id)).then(order => {
-        setCertName((order as any).cert_name || (order as any).certName || '')
-        setPrice((order as any).price || 0)
+        // getOrderDetail 已通过 toOrderDetail 映射为 OrderDetail 类型，amountPaid 为元
+        setCertName(order?.courseTitle || '')
+        setPrice(order?.amountPaid ? parseFloat(order.amountPaid) : 0)
         setLoading(false)
       }).catch(() => {
         setLoading(false)
@@ -69,22 +70,23 @@ export default function ConfirmPage() {
     try {
       const prepay = await prepayOrder(Number(orderId))
 
-      if (prepay.timeStamp) {
+      // prepayOrder 返回 snake_case 字段（后端原始风格）
+      if (prepay.time_stamp) {
         await Taro.requestPayment({
-          timeStamp: prepay.timeStamp,
-          nonceStr: prepay.nonceStr,
+          timeStamp: prepay.time_stamp,
+          nonceStr: prepay.nonce_str,
           package: prepay.package,
-          signType: prepay.signType as 'MD5' | 'HMAC-SHA256',
-          paySign: prepay.paySign,
+          signType: prepay.sign_type as 'MD5' | 'HMAC-SHA256',
+          paySign: prepay.pay_sign,
         })
       }
 
       Taro.navigateTo({
         url: `/${ROUTES.PAYMENT_RESULT}?order_id=${orderId}&status=success&cert_name=${encodeURIComponent(certName)}&price=${price}`,
       })
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsPaying(false)
-      if (err?.errMsg?.includes('cancel')) return
+      if ((err as { errMsg?: string })?.errMsg?.includes('cancel')) return
 
       Taro.navigateTo({
         url: `/${ROUTES.PAYMENT_RESULT}?order_id=${orderId}&status=fail&cert_name=${encodeURIComponent(certName)}&price=${price}`,
@@ -100,7 +102,7 @@ export default function ConfirmPage() {
         <View className={styles.page}>
           <PageHeader title={STRINGS.CONFIRM_TITLE} shouldShowBack />
           <View className={styles.body}>
-            <Text style={{ textAlign: 'center', padding: '40px', color: '#999' }}>加载中...</Text>
+            <Text className={styles.emptyState}>{STRINGS.CONFIRM_LOADING}</Text>
           </View>
         </View>
       </AuthGuard>
@@ -113,7 +115,7 @@ export default function ConfirmPage() {
         <View className={styles.page}>
           <PageHeader title={STRINGS.CONFIRM_TITLE} shouldShowBack />
           <View className={styles.body}>
-            <Text style={{ textAlign: 'center', padding: '40px', color: '#999' }}>订单不存在</Text>
+            <Text className={styles.emptyState}>{STRINGS.CONFIRM_ORDER_NOT_FOUND}</Text>
           </View>
         </View>
       </AuthGuard>

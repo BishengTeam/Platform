@@ -153,6 +153,9 @@ export const STRINGS = {
   IDENTITY_PROFILE_INCOMPLETE: '请先完善个人信息（姓名、身份证号等），才能报名认证考试',
   IDENTITY_GOTO_PROFILE: '去完善资料',
   IDENTITY_VERIFYING: '正在提交实名认证...',
+  IDENTITY_LOADING: '加载中...',
+  IDENTITY_LOAD_FAILED: '加载用户信息失败，请稍后重试',
+  IDENTITY_NEED_ID_CARD: '实名认证需要您的身份证信息，请先在个人资料中完善',
 
   // ---- Registration Form ----
   FORM_TITLE: '报名信息',
@@ -200,6 +203,9 @@ export const STRINGS = {
   CONFIRM_COUNTDOWN_PREFIX: '名额已锁定，请在 ',
   CONFIRM_COUNTDOWN_SUFFIX: ' 内完成支付',
   CONFIRM_COUNTDOWN_EXPIRED: '支付超时，请重新报名',
+  CONFIRM_ORDER_NOT_FOUND: '订单不存在',
+  CONFIRM_LOADING: '加载中...',
+  CONFIRM_EMPTY_STYLE_TEXT: '加载中...',
 
   // ---- Order Detail ----
   ORDER_DETAIL_TITLE: '订单详情',
@@ -512,6 +518,12 @@ export const STRINGS = {
   QUIZ_CHECKIN_STATS_STREAK: '连续天数',
   QUIZ_CHECKIN_STATS_TOTAL: '累计打卡',
   QUIZ_CHECKIN_STATS_QUESTIONS: '累计刷题',
+  QUIZ_STATS_TOTAL: '总题量',
+  QUIZ_STATS_ACCURACY: '正确率',
+  QUIZ_STATS_COMPLETION: '完成率',
+  QUIZ_STATS_WRONG: '错题数',
+  QUIZ_STATS_TODAY: '今日答题',
+  QUIZ_STATS_COLLECTED: '收藏数',
 
   // ---- Course ----
   COURSE_LIST_TITLE: '课程列表',

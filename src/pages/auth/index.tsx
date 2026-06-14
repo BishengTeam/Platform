@@ -28,18 +28,13 @@ export default function AuthPage() {
         if (loginRes.code) {
           wxLogin(loginRes.code)
             .then((data) => {
-              console.log('[Auth] wxLogin response:', JSON.stringify(data))
-              console.log('[Auth] access_token:', data.access_token?.substring(0, 20) + '...')
               setToken(data.access_token)
-              const stored = Taro.getStorageSync('auth_token')
-              console.log('[Auth] token stored:', stored?.substring(0, 20) + '...')
-              console.log('[Auth] reLaunching to:', `/${ROUTES.INDEX}`)
               Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
             })
-            .catch((err: any) => {
+            .catch((err: unknown) => {
               setIsLoggingIn(false)
               // 40100 由 request.ts 已弹 modal，不重复提示
-              if (err?.message !== 'UNAUTHORIZED') {
+              if ((err as Error)?.message !== 'UNAUTHORIZED') {
                 Taro.showToast({ title: '登录失败，请重试', icon: 'none' })
               }
             })

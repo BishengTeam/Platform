@@ -1,6 +1,8 @@
 import { Component } from 'react'
 import type { ReactNode } from 'react'
 import { View, Text } from '@tarojs/components'
+import { STRINGS } from '@/constants/strings'
+import styles from './index.module.scss'
 
 interface Props {
   children: ReactNode
@@ -28,12 +30,12 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <View className='error-boundary-fallback' style={{ padding: '40px 20px', textAlign: 'center' }}>
-          <Text style={{ fontSize: '16px', color: '#999', display: 'block', marginBottom: '16px' }}>
-            页面出现异常
+        <View className={styles.fallback}>
+          <Text className={styles.fallbackTitle}>
+            {STRINGS.ERROR_TITLE}
           </Text>
-          <Text style={{ fontSize: '14px', color: '#BFBFBF' }}>
-            请稍后重试或联系客服
+          <Text className={styles.fallbackDesc}>
+            {STRINGS.ERROR_DESC}
           </Text>
         </View>
       )

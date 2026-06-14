@@ -3,6 +3,8 @@ export interface QuizCategory {
   name: string
   questionCount: number
   icon: string
+  parentId?: string
+  children?: QuizCategory[]
 }
 
 export interface QuizOption {
@@ -57,4 +59,20 @@ export interface QuizPracticeState {
   currentIndex: number
   answers: Record<string, number | number[]>
   mode: 'practice' | 'mock' | 'challenge' | 'assessment'
+}
+
+/** 题库练习统计，对齐后端 QuizStatsResponse (GET /api/quiz/stats) */
+export interface QuizStats {
+  totalAnswers: number
+  correctAnswers: number
+  accuracy: number
+  totalQuestions: number
+  answeredQuestions: number
+  completionRate: number
+  streakDays: number
+  totalCheckinDays: number
+  wrongCount: number
+  collectedCount: number
+  todayAnswers: number
+  todayCorrect: number
 }

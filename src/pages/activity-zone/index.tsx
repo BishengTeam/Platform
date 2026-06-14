@@ -1,6 +1,6 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { ZoneBanner } from '@/components/ZoneBanner'
@@ -20,14 +20,16 @@ import styles from './index.module.scss'
 type MainTab = 'activity' | 'competition' | 'employment'
 
 export default function ActivityZonePage() {
-  const storedTab = useRef(Taro.getStorageSync('activityZoneTab') as MainTab | undefined)
-  const initialTab = storedTab.current || 'activity'
-  const [mainTab, setMainTab] = useState<MainTab>(initialTab)
+  const [mainTab, setMainTab] = useState<MainTab>('activity')
 
-  if (storedTab.current) {
-    Taro.removeStorageSync('activityZoneTab')
-    storedTab.current = undefined
-  }
+  // 从首页金刚区跳转时通过 storage 指定初始 tab；useDidShow 保证每次切回都能响应
+  useDidShow(() => {
+    const stored = Taro.getStorageSync('activityZoneTab') as MainTab | undefined
+    if (stored && ['activity', 'competition', 'employment'].includes(stored)) {
+      setMainTab(stored)
+      Taro.removeStorageSync('activityZoneTab')
+    }
+  })
   const [activityTag, setActivityTag] = useState<string>(STRINGS.ACTIVITY_TAG_ALL)
   const [competitionTag, setCompetitionTag] = useState<string>(STRINGS.COMPETITION_TAG_ALL)
   const [employmentTag, setEmploymentTag] = useState<string>(STRINGS.EMPLOYMENT_TAG_ALL)

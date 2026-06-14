@@ -11,7 +11,7 @@ import styles from '../form.module.scss'
 
 interface Props { children: ReactNode }
 
-function pickIdCard(p: any): string {
+function pickIdCard(p: import('@/types').UserProfileAggregated | null): string {
   return p?.realname?.id_card_raw || ''
 }
 
@@ -33,7 +33,7 @@ export function IdentityCheckGate({ children }: Props) {
     if (identity.phase === 'checking') return
 
     getUserProfile()
-      .then((profile: any) => {
+      .then((profile: import('@/types').UserProfileAggregated | null) => {
         // 资料不完整
         if (!profile?.realname?.real_name) {
           Taro.showModal({
@@ -97,7 +97,7 @@ export function IdentityCheckGate({ children }: Props) {
           if (!rawIdCard) {
             Taro.showModal({
               title: '提示',
-              content: '实名认证需要您的身份证信息，请先在个人资料中完善',
+              content: STRINGS.IDENTITY_NEED_ID_CARD,
               showCancel: false,
               success: () => Taro.switchTab({ url: '/pages/profile/index' }),
             })
@@ -123,7 +123,7 @@ export function IdentityCheckGate({ children }: Props) {
       .catch(() => {
         Taro.showModal({
           title: '提示',
-          content: '加载用户信息失败，请稍后重试',
+          content: STRINGS.IDENTITY_LOAD_FAILED,
           showCancel: false,
           success: () => Taro.switchTab({ url: '/pages/profile/index' }),
         })
@@ -139,7 +139,7 @@ export function IdentityCheckGate({ children }: Props) {
           <PageHeader title={STRINGS.IDENTITY_CHECK_TITLE} shouldShowBack />
           <View className={styles.body}>
             <View className={styles.loadingWrap}>
-              <Text className={styles.loadingText}>加载中...</Text>
+              <Text className={styles.loadingText}>{STRINGS.IDENTITY_LOADING}</Text>
             </View>
           </View>
         </View>

@@ -10,9 +10,8 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import type { QuizBottomItem } from '@/constants/quiz'
-import { getCourseList, getQuizCategories } from '@/services/dataService'
-import type { CourseBrief } from '@/types'
-import type { QuizCategory } from '@/types'
+import { getCourseList, getQuizCategoryTree, getQuizProgress } from '@/services/dataService'
+import type { CourseBrief, QuizCategory, QuizStats } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
@@ -40,21 +39,41 @@ export default function TrainingPage() {
 
   const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
   const [quizCategories, setQuizCategories] = useState<QuizCategory[]>([])
+  const [quizTree, setQuizTree] = useState<QuizCategory[]>([])
   const [selectedQuizId, setSelectedQuizId] = useState('')
+  const [quizStats, setQuizStats] = useState<QuizStats | null>(null)
 
   useEffect(() => {
     getCourseList().then((data) => {
       setAllCourses(data)
     }).catch((err) => {
-      console.error('[TrainingPage] 课程数据加载失败:', err)
+      // 课程数据加载失败静默处理
     })
-    getQuizCategories().then((cats) => {
-      setQuizCategories(cats)
-      setSelectedQuizId(cats[0]?.id || '')
+    getQuizCategoryTree().then((tree) => {
+      setQuizTree(tree)
+      // 从树中提取平铺列表，用于 selectedQuiz 查找
+      const flat: QuizCategory[] = []
+      const walk = (nodes: QuizCategory[]) => {
+        for (const n of nodes) {
+          flat.push(n)
+          if (n.children) walk(n.children)
+        }
+      }
+      walk(tree)
+      setQuizCategories(flat)
+      setSelectedQuizId(flat[0]?.id || '')
     }).catch((err) => {
-      console.error('[TrainingPage] 题库分类加载失败:', err)
+      // 题库分类加载失败静默处理
     })
   }, [])
+
+  // 切换题库分类时重新获取统计数据
+  useEffect(() => {
+    if (!selectedQuizId) return
+    getQuizProgress(selectedQuizId).then((stats) => {
+      setQuizStats(stats)
+    }).catch(() => {})
+  }, [selectedQuizId])
 
   // 从课程数据动态提取分类标签：从 CourseBrief.category 去重后映射为 TagFilterItem
   const courseTags = useMemo<TagFilterItem[]>(() => {
@@ -76,14 +95,35 @@ export default function TrainingPage() {
   }, [techTag, allCourses])
 
   const handleQuizSelect = useCallback(() => {
+    const parents = quizTree
+    if (!parents.length) return
     Taro.showActionSheet({
-      itemList: quizCategories.map(q => q.name),
-      success: (res) => {
-        const quiz = quizCategories[res.tapIndex]
-        if (quiz) setSelectedQuizId(quiz.id)
+      itemList: parents.map(p => p.name),
+      success: (res1) => {
+        const parent = parents[res1.tapIndex]
+        if (!parent) return
+        // 无子分类 → 直接选中叶子节点
+        if (!parent.children?.length) {
+          setSelectedQuizId(parent.id)
+          return
+        }
+        // 有子分类 → 弹出第二级；取消则默认选中父分类
+        Taro.showActionSheet({
+          itemList: parent.children.map(c => c.name),
+          success: (res2) => {
+            const child = parent.children[res2.tapIndex]
+            if (child) setSelectedQuizId(child.id)
+          },
+          fail: () => {
+            setSelectedQuizId(parent.id)
+          },
+        })
+      },
+      fail: () => {
+        // 用户取消选择，不做任何操作
       },
     })
-  }, [quizCategories])
+  }, [quizTree])
 
   const handleQuizBottomNav = useCallback((item: QuizBottomItem) => {
     Taro.navigateTo({ url: `/${item.route}` })
@@ -124,15 +164,25 @@ export default function TrainingPage() {
       <View className={styles.statsCard}>
         <View className={styles.statsRow}>
           <View className={styles.statsItem}>
-            <Text className={styles.statsValue}>200</Text>
+            <Text className={styles.statsValue}>
+              {(() => {
+                const total = quizStats?.totalQuestions || selectedQuiz?.questionCount || 0
+                const done = quizStats?.answeredQuestions ?? 0
+                return quizStats ? total - done : '-'
+              })()}
+            </Text>
             <Text className={styles.statsLabel}>未做题</Text>
           </View>
           <View className={styles.statsItem}>
-            <Text className={styles.statsValue}>0</Text>
+            <Text className={styles.statsValue}>
+              {quizStats ? (quizStats.answeredQuestions ?? 0) : '-'}
+            </Text>
             <Text className={styles.statsLabel}>已做题</Text>
           </View>
           <View className={styles.statsItem}>
-            <Text className={styles.statsValue}>0%</Text>
+            <Text className={styles.statsValue}>
+              {quizStats ? `${quizStats.accuracy ?? 0}%` : '-'}
+            </Text>
             <Text className={styles.statsLabel}>正确率</Text>
           </View>
         </View>

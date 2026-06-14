@@ -11,16 +11,17 @@ import styles from './index.module.scss'
 
 export default function OrderDetailPage() {
   const [detail, setDetail] = useState<OrderDetail | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useLoad((options) => {
     try {
       const idStr = (options.order_id as string) || (options.id as string) || '1'
       const id = Number(idStr)
-      getOrderDetail(id).then(data => setDetail(data)).catch(e => {
-        console.error('[order-detail] useLoad error:', e)
+      getOrderDetail(id).then(data => { setDetail(data); setLoading(false) }).catch(e => {
+        setLoading(false)
       })
     } catch (e) {
-      console.error('[order-detail] useLoad error:', e)
+      setLoading(false)
     }
   })
 
@@ -38,7 +39,11 @@ export default function OrderDetailPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.ORDER_DETAIL_TITLE} shouldShowBack />
 
-        {!detail ? (
+        {loading ? (
+          <View className={styles.body}>
+            <Text style={{ textAlign: 'center', padding: '40px', color: '#999' }}>加载中...</Text>
+          </View>
+        ) : !detail ? (
           <EmptyState icon='file-text' title='订单不存在' description='未找到该订单信息' />
         ) : (
           <View className={styles.body}>

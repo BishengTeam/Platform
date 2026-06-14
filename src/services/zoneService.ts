@@ -105,7 +105,7 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
           items: [
             { id: 4, zone_type: 'study', title: '网络基础课程', cover_url: null, description: '零基础入门到精通', link_url: null, sort_order: 0 },
           ],
-          courses: homeCourses as any,
+          courses: homeCourses as unknown as CourseBrief[],
         },
         competition: {
           items: [
@@ -116,7 +116,7 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
           items: [
             { id: 6, zone_type: 'activity', title: '线下实训营', cover_url: null, description: '7天集中培训', link_url: null, sort_order: 0 },
           ],
-          activities: homeActivities as any,
+          activities: homeActivities as unknown as ActivityBrief[],
         },
         employment: {
           items: [
@@ -134,28 +134,28 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
 /** GET /api/courses — 课程列表 */
 export async function getCourseList(): Promise<CourseBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/courses')
+  const res = await get<{ items?: CourseBrief[] }>('/api/courses')
   return res.data?.items || res.data || []
 }
 
 /** GET /api/activities — 活动列表 */
 export async function getActivityList(): Promise<ActivityBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/activities')
+  const res = await get<{ items?: ActivityBrief[] }>('/api/activities')
   return res.data?.items || res.data || []
 }
 
 /** GET /api/jobs — 岗位列表 */
 export async function getJobList(): Promise<JobBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/jobs')
+  const res = await get<{ items?: JobBrief[] }>('/api/jobs')
   return res.data?.items || res.data || []
 }
 
 /** GET /api/cert/certifications — 认证列表 */
 export async function getCertificationList(): Promise<CertificationResponse[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/cert/certifications')
+  const res = await get<{ items?: CertificationResponse[] }>('/api/cert/certifications')
   return res.data?.items || res.data || []
 }
 
@@ -207,9 +207,9 @@ export async function applyJob(jobId: number): Promise<void> {
 /** GET /api/competition/tracks → CompetitionBrief[] — 竞赛列表 */
 export async function getCompetitionList(): Promise<CompetitionBrief[]> {
   if (USE_MOCK) return mockCompetitionBriefs()
-  const res = await get<any>('/api/competition/tracks')
-  const raw: any[] = res.data?.items || res.data || []
-  return raw.map((item: any) => ({
+  const res = await get<{ items?: Array<{ id?: number; competition_name?: string; name?: string; title?: string; school?: string; track?: string | null; created_at?: string; start_time?: string }> }>('/api/competition/tracks')
+  const raw = res.data?.items || res.data || []
+  return raw.map((item) => ({
     id: item.id ?? 0,
     competition_name: item.competition_name || item.name || item.title || '',
     school: item.school || '',

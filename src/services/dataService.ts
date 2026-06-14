@@ -17,6 +17,7 @@ export {
   getFavoriteQuestions, getCheckinRecords,
   getCheckinStatus, addWrongBook, removeWrongBook, submitQuizAnswer,
   addQuizFavorite, removeQuizFavorite,
+  getQuizStats, getQuizProgress, getQuizCategoryTree,
 } from './quizService'
 
 // Auth

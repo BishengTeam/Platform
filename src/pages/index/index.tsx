@@ -55,14 +55,9 @@ export default function IndexPage() {
 
   useEffect(() => {
     getHomeAggregation().then((data) => {
-      console.log('[IndexPage] 首页数据加载成功:', JSON.stringify({
-        banners: data.banners?.length,
-        zoneKeys: data.zones ? Object.keys(data.zones) : [],
-        zoneCounts: data.zones ? Object.fromEntries(Object.entries(data.zones).map(([k, v]) => [k, v?.items?.length ?? 0])) : {},
-      }))
       setHomeData(data)
     }).catch((err) => {
-      console.error('[IndexPage] 首页聚合数据加载失败:', err)
+      // 加载失败静默处理，页面展示空状态
     })
   }, [])
 

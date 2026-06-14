@@ -13,7 +13,7 @@ const TABS = [STRINGS.MINE_COLLECTIONS_COURSES, STRINGS.MINE_COLLECTIONS_MATERIA
 
 export default function MineCollectionsPage() {
   const [activeTab, setActiveTab] = useState<string>(TABS[0])
-  const [data, setData] = useState<{ courses: any[]; materials: any[] }>({ courses: [], materials: [] })
+  const [data, setData] = useState<{ courses: Array<{ id: string; title: string; instructor: string; price: number }>; materials: Array<{ id: string; title: string; type: string }> }>({ courses: [], materials: [] })
 
   useEffect(() => {
     getMyCollections().then(setData).catch(() => {})

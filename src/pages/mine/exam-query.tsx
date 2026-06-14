@@ -10,7 +10,7 @@ import { getRegisteredExams } from '@/services/dataService'
 import styles from './exam-query.module.scss'
 
 export default function ExamQueryPage() {
-  const [exams, setExams] = useState<Array<any>>([])
+  const [exams, setExams] = useState<Array<{ id: string; name: string; examCode: string; date: string; status: string; link: string }>>([])
 
   useEffect(() => {
     getRegisteredExams().then(setExams).catch(() => setExams([]))

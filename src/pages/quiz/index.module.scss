@@ -118,3 +118,38 @@
   font-size: $font-sm;
   color: $color-text-secondary;
 }
+
+// ── 数据面板 ──
+
+.statsPanel {
+  margin: 0 $spacing-lg $spacing-sm;
+  padding: $spacing-md;
+  background: $color-white;
+  border-radius: $radius-md;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm $spacing-xs;
+}
+
+.statValue {
+  font-size: $font-2xl;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.statLabel {
+  margin-top: $spacing-2xs;
+  font-size: $font-2xs;
+  color: $color-text-tertiary;
+}

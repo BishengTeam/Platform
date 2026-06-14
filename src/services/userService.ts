@@ -13,7 +13,7 @@ import {
   registeredExams,
 } from '@/constants/mock'
 
-import type { OrderBackendItem, Order } from '@/types/orders'
+import type { OrderBackendItem, Order, OrderDetail } from '@/types/orders'
 import type {
   UserProfileDetail,
   UserProfileAggregated,
@@ -36,7 +36,7 @@ const USE_MOCK = false
 
 export async function getCertifications() {
   if (USE_MOCK) return certifications
-  const res = await get<any[]>(`/api/cert/certifications`)
+  const res = await get<CertificationResponse[]>(`/api/cert/certifications`)
   return res.data
 }
 
@@ -52,28 +52,28 @@ export async function getCertDetail(certId: number): Promise<import('@/types').C
     const oldCert = certifications.find(c => c.name === matched.name || c.chinese_name === matched.chinese_name)
     return {
       ...matched,
-      price: (oldCert as any)?.price ?? 1200,
-      examCode: (oldCert as any)?.examCode ?? '',
-      examDuration: (oldCert as any)?.examDuration ?? '90分钟',
-      questionCount: (oldCert as any)?.questionCount ?? 100,
-      passingScore: (oldCert as any)?.passingScore ?? 60,
+      price: oldCert?.price ?? 1200,
+      examCode: oldCert?.examCode ?? '',
+      examDuration: oldCert?.examDuration ?? '90分钟',
+      questionCount: oldCert?.questionCount ?? 100,
+      passingScore: oldCert?.passingScore ?? 60,
     }
   }
   const res = await get<any>(`/api/cert/certifications/${certId}`)
-  const data = res.data
+  const data = res.data as Record<string, unknown>
   return {
     ...data,
-    price: data?.price ?? 0,
-    examCode: data?.examCode ?? '',
-    examDuration: data?.examDuration ?? '',
-    questionCount: data?.questionCount ?? 0,
-    passingScore: data?.passingScore ?? 0,
+    price: (data?.price as number) ?? 0,
+    examCode: (data?.examCode as string) ?? '',
+    examDuration: (data?.examDuration as string) ?? '',
+    questionCount: (data?.questionCount as number) ?? 0,
+    passingScore: (data?.passingScore as number) ?? 0,
   } as import('@/types').CertificationDetail
 }
 
 export async function getRegistrationTagFilters() {
   if (USE_MOCK) return registrationTagFilters
-  const res = await get<any[]>(`/api/cert/certifications/tags`)
+  const res = await get<import('@/types/registration').TagFilterItem[]>(`/api/cert/certifications/tags`)
   return res.data
 }
 
@@ -95,6 +95,12 @@ function mapBackendStatus(status: string): Order['status'] {
   }
 }
 
+/** 手机号脱敏：前3后4，中间星号 */
+function maskPhone(phone: string): string {
+  if (!phone || phone.length < 7) return phone || ''
+  return phone.slice(0, 3) + '****' + phone.slice(-4)
+}
+
 /** 后端订单对象 → 前端 Order 展示对象 */
 function toOrder(item: OrderBackendItem): Order {
   const date = item.created_at
@@ -106,7 +112,7 @@ function toOrder(item: OrderBackendItem): Order {
   return {
     id: String(item.id),
     title: item.candidate_name || item.cert_type,
-    description: `${item.cert_type}（${item.candidate_phone}）`,
+    description: `${item.cert_type}（${maskPhone(item.candidate_phone)}）`,
     status: mapBackendStatus(item.status),
     date,
     amount,
@@ -117,40 +123,66 @@ function toOrder(item: OrderBackendItem): Order {
 
 export async function getOrders() {
   if (USE_MOCK) return orders
-  const res = await get<any>(`/api/orders`)
-  const data = res.data as any
+  const res = await get<{ items?: OrderBackendItem[] }>(`/api/orders`)
+  const data = res.data
   const items: OrderBackendItem[] = data?.items || data || []
   return items.map(toOrder)
 }
 
+/** 后端订单对象 → 前端 OrderDetail 展示对象 */
+function toOrderDetail(item: OrderBackendItem): OrderDetail {
+  return {
+    orderId: String(item.id),
+    courseCover: '',
+    courseTitle: item.candidate_name || item.cert_type || '',
+    courseSubtitle: item.cert_type ? `${item.cert_type} · 报名` : '',
+    amountPaid: item.price != null ? (item.price / 100).toFixed(2) : '0.00',
+    paymentMethod: '微信支付',
+    paymentTime: item.paid_at || '',
+    orderTime: item.created_at || '',
+  }
+}
+
 export async function getOrderDetail(id: number) {
   if (USE_MOCK) {
-    if (orderDetails[id]) return orderDetails[id]
+    const found = orderDetails[id]
+    if (found) return found
     return Object.values(orderDetails).find(d => d.orderId === id) || null
   }
-  const res = await get<any>(`/api/orders/${id}`)
-  return res.data
+  const res = await get<OrderBackendItem>(`/api/orders/${id}`)
+  const data = res.data
+  return toOrderDetail(data)
 }
 
 export async function getPointsBalance() {
   if (USE_MOCK) return pointsBalance
-  const res = await get<any>(`/api/points`)
+  const res = await get<{ total: number; available: number }>(`/api/points`)
   return res.data
 }
 
 export async function getPointRecords() {
   if (USE_MOCK) return pointRecords
-  const res = await get<any>(`/api/points/history`)
-  const data = res.data as any
+  const res = await get<{ items?: import('@/types/mine').PointRecord[] }>(`/api/points/history`)
+  const data = res.data
   return data?.items || data || []
+}
+
+/** 后端协议项 DTO */
+interface AgreementBackendItem {
+  id: number
+  type?: string
+  status: string
+  content?: string
+  created_at?: string
+  updated_at?: string
 }
 
 export async function getAgreements() {
   if (USE_MOCK) return agreements
-  const res = await get<any>(`/api/agreements`)
-  const data = res.data as any
-  const items: any[] = data?.items || data || []
-  return items.map((item: any) => ({
+  const res = await get<{ items?: AgreementBackendItem[] }>(`/api/agreements`)
+  const data = res.data
+  const items: AgreementBackendItem[] = data?.items || (Array.isArray(data) ? data : [])
+  return items.map((item: AgreementBackendItem) => ({
     id: String(item.id),
     title: item.type || '',
     status: item.status,
@@ -160,19 +192,26 @@ export async function getAgreements() {
   }))
 }
 
+/** 后端收藏项 DTO */
+interface CollectionBackendItem {
+  id: number
+  target_type: string
+  target_id: number
+}
+
 export async function getMyCollections() {
   if (USE_MOCK) return myCollections
-  const res = await get<any>(`/api/collections`)
-  const data = res.data as any
-  const items: any[] = data?.items || data || []
+  const res = await get<{ items?: CollectionBackendItem[] }>(`/api/collections`)
+  const data = res.data
+  const items: CollectionBackendItem[] = data?.items || (Array.isArray(data) ? data : [])
   // 后端返回平级列表，按 target_type 拆分为 courses / materials
-  const courses = items.filter((i: any) => i.target_type === 'course').map((i: any) => ({
+  const courses = items.filter((i: CollectionBackendItem) => i.target_type === 'course').map((i: CollectionBackendItem) => ({
     id: String(i.target_id),
     title: '',
     instructor: '',
     price: 0,
   }))
-  const materials = items.filter((i: any) => i.target_type === 'material').map((i: any) => ({
+  const materials = items.filter((i: CollectionBackendItem) => i.target_type === 'material').map((i: CollectionBackendItem) => ({
     id: String(i.target_id),
     title: '',
     type: '',
@@ -182,9 +221,11 @@ export async function getMyCollections() {
 
 export async function getRegisteredExams(): Promise<Array<{id: string; name: string; examCode: string; date: string; status: string; link: string}>> {
   if (USE_MOCK) return registeredExams
-  const res = await get<Array<{id: number; cert_type: string; status: string; paid_at: string; created_at: string}>>('/api/orders', { status: 'paid' })
-  const orders: any[] = (res.data as any)?.items || res.data || []
-  return orders.map((order: any) => ({
+  type RegisteredExamBackendItem = { id: number; cert_type: string; status: string; paid_at: string; created_at: string }
+  const res = await get<{ items?: RegisteredExamBackendItem[] }>('/api/orders', { status: 'paid' })
+  const items = res.data?.items || res.data || []
+  const orders = Array.isArray(items) ? items : []
+  return orders.map((order: RegisteredExamBackendItem) => ({
     id: String(order.id),
     name: order.cert_type,
     examCode: order.cert_type,
@@ -229,8 +270,16 @@ export async function prepayOrder(orderId: number): Promise<{
       pay_sign: 'mock_sign',
     }
   }
-  const res = await post<any>('/api/payment/prepay', { order_id: orderId })
-  return res.data
+  const res = await post<{ prepay_id: string; time_stamp: string; nonce_str: string; sign_type: string; pay_sign: string }>('/api/payment/prepay', { order_id: orderId })
+  const data: { prepay_id: string; time_stamp: string; nonce_str: string; sign_type: string; pay_sign: string } = res.data
+  // 后端返回 snake_case，显式映射确保字段一致
+  return {
+    prepay_id: data.prepay_id,
+    time_stamp: data.time_stamp,
+    nonce_str: data.nonce_str,
+    sign_type: data.sign_type,
+    pay_sign: data.pay_sign,
+  }
 }
 
 // ================================================================
@@ -361,10 +410,11 @@ export async function signAgreement(agreementId: string, signatureImage: string)
 
 export async function getCoupons(): Promise<Array<{ id: string; name: string; discount: number; valid_until: string }>> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/coupons')
-  const data = res.data as any
-  const items: any[] = data?.items || data || []
-  return items.map((c: any) => ({
+  type CouponBackendItem = { id: number; type?: string; code?: string; value?: number; valid_to?: string }
+  const res = await get<{ items?: CouponBackendItem[] }>('/api/coupons')
+  const data = res.data
+  const items: CouponBackendItem[] = data?.items || (Array.isArray(data) ? data : [])
+  return items.map((c: CouponBackendItem) => ({
     id: String(c.id),
     name: c.type || c.code || '',
     discount: c.value || 0,
@@ -376,8 +426,8 @@ export async function getCoupons(): Promise<Array<{ id: string; name: string; di
 
 export async function getTickets(): Promise<Array<{ id: string; title: string; status: string; created_at: string }>> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/tickets')
-  const data = res.data as any
+  const res = await get<{ items?: Array<{ id: number; title: string; status: string; created_at: string }> }>('/api/tickets')
+  const data = res.data
   return data?.items || data || []
 }
 
@@ -441,8 +491,8 @@ export async function redeemPoints(amount: number): Promise<void> {
 
 export async function getPrices(): Promise<Array<{ cert_type: string; price: number }>> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/prices')
-  const data = res.data as any
+  const res = await get<{ items?: Array<{ cert_type: string; price: number }> }>('/api/prices')
+  const data = res.data
   return data?.items || data || []
 }
 
@@ -464,10 +514,10 @@ export async function removeCollection(type: string, id: number): Promise<void> 
 // 活动 / 竞赛 / 就业 (专区详细列表)
 // ================================================================
 
-export async function getActivities(): Promise<any[]> {
+export async function getActivities(): Promise<import('@/types').ActivityBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/activities')
-  const data = res.data as any
+  const res = await get<{ items?: import('@/types').ActivityBrief[] }>('/api/activities')
+  const data = res.data
   return data?.items || data || []
 }
 
@@ -476,23 +526,23 @@ export async function registerActivity(activityId: number): Promise<void> {
   await post(`/api/activities/${activityId}/register`)
 }
 
-export async function getCompetitionStats(): Promise<any> {
+export async function getCompetitionStats(): Promise<{ total: number }> {
   if (USE_MOCK) return { total: 0 }
-  const res = await get<any>('/api/competition/stats')
+  const res = await get<{ total: number }>('/api/competition/stats')
   return res.data
 }
 
-export async function getCompetitionTracks(): Promise<any[]> {
+export async function getCompetitionTracks(): Promise<import('@/types').CompetitionBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/competition/tracks')
-  const data = res.data as any
+  const res = await get<{ items?: import('@/types').CompetitionBrief[] }>('/api/competition/tracks')
+  const data = res.data
   return data?.items || data || []
 }
 
-export async function getJobs(): Promise<any[]> {
+export async function getJobs(): Promise<import('@/types').JobBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<any>('/api/jobs')
-  const data = res.data as any
+  const res = await get<{ items?: import('@/types').JobBrief[] }>('/api/jobs')
+  const data = res.data
   return data?.items || data || []
 }
 

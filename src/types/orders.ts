@@ -23,6 +23,8 @@ export interface OrderBackendItem {
   closed_at: string | null
   close_reason: string | null
   created_at: string
+  updated_at: string
+  paid_at: string | null
   extra_data: Record<string, unknown> | null
   attachments: string[] | null
 }

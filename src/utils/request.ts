@@ -14,6 +14,8 @@ import Taro from '@tarojs/taro'
 
 const BASE_URL = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
 
+const isDev = process.env.NODE_ENV === 'development'
+
 /**
  * 将后端返回的相对路径（如 /api/media/xxx.webp）转为完整 URL。
  * 如果已经是完整 URL（http(s):// 开头）则原样返回。
@@ -35,9 +37,7 @@ export function getToken(): string {
 }
 
 export function setToken(token: string): void {
-  console.log('[Request] setToken:', token?.substring(0, 20) + '...')
   Taro.setStorageSync(TOKEN_KEY, token)
-  console.log('[Request] verify stored:', Taro.getStorageSync(TOKEN_KEY)?.substring(0, 20) + '...')
 }
 
 export function removeToken(): void {
@@ -67,7 +67,6 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
   const { url, method = 'GET', data, header = {}, showLoading = true } = options
 
   const token = getToken()
-  console.log(`[Request] ${method} ${url} | token:`, token ? token.substring(0, 20) + '...' : '(empty)')
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...header,
@@ -75,7 +74,9 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
   } else {
-    console.warn(`[Request] ${method} ${url} | NO TOKEN — request may fail with 401`)
+    if (isDev) {
+      console.warn(`[Request] ${method} ${url} | NO TOKEN — request may fail with 401`)
+    }
   }
 
   if (showLoading) {
@@ -104,7 +105,9 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
     // 业务错误：先 toast，再按错误码分流
     // 后端认证错误码: 40100-40199，HTTP 401
     if (result.code === 40100 || res.statusCode === 401) {
-      console.warn('[Request] 401 detected — message:', result.message, 'code:', result.code)
+      if (isDev) {
+        console.warn('[Request] 401 detected — message:', result.message, 'code:', result.code)
+      }
       removeToken()
       const msg = result.message || '登录已过期，请重新登录'
       Taro.showModal({

@@ -14,7 +14,7 @@ export default function ResultPage() {
   const [status, setStatus] = useState('success')
   const [certName, setCertName] = useState('')
   const [price, setPrice] = useState('')
-  const [orderDetail, setOrderDetail] = useState<any>(null)
+  const [orderDetail, setOrderDetail] = useState<import('@/types/orders').OrderDetail | null>(null)
 
   useLoad((options) => {
     setStatus((options.status as string) || 'success')
