@@ -51,7 +51,7 @@ export const STRINGS = {
   SERVICE_TICKETS_STATUS: '状态:',
 
   // ---- Profile Page ----
-  PROFILE_MOCK_NAME: '小王同学',
+  PROFILE_MOCK_NAME: '同学',
   PROFILE_MOCK_STATUS: 'H3CNE 备考中',
   PROFILE_ORDERS: '我的订单',
   PROFILE_ALL_ORDERS: '全部订单',
@@ -379,6 +379,14 @@ export const STRINGS = {
   FORM_ID_PHOTO_TIP: '支持JPG格式，文件小于5MB',
   FORM_EDUCATION: '学历',
   FORM_EDUCATION_PLACEHOLDER: '请选择学历',
+  EDUCATION_OPTIONS: [
+    '博士',
+    '硕士',
+    '本科',
+    '大专',
+    '高中/中专',
+    '初中及以下',
+  ] as const,
   FORM_ORGANIZATION: '所在单位',
   FORM_ORGANIZATION_PLACEHOLDER: '请输入单位名称',
   FORM_EXAM_DATE: '考试时间',

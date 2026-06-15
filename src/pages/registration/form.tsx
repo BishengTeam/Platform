@@ -102,12 +102,19 @@ export default function RegistrationFormPage() {
   useEffect(() => {
     getUserProfile().then(profile => {
       if (profile.profile.phone && !phone) setPhone(profile.profile.phone)
-      if (profile.realname.real_name && !realName) setRealName(profile.realname.real_name)
-      if (profile.realname.user_type === 'enterprise') setIdentityType('enterprise')
+      if (profile.realname?.real_name && !realName) setRealName(profile.realname.real_name)
+      if (profile.realname?.id_card_raw && !idCard) setIdCard(profile.realname.id_card_raw)
+      if (profile.realname?.user_type === 'enterprise') setIdentityType('enterprise')
+      // 预填企业单位名称（H3C / 深信服 共用 enterprise.organization）
+      if (profile.enterprise?.organization) {
+        if (!h3cOrg) setH3cOrg(profile.enterprise.organization)
+        if (!sangforOrg) setSangforOrg(profile.enterprise.organization)
+      }
       if (!cert) return
       switch (cert.vendor) {
         case 'H3C':
           if (profile.profile.email && !email) setEmail(profile.profile.email)
+          if (profile.realname?.gender && !h3cGender) setH3cGender(profile.realname.gender)
           break
         case '深信服':
           if (profile.profile.email && !email) setEmail(profile.profile.email)
@@ -116,6 +123,10 @@ export default function RegistrationFormPage() {
           if (profile.profile.email && !nispEmail) setNispEmail(profile.profile.email)
           if (profile.student?.school && !school) setSchool(profile.student.school)
           if (profile.student?.major && !major) setMajor(profile.student.major)
+          if (profile.realname?.gender) {
+            const g = profile.realname.gender
+            if (g === 'male' || g === 'female') setNispGender(g)
+          }
           break
       }
     }).catch(() => {})
@@ -236,7 +247,7 @@ export default function RegistrationFormPage() {
     }
 
     const order = await createOrder({ ...base, extra_data, attachments })
-    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.order_id}` })
+    Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${order.id}` })
   }
 
   // ============================================================
@@ -301,7 +312,7 @@ export default function RegistrationFormPage() {
               idCard={idCard} setIdCard={setIdCard}
               errors={errors}
               decrypting={decrypting} handleGetPhoneNumber={handleGetPhoneNumber}
-              afterRealName={
+              footer={
                 cert.vendor === 'H3C' ? (
                   <H3CExtraSection
                     identityType={identityType} setIdentityType={setIdentityType}

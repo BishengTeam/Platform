@@ -1,5 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { FormInput } from '@/components/FormInput'
+import { FormPicker } from '@/components/FormPicker'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import type { ValidationResult } from '@/utils/validator'
@@ -72,7 +73,13 @@ export function NispExtraSection(props: NispExtraSectionProps) {
             </View>
           </View>
           <FormInput label={STRINGS.FORM_AGE} placeholder={STRINGS.FORM_AGE_PLACEHOLDER} value={age} type='number' maxlength={2} onChange={setAge} />
-          <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} />
+          <FormPicker
+            label={STRINGS.FORM_EDUCATION}
+            placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER}
+            value={education}
+            options={STRINGS.EDUCATION_OPTIONS}
+            onChange={setEducation}
+          />
           <FormInput label={STRINGS.FORM_ADDRESS} placeholder={STRINGS.FORM_ADDRESS_PLACEHOLDER} value={address} onChange={setAddress} />
           <FormInput label={STRINGS.FORM_ZIP_CODE} placeholder={STRINGS.FORM_ZIP_CODE_PLACEHOLDER} value={zipCode} type='number' maxlength={6} onChange={setZipCode} />
           <FormInput label={STRINGS.FORM_INSTITUTION} placeholder='' value={STRINGS.NISP_INSTITUTION_DEFAULT} onChange={() => {}} />

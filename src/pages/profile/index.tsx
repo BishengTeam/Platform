@@ -20,7 +20,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     getUserProfile().then(profile => {
-      setUserName(profile.realname?.real_name || STRINGS.PROFILE_MOCK_NAME)
+      setUserName(profile.profile.nickname || STRINGS.PROFILE_MOCK_NAME)
       setUserStatus(profile.realname?.user_type || STRINGS.PROFILE_MOCK_STATUS)
       // avatar 字段已从后端 UserProfile 移除，使用默认头像
     }).catch(() => {})

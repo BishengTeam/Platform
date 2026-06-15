@@ -1,5 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import { FormInput } from '@/components/FormInput'
+import { FormPicker } from '@/components/FormPicker'
 import { STRINGS } from '@/constants/strings'
 import type { ValidationResult } from '@/utils/validator'
 import styles from '../form.module.scss'
@@ -54,7 +55,6 @@ export function H3CExtraSection(props: H3CExtraSectionProps) {
       </View>
 
       <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} error={errors.email} onChange={setEmail} />
-      <FormInput label={STRINGS.FORM_ID_CARD} required placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER} value='' onChange={() => {}} disabled />
 
       {/* 证件照上传 */}
       <View className={styles.uploadRow}>
@@ -66,7 +66,13 @@ export function H3CExtraSection(props: H3CExtraSectionProps) {
         </View>
       </View>
 
-      <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} />
+      <FormPicker
+        label={STRINGS.FORM_EDUCATION}
+        placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER}
+        value={education}
+        options={STRINGS.EDUCATION_OPTIONS}
+        onChange={setEducation}
+      />
       <FormInput label={STRINGS.FORM_ORGANIZATION} placeholder={STRINGS.FORM_ORGANIZATION_PLACEHOLDER} value={organization} onChange={setOrganization} />
 
       {/* 考试偏好 */}

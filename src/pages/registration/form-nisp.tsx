@@ -7,6 +7,7 @@ import { useIdentityCheck } from '@/hooks/useIdentityCheck'
 import { usePhoneDecrypt } from '@/hooks/usePhoneDecrypt'
 import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
+import { FormPicker } from '@/components/FormPicker'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
 import { getCertDetail, uploadFile, createOrder, getUserProfile } from '@/services/dataService'
@@ -59,10 +60,15 @@ export default function NispFormPage() {
   useEffect(() => {
     getUserProfile().then(profile => {
       if (profile.profile.phone && !phone) setPhone(profile.profile.phone)
-      if (profile.realname.real_name && !name) setName(profile.realname.real_name)
+      if (profile.realname?.real_name && !name) setName(profile.realname.real_name)
+      if (profile.realname?.id_card_raw && !idCard) setIdCard(profile.realname.id_card_raw)
       if (profile.profile.email && !email) setEmail(profile.profile.email)
       if (profile.student?.school && !school) setSchool(profile.student.school)
       if (profile.student?.major && !major) setMajor(profile.student.major)
+      if (profile.realname?.gender) {
+        const g = profile.realname.gender
+        if (g === 'male' || g === 'female') setGender(g)
+      }
     }).catch(() => {})
   }, [])
 
@@ -265,7 +271,13 @@ export default function NispFormPage() {
                   </View>
                 </View>
                 <FormInput label={STRINGS.FORM_AGE} placeholder={STRINGS.FORM_AGE_PLACEHOLDER} value={age} type='number' maxlength={2} onChange={setAge} />
-                <FormInput label={STRINGS.FORM_EDUCATION} placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER} value={education} onChange={setEducation} />
+                <FormPicker
+                  label={STRINGS.FORM_EDUCATION}
+                  placeholder={STRINGS.FORM_EDUCATION_PLACEHOLDER}
+                  value={education}
+                  options={STRINGS.EDUCATION_OPTIONS}
+                  onChange={setEducation}
+                />
                 <FormInput label={STRINGS.FORM_ADDRESS} placeholder={STRINGS.FORM_ADDRESS_PLACEHOLDER} value={address} onChange={setAddress} />
                 <FormInput label={STRINGS.FORM_ZIP_CODE} placeholder={STRINGS.FORM_ZIP_CODE_PLACEHOLDER} value={zipCode} type='number' maxlength={6} onChange={setZipCode} />
                 <FormInput label={STRINGS.FORM_INSTITUTION} placeholder='' value={STRINGS.NISP_INSTITUTION_DEFAULT} onChange={() => {}} />

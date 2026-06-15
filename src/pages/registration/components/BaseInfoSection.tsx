@@ -19,6 +19,8 @@ interface Props {
   handleGetPhoneNumber: (e: { detail: { encryptedData?: string; iv?: string; errMsg?: string } }) => Promise<string | null>
   /** 插入在姓名后面的额外内容（如身份类型切换） */
   afterRealName?: ReactNode
+  /** 插入在身份证号后面的额外内容 */
+  footer?: ReactNode
 }
 
 /**
@@ -32,6 +34,7 @@ export function BaseInfoSection({
   errors,
   decrypting, handleGetPhoneNumber,
   afterRealName,
+  footer,
 }: Props) {
   return (
     <View className={styles.section}>
@@ -78,6 +81,7 @@ export function BaseInfoSection({
         error={errors.idCard}
         onChange={setIdCard}
       />
+      {footer}
     </View>
   )
 }
