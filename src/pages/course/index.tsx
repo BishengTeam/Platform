@@ -7,14 +7,14 @@ import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
 import { getCourseList, getCourseCategories } from '@/services/dataService'
-import type { Course } from '@/types'
-import type { TagFilterItem } from '@/types/registration'
+import { formatPrice } from '@/utils/format'
+import type { CourseBrief } from '@/types'
 import styles from './index.module.scss'
 
 export default function CourseIndexPage() {
   const [activeTag, setActiveTag] = useState<string>(STRINGS.COURSE_CATEGORY_ALL)
-  const [allCourses, setAllCourses] = useState<Course[]>([])
-  const [categories, setCategories] = useState<TagFilterItem[]>([])
+  const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
+  const [categories, setCategories] = useState<string[]>([])
 
   useEffect(() => {
     getCourseList().then(setAllCourses).catch(() => {})
@@ -22,7 +22,7 @@ export default function CourseIndexPage() {
   }, [])
 
   const filtered = useMemo(() => {
-    if (activeTag === '全部') return allCourses
+    if (activeTag === STRINGS.COURSE_CATEGORY_ALL || activeTag === '全部') return allCourses
     const catMap: Record<string, string> = {
       [STRINGS.STUDY_TAG_BASIC]: 'basic',
       [STRINGS.STUDY_TAG_ADVANCED]: 'advanced',
@@ -45,10 +45,9 @@ export default function CourseIndexPage() {
               <ZoneCard
                 key={course.id}
                 title={course.title}
-                subtitle={`${STRINGS.COURSE_INSTRUCTOR}: ${course.instructor}  |  ${course.duration}`}
-                tags={[course.tag, `${STRINGS.COURSE_RATING} ${course.rating}`, `${course.reviewCount}${STRINGS.COURSE_REVIEWS}`]}
-                price={course.price === 0 ? STRINGS.ORDERS_FREE : `¥${course.price}`}
-                originalPrice={course.originalPrice > 0 ? `¥${course.originalPrice}` : undefined}
+                subtitle={[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ') || undefined}
+                tags={course.category ? [course.category] : []}
+                price={course.price === 0 ? STRINGS.ORDERS_FREE : formatPrice(course.price)}
                 buttonText={STRINGS.COURSE_VIEW_DETAIL}
                 onCardClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}
               />

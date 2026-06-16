@@ -1,9 +1,13 @@
 /**
- * 课程服务
+ * 课程服务 — 对齐 Backend /api/courses 端点
+ *
+ * 2026-06-16 修正：
+ *   - getCourseById 返回 CourseDetail（对齐后端 CourseDetailResponse）
+ *   - getCourseCategories 适配后端 string[] 响应
  */
 import { courseList, courseCategories, myCourses } from '@/constants/mock'
 import { get, post } from '@/utils/request'
-import type { CourseBrief } from '@/types'
+import type { CourseBrief, CourseDetail } from '@/types'
 
 /** 全局开关：true=mock，false=真实API */
 const USE_MOCK = false
@@ -21,15 +25,18 @@ export async function getCourseListExpanded() {
   return res.data
 }
 
-export async function getCourseCategories() {
-  if (USE_MOCK) return courseCategories
-  const res = await get<Array<{ id: number; name: string; count?: number }>>(`/api/courses/categories`)
-  return res.data
+/** GET /api/courses/categories — 后端返回 string[] */
+export async function getCourseCategories(): Promise<string[]> {
+  if (USE_MOCK) return courseCategories.map((c: { label: string }) => c.label)
+  const res = await get<string[]>(`/api/courses/categories`)
+  const raw: string[] = Array.isArray(res.data) ? res.data : []
+  return raw
 }
 
-export async function getCourseById(id: number): Promise<CourseBrief | null> {
-  if (USE_MOCK) return courseList.find(c => c.id === id) || null
-  const res = await get<CourseBrief>(`/api/courses/${id}`)
+/** GET /api/courses/{id} — 后端返回 CourseDetailResponse */
+export async function getCourseById(id: number): Promise<CourseDetail | null> {
+  if (USE_MOCK) return null
+  const res = await get<CourseDetail>(`/api/courses/${id}`)
   return res.data ?? null
 }
 

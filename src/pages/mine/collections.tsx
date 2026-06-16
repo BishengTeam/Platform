@@ -7,6 +7,7 @@ import { TagFilter } from '@/components/TagFilter'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getMyCollections } from '@/services/dataService'
+import { formatPrice } from '@/utils/format'
 import styles from './collections.module.scss'
 
 const TABS = [STRINGS.MINE_COLLECTIONS_COURSES, STRINGS.MINE_COLLECTIONS_MATERIALS]
@@ -38,7 +39,7 @@ export default function MineCollectionsPage() {
                   <Text className={styles.itemTitle}>{item.title}</Text>
                   {activeTab === TABS[0] && 'instructor' in item && (
                     <Text className={styles.itemSub}>
-                      {item.instructor}  |  ¥{item.price}
+                      {item.instructor}  |  {formatPrice(item.price)}
                     </Text>
                   )}
                   {activeTab === TABS[1] && 'type' in item && (

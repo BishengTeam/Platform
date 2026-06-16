@@ -2,10 +2,9 @@
  * Zone 聚合响应类型 — 对应后端 app/schemas/zone.py
  *
  * 后端 Zone 模块已按聚合端点设计实现，前端收敛为 7 个端点调用。
- * 2026-06-09 对齐后端 OpenAPI schema：
- *   - BannerBrief 补充 target_id/target_type/start_time/end_time/is_active
- *   - ZoneBrief 移除 UI 装饰字段 gradient/icon/tag/tagColor
- *   - ActivityBrief.max_participants 改为可空
+ * 2026-06-16 对齐后端 OpenAPI schema：
+ *   - BannerBrief 移除 start_time/end_time/is_active（后端 BannerBrief 无此三字段）
+ *   - TrainingBrief 补充 location/start_time/end_time/max_participants/cert_type/price
  */
 
 // ============================================================
@@ -17,17 +16,11 @@ export interface BannerBrief {
   id: number
   image_url: string
   jump_link: string | null
-  sort: number
   /** 跳转资源类型: cert / course / activity / zone / url */
   target_type: string | null
   /** 跳转资源 ID */
   target_id: number | null
-  /** 生效开始时间，ISO 8601 */
-  start_time: string | null
-  /** 生效结束时间，ISO 8601 */
-  end_time: string | null
-  /** 是否启用 */
-  is_active: boolean | null
+  sort: number
 }
 
 /** Zone 专区卡片 */
@@ -96,12 +89,18 @@ export interface CertificationResponse {
   pay_first: boolean
 }
 
-/** 训练/培训简要 */
+/** 训练/培训简要 — 对齐后端 AdminTrainingListItem */
 export interface TrainingBrief {
   id: number
   title: string
   description: string | null
   cover_url: string | null
+  location: string | null
+  start_time: string | null
+  end_time: string | null
+  max_participants: number
+  cert_type: string | null
+  price: number
 }
 
 /** 单个专区的聚合数据块 */

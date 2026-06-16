@@ -11,6 +11,7 @@ import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import type { QuizBottomItem } from '@/constants/quiz'
 import { getCourseList, getQuizCategoryTree, getQuizProgress } from '@/services/dataService'
+import { formatPrice } from '@/utils/format'
 import type { CourseBrief, QuizCategory, QuizStats } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
@@ -75,13 +76,24 @@ export default function TrainingPage() {
     }).catch(() => {})
   }, [selectedQuizId])
 
+  // 英文 category → 中文标签映射
+  const categoryLabelMap: Record<string, string> = {
+    basic: STRINGS.STUDY_TAG_BASIC,
+    advanced: STRINGS.STUDY_TAG_ADVANCED,
+    practical: STRINGS.STUDY_TAG_PRACTICAL,
+  }
+  // 中文标签 → 英文 category 反向映射
+  const labelCategoryMap: Record<string, string> = Object.fromEntries(
+    Object.entries(categoryLabelMap).map(([k, v]) => [v, k]),
+  )
+
   // 从课程数据动态提取分类标签：从 CourseBrief.category 去重后映射为 TagFilterItem
   const courseTags = useMemo<TagFilterItem[]>(() => {
     const categories = [...new Set(allCourses.map(c => c.category).filter(Boolean))]
     return [
       { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
       ...categories.map((cat, i) => ({
-        label: cat,
+        label: categoryLabelMap[cat] || cat,
         ...TAG_COLORS[i % TAG_COLORS.length],
       })),
     ]
@@ -91,7 +103,8 @@ export default function TrainingPage() {
 
   const techCourses = useMemo(() => {
     if (techTag === '全部') return allCourses
-    return allCourses.filter(c => c.category === techTag)
+    const eng = labelCategoryMap[techTag] || techTag
+    return allCourses.filter(c => c.category === eng)
   }, [techTag, allCourses])
 
   const handleQuizSelect = useCallback(() => {
@@ -139,9 +152,9 @@ export default function TrainingPage() {
           <ZoneCard
             key={course.id}
             title={course.title}
-            subtitle={course.teacher_name || course.description || ''}
-            tags={[course.category]}
-            price={String(course.price) === '0' || course.price === 0 ? STRINGS.ORDERS_FREE : `¥${course.price}`}
+            subtitle={[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ') || undefined}
+            tags={course.category ? [course.category] : []}
+            price={course.price === 0 ? STRINGS.ORDERS_FREE : formatPrice(course.price)}
             buttonText={STRINGS.STUDY_ENROLL}
             buttonColor='#52C41A'
             onButtonClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}  // eslint-disable-line @typescript-eslint/restrict-template-expressions

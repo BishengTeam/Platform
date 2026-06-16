@@ -10,9 +10,10 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import {
   getHomeAggregation, getActivityList, getJobList, getCompetitionList,
-  enrollActivity, remindActivity, signupCompetition, applyJob,
+  enrollActivity, remindActivity, applyJob,
+  signupCompetition,
 } from '@/services/dataService'
-import type { ActivityBrief, CompetitionBrief, JobBrief, ZoneBrief } from '@/types'
+import type { ActivityBrief, JobBrief, ZoneBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import type { HomeAggregationResponse } from '@/types'
 import styles from './index.module.scss'
@@ -38,7 +39,7 @@ export default function ActivityZonePage() {
   const [competitionBanner, setCompetitionBanner] = useState<ZoneBrief | null>(null)
   const [employmentBanner, setEmploymentBanner] = useState<ZoneBrief | null>(null)
   const [allActivities, setAllActivities] = useState<ActivityBrief[]>([])
-  const [allCompetitions, setAllCompetitions] = useState<CompetitionBrief[]>([])
+  const [allCompetitions, setAllCompetitions] = useState<string[]>([])
   const [allJobs, setAllJobs] = useState<JobBrief[]>([])
 
   useEffect(() => {
@@ -77,9 +78,9 @@ export default function ActivityZonePage() {
     return endedActivities
   }, [activityTag, allActivities, ongoingActivities, upcomingActivities, endedActivities])
 
-  // CompetitionBrief only has created_at; treat all as active
+  // 竞赛赛道名列表
   const competitionData = useMemo(() => {
-    return allCompetitions
+    return allCompetitions.map((name, i) => ({ id: i, track: name }))
   }, [allCompetitions])
 
   // Employment jobs filtering
@@ -112,7 +113,7 @@ export default function ActivityZonePage() {
     return { text: STRINGS.ACTIVITY_JOIN, variant: 'primary' as const }
   }
 
-  const getCompetitionButton = (_item: CompetitionBrief) => {
+  const getCompetitionButton = (_item: { id: number; track: string }) => {
     return { text: STRINGS.COMPETITION_SIGNUP, variant: 'primary' as const }
   }
 
@@ -239,20 +240,21 @@ export default function ActivityZonePage() {
 
             {mainTab === 'competition' && (
               <View className={styles.cardList}>
-                {competitionData.map((item) => {
+                {competitionData.map((item: { id: number; track: string }) => {
                   const btn = getCompetitionButton(item)
                   return (
                     <ZoneCard
-                      key={item.id}
-                      title={item.competition_name}
-                      subtitle={item.school}
-                      tags={[item.track ?? '']}
+                      key={`comp-${item.id}`}
+                      title={item.track}
+                      subtitle=''
+                      tags={[]}
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#FA8C16'
-                      onButtonClick={async () => {
+                      onButtonClick={async (e: unknown) => {
+                        e?.stopPropagation?.()
                         try {
-                          await signupCompetition(item.competition_name, item.school, item.track ?? undefined)
+                          await signupCompetition(item.track, '', undefined)
                           Taro.showToast({ title: '报名成功', icon: 'success' })
                         } catch { /* 错误已由 request 层统一 toast */ }
                       }}

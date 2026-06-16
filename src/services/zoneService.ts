@@ -202,18 +202,11 @@ export async function applyJob(jobId: number): Promise<void> {
 }
 
 // ================================================================
-// 竞赛列表（Phase 5 补充 — 代替已移除的 getCompetitionZone）
+// 竞赛赛道（Phase 5 补充 — 代替已移除的 getCompetitionZone）
 // ================================================================
-/** GET /api/competition/tracks → CompetitionBrief[] — 竞赛列表 */
-export async function getCompetitionList(): Promise<CompetitionBrief[]> {
-  if (USE_MOCK) return mockCompetitionBriefs()
-  const res = await get<{ items?: Array<{ id?: number; competition_name?: string; name?: string; title?: string; school?: string; track?: string | null; created_at?: string; start_time?: string }> }>('/api/competition/tracks')
-  const raw = res.data?.items || res.data || []
-  return raw.map((item) => ({
-    id: item.id ?? 0,
-    competition_name: item.competition_name || item.name || item.title || '',
-    school: item.school || '',
-    track: item.track ?? null,
-    created_at: item.created_at || item.start_time || '',
-  }))
+/** GET /api/competition/tracks → string[] — 后端返回赛道名列表 */
+export async function getCompetitionList(): Promise<string[]> {
+  if (USE_MOCK) return mockCompetitionBriefs().map(c => c.track || c.competition_name)
+  const res = await get<{ tracks: string[] }>('/api/competition/tracks')
+  return res.data?.tracks || []
 }

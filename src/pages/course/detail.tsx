@@ -7,28 +7,24 @@ import { Button } from '@/components/Button'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
 import { getCourseById } from '@/services/dataService'
-import type { CourseSession } from '@/types'
+import { formatPrice } from '@/utils/format'
+import type { CourseDetail } from '@/types'
 import styles from './detail.module.scss'
 
 export default function CourseDetailPage() {
   const [courseId, setCourseId] = useState('')
-  const [selectedSession, setSelectedSession] = useState<CourseSession | null>(null)
+  const [course, setCourse] = useState<CourseDetail | null>(null)
 
   useLoad((options) => {
     setCourseId(options?.id || '')
   })
 
-  const [course, setCourse] = useState(null)
   useEffect(() => {
     if (courseId) getCourseById(Number(courseId)).then(setCourse).catch(() => {})
   }, [courseId])
 
   const handleEnroll = () => {
     if (!course) return
-    if (course.sessions.length > 0 && !selectedSession) {
-      Taro.showToast({ title: STRINGS.COURSE_SELECT_SESSION_TOAST, icon: 'none' })
-      return
-    }
     Taro.showToast({ title: STRINGS.COURSE_ENROLL_SUCCESS, icon: 'success' })
   }
 
@@ -43,79 +39,80 @@ export default function CourseDetailPage() {
     )
   }
 
-  const displayPrice = selectedSession ? selectedSession.price : course.price
+  const displayPrice = formatPrice(course.price)
+
+  // 解析 batches dict 为展示用列表
+  const batchEntries = course.batches ? Object.entries(course.batches) : []
 
   return (
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={STRINGS.COURSE_DETAIL_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
+          {/* 封面区域 */}
           <View className={styles.coverPlaceholder}>
             <Text className={styles.coverText}>{course.title}</Text>
           </View>
 
+          {/* 基本信息卡片 */}
           <View className={styles.infoCard}>
             <Text className={styles.title}>{course.title}</Text>
-            <Text className={styles.description}>{course.description}</Text>
+            {course.description && (
+              <Text className={styles.description}>{course.description}</Text>
+            )}
 
             <View className={styles.metaRow}>
-              <View className={styles.metaItem}>
-                <Text className={styles.metaLabel}>{STRINGS.COURSE_INSTRUCTOR}</Text>
-                <Text className={styles.metaValue}>{course.instructor}</Text>
-              </View>
-              <View className={styles.metaItem}>
-                <Text className={styles.metaLabel}>{STRINGS.COURSE_HOURS}</Text>
-                <Text className={styles.metaValue}>{course.duration}</Text>
-              </View>
-              <View className={styles.metaItem}>
-                <Text className={styles.metaLabel}>{STRINGS.COURSE_RATING}</Text>
-                <Text className={styles.metaValue}>{course.rating} ({course.reviewCount}{STRINGS.COURSE_REVIEWS})</Text>
-              </View>
+              {course.teacher_name && (
+                <View className={styles.metaItem}>
+                  <Text className={styles.metaLabel}>{STRINGS.COURSE_INSTRUCTOR}</Text>
+                  <Text className={styles.metaValue}>{course.teacher_name}</Text>
+                </View>
+              )}
+              {course.category && (
+                <View className={styles.metaItem}>
+                  <Text className={styles.metaLabel}>分类</Text>
+                  <Text className={styles.metaValue}>{course.category}</Text>
+                </View>
+              )}
             </View>
           </View>
 
-          {course.sessions.length > 0 && (
+          {/* 班次信息 */}
+          {batchEntries.length > 0 && (
             <View className={styles.section}>
               <Text className={styles.sectionTitle}>{STRINGS.COURSE_SESSIONS}</Text>
               <View className={styles.sessionList}>
-                {course.sessions.map(s => (
-                  <View
-                    key={s.id}
-                    className={`${styles.sessionItem} ${selectedSession?.id === s.id ? styles.sessionActive : ''}`}
-                    onClick={() => setSelectedSession(s)}
-                  >
+                {batchEntries.map(([key, val]) => (
+                  <View key={key} className={styles.sessionItem}>
                     <View className={styles.sessionInfo}>
-                      <Text className={styles.sessionLabel}>{s.label}</Text>
-                      <Text className={styles.sessionDate}>{s.startDate} ~ {s.endDate}</Text>
+                      <Text className={styles.sessionLabel}>{key}</Text>
                     </View>
-                    <Text className={styles.sessionPrice}>¥{s.price}</Text>
+                    <Text className={styles.sessionPrice}>
+                      {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val)}
+                    </Text>
                   </View>
                 ))}
               </View>
             </View>
           )}
 
-          <View className={styles.section}>
-            <Text className={styles.sectionTitle}>{STRINGS.COURSE_DESCRIPTION}</Text>
-            <Text className={styles.descText}>{course.description}</Text>
-          </View>
-
-          {course.reviews.length > 0 && (
+          {/* 课程描述 */}
+          {course.description && (
             <View className={styles.section}>
-              <Text className={styles.sectionTitle}>{STRINGS.COURSE_REVIEWS} ({course.reviewCount})</Text>
-              {course.reviews.map(r => (
-                <View key={r.id} className={styles.reviewCard}>
-                  <View className={styles.reviewHeader}>
-                    <Text className={styles.reviewUser}>{r.userName}</Text>
-                    <Text className={styles.reviewRating}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</Text>
-                  </View>
-                  <Text className={styles.reviewContent}>{r.content}</Text>
-                  <Text className={styles.reviewDate}>{r.createdAt}</Text>
-                </View>
-              ))}
+              <Text className={styles.sectionTitle}>{STRINGS.COURSE_DESCRIPTION}</Text>
+              <Text className={styles.descText}>{course.description}</Text>
             </View>
           )}
 
+          {/* 讲师联系方式 */}
+          {course.teacher_contact && (
+            <View className={styles.section}>
+              <Text className={styles.sectionTitle}>联系方式</Text>
+              <Text className={styles.descText}>{course.teacher_contact}</Text>
+            </View>
+          )}
+
+          {/* 价格与报名 */}
           <View className={styles.priceCard}>
             <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={displayPrice} isTotal />
           </View>

@@ -587,11 +587,11 @@ export async function getCompetitionStats(): Promise<{ total: number }> {
   return res.data
 }
 
-export async function getCompetitionTracks(): Promise<import('@/types').CompetitionBrief[]> {
+/** GET /api/competition/tracks — 后端返回赛道名列表 */
+export async function getCompetitionTracks(): Promise<string[]> {
   if (USE_MOCK) return []
-  const res = await get<{ items?: import('@/types').CompetitionBrief[] }>('/api/competition/tracks')
-  const data = res.data
-  return data?.items || data || []
+  const res = await get<{ tracks: string[] }>('/api/competition/tracks')
+  return res.data?.tracks || []
 }
 
 export async function getJobs(): Promise<import('@/types').JobBrief[]> {
