@@ -3,7 +3,6 @@ import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
@@ -11,20 +10,18 @@ import { getUserProfile } from '@/services/dataService'
 import type { UserProfileAggregated } from '@/types/profile'
 import styles from './personal-info.module.scss'
 
-interface InfoRow {
-  label: string
-  value: string
-  icon: string
-}
-
 const idMap = STRINGS.IDENTITY_STATUS_MAP
 const genderMap = STRINGS.GENDER_MAP
 
-/** 认证状态 → 标签样式类名 */
-function statusClass(s: string): string {
-  if (s === 'verified') return styles.statusVerified
-  if (s === 'rejected') return styles.statusRejected
-  return styles.statusPending
+function statusBadgeClass(s: string): string {
+  if (s === 'verified') return styles.badgeGreen
+  if (s === 'rejected') return styles.badgeRed
+  return styles.badgeOrange
+}
+
+function fmtTime(t: string | null): string {
+  if (!t) return '-'
+  return t.slice(0, 10)
 }
 
 export default function PersonalInfoPage() {
@@ -33,66 +30,14 @@ export default function PersonalInfoPage() {
 
   useEffect(() => {
     getUserProfile().then(p => setProfile(p))
-      .catch(() => { Taro.showToast({ title: '加载失败', icon: 'none' }) })
+      .catch(() => Taro.showToast({ title: '加载失败', icon: 'none' }))
       .finally(() => setLoading(false))
   }, [])
 
   if (loading || !profile) return null
 
-  const { profile: l1, realname, student, enterprise } = profile
-  const isStudent = realname.user_type === 'student'
-  const displayGender = genderMap[realname.gender || ''] || realname.gender || '-'
-  const displayStatus = idMap[realname.status || ''] || realname.status || '未认证'
-  const displayIdCard = realname.id_card_number || '-'
-  const displayEducation = isStudent ? (student?.education || '-') : '-'
-
-  const displayAge = realname.age != null ? `${realname.age} 岁` : '-'
-
-  const identityRows: InfoRow[] = [
-    { label: '昵称', value: l1.nickname || '-', icon: 'user' },
-    { label: '真实姓名', value: realname.real_name || '-', icon: 'shield' },
-    { label: '性别', value: displayGender, icon: 'user' },
-    { label: '年龄', value: displayAge, icon: 'calendar' },
-  ]
-
-  const securityRows: InfoRow[] = [
-    { label: '身份证号', value: displayIdCard, icon: 'clipboard' },
-    { label: '手机号', value: l1.phone || '-', icon: 'phone' },
-    { label: '邮箱', value: l1.email || '-', icon: 'mail' },
-  ]
-
-  const affiliationRows: InfoRow[] = isStudent
-    ? [
-        { label: '学校', value: student?.school || '-', icon: 'home' },
-        { label: '专业', value: student?.major || '-', icon: 'bookmark' },
-        { label: '学历', value: student?.education || '-', icon: 'book' },
-      ]
-    : [
-        { label: '单位', value: enterprise?.organization || '-', icon: 'briefcase' },
-        { label: '学历', value: displayEducation, icon: 'book' },
-      ]
-
-  const renderCard = (title: string, rows: InfoRow[], icon: string) => (
-    <View className={styles.card}>
-      <View className={styles.cardHead}>
-        <Icon name={icon} size={22} color='#333' />
-        <Text className={styles.cardTitle}>{title}</Text>
-      </View>
-      {rows.map((row, i) => (
-        <View key={row.label}>
-          {i > 0 && <View className={styles.divider} />}
-          <View className={styles.infoRow}>
-            <View className={styles.infoText}>
-              <Text className={styles.infoLabel}>{row.label}</Text>
-              <Text className={styles.infoValue}>{row.value}</Text>
-            </View>
-          </View>
-        </View>
-      ))}
-    </View>
-  )
-
-  if (loading) return null
+  const { profile: l1, realname, student, enterprise, openid, created_at } = profile
+  const isStudent = realname?.user_type === 'student'
 
   return (
     <AuthGuard>
@@ -100,22 +45,89 @@ export default function PersonalInfoPage() {
         <PageHeader title={STRINGS.MINE_PROFILE_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
 
-          {/* 认证状态标签 */}
-          <View className={styles.statusBar}>
-            <View className={`${styles.statusBadge} ${statusClass(realname.status || '')}`}>
-              <Text className={styles.statusText}>{displayStatus}</Text>
+          {/* ============================================================ */}
+          {/* 实名认证状态 */}
+          {/* ============================================================ */}
+          {realname && (
+            <View className={styles.statusRow}>
+              <View className={`${styles.statusBadge} ${statusBadgeClass(realname.identity_status || '')}`}>
+                <Text>{idMap[realname.identity_status || ''] || realname.identity_status || '未认证'}</Text>
+              </View>
+              {realname.reject_reason && (
+                <Text className={styles.rejectReason}>驳回原因：{realname.reject_reason}</Text>
+              )}
             </View>
+          )}
+
+          {/* ============================================================ */}
+          {/* 基础信息 */}
+          {/* ============================================================ */}
+          <View className={styles.card}>
+            <Text className={styles.cardTitle}>基础信息</Text>
+            {field('OpenID', openid)}
+            {field('注册时间', fmtTime(created_at))}
+            {field('昵称', l1.nickname)}
+            {field('邮箱', l1.email)}
+            {field('手机号', l1.phone)}
           </View>
 
-          {/* 卡片 A：核心身份 */}
-          {renderCard('核心身份', identityRows, 'user')}
+          {/* ============================================================ */}
+          {/* 实名认证 */}
+          {/* ============================================================ */}
+          <View className={styles.card}>
+            <Text className={styles.cardTitle}>实名认证</Text>
+            {field('真实姓名', realname?.real_name)}
+            {field('身份证号', realname?.id_card)}
+            {field('性别', genderMap[realname?.gender || ''] || realname?.gender || '-')}
+            {field('年龄', realname?.age != null ? `${realname.age} 岁` : '-')}
+            {field('户籍', realname?.census_register)}
+            {realname?.verified_at && field('认证时间', fmtTime(realname.verified_at))}
+          </View>
 
-          {/* 卡片 B：认证与安全 */}
-          {renderCard('认证与安全', securityRows, 'lock')}
+          {/* ============================================================ */}
+          {/* 学生信息（仅 student） */}
+          {/* ============================================================ */}
+          {isStudent && student && (
+            <View className={styles.card}>
+              <Text className={styles.cardTitle}>学生信息</Text>
+              <View className={styles.statusInline}>
+                <Text className={styles.statusLabel}>审核状态：</Text>
+                <Text className={`${styles.statusTag} ${statusBadgeClass(student.student_status || '')}`}>
+                  {idMap[student.student_status || ''] || student.student_status || '未知'}
+                </Text>
+              </View>
+              {student.reject_reason && (
+                <Text className={styles.rejectReason}>驳回原因：{student.reject_reason}</Text>
+              )}
+              {field('学历', student.education)}
+              {field('学校', student.school)}
+              {field('专业', student.major)}
+              {field('学生证', student.student_card_oss ? '已上传' : '未上传')}
+            </View>
+          )}
 
-          {/* 卡片 C：组织背景 */}
-          {renderCard(isStudent ? '教育背景' : '组织背景', affiliationRows, isStudent ? 'book' : 'briefcase')}
+          {/* ============================================================ */}
+          {/* 企业信息（仅 enterprise） */}
+          {/* ============================================================ */}
+          {!isStudent && enterprise && (
+            <View className={styles.card}>
+              <Text className={styles.cardTitle}>企业信息</Text>
+              <View className={styles.statusInline}>
+                <Text className={styles.statusLabel}>审核状态：</Text>
+                <Text className={`${styles.statusTag} ${statusBadgeClass(enterprise.enterprise_status || '')}`}>
+                  {idMap[enterprise.enterprise_status || ''] || enterprise.enterprise_status || '未知'}
+                </Text>
+              </View>
+              {enterprise.reject_reason && (
+                <Text className={styles.rejectReason}>驳回原因：{enterprise.reject_reason}</Text>
+              )}
+              {field('单位名称', enterprise.organization)}
+            </View>
+          )}
 
+          {/* ============================================================ */}
+          {/* 编辑按钮 */}
+          {/* ============================================================ */}
           <View className={styles.btnWrap}>
             <Button variant='gradient' size='lg' onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` })}>
               {STRINGS.MINE_EDIT_PROFILE_TITLE}
@@ -124,5 +136,14 @@ export default function PersonalInfoPage() {
         </ScrollView>
       </View>
     </AuthGuard>
+  )
+}
+
+function field(label: string, value: string | null | undefined) {
+  return (
+    <View className={styles.fieldRow}>
+      <Text className={styles.fieldLabel}>{label}</Text>
+      <Text className={styles.fieldValue}>{value || '-'}</Text>
+    </View>
   )
 }

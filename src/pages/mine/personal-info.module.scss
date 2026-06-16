@@ -15,9 +15,11 @@
 }
 
 // ---- 认证状态标签 ----
-.statusBar {
+.statusRow {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   padding: 20px $spacing-lg 8px;
 }
 
@@ -25,81 +27,92 @@
   padding: 8px 24px;
   border-radius: 20px;
   border: 2px solid;
-
-  &.statusPending {
-    background: #fff7e6;
-    border-color: #ffd591;
-  }
-  &.statusVerified {
-    background: #f0fff4;
-    border-color: #b7eb8f;
-  }
-  &.statusRejected {
-    background: #fff1f0;
-    border-color: #ffa39e;
-  }
-}
-
-.statusText {
   font-size: 24px;
   font-weight: 600;
 
-  .statusPending & { color: #fa8c16; }
-  .statusVerified & { color: #52c41a; }
-  .statusRejected & { color: #ff4d4f; }
+  &.badgeOrange {
+    background: #fff7e6;
+    border-color: #ffd591;
+    color: #fa8c16;
+  }
+  &.badgeGreen {
+    background: #f0fff4;
+    border-color: #b7eb8f;
+    color: #52c41a;
+  }
+  &.badgeRed {
+    background: #fff1f0;
+    border-color: #ffa39e;
+    color: #ff4d4f;
+  }
+}
+
+.rejectReason {
+  font-size: 24px;
+  color: #ff4d4f;
+  text-align: center;
+}
+
+// ---- 内联状态 ----
+.statusInline {
+  display: flex;
+  align-items: center;
+  padding: 10px $spacing-lg;
+}
+
+.statusLabel {
+  font-size: 24px;
+  color: $color-text-tertiary;
+}
+
+.statusTag {
+  font-size: 24px;
+  font-weight: 500;
+  padding: 2px 12px;
+  border-radius: 10px;
+
+  &.badgeOrange { background: #fff7e6; color: #fa8c16; }
+  &.badgeGreen  { background: #f0fff4; color: #52c41a; }
+  &.badgeRed    { background: #fff1f0; color: #ff4d4f; }
 }
 
 // ---- 卡片 ----
 .card {
   margin: 12px $spacing-lg;
+  padding: 20px $spacing-lg;
   background: $color-white;
   border-radius: 16px;
-  overflow: hidden;
-  padding: 0;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-}
-
-.cardHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 20px $spacing-lg 12px;
-  border-bottom: 1px solid #f0f0f0;
 }
 
 .cardTitle {
   font-size: 28px;
   font-weight: 600;
   color: $color-text;
+  margin-bottom: 8px;
 }
 
-// ---- 行 ----
-.infoRow {
+// ---- 字段行 ----
+.fieldRow {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 18px $spacing-lg;
+  padding: 14px 0;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
-.infoText {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.infoLabel {
-  font-size: 22px;
+.fieldLabel {
+  font-size: 26px;
   color: $color-text-tertiary;
 }
 
-.infoValue {
-  font-size: 28px;
+.fieldValue {
+  font-size: 26px;
   color: $color-text;
-}
-
-.divider {
-  height: 1px;
-  background: #f5f5f5;
-  margin: 0 $spacing-lg;
 }
 
 // ---- 按钮 ----

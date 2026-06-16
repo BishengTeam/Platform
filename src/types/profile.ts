@@ -50,7 +50,7 @@ export interface UserProfileDetail {
   language: string
 }
 
-/** 对应后端 PUT /api/user/profile 请求体 (UserProfileUpdate schema — 重构后仅 Level-1 字段) */
+/** 对应后端 PUT /api/user/profile 请求体 (UserProfileUpdate schema) */
 export interface UserProfileUpdatePayload {
   nickname?: string
   email?: string
@@ -59,9 +59,11 @@ export interface UserProfileUpdatePayload {
 
 // ================================================================
 // 重构后类型：GET /api/user/profile 聚合返回结构
+// 注意：后端文档规定 GET /api/user/profile 一次返回全部扁平字段。
+// 前端为渲染便利拆分为嵌套子对象，字段名与后端 schema 对齐。
 // ================================================================
 
-/** Level 1 — 用户可自由修改 */
+/** Level 1 — 用户可自由编辑，无需审核 */
 export interface UserProfileL1 {
   nickname: string | null
   email: string | null
@@ -72,13 +74,20 @@ export interface UserProfileL1 {
 export interface UserRealnameL2 {
   user_type: 'student' | 'enterprise' | 'social' | null
   real_name: string | null
-  id_card_number: string | null
+  /** 脱敏身份证号，如 5101****1237 */
+  id_card: string | null
+  /** 身份证正面 OSS key */
+  id_card_front_oss: string | null
+  /** 身份证反面 OSS key */
+  id_card_back_oss: string | null
   gender: string | null
   age: number | null
-  status: string | null
+  /** 户籍地（后端根据身份证号自动推导） */
+  census_register: string | null
+  identity_status: string | null
   reject_reason: string | null
   verified_at: string | null
-  /** 明文身份证号 — 仅已实名时返回，用于报名表单自动填表 */
+  /** 明文身份证号 — 用户端始终 null，仅管理端返回 */
   id_card_raw: string | null
 }
 
@@ -88,7 +97,7 @@ export interface UserStudentL2 {
   school: string | null
   major: string | null
   student_card_oss: string | null
-  status: string | null
+  student_status: string | null
   reject_reason: string | null
   verified_at: string | null
 }
@@ -96,15 +105,19 @@ export interface UserStudentL2 {
 /** Level 2 — 企业信息（需审核，仅 user_type=enterprise） */
 export interface UserEnterpriseL2 {
   organization: string | null
-  status: string | null
+  enterprise_status: string | null
   reject_reason: string | null
   verified_at: string | null
 }
 
-/** GET /api/user/profile 聚合返回值 */
+/** GET /api/user/profile 聚合返回值（前端组装） */
 export interface UserProfileAggregated {
+  /** 微信 openid */
+  openid: string | null
+  /** 注册时间 */
+  created_at: string | null
   profile: UserProfileL1
-  realname: UserRealnameL2
+  realname?: UserRealnameL2
   student?: UserStudentL2
   enterprise?: UserEnterpriseL2
   level2_edit_count: number
@@ -115,7 +128,7 @@ export interface UserProfileAggregated {
 // 新增 Service 函数的请求 / 响应类型
 // ================================================================
 
-/** PUT /api/user/identity — 修改实名信息 */
+/** POST /api/user/identity — 提交/修改实名信息（触发审核） */
 export interface UpdateIdentityPayload {
   user_type?: 'student' | 'enterprise'
   real_name?: string
@@ -124,7 +137,7 @@ export interface UpdateIdentityPayload {
   id_card_back_oss?: string
 }
 
-/** POST /api/user/student — 首次提交学生信息 */
+/** POST /api/user/student — 首次提交学生信息（触发审核） */
 export interface SubmitStudentPayload {
   education: string
   school: string
@@ -132,7 +145,7 @@ export interface SubmitStudentPayload {
   student_card_oss?: string
 }
 
-/** PUT /api/user/student — 修改学生信息 */
+/** POST /api/user/student — 修改学生信息（触发审核） */
 export interface UpdateStudentPayload {
   education?: string
   school?: string
@@ -140,12 +153,12 @@ export interface UpdateStudentPayload {
   student_card_oss?: string
 }
 
-/** POST /api/user/enterprise — 首次提交企业信息 */
+/** POST /api/user/enterprise — 首次提交企业信息（触发审核） */
 export interface SubmitEnterprisePayload {
   organization: string
 }
 
-/** PUT /api/user/enterprise — 修改企业信息 */
+/** POST /api/user/enterprise — 修改企业信息（触发审核） */
 export interface UpdateEnterprisePayload {
   organization?: string
 }

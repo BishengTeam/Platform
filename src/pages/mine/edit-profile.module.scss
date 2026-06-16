@@ -61,6 +61,83 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+.section + .section {
+  margin-top: 16px;
+}
+
+// ---- 段落标题 ----
+.sectionTitle {
+  font-size: 28px;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.statusBadge {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+// ---- 用户类型选择 ----
+.userTypeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.fieldLabel {
+  font-size: 26px;
+  color: $color-text;
+}
+
+.userTypeOptions {
+  display: flex;
+  gap: 12px;
+}
+
+.userTypeOption {
+  padding: 8px 24px;
+  border-radius: 8px;
+  border: 2px solid #d9d9d9;
+  font-size: 24px;
+  color: $color-text-tertiary;
+}
+
+.userTypeActive {
+  border-color: $color-primary;
+  color: $color-primary;
+  background: #e6f7ff;
+}
+
+// ---- 派生信息 ----
+.derivedRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.derivedText {
+  font-size: 24px;
+  color: $color-text-tertiary;
+}
+
+// ---- 上传行 ----
+.uploadRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 // ---- 按钮 ----
 .btnWrap {
   display: flex;

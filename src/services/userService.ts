@@ -26,7 +26,9 @@ import type {
 } from '@/types/profile'
 
 import type { CheckinStatus } from '@/types/quiz'
+import Taro from '@tarojs/taro'
 import { get, post, put, del, getToken } from '@/utils/request'
+import { getIdentityStatus } from './authService'
 
 import { getCertificationList } from './zoneService'
 
@@ -329,10 +331,12 @@ export async function validateCoupon(code: string): Promise<{ valid: boolean; di
 // 用户资料
 // ================================================================
 
-/** GET /api/user/profile — 用户资料（重构后返回聚合结构） */
+/** GET /api/user/profile — 单次请求返回全量扁平数据，前端映射为聚合结构 */
 export async function getUserProfile(): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
+      openid: 'oABC123xyz',
+      created_at: '2025-09-01T08:00:00Z',
       profile: {
         nickname: '张三',
         email: 'zhangsan@example.com',
@@ -341,10 +345,13 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
       realname: {
         user_type: 'student',
         real_name: '张三',
-        id_card_number: '110101********1234',
+        id_card: '110101********1234',
+        id_card_front_oss: null,
+        id_card_back_oss: null,
         gender: 'male',
         age: 35,
-        status: 'verified',
+        census_register: '北京',
+        identity_status: 'verified',
         reject_reason: null,
         verified_at: '2026-06-01T00:00:00Z',
         id_card_raw: '110101199001011234',
@@ -354,7 +361,7 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
         school: '清华大学',
         major: '计算机科学与技术',
         student_card_oss: null,
-        status: 'verified',
+        student_status: 'verified',
         reject_reason: null,
         verified_at: '2026-06-01T00:00:00Z',
       },
@@ -362,16 +369,61 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  const res = await get<UserProfileAggregated>('/api/user/profile')
-  return res.data
+
+  const res = await get<any>('/api/user/profile')
+  const d = res.data
+  if (!d) throw new Error('用户数据为空')
+
+  const isStudent = d.user_type === 'student'
+
+  return {
+    openid: d.openid || null,
+    created_at: d.created_at || null,
+    profile: {
+      nickname: d.nickname || null,
+      email: d.email || null,
+      phone: d.phone || null,
+    },
+    realname: d.real_name ? {
+      user_type: d.user_type || null,
+      real_name: d.real_name || null,
+      id_card: d.id_card || null,
+      id_card_front_oss: d.id_card_front_oss || null,
+      id_card_back_oss: d.id_card_back_oss || null,
+      gender: d.gender || null,
+      age: d.age ?? null,
+      census_register: d.census_register || null,
+      identity_status: d.identity_status || null,
+      reject_reason: d.reject_reason || null,
+      verified_at: d.verified_at || null,
+      id_card_raw: d.id_card_raw || null,
+    } : undefined,
+    student: isStudent ? {
+      education: d.education || null,
+      school: d.school || null,
+      major: d.major || null,
+      student_card_oss: d.student_card_oss || null,
+      student_status: d.student_status || null,
+      reject_reason: d.student_reject_reason || null,
+      verified_at: d.student_verified_at || null,
+    } : undefined,
+    enterprise: !isStudent ? {
+      organization: d.organization || null,
+      enterprise_status: d.enterprise_status || null,
+      reject_reason: d.enterprise_reject_reason || null,
+      verified_at: d.enterprise_verified_at || null,
+    } : undefined,
+    level2_edit_count: d.level2_edit_count ?? 0,
+    level2_edit_reset: d.level2_edit_reset || null,
+  }
 }
 
 /** PUT /api/user/profile — 更新用户资料（重构后仅 Level-1 字段：nickname, email, phone） */
 export async function updateUserProfile(data: UserProfileUpdatePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) return {
     profile: { nickname: data.nickname || '张三', email: data.email || 'zhangsan@example.com', phone: data.phone || '138****1234' },
-    realname: { user_type: 'student', real_name: '张三', id_card_number: '110101********1234', gender: 'male', age: 35, status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-    student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z' },
+    realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
+    student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z' },
     level2_edit_count: 0,
     level2_edit_reset: '2026-07-01T00:00:00Z',
   }
@@ -437,10 +489,10 @@ export async function getTickets(): Promise<Array<{ id: string; title: string; s
 
 export async function uploadFile(filePath: string): Promise<{ url: string }> {
   if (USE_MOCK) return { url: filePath }
-  const Taro = require('@tarojs/taro').default
   const token = getToken()
+  const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
   const res = await Taro.uploadFile({
-    url: '/api/upload',
+    url: `${baseUrl}/api/upload`,
     filePath,
     name: 'file',
     header: { Authorization: token ? `Bearer ${token}` : '' },
@@ -671,7 +723,7 @@ export async function fetchQuickQuestions(): Promise<string[]> {
 // Level-2 身份信息管理（重构新增）
 // ================================================================
 
-/** PUT /api/user/identity — 修改实名信息（触发审核） */
+/** POST /api/user/identity — 修改实名信息（触发审核） */
 export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
@@ -679,17 +731,20 @@ export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserP
       realname: {
         user_type: data.user_type || 'student',
         real_name: data.real_name || '张三',
-        id_card_number: data.id_card_number || '110101********1234',
+        id_card: (data.id_card_number || '110101********1234').slice(0, 6) + '********' + (data.id_card_number || '110101********1234').slice(-4),
+        id_card_front_oss: data.id_card_front_oss || null,
+        id_card_back_oss: data.id_card_back_oss || null,
         gender: 'male', age: 35,
-        status: 'pending', reject_reason: null, verified_at: null,
+        census_register: '四川成都',
+        identity_status: 'pending', reject_reason: null, verified_at: null,
         id_card_raw: data.id_card_number || '110101199001011234',
       },
-      student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z' },
+      student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z' },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  const res = await put<UserProfileAggregated>('/api/user/identity', data as unknown as Record<string, unknown>)
+  const res = await post<UserProfileAggregated>('/api/user/identity', data as unknown as Record<string, unknown>)
   return res.data
 }
 
@@ -698,8 +753,8 @@ export async function submitStudent(data: SubmitStudentPayload): Promise<UserPro
   if (USE_MOCK) {
     return {
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'student', real_name: '张三', id_card_number: '110101********1234', gender: 'male', age: 35, status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-      student: { ...data, student_card_oss: data.student_card_oss || null, status: 'pending', reject_reason: null, verified_at: null },
+      realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
+      student: { ...data, student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
@@ -708,18 +763,18 @@ export async function submitStudent(data: SubmitStudentPayload): Promise<UserPro
   return res.data
 }
 
-/** PUT /api/user/student — 修改学生信息（触发审核） */
+/** POST /api/user/student — 修改学生信息（触发审核） */
 export async function updateStudent(data: UpdateStudentPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'student', real_name: '张三', id_card_number: '110101********1234', gender: 'male', age: 35, status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-      student: { education: data.education || '本科', school: data.school || '清华大学', major: data.major || '计算机科学与技术', student_card_oss: data.student_card_oss || null, status: 'pending', reject_reason: null, verified_at: null },
+      realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
+      student: { education: data.education || '本科', school: data.school || '清华大学', major: data.major || '计算机科学与技术', student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  const res = await put<UserProfileAggregated>('/api/user/student', data as unknown as Record<string, unknown>)
+  const res = await post<UserProfileAggregated>('/api/user/student', data as unknown as Record<string, unknown>)
   return res.data
 }
 
@@ -728,8 +783,8 @@ export async function submitEnterprise(data: SubmitEnterprisePayload): Promise<U
   if (USE_MOCK) {
     return {
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'enterprise', real_name: '张三', id_card_number: '110101********1234', gender: 'male', age: 35, status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-      enterprise: { ...data, status: 'pending', reject_reason: null, verified_at: null },
+      realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
+      enterprise: { ...data, enterprise_status: 'pending', reject_reason: null, verified_at: null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
@@ -738,17 +793,17 @@ export async function submitEnterprise(data: SubmitEnterprisePayload): Promise<U
   return res.data
 }
 
-/** PUT /api/user/enterprise — 修改企业信息（触发审核） */
+/** POST /api/user/enterprise — 修改企业信息（触发审核） */
 export async function updateEnterprise(data: UpdateEnterprisePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'enterprise', real_name: '张三', id_card_number: '110101********1234', gender: 'male', age: 35, status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-      enterprise: { organization: data.organization || '新华三集团', status: 'pending', reject_reason: null, verified_at: null },
+      realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
+      enterprise: { organization: data.organization || '新华三集团', enterprise_status: 'pending', reject_reason: null, verified_at: null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  const res = await put<UserProfileAggregated>('/api/user/enterprise', data as unknown as Record<string, unknown>)
+  const res = await post<UserProfileAggregated>('/api/user/enterprise', data as unknown as Record<string, unknown>)
   return res.data
 }

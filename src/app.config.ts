@@ -22,7 +22,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/registration',
-      pages: ['index', 'form', 'xuexin-guide', 'confirm'],
+      pages: ['index', 'form', 'form-sangfor', 'form-nisp', 'form-renshe', 'xuexin-guide', 'confirm'],
     },
     {
       root: 'pages/payment',
@@ -50,7 +50,11 @@ export default defineAppConfig({
     },
     {
       root: 'pages/mine',
-      pages: ['courses', 'profile', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate'],
+      pages: ['courses', 'profile', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers'],
+    },
+    {
+      root: 'pages/employment-zone',
+      pages: ['index'],
     },
     {
       root: 'pages/login-poster',
