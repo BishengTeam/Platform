@@ -133,7 +133,7 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
 }
 
 /** 课程列表独立 mock 开关 */
-const USE_MOCK_COURSE_LIST = true
+const USE_MOCK_COURSE_LIST = false
 
 /** GET /api/courses — 课程列表 */
 export async function getCourseList(): Promise<CourseBrief[]> {

@@ -34,7 +34,7 @@ export async function getCourseCategories(): Promise<string[]> {
 }
 
 /** 课程详情 mock 开关 — 配合 zoneService 的 USE_MOCK_COURSE_LIST 使用 */
-const USE_MOCK_DETAIL = true
+const USE_MOCK_DETAIL = false
 
 /** GET /api/courses/{id} — 后端返回 CourseDetailResponse */
 export async function getCourseById(id: number): Promise<CourseDetail | null> {

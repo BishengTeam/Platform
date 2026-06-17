@@ -6,54 +6,92 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { courseList } from '@/constants/mock'
-import { formatPrice } from '@/utils/format'
+import { getCourseById, enrollCourse } from '@/services/dataService'
+import { formatPrice, formatCategory } from '@/utils/format'
 import type { CourseDetail } from '@/types'
 import styles from './detail.module.scss'
 
 export default function CourseDetailPage() {
   const [courseId, setCourseId] = useState('')
   const [course, setCourse] = useState<CourseDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [enrolling, setEnrolling] = useState(false)
 
   useLoad((options) => {
     setCourseId(options?.id || '')
   })
 
   useEffect(() => {
-    if (!courseId) return
-    const id = Number(courseId)
-    // 直接取 mock 数据，绕过 service 异步层
-    const c = courseList[id - 1]
-    if (c) {
-      const detail: CourseDetail = {
-        id,
-        title: c.title,
-        category: c.category,
-        description: c.description,
-        cover_url: c.cover || null,
-        video_url: null,
-        price: c.price,
-        batches: c.sessions?.length
-          ? Object.fromEntries(c.sessions.map((s: any) => [s.id, s]))
-          : null,
-        teacher_name: c.instructor || null,
-        teacher_contact: null,
-      }
-      setCourse(detail)
+    if (!courseId) {
+      setLoading(false)
+      return
     }
+    const id = Number(courseId)
+    if (Number.isNaN(id)) {
+      setError(STRINGS.COURSE_NOT_FOUND)
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    getCourseById(id)
+      .then((data) => {
+        if (data) {
+          setCourse(data)
+        } else {
+          setError(STRINGS.COURSE_NOT_FOUND)
+        }
+      })
+      .catch((err) => {
+        console.error('[CourseDetail] fetch error:', err)
+        setError(err?.message || STRINGS.COURSE_NOT_FOUND)
+      })
+      .finally(() => setLoading(false))
   }, [courseId])
 
-  const handleEnroll = () => {
-    if (!course) return
-    Taro.showToast({ title: STRINGS.COURSE_ENROLL_SUCCESS, icon: 'success' })
+  const handleEnroll = async () => {
+    if (!course || enrolling) return
+    const id = Number(courseId)
+    if (Number.isNaN(id)) return
+
+    setEnrolling(true)
+    try {
+      await enrollCourse(id)
+      Taro.showToast({ title: STRINGS.COURSE_ENROLL_SUCCESS, icon: 'success' })
+    } catch (err: any) {
+      console.error('[CourseDetail] enroll error:', err)
+      Taro.showToast({
+        title: err?.message || '报名失败，请稍后重试',
+        icon: 'none',
+      })
+    } finally {
+      setEnrolling(false)
+    }
   }
 
-  if (!course) {
+  if (loading) {
     return (
       <AuthGuard>
         <View className={styles.page}>
           <PageHeader title={STRINGS.COURSE_DETAIL_TITLE} shouldShowBack />
-          <View className={styles.empty}><Text>{STRINGS.COURSE_NOT_FOUND}</Text></View>
+          <View className={styles.empty}>
+            <Text>加载中...</Text>
+          </View>
+        </View>
+      </AuthGuard>
+    )
+  }
+
+  if (error || !course) {
+    return (
+      <AuthGuard>
+        <View className={styles.page}>
+          <PageHeader title={STRINGS.COURSE_DETAIL_TITLE} shouldShowBack />
+          <View className={styles.empty}>
+            <Text>{error || STRINGS.COURSE_NOT_FOUND}</Text>
+          </View>
         </View>
       </AuthGuard>
     )
@@ -91,7 +129,7 @@ export default function CourseDetailPage() {
               {course.category && (
                 <View className={styles.metaItem}>
                   <Text className={styles.metaLabel}>分类</Text>
-                  <Text className={styles.metaValue}>{course.category}</Text>
+                  <Text className={styles.metaValue}>{formatCategory(course.category)}</Text>
                 </View>
               )}
             </View>
@@ -138,7 +176,13 @@ export default function CourseDetailPage() {
           </View>
 
           <View className={styles.btnWrap}>
-            <Button variant='gradient' size='lg' onClick={handleEnroll}>
+            <Button
+              variant='gradient'
+              size='lg'
+              onClick={handleEnroll}
+              loading={enrolling}
+              disabled={enrolling}
+            >
               {STRINGS.COURSE_ENROLL_BTN}
             </Button>
           </View>

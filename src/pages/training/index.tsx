@@ -11,7 +11,7 @@ import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import type { QuizBottomItem } from '@/constants/quiz'
 import { getCourseList, getQuizCategoryTree, getQuizProgress } from '@/services/dataService'
-import { formatPrice } from '@/utils/format'
+import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
 import type { CourseBrief, QuizCategory, QuizStats } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
@@ -76,17 +76,6 @@ export default function TrainingPage() {
     }).catch(() => {})
   }, [selectedQuizId])
 
-  // 英文 category → 中文标签映射（对齐认证页 VENDOR_DISPLAY_MAP 风格）
-  const CATEGORY_DISPLAY_MAP: Record<string, string> = {
-    basic: STRINGS.STUDY_TAG_BASIC,
-    advanced: STRINGS.STUDY_TAG_ADVANCED,
-    practical: STRINGS.STUDY_TAG_PRACTICAL,
-    certification: STRINGS.STUDY_TAG_CERTIFICATION,
-  }
-  // 中文标签 → 英文 category 反向映射
-  const labelCategoryMap: Record<string, string> = Object.fromEntries(
-    Object.entries(CATEGORY_DISPLAY_MAP).map(([k, v]) => [v, k]),
-  )
 
   // 从课程数据动态提取分类标签：从 CourseBrief.category 去重后映射为 TagFilterItem
   const courseTags = useMemo<TagFilterItem[]>(() => {
@@ -94,7 +83,7 @@ export default function TrainingPage() {
     return [
       { label: STRINGS.STUDY_TAG_ALL, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
       ...categories.map((cat, i) => ({
-        label: CATEGORY_DISPLAY_MAP[cat] || cat,
+        label: formatCategory(cat),
         ...TAG_COLORS[i % TAG_COLORS.length],
       })),
     ]
@@ -104,8 +93,9 @@ export default function TrainingPage() {
 
   const techCourses = useMemo(() => {
     if (techTag === STRINGS.STUDY_TAG_ALL) return allCourses
-    const eng = labelCategoryMap[techTag] || techTag
-    return allCourses.filter(c => c.category === eng)
+    const eng = CATEGORY_LABEL_MAP[techTag] || techTag
+    const lower = eng.toLowerCase()
+    return allCourses.filter(c => c.category?.toLowerCase() === lower)
   }, [techTag, allCourses])
 
   const handleQuizSelect = useCallback(() => {
@@ -154,7 +144,7 @@ export default function TrainingPage() {
             key={course.id}
             title={course.title}
             subtitle={[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ') || undefined}
-            tags={course.category ? [course.category] : []}
+            tags={course.category ? [formatCategory(course.category)] : []}
             price={course.price === 0 ? STRINGS.ORDERS_FREE : formatPrice(course.price)}
             buttonText={STRINGS.STUDY_ENROLL}
             buttonColor='#52C41A'

@@ -14,3 +14,30 @@
 export function formatPrice(priceInFen: number, prefix = '¥'): string {
   return `${prefix}${(priceInFen / 100).toFixed(2)}`
 }
+
+// ---- Category 中文映射 ----
+
+/** 后端英文 category → 前端中文标签 */
+export const CATEGORY_DISPLAY_MAP: Record<string, string> = {
+  basic: '基础课程',
+  advanced: '进阶课程',
+  practical: '实战课程',
+  certification: '认证课程',
+}
+
+/** 中文标签 → 英文 category 反向映射 */
+export const CATEGORY_LABEL_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(CATEGORY_DISPLAY_MAP).map(([k, v]) => [v, k]),
+)
+
+/**
+ * 将英文 category 转为中文展示标签。
+ * 大小写不敏感匹配，未知值原样返回。
+ */
+export function formatCategory(category: string | null | undefined): string {
+  if (!category) return ''
+  const lower = category.toLowerCase()
+  // 大小写不敏感查找
+  const key = Object.keys(CATEGORY_DISPLAY_MAP).find(k => k.toLowerCase() === lower)
+  return key ? CATEGORY_DISPLAY_MAP[key] : category
+}

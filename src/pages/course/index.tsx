@@ -7,7 +7,7 @@ import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
 import { STRINGS } from '@/constants/strings'
 import { getCourseList, getCourseCategories } from '@/services/dataService'
-import { formatPrice } from '@/utils/format'
+import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
 import type { CourseBrief } from '@/types'
 import styles from './index.module.scss'
 
@@ -21,15 +21,21 @@ export default function CourseIndexPage() {
     getCourseCategories().then(setCategories).catch(() => {})
   }, [])
 
+  // 将后端返回的英文 category 转为中文展示标签
+  const displayCategories = useMemo(() => {
+    if (!categories.length) return [STRINGS.COURSE_CATEGORY_ALL]
+    return [
+      STRINGS.COURSE_CATEGORY_ALL,
+      ...categories.map(cat => formatCategory(cat)),
+    ]
+  }, [categories])
+
   const filtered = useMemo(() => {
     if (activeTag === STRINGS.COURSE_CATEGORY_ALL || activeTag === '全部') return allCourses
-    const catMap: Record<string, string> = {
-      [STRINGS.STUDY_TAG_BASIC]: 'basic',
-      [STRINGS.STUDY_TAG_ADVANCED]: 'advanced',
-      [STRINGS.STUDY_TAG_PRACTICAL]: 'practical',
-    }
-    const cat = catMap[activeTag]
-    return cat ? allCourses.filter(c => c.category === cat) : allCourses
+    // 先从中文标签映射回英文 category，如果 miss 则 activeTag 本身可能就是英文 category
+    const cat = CATEGORY_LABEL_MAP[activeTag] || activeTag
+    const lower = cat.toLowerCase()
+    return allCourses.filter(c => c.category?.toLowerCase() === lower)
   }, [activeTag, allCourses])
 
   return (
@@ -38,7 +44,7 @@ export default function CourseIndexPage() {
         <PageHeader title={STRINGS.COURSE_LIST_TITLE} shouldShowBack />
         <View className={styles.body}>
           <View className={styles.filterRow}>
-            <TagFilter tags={categories} activeTag={activeTag} onChange={setActiveTag} />
+            <TagFilter tags={displayCategories} activeTag={activeTag} onChange={setActiveTag} />
           </View>
           <View className={styles.cardList}>
             {filtered.map(course => (
@@ -46,7 +52,7 @@ export default function CourseIndexPage() {
                 key={course.id}
                 title={course.title}
                 subtitle={[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ') || undefined}
-                tags={course.category ? [course.category] : []}
+                tags={course.category ? [formatCategory(course.category)] : []}
                 price={course.price === 0 ? STRINGS.ORDERS_FREE : formatPrice(course.price)}
                 buttonText={STRINGS.COURSE_VIEW_DETAIL}
                 onCardClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}
