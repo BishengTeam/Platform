@@ -1,0 +1,44 @@
+<view class="cv-container">
+  <!-- 视频播放区域 -->
+  <view class="cv-video-wrapper">
+    <video
+      id="cv-video"
+      class="cv-video"
+      src="{{videoSrc}}"
+      controls
+      enable-danmu
+      danmu-list="{{danmuList}}"
+      show-center-play-btn
+      show-play-btn
+      object-fit="contain"
+      bindtimeupdate="onTimeUpdate"
+    />
+    <!-- 弹幕遮罩层（cover-view 实现实时弹幕飘过效果） -->
+    <cover-view class="cv-danmu-layer">
+      <cover-view
+        wx:for="{{activeDanmus}}"
+        wx:key="id"
+        class="cv-danmu-item"
+        style="top: {{item.top}}%; color: {{item.color}};"
+        animation="{{item.animationData}}"
+      >
+        {{item.text}}
+      </cover-view>
+    </cover-view>
+  </view>
+
+  <!-- 弹幕发送栏 -->
+  <view class="cv-danmu-bar">
+    <input
+      class="cv-danmu-input"
+      placeholder="发送弹幕，与大家一起讨论..."
+      placeholder-class="cv-danmu-placeholder"
+      value="{{danmuInput}}"
+      bindinput="onInput"
+      confirm-type="send"
+      bindconfirm="sendDanmu"
+      maxlength="50"
+    />
+    <button class="cv-danmu-btn" bindtap="sendDanmu">发送</button>
+  </view>
+</view>

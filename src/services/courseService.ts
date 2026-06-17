@@ -33,9 +33,32 @@ export async function getCourseCategories(): Promise<string[]> {
   return raw
 }
 
+/** 课程详情 mock 开关 — 配合 zoneService 的 USE_MOCK_COURSE_LIST 使用 */
+const USE_MOCK_DETAIL = true
+
 /** GET /api/courses/{id} — 后端返回 CourseDetailResponse */
 export async function getCourseById(id: number): Promise<CourseDetail | null> {
-  if (USE_MOCK) return null
+  console.log('[getCourseById] called with id:', id, 'USE_MOCK_DETAIL:', USE_MOCK_DETAIL, 'courseList.length:', courseList.length)
+  if (USE_MOCK_DETAIL) {
+    // getCourseList mock 用 index+1 作为 ID，这里按下标取
+    console.log('[getCourseById] mock branch, id:', id)
+    if (id < 1 || id > courseList.length) { console.log('[getCourseById] id out of range, returning null'); return null }
+    const c = courseList[id - 1]
+    return {
+      id,
+      title: c.title,
+      category: c.category,
+      description: c.description,
+      cover_url: c.cover || null,
+      video_url: null,
+      price: c.price,
+      batches: c.sessions?.length
+        ? Object.fromEntries(c.sessions.map((s: any) => [s.id, s]))
+        : null,
+      teacher_name: c.instructor || null,
+      teacher_contact: null,
+    }
+  }
   const res = await get<CourseDetail>(`/api/courses/${id}`)
   return res.data ?? null
 }

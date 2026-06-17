@@ -36,7 +36,7 @@ const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
 
 export default function TrainingPage() {
   const [mainTab, setMainTab] = useState<string>(MAIN_TABS[0])
-  const [techTag, setTechTag] = useState('全部')
+  const [techTag, setTechTag] = useState(STRINGS.STUDY_TAG_ALL)
 
   const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
   const [quizCategories, setQuizCategories] = useState<QuizCategory[]>([])
@@ -76,24 +76,25 @@ export default function TrainingPage() {
     }).catch(() => {})
   }, [selectedQuizId])
 
-  // 英文 category → 中文标签映射
-  const categoryLabelMap: Record<string, string> = {
+  // 英文 category → 中文标签映射（对齐认证页 VENDOR_DISPLAY_MAP 风格）
+  const CATEGORY_DISPLAY_MAP: Record<string, string> = {
     basic: STRINGS.STUDY_TAG_BASIC,
     advanced: STRINGS.STUDY_TAG_ADVANCED,
     practical: STRINGS.STUDY_TAG_PRACTICAL,
+    certification: STRINGS.STUDY_TAG_CERTIFICATION,
   }
   // 中文标签 → 英文 category 反向映射
   const labelCategoryMap: Record<string, string> = Object.fromEntries(
-    Object.entries(categoryLabelMap).map(([k, v]) => [v, k]),
+    Object.entries(CATEGORY_DISPLAY_MAP).map(([k, v]) => [v, k]),
   )
 
   // 从课程数据动态提取分类标签：从 CourseBrief.category 去重后映射为 TagFilterItem
   const courseTags = useMemo<TagFilterItem[]>(() => {
     const categories = [...new Set(allCourses.map(c => c.category).filter(Boolean))]
     return [
-      { label: '全部', activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
+      { label: STRINGS.STUDY_TAG_ALL, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
       ...categories.map((cat, i) => ({
-        label: categoryLabelMap[cat] || cat,
+        label: CATEGORY_DISPLAY_MAP[cat] || cat,
         ...TAG_COLORS[i % TAG_COLORS.length],
       })),
     ]
@@ -102,7 +103,7 @@ export default function TrainingPage() {
   const selectedQuiz = quizCategories.find(q => q.id === selectedQuizId) || quizCategories[0]
 
   const techCourses = useMemo(() => {
-    if (techTag === '全部') return allCourses
+    if (techTag === STRINGS.STUDY_TAG_ALL) return allCourses
     const eng = labelCategoryMap[techTag] || techTag
     return allCourses.filter(c => c.category === eng)
   }, [techTag, allCourses])

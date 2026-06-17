@@ -9,6 +9,7 @@ import {
   initialMessages,
   homeCourses,
   homeActivities,
+  courseList,
   competitionBannerItems,
   ongoingCompetitions,
   upcomingCompetitions,
@@ -131,8 +132,22 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
   return resolveMedia(res.data)
 }
 
+/** 课程列表独立 mock 开关 */
+const USE_MOCK_COURSE_LIST = true
+
 /** GET /api/courses — 课程列表 */
 export async function getCourseList(): Promise<CourseBrief[]> {
+  if (USE_MOCK_COURSE_LIST) {
+    return courseList.map((c: any, i: number) => ({
+      id: i + 1,
+      title: c.title,
+      category: c.category,
+      description: c.description,
+      cover_url: c.cover || null,
+      price: c.price,
+      teacher_name: c.instructor || null,
+    }))
+  }
   if (USE_MOCK) return []
   const res = await get<{ items?: CourseBrief[] }>('/api/courses')
   return res.data?.items || res.data || []

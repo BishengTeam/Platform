@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCourseById } from '@/services/dataService'
+import { courseList } from '@/constants/mock'
 import { formatPrice } from '@/utils/format'
 import type { CourseDetail } from '@/types'
 import styles from './detail.module.scss'
@@ -20,7 +20,27 @@ export default function CourseDetailPage() {
   })
 
   useEffect(() => {
-    if (courseId) getCourseById(Number(courseId)).then(setCourse).catch(() => {})
+    if (!courseId) return
+    const id = Number(courseId)
+    // 直接取 mock 数据，绕过 service 异步层
+    const c = courseList[id - 1]
+    if (c) {
+      const detail: CourseDetail = {
+        id,
+        title: c.title,
+        category: c.category,
+        description: c.description,
+        cover_url: c.cover || null,
+        video_url: null,
+        price: c.price,
+        batches: c.sessions?.length
+          ? Object.fromEntries(c.sessions.map((s: any) => [s.id, s]))
+          : null,
+        teacher_name: c.instructor || null,
+        teacher_contact: null,
+      }
+      setCourse(detail)
+    }
   }, [courseId])
 
   const handleEnroll = () => {
