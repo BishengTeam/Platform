@@ -21,13 +21,18 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 80px;
-  background: $color-bg-tertiary;
-  border-radius: $radius-sm;
+  height: 84px;
+  background: #f7f8fa;
+  border-radius: 12px;
   padding: 0 $spacing-sm;
   box-sizing: border-box;
-  border: 2px solid transparent;
-  transition: border-color 0.2s;
+  border: 2px solid #e8ecf1;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:active {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 2px rgba($color-primary, 0.12);
+  }
 }
 
 .pickerError {
@@ -35,18 +40,23 @@
 }
 
 .value {
-  font-size: $font-base;
+  font-size: 28px;
+  font-weight: 500;
   color: $color-text;
 }
 
 .placeholder {
-  font-size: $font-base;
-  color: $color-text-tertiary;
+  font-size: 28px;
+  color: #b0b8c1;
 }
 
 .arrow {
-  font-size: $font-sm;
-  color: $color-text-tertiary;
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #b0b8c1;
 }
 
 .error {

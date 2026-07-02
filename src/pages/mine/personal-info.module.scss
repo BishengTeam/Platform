@@ -11,7 +11,66 @@
 .body {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  --bottom-bar-h: 120px;
+  padding-bottom: calc(var(--bottom-bar-h) + #{$safe-bottom});
+}
+
+// ---- 个人主页头部 ----
+.headerPanel {
+  display: flex;
+  align-items: center;
+  margin: 0 $spacing-lg 12px;
+  padding: 28px 24px;
+  background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(22, 119, 255, 0.25);
+}
+
+.headerAvatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.headerInfo {
+  flex: 1;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.headerNickname {
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.headerMeta {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.headerOpenid {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.openidText {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.12);
+  padding: 6px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.25);
+  }
 }
 
 // ---- 认证状态标签 ----
@@ -53,29 +112,6 @@
   text-align: center;
 }
 
-// ---- 内联状态 ----
-.statusInline {
-  display: flex;
-  align-items: center;
-  padding: 10px $spacing-lg;
-}
-
-.statusLabel {
-  font-size: 24px;
-  color: $color-text-tertiary;
-}
-
-.statusTag {
-  font-size: 24px;
-  font-weight: 500;
-  padding: 2px 12px;
-  border-radius: 10px;
-
-  &.badgeOrange { background: #fff7e6; color: #fa8c16; }
-  &.badgeGreen  { background: #f0fff4; color: #52c41a; }
-  &.badgeRed    { background: #fff1f0; color: #ff4d4f; }
-}
-
 // ---- 卡片 ----
 .card {
   margin: 12px $spacing-lg;
@@ -89,7 +125,27 @@
   font-size: 28px;
   font-weight: 600;
   color: $color-text;
+}
+
+// ---- 卡片标题行（标题 + 胶囊标签） ----
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 8px;
+}
+
+.capsuleBadge {
+  font-size: 22px;
+  font-weight: 500;
+  padding: 2px 14px;
+  border-radius: 20px;
+  line-height: 1.6;
+  white-space: nowrap;
+
+  &.badgeOrange { background: #fff7e6; color: #fa8c16; }
+  &.badgeGreen  { background: #f0fff4; color: #52c41a; }
+  &.badgeRed    { background: #fff1f0; color: #ff4d4f; }
 }
 
 // ---- 字段行 ----
@@ -115,7 +171,91 @@
   color: $color-text;
 }
 
-// ---- 按钮 ----
-.btnWrap {
-  padding: $spacing-xl $spacing-lg;
+// ---- 双列字段行 ----
+.fieldPair {
+  display: flex;
+  gap: 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.fieldHalf {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// ---- 底部吸底操作栏 ----
+.bottomBar {
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  padding: 16px $spacing-lg calc(16px + #{$safe-bottom});
+  background: rgba(246, 248, 250, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.06);
+}
+
+// ---- 驳回浮窗 ----
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  width: 560px;
+  background: $color-white;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.modalTitle {
+  display: block;
+  text-align: center;
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  padding: 48px 0 24px;
+}
+
+.modalContent {
+  padding: 0 40px 32px;
+}
+
+.modalItem {
+  display: block;
+  font-size: $font-base;
+  color: $color-text-secondary;
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+
+.modalBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  border-top: 1px solid $color-border-light;
+}
+
+.modalBtnText {
+  font-size: $font-base;
+  color: $color-primary;
+  font-weight: 500;
 }

@@ -344,6 +344,9 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
         nickname: '张三',
         email: 'zhangsan@example.com',
         phone: '138****1234',
+        province: '四川',
+        city: '成都',
+        address: '高新区天府大道 999 号',
       },
       realname: {
         user_type: 'student',
@@ -358,6 +361,15 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
         reject_reason: null,
         verified_at: '2026-06-01T00:00:00Z',
         id_card_raw: '110101199001011234',
+        last_name_zh: '张',
+        first_name_zh: '三',
+        last_name_en: 'Zhang',
+        first_name_en: 'San',
+        avatar_oss: null,
+        birth_date: '1990-01-01',
+        zip_code: '610000',
+        political_status: '共青团员',
+        ethnicity: '汉族',
       },
       student: {
         education: '本科',
@@ -367,8 +379,12 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
         student_status: 'verified',
         reject_reason: null,
         verified_at: '2026-06-01T00:00:00Z',
+        enrollment_pdf_oss: null,
+        degree_cert_oss: null,
       },
       level2_edit_count: 0,
+      edit_count_limit: 5,
+      edit_count_reset_hours: null,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
@@ -386,6 +402,9 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
       nickname: d.nickname || null,
       email: d.email || null,
       phone: d.phone || null,
+      province: d.province || null,
+      city: d.city || null,
+      address: d.address || null,
     },
     realname: d.real_name ? {
       user_type: d.user_type || null,
@@ -397,9 +416,18 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
       age: d.age ?? null,
       census_register: d.census_register || null,
       identity_status: d.identity_status || null,
-      reject_reason: d.reject_reason || null,
+      reject_reason: d.identity_reject_reason || null,
       verified_at: d.verified_at || null,
       id_card_raw: d.id_card_raw || null,
+      last_name_zh: d.last_name_zh || null,
+      first_name_zh: d.first_name_zh || null,
+      last_name_en: d.last_name_en || null,
+      first_name_en: d.first_name_en || null,
+      avatar_oss: d.avatar_oss || null,
+      birth_date: d.birth_date || null,
+      zip_code: d.zip_code || null,
+      political_status: d.political_status || null,
+      ethnicity: d.ethnicity || null,
     } : undefined,
     student: isStudent ? {
       education: d.education || null,
@@ -409,6 +437,8 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
       student_status: d.student_status || null,
       reject_reason: d.student_reject_reason || null,
       verified_at: d.student_verified_at || null,
+      enrollment_pdf_oss: d.enrollment_pdf_oss || null,
+      degree_cert_oss: d.degree_cert_oss || null,
     } : undefined,
     enterprise: !isStudent ? {
       organization: d.organization || null,
@@ -416,7 +446,9 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
       reject_reason: d.enterprise_reject_reason || null,
       verified_at: d.enterprise_verified_at || null,
     } : undefined,
-    level2_edit_count: d.level2_edit_count ?? 0,
+    level2_edit_count: d.edit_count ?? d.level2_edit_count ?? 0,
+    edit_count_limit: d.edit_count_limit ?? 5,
+    edit_count_reset_hours: d.edit_count_reset_hours ?? null,
     level2_edit_reset: d.level2_edit_reset || null,
   }
 }
@@ -424,10 +456,12 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
 /** PUT /api/user/profile — 更新用户资料（重构后仅 Level-1 字段：nickname, email, phone） */
 export async function updateUserProfile(data: UserProfileUpdatePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) return {
-    profile: { nickname: data.nickname || '张三', email: data.email || 'zhangsan@example.com', phone: data.phone || '138****1234' },
-    realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-    student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z' },
+    profile: { nickname: data.nickname || '张三', email: data.email || 'zhangsan@example.com', phone: data.phone || '138****1234', province: data.province || null, city: data.city || null, address: data.address || null },
+    realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
+    student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', enrollment_pdf_oss: null, degree_cert_oss: null },
     level2_edit_count: 0,
+    edit_count_limit: 5,
+    edit_count_reset_hours: null,
     level2_edit_reset: '2026-07-01T00:00:00Z',
   }
   const res = await put<UserProfileAggregated>('/api/user/profile', data as unknown as Record<string, unknown>)
@@ -730,7 +764,7 @@ export async function fetchQuickQuestions(): Promise<string[]> {
 export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
-      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
+      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
       realname: {
         user_type: data.user_type || 'student',
         real_name: data.real_name || '张三',
@@ -740,9 +774,10 @@ export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserP
         gender: 'male', age: 35,
         census_register: '四川成都',
         identity_status: 'pending', reject_reason: null, verified_at: null,
-        id_card_raw: data.id_card_number || '110101199001011234',
+        id_card_raw: data.id_card_number || '110101199001011234', last_name_zh: null, first_name_zh: null,
+        last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null,
       },
-      student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z' },
+      student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', enrollment_pdf_oss: null, degree_cert_oss: null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
@@ -755,9 +790,9 @@ export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserP
 export async function submitStudent(data: SubmitStudentPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
-      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-      student: { ...data, student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null },
+      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
+      realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
+      student: { ...data, student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null, enrollment_pdf_oss: data.enrollment_pdf_oss || null, degree_cert_oss: data.degree_cert_oss || null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
@@ -770,9 +805,9 @@ export async function submitStudent(data: SubmitStudentPayload): Promise<UserPro
 export async function updateStudent(data: UpdateStudentPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
-      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
-      student: { education: data.education || '本科', school: data.school || '清华大学', major: data.major || '计算机科学与技术', student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null },
+      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
+      realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
+      student: { education: data.education || '本科', school: data.school || '清华大学', major: data.major || '计算机科学与技术', student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null, enrollment_pdf_oss: data.enrollment_pdf_oss || null, degree_cert_oss: data.degree_cert_oss || null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
@@ -785,8 +820,8 @@ export async function updateStudent(data: UpdateStudentPayload): Promise<UserPro
 export async function submitEnterprise(data: SubmitEnterprisePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
-      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
+      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
+      realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
       enterprise: { ...data, enterprise_status: 'pending', reject_reason: null, verified_at: null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',
@@ -800,8 +835,8 @@ export async function submitEnterprise(data: SubmitEnterprisePayload): Promise<U
 export async function updateEnterprise(data: UpdateEnterprisePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
-      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234' },
-      realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234' },
+      profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
+      realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
       enterprise: { organization: data.organization || '新华三集团', enterprise_status: 'pending', reject_reason: null, verified_at: null },
       level2_edit_count: 1,
       level2_edit_reset: '2026-07-01T00:00:00Z',

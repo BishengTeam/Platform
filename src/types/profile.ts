@@ -55,12 +55,13 @@ export interface UserProfileUpdatePayload {
   nickname?: string
   email?: string
   phone?: string
+  province?: string
+  city?: string
+  address?: string
 }
 
 // ================================================================
 // 重构后类型：GET /api/user/profile 聚合返回结构
-// 注意：后端文档规定 GET /api/user/profile 一次返回全部扁平字段。
-// 前端为渲染便利拆分为嵌套子对象，字段名与后端 schema 对齐。
 // ================================================================
 
 /** Level 1 — 用户可自由编辑，无需审核 */
@@ -68,6 +69,9 @@ export interface UserProfileL1 {
   nickname: string | null
   email: string | null
   phone: string | null
+  province: string | null
+  city: string | null
+  address: string | null
 }
 
 /** Level 2 — 实名信息（需审核） */
@@ -89,6 +93,24 @@ export interface UserRealnameL2 {
   verified_at: string | null
   /** 明文身份证号 — 用户端始终 null，仅管理端返回 */
   id_card_raw: string | null
+  /** 中文姓 */
+  last_name_zh: string | null
+  /** 中文名 */
+  first_name_zh: string | null
+  /** 英文姓（拼音） */
+  last_name_en: string | null
+  /** 英文名（拼音） */
+  first_name_en: string | null
+  /** 二寸免冠照 OSS key */
+  avatar_oss: string | null
+  /** 出生日期（后端自动计算） */
+  birth_date: string | null
+  /** 邮编（后端自动计算） */
+  zip_code: string | null
+  /** 政治面貌 */
+  political_status: string | null
+  /** 民族 */
+  ethnicity: string | null
 }
 
 /** Level 2 — 学生信息（需审核，仅 user_type=student） */
@@ -100,6 +122,10 @@ export interface UserStudentL2 {
   student_status: string | null
   reject_reason: string | null
   verified_at: string | null
+  /** 学籍报告 PDF OSS key */
+  enrollment_pdf_oss: string | null
+  /** 学位证书图片 OSS key */
+  degree_cert_oss: string | null
 }
 
 /** Level 2 — 企业信息（需审核，仅 user_type=enterprise） */
@@ -122,6 +148,10 @@ export interface UserProfileAggregated {
   enterprise?: UserEnterpriseL2
   level2_edit_count: number
   level2_edit_reset: string | null
+  /** 编辑次数上限（后端下发） */
+  edit_count_limit: number
+  /** 距离下次重置的小时数，null 时不展示重置时间 */
+  edit_count_reset_hours: number | null
 }
 
 // ================================================================
@@ -135,6 +165,13 @@ export interface UpdateIdentityPayload {
   id_card_number?: string
   id_card_front_oss?: string
   id_card_back_oss?: string
+  last_name_zh?: string
+  first_name_zh?: string
+  last_name_en?: string
+  first_name_en?: string
+  avatar_oss?: string
+  political_status?: string
+  ethnicity?: string
 }
 
 /** POST /api/user/student — 首次提交学生信息（触发审核） */
@@ -143,6 +180,8 @@ export interface SubmitStudentPayload {
   school: string
   major: string
   student_card_oss?: string
+  enrollment_pdf_oss?: string
+  degree_cert_oss?: string
 }
 
 /** POST /api/user/student — 修改学生信息（触发审核） */
@@ -151,6 +190,8 @@ export interface UpdateStudentPayload {
   school?: string
   major?: string
   student_card_oss?: string
+  enrollment_pdf_oss?: string
+  degree_cert_oss?: string
 }
 
 /** POST /api/user/enterprise — 首次提交企业信息（触发审核） */

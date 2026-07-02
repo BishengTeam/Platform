@@ -41,7 +41,7 @@ export function FormPicker({
           <Text className={value ? styles.value : styles.placeholder}>
             {displayText}
           </Text>
-          <Text className={styles.arrow}>&#9660;</Text>
+          <View className={styles.arrow} />
         </View>
       </Picker>
       {showError && <Text className={styles.error}>{error.message}</Text>}
