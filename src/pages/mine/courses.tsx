@@ -8,13 +8,14 @@ import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getMyCourses } from '@/services/dataService'
+import type { MyCourse } from '@/types/mine'
 import styles from './courses.module.scss'
 
 const STATUS_TAGS = [STRINGS.MINE_COURSES_ACTIVE, STRINGS.MINE_COURSES_PENDING, STRINGS.MINE_COURSES_EXPIRED]
 
 export default function MyCoursesPage() {
   const [activeStatus, setActiveStatus] = useState<string>(STATUS_TAGS[0])
-  const [allCourses, setAllCourses] = useState([])
+  const [allCourses, setAllCourses] = useState<MyCourse[]>([])
 
   useEffect(() => {
     getMyCourses().then(setAllCourses).catch(() => {})

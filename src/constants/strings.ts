@@ -134,6 +134,9 @@ export const STRINGS = {
   REGISTRATION_TAG_ALL: '全部',
   REGISTRATION_LOADING: '加载中...',
   REGISTRATION_EMPTY: '暂无认证项目',
+  REGISTRATION_ALL_CERTS: '全部认证',
+  REGISTRATION_CATEGORY_COUNT: '{count} 个认证',
+  REGISTRATION_CATEGORY_TITLE: '认证分类',
 
   // ---- Phone Decrypt ----
   FORM_PHONE_WECHAT_AUTH: '微信一键授权',
@@ -179,6 +182,7 @@ export const STRINGS = {
   FORM_COUPON_SECTION: '考试券',
   FORM_COUPON_COUNT: '可用考试券',
   FORM_COUPON_COUNT_UNIT: '张',
+  FORM_COUPON_CODE_PLACEHOLDER: '请输入考试券码',
   FORM_PRICE_DETAIL: '费用明细',
   FORM_PRICE_EXAM_FEE: '考试费',
   FORM_PRICE_COUPON_DISCOUNT: '考试券抵扣',
@@ -549,6 +553,7 @@ export const STRINGS = {
   COURSE_SELECT_SESSION_TOAST: '请选择班次',
   COURSE_ENROLL_SUCCESS: '报名成功',
   COURSE_NOT_FOUND: '课程不存在',
+  COURSE_LOAD_ERROR: '课程加载失败，请稍后重试',
 
   // ---- Mine ----
   MINE_COURSES_TITLE: '我的课程',

@@ -58,4 +58,18 @@ export interface CourseDetail {
   batches: Record<string, unknown> | null
   teacher_name: string | null
   teacher_contact: string | null
+  /** 当前用户是否有学习权限 */
+  has_access: boolean
+  /** 报名记录 ID（已报名时返回） */
+  enrollment_id: number | null
+  /** 章节列表 */
+  chapters: Array<{
+    id: number
+    title: string
+    video_url: string | null
+    duration: number | null
+    sort_order: number
+  }>
+  /** 试看时长（秒） */
+  free_preview_seconds: number | null
 }

@@ -1,8 +1,8 @@
 {
-  "name": "Platform",
+  "name": "zhiyouxue",
   "version": "1.0.0",
   "private": true,
-  "description": "",
+  "description": "智优学微信小程序",
   "templateInfo": {
     "name": "default",
     "typescript": true,

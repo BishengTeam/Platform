@@ -9,6 +9,7 @@ export const ROUTES = {
   PROFILE: 'pages/profile/index',
   ORDERS: 'pages/orders/index',
   REGISTRATION_INDEX: 'pages/registration/index',
+  REGISTRATION_CATEGORY: 'pages/registration/category',
   REGISTRATION_FORM: 'pages/registration/form',
   REGISTRATION_FORM_SANGFOR: 'pages/registration/form-sangfor',
   REGISTRATION_FORM_NISP: 'pages/registration/form-nisp',

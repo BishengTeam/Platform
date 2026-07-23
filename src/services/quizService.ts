@@ -120,12 +120,19 @@ export async function getQuizCategoryTree(): Promise<QuizCategory[]> {
   return convertCategoryTree(res.data || [])
 }
 
-export async function getQuizQuestions(categoryId?: string) {
+export async function getQuizQuestions(categoryId?: string, page = 1, pageSize = 100) {
   if (USE_MOCK) {
     if (categoryId) return quizQuestions.filter(q => q.categoryId === categoryId)
     return quizQuestions
   }
-  const res = await get<{ items?: QuizQuestionResponse[] }>('/api/quiz/questions', categoryId ? { category_id: categoryId } : undefined)
+  const params: Record<string, unknown> = { page, page_size: pageSize }
+  if (categoryId) {
+    const categoryIdNum = Number(categoryId)
+    if (!Number.isNaN(categoryIdNum)) {
+      params.category_id = categoryIdNum
+    }
+  }
+  const res = await get<{ items?: QuizQuestionResponse[] }>('/api/quiz/questions', params)
   const data = res.data
   const items: QuizQuestionResponse[] = data?.items || (Array.isArray(data) ? data : [])
   // 将后端 QuizQuestionResponse 转为前端 QuizQuestion（C 端不返回 correct_answer）
@@ -142,7 +149,8 @@ export async function getWrongBook(): Promise<WrongQuestion[]> {
     ...toQuizQuestion(item.question),
     recordId: item.id as number,
     wrongDate: (item.updated_at as string)?.slice(0, 10) ?? '',
-    wrongCount: (item.wrong_count as number) ?? 1,
+    // 后端 QuizRecordQuestionResponse 暂无 wrong_count 字段，默认 1
+    wrongCount: 1,
   }))
 }
 
@@ -292,27 +300,18 @@ export async function getQuizProgress(categoryId: string): Promise<import('@/typ
     console.log('[getQuizProgress] categoryId:', categoryId, 'raw:', JSON.stringify(data))
   }
 
-  /** 从多个候选字段名中取第一个有效数值，兼容不同后端命名 */
-  const num = (...keys: string[]): number => {
-    for (const k of keys) {
-      const v = (data as Record<string, unknown>)[k]
-      if (typeof v === 'number') return v
-    }
-    return 0
-  }
-
   return {
-    totalAnswers: num('total_answers', 'total'),
-    correctAnswers: num('correct_answers', 'correct'),
-    accuracy: num('accuracy'),
-    totalQuestions: num('total_questions', 'total', 'question_count'),
-    answeredQuestions: num('answered_questions', 'answered', 'completed'),
-    completionRate: num('completion_rate', 'completion'),
-    streakDays: num('streak_days', 'streak'),
-    totalCheckinDays: num('total_checkin_days', 'checkin_days', 'total_checkin'),
-    wrongCount: num('wrong_count', 'wrong'),
-    collectedCount: num('collected_count', 'collected', 'favorite_count'),
-    todayAnswers: num('today_answers', 'today'),
-    todayCorrect: num('today_correct'),
+    totalAnswers: (data.answered as number) ?? 0,
+    correctAnswers: (data.correct as number) ?? 0,
+    accuracy: (data.accuracy as number) ?? 0,
+    totalQuestions: (data.total as number) ?? 0,
+    answeredQuestions: (data.answered as number) ?? 0,
+    completionRate: data.total ? Number((((data.answered as number) ?? 0) / (data.total as number)).toFixed(2)) : 0,
+    streakDays: 0,
+    totalCheckinDays: 0,
+    wrongCount: 0,
+    collectedCount: 0,
+    todayAnswers: 0,
+    todayCorrect: 0,
   }
 }

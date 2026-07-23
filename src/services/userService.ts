@@ -113,8 +113,8 @@ function toOrder(item: OrderBackendItem): Order {
     : '免费'
   return {
     id: String(item.id),
-    title: item.candidate_name || item.cert_type,
-    description: `${item.cert_type}（${maskPhone(item.candidate_phone)}）`,
+    title: item.candidate_name || item.product_type,
+    description: `${item.product_type}（${maskPhone(item.candidate_phone)}）`,
     status: mapBackendStatus(item.status),
     date,
     amount,
@@ -136,8 +136,8 @@ function toOrderDetail(item: OrderBackendItem): OrderDetail {
   return {
     orderId: String(item.id),
     courseCover: '',
-    courseTitle: item.candidate_name || item.cert_type || '',
-    courseSubtitle: item.cert_type ? `${item.cert_type} · 报名` : '',
+    courseTitle: item.candidate_name || item.product_type || '',
+    courseSubtitle: item.product_type ? `${item.product_type} · 报名` : '',
     amountPaid: item.price != null ? (item.price / 100).toFixed(2) : '0.00',
     paymentMethod: '微信支付',
     paymentTime: item.paid_at || '',
@@ -157,16 +157,17 @@ export async function getOrderDetail(id: number) {
 }
 
 export async function getPointsBalance() {
-  if (USE_MOCK) return pointsBalance
-  const res = await get<{ total: number; available: number }>(`/api/points`)
-  return res.data
+  if (USE_MOCK) return { total: pointsBalance, available: pointsBalance }
+  const res = await get<{ balance: number }>(`/api/points`)
+  const balance = res.data?.balance ?? 0
+  return { total: balance, available: balance }
 }
 
-export async function getPointRecords() {
+export async function getPointRecords(): Promise<import('@/types/mine').PointRecord[]> {
   if (USE_MOCK) return pointRecords
   const res = await get<{ items?: import('@/types/mine').PointRecord[] }>(`/api/points/history`)
   const data = res.data
-  return data?.items || data || []
+  return (data?.items || data || []) as import('@/types/mine').PointRecord[]
 }
 
 /** 后端协议项 DTO */
@@ -181,7 +182,8 @@ interface AgreementBackendItem {
 
 export async function getAgreements() {
   if (USE_MOCK) return agreements
-  const res = await get<{ items?: AgreementBackendItem[] }>(`/api/agreements`)
+  // NOTE: Backend mounts agreement_router at root (/agreements), not under /api
+  const res = await get<{ items?: AgreementBackendItem[] }>(`/agreements`)
   const data = res.data
   const items: AgreementBackendItem[] = data?.items || (Array.isArray(data) ? data : [])
   return items.map((item: AgreementBackendItem) => ({
@@ -190,7 +192,7 @@ export async function getAgreements() {
     status: item.status,
     content: item.content || '',
     createdAt: item.created_at || '',
-    signedAt: item.status !== 'pending_sign' ? item.updated_at || undefined : undefined,
+    signedAt: item.status === 'signed' ? item.updated_at || undefined : undefined,
   }))
 }
 
@@ -223,14 +225,14 @@ export async function getMyCollections() {
 
 export async function getRegisteredExams(): Promise<Array<{id: string; name: string; examCode: string; date: string; status: string; link: string}>> {
   if (USE_MOCK) return registeredExams
-  type RegisteredExamBackendItem = { id: number; cert_type: string; status: string; paid_at: string; created_at: string }
+  type RegisteredExamBackendItem = { id: number; product_type: string; status: string; paid_at: string; created_at: string }
   const res = await get<{ items?: RegisteredExamBackendItem[] }>('/api/orders', { status: 'paid' })
   const items = res.data?.items || res.data || []
   const orders = Array.isArray(items) ? items : []
   return orders.map((order: RegisteredExamBackendItem) => ({
     id: String(order.id),
-    name: order.cert_type,
-    examCode: order.cert_type,
+    name: order.product_type,
+    examCode: order.product_type,
     date: order.paid_at || order.created_at || '',
     status: '已报名',
     link: '',
@@ -241,9 +243,16 @@ export async function getRegisteredExams(): Promise<Array<{id: string; name: str
 // P1 — 订单 / 支付
 // ================================================================
 
-/** POST /api/orders — 创建订单 */
+/** POST /api/orders — 创建订单
+ *
+ * 后端要求：
+ * - order_kind: 'certification' | 'course'
+ * - product_type: 商品类型代码（如 H3C-NE）
+ * - candidate_*: 考生信息（认证报名时必填）
+ */
 export async function createOrder(data: {
-  cert_type: string
+  order_kind: 'certification' | 'course'
+  product_type: string
   candidate_name: string
   candidate_phone: string
   candidate_idcard?: string
@@ -298,7 +307,12 @@ export async function addFavorite(courseId: number): Promise<void> {
 
 export async function removeFavorite(courseId: number): Promise<void> {
   if (USE_MOCK) return
-  await del(`/api/collections`, { target_type: 'course', target_id: courseId })
+  // 后端 DELETE /api/collections/{collection_id} 需要收藏记录 ID，
+  // 先按 target_type + target_id 查询再删除
+  const listRes = await get<{ items?: Array<{ id: number; target_type: string; target_id: number }> }>('/api/collections', { target_type: 'course', target_id: courseId, page_size: 1 })
+  const item = listRes.data?.items?.[0]
+  if (!item) return
+  await del(`/api/collections/${item.id}`)
 }
 
 // ================================================================
@@ -324,10 +338,29 @@ export async function submitCheckin(): Promise<CheckinStatus> {
 // 优惠券
 // ================================================================
 
-export async function validateCoupon(code: string): Promise<{ valid: boolean; discount?: number }> {
+/** 后端优惠券对象 */
+interface CouponBackendItem {
+  id: number
+  code: string
+  type: string
+  value: number
+  min_order_amount: number
+  valid_from: string | null
+  valid_to: string | null
+  status: string
+  used_at: string | null
+}
+
+function isCouponValid(c: CouponBackendItem): boolean {
+  return c.status === 'unused' && (!c.valid_to || new Date(c.valid_to).getTime() > Date.now())
+}
+
+export async function validateCoupon(code: string): Promise<{ valid: boolean; discount?: number; message?: string }> {
   if (USE_MOCK) return { valid: code === 'MOCK100', discount: 100 }
-  const res = await post<{ valid: boolean; discount?: number }>('/api/coupons/validate', { coupon_code: code })
-  return res.data
+  const res = await post<CouponBackendItem>('/api/coupons/validate', { coupon_code: code })
+  const c = res.data
+  const valid = isCouponValid(c)
+  return { valid, discount: valid ? c.value : undefined, message: valid ? undefined : '优惠券无效或已过期' }
 }
 
 // ================================================================
@@ -497,9 +530,8 @@ export async function signAgreement(agreementId: string, signatureImage: string)
 // 优惠券列表 / 工单
 // ================================================================
 
-export async function getCoupons(): Promise<Array<{ id: string; name: string; discount: number; valid_until: string }>> {
+export async function getCoupons(): Promise<Array<{ id: string; name: string; discount: number; valid_until: string; amount: number; expire_at: string; status: string }>> {
   if (USE_MOCK) return []
-  type CouponBackendItem = { id: number; type?: string; code?: string; value?: number; valid_to?: string }
   const res = await get<{ items?: CouponBackendItem[] }>('/api/coupons')
   const data = res.data
   const items: CouponBackendItem[] = data?.items || (Array.isArray(data) ? data : [])
@@ -510,14 +542,20 @@ export async function getCoupons(): Promise<Array<{ id: string; name: string; di
     valid_until: c.valid_to || '',
     amount: c.value || 0,
     expire_at: c.valid_to || '',
+    status: c.status,
   }))
 }
 
 export async function getTickets(): Promise<Array<{ id: string; title: string; status: string; created_at: string }>> {
   if (USE_MOCK) return []
-  const res = await get<{ items?: Array<{ id: number; title: string; status: string; created_at: string }> }>('/api/tickets')
+  const res = await get<{ items?: Array<{ id: number; content: string; status: string; created_at: string }> }>('/api/tickets')
   const data = res.data
-  return data?.items || data || []
+  return (data?.items || data || []).map((t) => ({
+    id: String(t.id),
+    title: t.content?.slice(0, 50) || '',
+    status: t.status,
+    created_at: t.created_at,
+  }))
 }
 
 // ================================================================
@@ -543,18 +581,27 @@ export async function uploadFile(filePath: string): Promise<{ url: string }> {
 // 深信服 / NISP 报名
 // ================================================================
 
-export async function getSangforCoupons(): Promise<Array<{ id: string; name: string; discount: number; valid_until: string }>> {
-  return getCoupons()
+export async function getSangforCoupons(): Promise<Array<{ id: string; name: string; code: string }>> {
+  if (USE_MOCK) return []
+  type SangforCouponBackendItem = { id: number; name: string; chinese_name: string; code: string }
+  const res = await get<SangforCouponBackendItem[]>('/api/cert/sangfor/coupons')
+  const raw: SangforCouponBackendItem[] = Array.isArray(res.data) ? res.data : []
+  return raw.map((c: SangforCouponBackendItem) => ({
+    id: String(c.id),
+    name: c.name || c.chinese_name || c.code,
+    code: c.code,
+  }))
 }
 
-export async function getSangforVerifyCode(phone: string): Promise<void> {
-  if (USE_MOCK) return
-  await post('/api/cert/sangfor/verify-code', { phone })
+export async function getSangforVerifyCode(): Promise<{ code: string }> {
+  if (USE_MOCK) return { code: '123456' }
+  const res = await get<{ code: string }>('/api/cert/sangfor/verify-code')
+  return res.data
 }
 
 export async function getNispPinyin(name: string): Promise<{ pinyin: string }> {
   if (USE_MOCK) return { pinyin: 'zhangsan' }
-  const res = await get<{ pinyin: string }>('/api/cert/nisp/pinyin', { text: name })
+  const res = await get<{ pinyin: string }>('/api/cert/nisp/pinyin', { name })
   return res.data
 }
 
@@ -568,14 +615,14 @@ export async function getNispTemplate(): Promise<Record<string, unknown>> {
 // 积分
 // ================================================================
 
-export async function claimPoints(amount: number): Promise<void> {
+export async function claimPoints(scene: import('@/types/mine').PointsClaimScene, amount: number, sourceId?: string): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/points/claim', { amount })
+  await post('/api/points/claim', { scene, amount, source_id: sourceId })
 }
 
-export async function redeemPoints(amount: number): Promise<void> {
+export async function redeemPoints(redeemType: import('@/types/mine').PointsRedeemType, amount: number, targetId?: number): Promise<void> {
   if (USE_MOCK) return
-  await post('/api/points/redeem', { amount })
+  await post('/api/points/redeem', { redeem_type: redeemType, amount, target_id: targetId })
 }
 
 export async function getPrices(): Promise<Array<{ cert_type: string; price: number }>> {
@@ -596,7 +643,12 @@ export async function addCollection(type: string, id: number): Promise<void> {
 
 export async function removeCollection(type: string, id: number): Promise<void> {
   if (USE_MOCK) return
-  await del('/api/collections', { target_type: type, target_id: id })
+  // 后端 DELETE /api/collections/{collection_id} 需要收藏记录 ID，
+  // 先按 target_type + target_id 查询再删除
+  const listRes = await get<{ items?: Array<{ id: number; target_type: string; target_id: number }> }>('/api/collections', { target_type: type, target_id: id, page_size: 1 })
+  const item = listRes.data?.items?.[0]
+  if (!item) return
+  await del(`/api/collections/${item.id}`)
 }
 
 // ================================================================
@@ -610,15 +662,17 @@ export async function getActivities(): Promise<import('@/types').ActivityBrief[]
   return data?.items || data || []
 }
 
-export async function registerActivity(activityId: number): Promise<void> {
+export async function registerActivity(activityId: number, name: string, phone: string, remark?: string): Promise<void> {
   if (USE_MOCK) return
-  await post(`/api/activities/${activityId}/register`)
+  await post('/api/activities/register', { activity_id: activityId, name, phone, remark: remark ?? null })
 }
 
 export async function getCompetitionStats(): Promise<{ total: number }> {
   if (USE_MOCK) return { total: 0 }
-  const res = await get<{ total: number }>('/api/competition/stats')
-  return res.data
+  type CompetitionStatsBackendItem = { school: string; count: number }
+  const res = await get<CompetitionStatsBackendItem[]>('/api/competition/stats')
+  const items = Array.isArray(res.data) ? res.data : []
+  return { total: items.reduce((sum, item) => sum + (item.count || 0), 0) }
 }
 
 /** GET /api/competition/tracks — 后端返回赛道名列表 */
@@ -669,11 +723,12 @@ export async function getShareInfo(code: string): Promise<Record<string, unknown
 // 媒体
 // ================================================================
 
-/** GET /api/media/{file_id} — 访问/下载文件 */
-export async function getMediaUrl(fileId: string): Promise<{ url: string }> {
-  if (USE_MOCK) return { url: '' }
-  const res = await get<{ url: string }>(`/api/media/${fileId}`)
-  return res.data
+/** GET /api/media/{file_id} — 文件访问 URL（直接拼接，后端该接口返回二进制流） */
+export function getMediaUrl(fileId: string): string {
+  if (USE_MOCK) return ''
+  const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
+  const cleanFileId = fileId.replace(/^\/api\/media\//, '')
+  return `${baseUrl}/api/media/${cleanFileId}`
 }
 
 // ================================================================
@@ -689,8 +744,10 @@ export async function assignCoupon(data: { coupon_id?: string; user_id?: string 
 /** POST /api/coupons/validate — 核销优惠券 */
 export async function verifyCoupon(couponCode: string): Promise<{ valid: boolean; message?: string }> {
   if (USE_MOCK) return { valid: true }
-  const res = await post<{ valid: boolean; message?: string }>('/api/coupons/validate', { coupon_code: couponCode })
-  return res.data
+  const res = await post<CouponBackendItem>('/api/coupons/validate', { coupon_code: couponCode })
+  const c = res.data
+  const valid = isCouponValid(c)
+  return { valid, message: valid ? undefined : `优惠券状态：${c.status}` }
 }
 
 // ================================================================
@@ -724,8 +781,9 @@ export async function uploadToOss(filePath: string, token?: string): Promise<{ u
   if (USE_MOCK) return { url: filePath }
   const Taro = require('@tarojs/taro').default
   const authToken = token || getToken()
+  const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
   const res = await Taro.uploadFile({
-    url: '/api/upload',
+    url: `${baseUrl}/api/upload`,
     filePath,
     name: 'file',
     header: authToken ? { Authorization: `Bearer ${authToken}` } : {},
@@ -735,11 +793,12 @@ export async function uploadToOss(filePath: string, token?: string): Promise<{ u
   return data.data
 }
 
-/** GET /api/media/{media_id} — 文件访问 URL */
-export async function getSystemMediaUrl(mediaId: string): Promise<{ url: string }> {
-  if (USE_MOCK) return { url: '' }
-  const res = await get<{ url: string }>(`/api/media/${mediaId}`)
-  return res.data
+/** GET /api/media/{media_id} — 文件访问 URL（直接拼接，后端该接口返回二进制流） */
+export function getSystemMediaUrl(mediaId: string): string {
+  if (USE_MOCK) return ''
+  const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
+  const cleanMediaId = mediaId.replace(/^\/api\/media\//, '')
+  return `${baseUrl}/api/media/${cleanMediaId}`
 }
 
 // ================================================================
@@ -748,12 +807,13 @@ export async function getSystemMediaUrl(mediaId: string): Promise<{ url: string 
 
 /**
  * GET /api/quick-questions — 推荐问题列表
- * USE_MOCK 为 true 时回退到本地 mock 数据
+ * 后端返回 { id, question_text, category }[]，前端提取为 string[]
  */
 export async function fetchQuickQuestions(): Promise<string[]> {
   if (USE_MOCK) return quickQuestions
-  const res = await get<string[]>('/api/quick-questions')
-  return res.data
+  const res = await get<Array<{ question_text: string }>>('/api/quick-questions')
+  const data = Array.isArray(res.data) ? res.data : []
+  return data.map((item) => item.question_text).filter(Boolean)
 }
 
 // ================================================================
@@ -782,7 +842,16 @@ export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserP
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  const res = await post<UserProfileAggregated>('/api/user/identity', data as unknown as Record<string, unknown>)
+  // 后端 POST /api/user/identity 要求必填字段，先拉取现有数据合并
+  const current = await get<import('@/types/profile').UserRealnameL2>('/api/user/identity')
+  const merged = {
+    user_type: data.user_type || current.data?.user_type,
+    id_card_number: data.id_card_number || current.data?.id_card,
+    id_card_front_oss: data.id_card_front_oss || current.data?.id_card_front_oss,
+    id_card_back_oss: data.id_card_back_oss || current.data?.id_card_back_oss,
+    ...data,
+  }
+  const res = await post<UserProfileAggregated>('/api/user/identity', merged as unknown as Record<string, unknown>)
   return res.data
 }
 
@@ -812,7 +881,17 @@ export async function updateStudent(data: UpdateStudentPayload): Promise<UserPro
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  const res = await post<UserProfileAggregated>('/api/user/student', data as unknown as Record<string, unknown>)
+  // 后端 POST /api/user/student 要求必填字段，先拉取现有数据合并
+  const current = await get<import('@/types/profile').UserStudentL2>('/api/user/student')
+  const merged: SubmitStudentPayload = {
+    education: data.education || current.data?.education || '',
+    school: data.school || current.data?.school || '',
+    major: data.major || current.data?.major || '',
+    student_card_oss: data.student_card_oss || current.data?.student_card_oss || '',
+    enrollment_pdf_oss: data.enrollment_pdf_oss || current.data?.enrollment_pdf_oss,
+    degree_cert_oss: data.degree_cert_oss || current.data?.degree_cert_oss,
+  }
+  const res = await post<UserProfileAggregated>('/api/user/student', merged as unknown as Record<string, unknown>)
   return res.data
 }
 
@@ -842,6 +921,11 @@ export async function updateEnterprise(data: UpdateEnterprisePayload): Promise<U
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  const res = await post<UserProfileAggregated>('/api/user/enterprise', data as unknown as Record<string, unknown>)
+  // 后端 POST /api/user/enterprise 要求 organization 必填，先拉取现有数据合并
+  const current = await get<import('@/types/profile').UserEnterpriseL2>('/api/user/enterprise')
+  const merged: SubmitEnterprisePayload = {
+    organization: data.organization || current.data?.organization || '',
+  }
+  const res = await post<UserProfileAggregated>('/api/user/enterprise', merged as unknown as Record<string, unknown>)
   return res.data
 }

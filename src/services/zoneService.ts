@@ -150,7 +150,8 @@ export async function getCourseList(): Promise<CourseBrief[]> {
   }
   if (USE_MOCK) return []
   const res = await get<{ items?: CourseBrief[] }>('/api/courses')
-  return res.data?.items || res.data || []
+  const items = res.data?.items || res.data || []
+  return items.map(item => ({ ...item, cover_url: resolveUrl(item.cover_url) }))
 }
 
 /** GET /api/activities — 活动列表 */
@@ -170,8 +171,8 @@ export async function getJobList(): Promise<JobBrief[]> {
 /** GET /api/cert/certifications — 认证列表 */
 export async function getCertificationList(): Promise<CertificationResponse[]> {
   if (USE_MOCK) return []
-  const res = await get<{ items?: CertificationResponse[] }>('/api/cert/certifications')
-  return res.data?.items || res.data || []
+  const res = await get<CertificationResponse[]>('/api/cert/certifications')
+  return Array.isArray(res.data) ? res.data : []
 }
 
 // ================================================================

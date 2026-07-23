@@ -1,15 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { View, Text, Input } from '@tarojs/components'
+import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { TagFilter } from '@/components/TagFilter'
-import { ZoneCard } from '@/components/ZoneCard'
-import { EmptyState } from '@/components/EmptyState'
+import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
 import type { CertificationResponse } from '@/types'
-import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
 const VENDOR_DISPLAY_MAP: Record<string, string> = {
@@ -19,68 +16,47 @@ const VENDOR_DISPLAY_MAP: Record<string, string> = {
   '人社': STRINGS.REGISTRATION_TAG_RS,
 }
 
-const VENDOR_ALL = STRINGS.REGISTRATION_TAG_ALL
-
-const VENDOR_ROUTE_MAP: Record<string, string> = {
-  'H3C': 'form',
-  '深信服': 'form',
-  'NISP': 'form',
-  '人社': 'form',
+const VENDOR_META: Record<string, { title: string; desc: string; color: string; icon: string }> = {
+  'H3C': { title: 'H3C 认证', desc: '新华三网络工程师认证', color: '#1677FF', icon: 'award' },
+  '深信服': { title: '深信服认证', desc: '安全技术方向认证', color: '#52C41A', icon: 'shield' },
+  'NISP': { title: 'NISP 认证', desc: '国家信息安全水平考试', color: '#FAAD14', icon: 'terminal' },
+  '人社': { title: '人社认证', desc: '职业技能等级认证', color: '#EB2F96', icon: 'file-text' },
 }
 
-export default function RegistrationIndexPage() {
-  const [activeTag, setActiveTag] = useState<string>(STRINGS.REGISTRATION_TAG_ALL)
-  const [keyword, setKeyword] = useState('')
+const VENDOR_ORDER = ['H3C', '深信服', 'NISP', '人社']
 
+export default function RegistrationIndexPage() {
   const [certifications, setCertifications] = useState<CertificationResponse[]>([])
-  const [tagFilters, setTagFilters] = useState<TagFilterItem[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getCertificationList().then((data) => {
       setCertifications(data)
-      // Generate tag filters from distinct vendors
-      const vendors = [...new Set(data.map(c => c.vendor))]
-      const tags: TagFilterItem[] = [
-        { label: VENDOR_ALL, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
-        ...vendors.map(v => ({
-          label: VENDOR_DISPLAY_MAP[v] || v,
-          activeColor: '#1677FF',
-          activeBg: '#1677FF',
-          activeText: '#ffffff',
-          inactiveBg: '#F0F5FF',
-        })),
-      ]
-      setTagFilters(tags)
     }).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
-  const filtered = useMemo(() => {
-    let list = certifications
-    if (activeTag !== STRINGS.REGISTRATION_TAG_ALL) {
-      // Find the vendor key from display name
-      const vendorKey = Object.entries(VENDOR_DISPLAY_MAP).find(([, v]) => v === activeTag)?.[0]
-      if (vendorKey) {
-        list = certifications.filter(c => c.vendor === vendorKey)
-      }
-    }
-    if (keyword.trim()) {
-      const keywordLower = keyword.trim().toLowerCase()
-      list = list.filter(c =>
-        (c.name.toLowerCase().includes(keywordLower)) ||
-        (c.chinese_name && c.chinese_name.toLowerCase().includes(keywordLower))
-      )
-    }
-    return list
-  }, [activeTag, keyword, certifications])
+  const grouped = useMemo(() => {
+    const map: Record<string, CertificationResponse[]> = {}
+    certifications.forEach(cert => {
+      if (!map[cert.vendor]) map[cert.vendor] = []
+      map[cert.vendor].push(cert)
+    })
+    return map
+  }, [certifications])
 
-  const handleKeywordInput = useCallback((e: { detail: { value: string } }) => {
-    setKeyword(e.detail.value)
-  }, [])
+  const categories = useMemo(() => {
+    return VENDOR_ORDER.filter(v => grouped[v]).map(v => ({
+      vendor: v,
+      title: VENDOR_META[v]?.title || VENDOR_DISPLAY_MAP[v] || v,
+      desc: VENDOR_META[v]?.desc || '',
+      color: VENDOR_META[v]?.color || '#1677FF',
+      icon: VENDOR_META[v]?.icon || 'award',
+      count: grouped[v]?.length || 0,
+    }))
+  }, [grouped])
 
-  const handleCardClick = useCallback((cert: CertificationResponse) => {
-    const route = VENDOR_ROUTE_MAP[cert.vendor] || 'form'
-    Taro.navigateTo({ url: `/pages/registration/${route}?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}` })
+  const handleCategoryClick = useCallback((vendor: string) => {
+    Taro.navigateTo({ url: `/pages/registration/category?vendor=${encodeURIComponent(vendor)}` })
   }, [])
 
   return (
@@ -88,35 +64,33 @@ export default function RegistrationIndexPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.REGISTRATION_TITLE} shouldShowBack />
         <View className={styles.body}>
-          <View className={styles.searchWrap}>
-            <Input
-              className={styles.searchInput}
-              placeholder={STRINGS.REGISTRATION_SEARCH_PLACEHOLDER}
-              value={keyword}
-              onInput={handleKeywordInput}
-            />
+          <View className={styles.sectionHeader}>
+            <Text className={styles.sectionTitle}>{STRINGS.REGISTRATION_CATEGORY_TITLE}</Text>
           </View>
-          <View className={styles.filterRow}>
-            <TagFilter tags={tagFilters} activeTag={activeTag} onChange={setActiveTag} />
-          </View>
-          <View className={styles.cardList}>
+
+          <View className={styles.list}>
             {loading ? (
               <View className={styles.loadingWrap}>
                 <Text className={styles.loadingText}>{STRINGS.REGISTRATION_LOADING}</Text>
               </View>
-            ) : filtered.length === 0 ? (
-              <EmptyState title={STRINGS.REGISTRATION_EMPTY} />
             ) : (
-              filtered.map(cert => (
-                <View key={cert.id}>
-                  <ZoneCard
-                    title={cert.name}
-                    subtitle={cert.chinese_name}
-                    tags={[cert.code, cert.vendor]}
-                    buttonText={STRINGS.EXAM_SIGNUP}
-                    buttonColor='#1677FF'
-                    onButtonClick={() => handleCardClick(cert)}
-                  />
+              categories.map(item => (
+                <View
+                  key={item.vendor}
+                  className={styles.categoryCard}
+                  onClick={() => handleCategoryClick(item.vendor)}
+                >
+                  <View className={styles.iconWrap} style={{ backgroundColor: `${item.color}10` }}>
+                    <Icon name={item.icon} size={24} color={item.color} />
+                  </View>
+                  <View className={styles.cardContent}>
+                    <View className={styles.cardTitleRow}>
+                      <Text className={styles.cardTitle}>{item.title}</Text>
+                      <Text className={styles.badge}>{STRINGS.REGISTRATION_CATEGORY_COUNT.replace('{count}', String(item.count))}</Text>
+                    </View>
+                    <Text className={styles.cardDesc}>{item.desc}</Text>
+                  </View>
+                  <Icon name='chevron-right' size={20} color='#CCCCCC' />
                 </View>
               ))
             )}

@@ -199,7 +199,8 @@ export default function RegistrationFormPage() {
     if (!cert || !handleValidate()) return
 
     const base = {
-      cert_type: cert.code,
+      order_kind: 'certification' as const,
+      product_type: cert.code,
       candidate_name: realName.trim(),
       candidate_phone: phone.trim(),
       candidate_idcard: idCard.trim(),

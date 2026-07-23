@@ -9,7 +9,7 @@ import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCertDetail, createOrder } from '@/services/dataService'
+import { getCertDetail, createOrder, getUserProfile } from '@/services/dataService'
 import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
@@ -43,6 +43,14 @@ export default function RensheFormPage() {
     getCertDetail(id).then(setCert).catch(() => {})
   }, [certId])
 
+  useEffect(() => {
+    getUserProfile().then(profile => {
+      if (profile.profile.phone && !phone) setPhone(profile.profile.phone)
+      if (profile.realname?.real_name && !realName) setRealName(profile.realname.real_name)
+      if (profile.realname?.id_card_raw && !idCard) setIdCard(profile.realname.id_card_raw)
+    }).catch(() => {})
+  }, [])
+
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
       realName: validateName(realName),
@@ -57,7 +65,8 @@ export default function RensheFormPage() {
   const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
     const order = await createOrder({
-      cert_type: 'renshe',
+      order_kind: 'certification' as const,
+      product_type: 'renshe',
       candidate_name: realName.trim(),
       candidate_phone: phone.trim(),
       candidate_idcard: idCard.trim(),

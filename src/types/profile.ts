@@ -160,11 +160,11 @@ export interface UserProfileAggregated {
 
 /** POST /api/user/identity — 提交/修改实名信息（触发审核） */
 export interface UpdateIdentityPayload {
-  user_type?: 'student' | 'enterprise'
+  user_type: 'student' | 'enterprise'
   real_name?: string
-  id_card_number?: string
-  id_card_front_oss?: string
-  id_card_back_oss?: string
+  id_card_number: string
+  id_card_front_oss: string
+  id_card_back_oss: string
   last_name_zh?: string
   first_name_zh?: string
   last_name_en?: string
@@ -179,12 +179,12 @@ export interface SubmitStudentPayload {
   education: string
   school: string
   major: string
-  student_card_oss?: string
+  student_card_oss: string
   enrollment_pdf_oss?: string
   degree_cert_oss?: string
 }
 
-/** POST /api/user/student — 修改学生信息（触发审核） */
+/** POST /api/user/student — 修改学生信息（触发审核，字段通过服务端 GET 后合并补全） */
 export interface UpdateStudentPayload {
   education?: string
   school?: string
@@ -199,7 +199,7 @@ export interface SubmitEnterprisePayload {
   organization: string
 }
 
-/** POST /api/user/enterprise — 修改企业信息（触发审核） */
+/** POST /api/user/enterprise — 修改企业信息（触发审核，字段通过服务端 GET 后合并补全） */
 export interface UpdateEnterprisePayload {
   organization?: string
 }

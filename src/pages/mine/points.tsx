@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -6,18 +6,23 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { getPointsBalance, getPointRecords, getCoupons, redeemPoints } from '@/services/dataService'
+import type { PointRecord } from '@/types/mine'
 import styles from './points.module.scss'
 
 export default function PointsPage() {
   const [balance, setBalance] = useState(0)
-  const [records, setRecords] = useState([])
-  const [coupons, setCoupons] = useState([])
+  const [records, setRecords] = useState<PointRecord[]>([])
+  const [coupons, setCoupons] = useState<Array<{ id: string; name: string; discount: number; valid_until: string; amount: number; expire_at: string; status: string }>>([])
 
-  useEffect(() => {
-    getPointsBalance().then(setBalance).catch(() => {})
+  const refresh = useCallback(() => {
+    getPointsBalance().then(b => setBalance(b.total)).catch(() => {})
     getPointRecords().then(setRecords).catch(() => {})
     getCoupons().then(setCoupons).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   return (
     <AuthGuard>
@@ -29,9 +34,8 @@ export default function PointsPage() {
             <Text className={styles.balanceValue}>{balance}</Text>
             <Text className={styles.balanceTip}>{STRINGS.MINE_POINTS_REDEEM_TIP}</Text>
             <Button size='sm' variant='secondary' onClick={() => {
-            redeemPoints({ redeem_type: 'exam_discount', amount: 50 }).then(() => {
-              getPointsBalance().then(setBalance).catch(() => {})
-              getPointRecords().then(setRecords).catch(() => {})
+            redeemPoints('exam_discount', 50).then(() => {
+              refresh()
               Taro.showToast({ title: STRINGS.MINE_POINTS_REDEEM + '成功', icon: 'success' })
             }).catch(() => {
               Taro.showToast({ title: '兑换失败', icon: 'none' })

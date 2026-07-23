@@ -46,7 +46,7 @@ export default function CourseDetailPage() {
       })
       .catch((err) => {
         console.error('[CourseDetail] fetch error:', err)
-        setError(err?.message || STRINGS.COURSE_NOT_FOUND)
+        setError(STRINGS.COURSE_LOAD_ERROR)
       })
       .finally(() => setLoading(false))
   }, [courseId])

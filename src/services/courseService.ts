@@ -21,8 +21,8 @@ export async function getCourseList() {
 
 export async function getCourseListExpanded() {
   if (USE_MOCK) return courseList
-  const res = await get<CourseBrief[]>(`/api/courses`)
-  return res.data
+  const res = await get<{ items?: CourseBrief[] }>(`/api/courses`)
+  return res.data?.items || res.data || []
 }
 
 /** GET /api/courses/categories — 后端返回 string[] */
@@ -57,6 +57,10 @@ export async function getCourseById(id: number): Promise<CourseDetail | null> {
         : null,
       teacher_name: c.instructor || null,
       teacher_contact: null,
+      has_access: false,
+      enrollment_id: null,
+      chapters: [],
+      free_preview_seconds: null,
     }
   }
   const res = await get<CourseDetail>(`/api/courses/${id}`)
@@ -74,6 +78,23 @@ interface CourseEnrollmentItem {
   status?: string
 }
 
+function mapEnrollmentStatus(status?: string): 'active' | 'expired' | 'pending' | 'completed' | 'cancelled' {
+  switch (status) {
+    case 'enrolled':
+    case 'completed':
+      return 'active'
+    case 'expired':
+      return 'expired'
+    case 'pending_payment':
+      return 'pending'
+    case 'refunded':
+    case 'cancelled':
+      return 'cancelled'
+    default:
+      return 'pending'
+  }
+}
+
 /** GET /api/courses/my — 我的课程，适配后端 CourseEnrollmentResponse → MyCourse */
 export async function getMyCourses() {
   if (USE_MOCK) return myCourses
@@ -85,11 +106,7 @@ export async function getMyCourses() {
     title: item.course?.title || '',
     cover: item.course?.cover_url || '',
     progress: 0,
-    status: (item.status === 'enrolled'
-      ? 'active'
-      : item.status === 'expired'
-        ? 'expired'
-        : 'pending') as 'active' | 'expired' | 'pending',
+    status: mapEnrollmentStatus(item.status),
     instructor: item.course?.teacher_name || '',
     totalLessons: 0,
     completedLessons: 0,

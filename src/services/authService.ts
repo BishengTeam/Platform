@@ -11,7 +11,7 @@ const USE_MOCK = false
 // 类型
 // ================================================================
 
-/** 实名认证信息（对齐后端 UserIdentityResponse） */
+/** 实名认证信息（对齐后端 RealnameResponse） */
 export interface IdentityInfo {
   user_type: 'student' | 'enterprise'
   real_name: string
@@ -22,7 +22,6 @@ export interface IdentityInfo {
   status: 'pending' | 'verified' | 'rejected' | null
   reject_reason: string | null
   verified_at: string | null
-  created_at: string
 }
 
 // ================================================================
@@ -71,9 +70,9 @@ export async function submitIdentity(data: {
   user_type: 'student' | 'enterprise'
   real_name: string
   id_card_number: string
-  id_card_front_oss?: string
-  id_card_back_oss?: string
-  student_card_oss?: string
+  id_card_front_oss?: string | null
+  id_card_back_oss?: string | null
+  student_card_oss?: string | null
 }): Promise<IdentityInfo> {
   if (USE_MOCK) {
     return {
@@ -84,8 +83,8 @@ export async function submitIdentity(data: {
       id_card_back_oss: data.id_card_back_oss || null,
       student_card_oss: data.student_card_oss || null,
       status: 'verified',
+      reject_reason: null,
       verified_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
     }
   }
   const res = await post<IdentityInfo>('/api/user/identity', data as unknown as Record<string, unknown>)
@@ -103,8 +102,8 @@ export async function getIdentityStatus(): Promise<IdentityInfo> {
       id_card_back_oss: null,
       student_card_oss: null,
       status: 'verified',
+      reject_reason: null,
       verified_at: '2026-06-01T00:00:00Z',
-      created_at: '2026-05-01T00:00:00Z',
     }
   }
   const res = await get<IdentityInfo>('/api/user/identity')

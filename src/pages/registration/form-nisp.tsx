@@ -10,10 +10,10 @@ import { FormInput } from '@/components/FormInput'
 import { FormPicker } from '@/components/FormPicker'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCertDetail, uploadFile, createOrder, getUserProfile } from '@/services/dataService'
+import { getCertDetail, uploadFile, createOrder, getUserProfile, getNispPinyin, getNispTemplate } from '@/services/dataService'
 import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
-import { autoPinyin } from '@/utils/pinyin'
+import { resolveUrl } from '@/utils/request'
 import type { ValidationResult } from '@/utils/validator'
 import styles from './form.module.scss'
 
@@ -38,6 +38,7 @@ export default function NispFormPage() {
   const [idPhotoPath, setIdPhotoPath] = useState('')
   const [xuexinReportPath, setXuexinReportPath] = useState('')
   const [templatePath, setTemplatePath] = useState('')
+  const [pinyin, setPinyin] = useState('')
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
 
   const identity = useIdentityCheck()
@@ -73,7 +74,20 @@ export default function NispFormPage() {
   }, [])
 
   const trainingType = cert ? (cert as any).categoryName : ''
-  const pinyin = name ? autoPinyin(name) : ''
+
+  /** 姓名变更时调用后端拼音接口（带防抖） */
+  useEffect(() => {
+    if (!name.trim()) {
+      setPinyin('')
+      return
+    }
+    const timer = setTimeout(() => {
+      getNispPinyin(name.trim())
+        .then(res => setPinyin(res.pinyin || ''))
+        .catch(() => setPinyin(''))
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [name])
 
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
@@ -104,7 +118,8 @@ export default function NispFormPage() {
   const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
     await createOrder({
-      cert_type: 'nisp',
+      order_kind: 'certification' as const,
+      product_type: 'nisp',
       candidate_name: name.trim(),
       candidate_phone: phone.trim(),
       candidate_idcard: idCard.trim(),
@@ -296,10 +311,22 @@ export default function NispFormPage() {
               <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => handleUpload(setXuexinReportPath)}>{STRINGS.FORM_UPLOAD_XUEXIN_REPORT}</Button></View>
               {level === '2' && (
                 <>
-                  <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => {
-                    Taro.downloadFile({ url: '/api/nisp/template/download' })
-                      .then(() => Taro.showToast({ title: '模板下载成功', icon: 'success' }))
-                      .catch(() => Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' }))
+                  <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={async () => {
+                    Taro.showLoading({ title: '获取模板...', mask: true })
+                    try {
+                      const res = await getNispTemplate()
+                      const url = resolveUrl(res.template_url as string)
+                      if (!url) {
+                        Taro.showToast({ title: '模板暂不可用', icon: 'none' })
+                        return
+                      }
+                      await Taro.downloadFile({ url })
+                      Taro.showToast({ title: '模板下载成功', icon: 'success' })
+                    } catch {
+                      Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' })
+                    } finally {
+                      Taro.hideLoading()
+                    }
                   }}>{STRINGS.FORM_TEMPLATE_DOWNLOAD}</Button></View>
                   <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => handleUpload(setTemplatePath)}>{STRINGS.FORM_TEMPLATE_UPLOAD}</Button></View>
                 </>

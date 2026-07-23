@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
-import { ZoneCard } from '@/components/ZoneCard'
+import { Icon } from '@/components/Icon'
 import { QuizBottomNav } from '@/components/QuizBottomNav'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
@@ -13,20 +13,9 @@ import type { QuizBottomItem } from '@/constants/quiz'
 import { getCourseList, getQuizCategoryTree, getQuizProgress } from '@/services/dataService'
 import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
 import type { CourseBrief, QuizCategory, QuizStats } from '@/types'
-import type { TagFilterItem } from '@/types/registration'
 import styles from './index.module.scss'
 
 const MAIN_TABS = [STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
-
-// 标签颜色循环池，供动态分类标签复用
-const TAG_COLORS: Omit<TagFilterItem, 'label'>[] = [
-  { activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
-  { activeColor: '#52C41A', activeBg: '#52C41A', activeText: '#ffffff', inactiveBg: '#F6FFED' },
-  { activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#FFF7E6' },
-  { activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F9F0FF' },
-  { activeColor: '#13C2C2', activeBg: '#13C2C2', activeText: '#ffffff', inactiveBg: '#E6FFFB' },
-  { activeColor: '#FF4D4F', activeBg: '#FF4D4F', activeText: '#ffffff', inactiveBg: '#FFF1F0' },
-]
 
 const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
   { label: '模拟考试', icon: '📋', route: ROUTES.QUIZ_MOCK },
@@ -39,6 +28,7 @@ export default function TrainingPage() {
   const [techTag, setTechTag] = useState(STRINGS.STUDY_TAG_ALL)
 
   const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
+  const [failedCovers, setFailedCovers] = useState<Set<number>>(new Set())
   const [quizCategories, setQuizCategories] = useState<QuizCategory[]>([])
   const [quizTree, setQuizTree] = useState<QuizCategory[]>([])
   const [selectedQuizId, setSelectedQuizId] = useState('')
@@ -77,14 +67,15 @@ export default function TrainingPage() {
   }, [selectedQuizId])
 
 
-  // 从课程数据动态提取分类标签：从 CourseBrief.category 去重后映射为 TagFilterItem
-  const courseTags = useMemo<TagFilterItem[]>(() => {
+  // 从课程数据动态提取分类标签，统一使用品牌蓝/灰配色
+  const courseTags = useMemo(() => {
     const categories = [...new Set(allCourses.map(c => c.category).filter(Boolean))]
+    const tagStyle = { activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F5F5F5' }
     return [
-      { label: STRINGS.STUDY_TAG_ALL, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
-      ...categories.map((cat, i) => ({
+      { label: STRINGS.STUDY_TAG_ALL, ...tagStyle },
+      ...categories.map((cat) => ({
         label: formatCategory(cat),
-        ...TAG_COLORS[i % TAG_COLORS.length],
+        ...tagStyle,
       })),
     ]
   }, [allCourses])
@@ -133,6 +124,14 @@ export default function TrainingPage() {
     Taro.navigateTo({ url: `/${item.route}` })
   }, [])
 
+  const handleCourseClick = useCallback((course: CourseBrief) => {
+    Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })
+  }, [])
+
+  const handleCoverError = useCallback((courseId: number) => {
+    setFailedCovers(prev => new Set(prev).add(courseId))
+  }, [])
+
   const renderTechTab = () => (
     <View>
       <View className={styles.filterRow}>
@@ -140,16 +139,49 @@ export default function TrainingPage() {
       </View>
       <View className={styles.cardList}>
         {techCourses.map(course => (
-          <ZoneCard
+          <View
             key={course.id}
-            title={course.title}
-            subtitle={[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ') || undefined}
-            tags={course.category ? [formatCategory(course.category)] : []}
-            price={course.price === 0 ? STRINGS.ORDERS_FREE : formatPrice(course.price)}
-            buttonText={STRINGS.STUDY_ENROLL}
-            buttonColor='#52C41A'
-            onButtonClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}  // eslint-disable-line @typescript-eslint/restrict-template-expressions
-          />
+            className={styles.courseCard}
+            hoverClass={styles.courseCardActive}
+            onClick={() => handleCourseClick(course)}
+          >
+            <View className={styles.coverWrap}>
+              {course.cover_url && !failedCovers.has(course.id) ? (
+                <Image
+                  className={styles.coverImage}
+                  src={course.cover_url}
+                  mode='aspectFill'
+                  onError={() => handleCoverError(course.id)}
+                />
+              ) : (
+                <View className={styles.coverPlaceholder}>
+                  <Icon name='play-circle' size={32} color='#1677FF' />
+                </View>
+              )}
+            </View>
+            <View className={styles.courseInfo}>
+              <View className={styles.courseHeader}>
+                <Text className={styles.courseTitle}>{course.title}</Text>
+                {course.category && (
+                  <Text className={styles.courseTag}>{formatCategory(course.category)}</Text>
+                )}
+              </View>
+
+              <Text className={styles.courseDesc}>
+                {[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ')}
+              </Text>
+
+              <View className={styles.courseFooter}>
+                <Text className={styles.coursePrice}>
+                  {course.price === 0 ? STRINGS.ORDERS_FREE : formatPrice(course.price)}
+                </Text>
+                <View className={styles.studyBtn}>
+                  <Icon name='play-circle' size={14} color='#ffffff' />
+                  <Text className={styles.studyBtnText}>{STRINGS.STUDY_ENROLL}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
         ))}
       </View>
     </View>

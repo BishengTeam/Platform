@@ -16,66 +16,89 @@
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
-.searchWrap {
-  padding: $spacing-md $spacing-lg 0;
+.sectionHeader {
+  padding: $spacing-xl $spacing-lg $spacing-md;
 }
 
-.searchInput {
-  width: 100%;
-  height: 72px;
+.sectionTitle {
+  font-size: $font-xl;
+  font-weight: bold;
+  color: $color-text;
+}
+
+.list {
+  padding: 0 $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.categoryCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
   background: $color-white;
   border-radius: $radius-lg;
-  padding: 0 $spacing-md;
-  font-size: $font-base;
-  color: $color-text;
-  box-sizing: border-box;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease-out;
 
-  &::placeholder {
-    color: $color-text-tertiary;
+  &:active {
+    transform: scale(0.98);
+    background: #F9FAFB;
   }
 }
 
-.filterRow {
-  padding: $spacing-md $spacing-lg 0;
-}
-
-.cardList {
-  padding: $spacing-md $spacing-lg;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
-}
-
-.priceTags {
-  display: flex;
-  gap: $spacing-sm;
-  padding: 0 $spacing-md $spacing-sm;
-  margin-top: -4px;
-}
-
-.priceStudent,
-.priceEnterprise {
+.iconWrap {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-lg;
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: $color-white;
-  border-radius: $radius-sm;
-  padding: 4px 10px;
+  justify-content: center;
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2xs;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.cardTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  flex-shrink: 0;
+  font-size: $font-xs;
+  color: #6B7280;
+  background: #F3F4F6;
+  border-radius: $radius-full;
+  padding: 3px 10px;
+}
+
+.cardDesc {
   font-size: $font-sm;
-}
-
-.priceLabel {
-  color: $color-text-tertiary;
-}
-
-.priceStudent .priceValue {
-  color: $color-success;
-  font-weight: 600;
-}
-
-.priceEnterprise .priceValue {
-  color: $color-primary;
-  font-weight: 600;
+  color: #6B7280;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .loadingWrap {

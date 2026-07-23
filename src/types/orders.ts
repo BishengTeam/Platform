@@ -11,7 +11,8 @@ export interface Order {
 /** 后端 GET /api/orders 返回的单条订单原始结构 */
 export interface OrderBackendItem {
   id: number
-  cert_type: string
+  order_kind: string
+  product_type: string
   candidate_name: string
   candidate_phone: string
   candidate_idcard: string | null

@@ -9,11 +9,16 @@ import { getAgreements, signAgreement } from '@/services/dataService'
 import type { Agreement } from '@/types'
 import styles from './agreements.module.scss'
 
-const STATUS_MAP: Record<Agreement['status'], { label: string; color: string }> = {
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
   pending_sign: { label: STRINGS.MINE_AGREEMENTS_STATUS_PENDING_SIGN, color: '#FA8C16' },
   pending_review: { label: STRINGS.MINE_AGREEMENTS_STATUS_PENDING_REVIEW, color: '#1677FF' },
   stamped: { label: STRINGS.MINE_AGREEMENTS_STATUS_STAMPED, color: '#52C41A' },
   completed: { label: STRINGS.MINE_AGREEMENTS_STATUS_COMPLETED, color: '#999' },
+  signed: { label: '已签署', color: '#52C41A' },
+}
+
+function getStatusMeta(status: string) {
+  return STATUS_MAP[status] || { label: status || '未知', color: '#999' }
 }
 
 export default function AgreementsPage() {
@@ -73,7 +78,7 @@ export default function AgreementsPage() {
         <PageHeader title={STRINGS.MINE_AGREEMENTS_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
           {items.map(item => {
-            const statusInfo = STATUS_MAP[item.status]
+            const statusInfo = getStatusMeta(item.status)
             return (
               <View key={item.id} className={styles.card}>
                 <View className={styles.cardHeader}>

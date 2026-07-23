@@ -9,7 +9,7 @@ import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCertDetail, createOrder, getUserProfile } from '@/services/dataService'
+import { getCertDetail, createOrder, getUserProfile, validateCoupon } from '@/services/dataService'
 import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
@@ -26,6 +26,7 @@ export default function SangforFormPage() {
   const [organization, setOrg] = useState('')
   const [examDirection, setExamDirection] = useState('')
   const [verifyCode, setVerifyCode] = useState('')
+  const [couponCode, setCouponCode] = useState('')
   const [examDate, setExamDate] = useState('')
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -76,8 +77,19 @@ export default function SangforFormPage() {
 
   const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
+
+    // 如果填写了考试券码，先核销校验
+    if (couponCode.trim()) {
+      const result = await validateCoupon(couponCode.trim())
+      if (!result.valid) {
+        Taro.showToast({ title: result.message || '考试券无效', icon: 'none' })
+        return
+      }
+    }
+
     const order = await createOrder({
-      cert_type: 'sangfor',
+      order_kind: 'certification' as const,
+      product_type: 'sangfor',
       candidate_name: realName.trim(),
       candidate_phone: phone.trim(),
       candidate_idcard: idCard.trim(),
@@ -233,6 +245,15 @@ export default function SangforFormPage() {
               <Text className={styles.linkText}>{'请从深信服官方渠道获取动态验证码'}</Text>
             </View>
             <FormInput label={STRINGS.FORM_VERIFICATION_CODE} required placeholder={STRINGS.FORM_VERIFICATION_CODE_PLACEHOLDER} value={verifyCode} error={errors.verifyCode} onChange={setVerifyCode} />
+            <View className={styles.linkRow}>
+              <Text className={styles.linkText}>{STRINGS.FORM_COUPON_SECTION}</Text>
+            </View>
+            <FormInput
+              label={STRINGS.FORM_COUPON_SECTION}
+              placeholder={STRINGS.FORM_COUPON_CODE_PLACEHOLDER}
+              value={couponCode}
+              onChange={setCouponCode}
+            />
           </View>
 
           <View className={styles.section}>
