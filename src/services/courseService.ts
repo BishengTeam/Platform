@@ -53,7 +53,17 @@ export async function getCourseById(id: number): Promise<CourseDetail | null> {
       video_url: null,
       price: c.price,
       batches: c.sessions?.length
-        ? Object.fromEntries(c.sessions.map((s: any) => [s.id, s]))
+        ? Object.fromEntries(
+            c.sessions.map((schedule) => [
+              schedule.id,
+              {
+                class_date: schedule.startDate,
+                start_time: '09:00',
+                end_time: '12:00',
+                location: null,
+              },
+            ]),
+          )
         : null,
       teacher_name: c.instructor || null,
       teacher_contact: null,

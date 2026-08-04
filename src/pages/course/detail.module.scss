@@ -107,8 +107,7 @@
 
 .sessionItem {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: stretch;
   padding: $spacing-md;
   background: $color-white;
   border-radius: $radius-md;
@@ -124,6 +123,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .sessionLabel {
@@ -137,10 +137,10 @@
   color: $color-text-tertiary;
 }
 
-.sessionPrice {
-  font-size: $font-lg;
-  font-weight: 600;
-  color: $color-price;
+.sessionLocation {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  overflow-wrap: anywhere;
 }
 
 .descText {

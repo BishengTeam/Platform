@@ -73,6 +73,14 @@ export interface CourseContent {
   chapters: CourseChapter[]
 }
 
+/** 课程的一次具体上课安排 */
+export interface CourseSchedule {
+  class_date: string
+  start_time: string
+  end_time: string
+  location?: string | null
+}
+
 /** 课程详情 — 对齐 Backend CourseDetailResponse */
 export interface CourseDetail {
   id: number
@@ -82,8 +90,8 @@ export interface CourseDetail {
   cover_url: string | null
   video_url: string | null
   price: number
-  /** 班次信息，JSON 对象 */
-  batches: Record<string, unknown> | null
+  /** 上课安排，键为内部 ID */
+  batches: Record<string, CourseSchedule> | null
   teacher_name: string | null
   teacher_contact: string | null
   /** 当前用户是否有学习权限 */

@@ -166,8 +166,7 @@ export default function CourseDetailPage() {
       ? STRINGS.COURSE_BUY_BTN
       : STRINGS.COURSE_ENROLL_BTN
 
-  // 解析 batches dict 为展示用列表
-  const batchEntries = course.batches ? Object.entries(course.batches) : []
+  const scheduleEntries = course.batches ? Object.entries(course.batches) : []
 
   return (
     <AuthGuard>
@@ -202,19 +201,22 @@ export default function CourseDetailPage() {
             </View>
           </View>
 
-          {/* 班次信息 */}
-          {batchEntries.length > 0 && (
+          {/* 上课安排 */}
+          {scheduleEntries.length > 0 && (
             <View className={styles.section}>
-              <Text className={styles.sectionTitle}>{STRINGS.COURSE_SESSIONS}</Text>
+              <Text className={styles.sectionTitle}>{STRINGS.COURSE_SCHEDULE}</Text>
               <View className={styles.sessionList}>
-                {batchEntries.map(([key, val]) => (
-                  <View key={key} className={styles.sessionItem}>
+                {scheduleEntries.map(([id, schedule]) => (
+                  <View key={id} className={styles.sessionItem}>
                     <View className={styles.sessionInfo}>
-                      <Text className={styles.sessionLabel}>{key}</Text>
+                      <Text className={styles.sessionLabel}>{schedule.class_date}</Text>
+                      <Text className={styles.sessionDate}>
+                        {schedule.start_time} - {schedule.end_time}
+                      </Text>
+                      {schedule.location && (
+                        <Text className={styles.sessionLocation}>{schedule.location}</Text>
+                      )}
                     </View>
-                    <Text className={styles.sessionPrice}>
-                      {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val)}
-                    </Text>
                   </View>
                 ))}
               </View>
