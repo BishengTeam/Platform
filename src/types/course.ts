@@ -45,6 +45,34 @@ export interface CourseItem {
   reviews: CourseReview[]
 }
 
+/** 课程章节 */
+export interface CourseChapter {
+  id: number
+  title: string
+  video_url: string | null
+  duration: number | null
+  sort_order: number
+}
+
+/** 课程购买/报名接口响应 */
+export interface CoursePurchaseResponse {
+  learning_access: boolean
+  payment_required: boolean
+  order_id: string | null
+}
+
+/** 课程内容（学习页） */
+export interface CourseContent {
+  id: number
+  title: string
+  description: string | null
+  cover_url: string | null
+  video_url: string | null
+  teacher_name: string | null
+  has_access: boolean
+  chapters: CourseChapter[]
+}
+
 /** 课程详情 — 对齐 Backend CourseDetailResponse */
 export interface CourseDetail {
   id: number
@@ -63,13 +91,7 @@ export interface CourseDetail {
   /** 报名记录 ID（已报名时返回） */
   enrollment_id: number | null
   /** 章节列表 */
-  chapters: Array<{
-    id: number
-    title: string
-    video_url: string | null
-    duration: number | null
-    sort_order: number
-  }>
+  chapters: CourseChapter[]
   /** 试看时长（秒） */
   free_preview_seconds: number | null
 }

@@ -554,6 +554,17 @@ export const STRINGS = {
   COURSE_ENROLL_SUCCESS: '报名成功',
   COURSE_NOT_FOUND: '课程不存在',
   COURSE_LOAD_ERROR: '课程加载失败，请稍后重试',
+  COURSE_BUY_BTN: '立即购买',
+  COURSE_LEARN_BTN: '立即学习',
+  COURSE_PAYING: '支付中...',
+  COURSE_PAYMENT_CONFIRMING: '支付确认中...',
+  COURSE_PAYMENT_TIMEOUT: '支付确认超时，请稍后在我的订单查看',
+  COURSE_PAYMENT_CANCELLED: '支付已取消，可在订单中继续支付',
+  COURSE_PURCHASE_FAILED: '购买请求失败，请稍后重试',
+  COURSE_CONTENT_TITLE: '课程学习',
+  COURSE_CONTENT_LOCKED: '暂无学习权限，请先购买课程',
+  COURSE_CONTENT_CHAPTERS: '课程目录',
+  COURSE_CONTENT_NO_VIDEO: '暂无视频',
 
   // ---- Mine ----
   MINE_COURSES_TITLE: '我的课程',

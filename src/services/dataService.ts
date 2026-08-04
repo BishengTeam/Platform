@@ -38,8 +38,13 @@ export {
 
 // Course
 export {
-  getCourseListExpanded, getCourseCategories,
-  getCourseById, getMyCourses, enrollCourse,
+  getCourseListExpanded,
+  getCourseCategories,
+  getCourseById,
+  getMyCourses,
+  purchaseCourse,
+  getCourseContent,
+  pollCourseAccess,
 } from './courseService'
 
 // User & misc

@@ -7,7 +7,7 @@
  */
 import { courseList, courseCategories, myCourses } from '@/constants/mock'
 import { get, post } from '@/utils/request'
-import type { CourseBrief, CourseDetail } from '@/types'
+import type { CourseBrief, CourseDetail, CoursePurchaseResponse, CourseContent } from '@/types'
 
 /** 全局开关：true=mock，false=真实API */
 const USE_MOCK = false
@@ -67,6 +67,56 @@ export async function getCourseById(id: number): Promise<CourseDetail | null> {
   return res.data ?? null
 }
 
+/** POST /api/courses/{course_id}/purchase — 课程购买/报名 */
+export async function purchaseCourse(courseId: number): Promise<CoursePurchaseResponse> {
+  if (USE_MOCK) {
+    return { learning_access: true, payment_required: false, order_id: null }
+  }
+  const res = await post<CoursePurchaseResponse>(`/api/courses/${courseId}/purchase`)
+  if (res.code !== 0 || !res.data) {
+    throw new Error(res.message || '课程购买请求失败')
+  }
+  return res.data
+}
+
+/** GET /api/courses/{course_id}/content — 课程内容（学习页） */
+export async function getCourseContent(courseId: number): Promise<CourseContent | null> {
+  if (USE_MOCK) {
+    const detail = await getCourseById(courseId)
+    return detail
+      ? {
+          id: detail.id,
+          title: detail.title,
+          description: detail.description,
+          cover_url: detail.cover_url,
+          video_url: detail.video_url,
+          teacher_name: detail.teacher_name,
+          has_access: detail.has_access,
+          chapters: detail.chapters,
+        }
+      : null
+  }
+  const res = await get<CourseContent>(`/api/courses/${courseId}/content`)
+  return res.data ?? null
+}
+
+const POLL_INTERVAL_MS = 2000
+const POLL_MAX_ATTEMPTS = 30
+
+/** 轮询课程详情，直到 has_access 变为 true */
+export async function pollCourseAccess(courseId: number): Promise<boolean> {
+  for (let attempt = 1; attempt <= POLL_MAX_ATTEMPTS; attempt++) {
+    const course = await getCourseById(courseId)
+    if (course?.has_access) {
+      return true
+    }
+    if (attempt < POLL_MAX_ATTEMPTS) {
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+    }
+  }
+  return false
+}
+
 /** 后端课程报名响应 DTO */
 interface CourseEnrollmentItem {
   id: number
@@ -111,10 +161,4 @@ export async function getMyCourses() {
     totalLessons: 0,
     completedLessons: 0,
   }))
-}
-
-/** POST /api/courses/enroll — 课程报名 */
-export async function enrollCourse(courseId: number): Promise<void> {
-  if (USE_MOCK) return
-  await post('/api/courses/enroll', { course_id: courseId })
 }

@@ -20,13 +20,17 @@ export function PriceRow({
   className = '',
   size = 'normal',
 }: PriceRowProps) {
+  // 兼容运行时传入字符串/非法值的情况，避免 .toFixed 报错
+  const numericValue = Number(value ?? 0)
+  const safeValue = Number.isNaN(numericValue) ? 0 : numericValue
+
   return (
     <View className={`${styles.row} ${isTotal ? styles.rowTotal : ''} ${size === 'lg' ? styles.lg : ''} ${className}`}>
       <Text className={`${styles.label} ${size === 'lg' ? styles.labelLg : ''}`}>{label}</Text>
       <Text
         className={`${styles.value} ${isTotal ? styles.valueTotal : ''} ${isStrikethrough ? styles.strikethrough : ''} ${size === 'lg' && !isTotal ? styles.valueLg : ''} ${size === 'lg' && isTotal ? styles.valueTotalLg : ''}`}
       >
-        {prefix}{(value ?? 0).toFixed(2)}
+        {prefix}{safeValue.toFixed(2)}
       </Text>
     </View>
   )

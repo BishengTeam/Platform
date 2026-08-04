@@ -6,9 +6,10 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
-import { getCourseById, enrollCourse } from '@/services/dataService'
-import { formatPrice, formatCategory } from '@/utils/format'
-import type { CourseDetail } from '@/types'
+import { ROUTES } from '@/constants/routes'
+import { getCourseById, purchaseCourse, prepayOrder, pollCourseAccess } from '@/services/dataService'
+import { formatCategory } from '@/utils/format'
+import type { CourseDetail, CoursePurchaseResponse } from '@/types'
 import styles from './detail.module.scss'
 
 export default function CourseDetailPage() {
@@ -16,7 +17,7 @@ export default function CourseDetailPage() {
   const [course, setCourse] = useState<CourseDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [enrolling, setEnrolling] = useState(false)
+  const [purchasing, setPurchasing] = useState(false)
 
   useLoad((options) => {
     setCourseId(options?.id || '')
@@ -51,23 +52,83 @@ export default function CourseDetailPage() {
       .finally(() => setLoading(false))
   }, [courseId])
 
-  const handleEnroll = async () => {
-    if (!course || enrolling) return
+  const enterContent = (id: number) => {
+    Taro.navigateTo({ url: `/${ROUTES.COURSE_CONTENT}?id=${id}` })
+  }
+
+  const handlePurchaseResult = async (
+    id: number,
+    result: CoursePurchaseResponse,
+  ) => {
+    if (result.learning_access) {
+      Taro.showToast({ title: STRINGS.COURSE_FREE_ENROLL_SUCCESS, icon: 'success' })
+      enterContent(id)
+      return
+    }
+
+    if (!result.payment_required || !result.order_id) {
+      throw new Error('返回的支付信息不完整')
+    }
+
+    const prepay = await prepayOrder(Number(result.order_id))
+    if (!prepay?.time_stamp) {
+      throw new Error('微信支付参数获取失败')
+    }
+
+    try {
+      await Taro.requestPayment({
+        timeStamp: prepay.time_stamp,
+        nonceStr: prepay.nonce_str,
+        package: prepay.package,
+        signType: prepay.sign_type as 'MD5' | 'HMAC-SHA256',
+        paySign: prepay.pay_sign,
+      })
+    } catch (err: any) {
+      if (err?.errMsg?.includes('cancel')) {
+        Taro.showToast({ title: STRINGS.COURSE_PAYMENT_CANCELLED, icon: 'none' })
+        return
+      }
+      throw err
+    }
+
+    Taro.showLoading({ title: STRINGS.COURSE_PAYMENT_CONFIRMING, mask: true })
+    try {
+      const access = await pollCourseAccess(id)
+      Taro.hideLoading()
+      if (access) {
+        Taro.showToast({ title: STRINGS.COURSE_FREE_ENROLL_SUCCESS, icon: 'success' })
+        enterContent(id)
+      } else {
+        Taro.showToast({ title: STRINGS.COURSE_PAYMENT_TIMEOUT, icon: 'none' })
+      }
+    } catch (pollErr) {
+      Taro.hideLoading()
+      throw pollErr
+    }
+  }
+
+  const handleAction = async () => {
+    if (!course || purchasing) return
     const id = Number(courseId)
     if (Number.isNaN(id)) return
 
-    setEnrolling(true)
+    if (course.has_access) {
+      enterContent(id)
+      return
+    }
+
+    setPurchasing(true)
     try {
-      await enrollCourse(id)
-      Taro.showToast({ title: STRINGS.COURSE_ENROLL_SUCCESS, icon: 'success' })
+      const result = await purchaseCourse(id)
+      await handlePurchaseResult(id, result)
     } catch (err: any) {
-      console.error('[CourseDetail] enroll error:', err)
+      console.error('[CourseDetail] purchase error:', err)
       Taro.showToast({
-        title: err?.message || '报名失败，请稍后重试',
+        title: err?.message || STRINGS.COURSE_PURCHASE_FAILED,
         icon: 'none',
       })
     } finally {
-      setEnrolling(false)
+      setPurchasing(false)
     }
   }
 
@@ -97,7 +158,13 @@ export default function CourseDetailPage() {
     )
   }
 
-  const displayPrice = formatPrice(course.price)
+  const displayPrice = Number(course.price) / 100
+  const isPaidCourse = Number(course.price) > 0
+  const buttonText = course.has_access
+    ? STRINGS.COURSE_LEARN_BTN
+    : isPaidCourse
+      ? STRINGS.COURSE_BUY_BTN
+      : STRINGS.COURSE_ENROLL_BTN
 
   // 解析 batches dict 为展示用列表
   const batchEntries = course.batches ? Object.entries(course.batches) : []
@@ -171,19 +238,21 @@ export default function CourseDetailPage() {
           )}
 
           {/* 价格与报名 */}
-          <View className={styles.priceCard}>
-            <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={displayPrice} isTotal />
-          </View>
+          {!course.has_access && (
+            <View className={styles.priceCard}>
+              <PriceRow label={STRINGS.FORM_PRICE_TOTAL} value={displayPrice} isTotal />
+            </View>
+          )}
 
           <View className={styles.btnWrap}>
             <Button
               variant='gradient'
               size='lg'
-              onClick={handleEnroll}
-              loading={enrolling}
-              disabled={enrolling}
+              onClick={handleAction}
+              loading={purchasing}
+              disabled={purchasing}
             >
-              {STRINGS.COURSE_ENROLL_BTN}
+              {buttonText}
             </Button>
           </View>
         </ScrollView>

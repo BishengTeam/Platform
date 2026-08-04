@@ -42,7 +42,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/course',
-      pages: ['index', 'detail'],
+      pages: ['index', 'detail', 'content'],
     },
     {
       root: 'pages/quiz',

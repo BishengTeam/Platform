@@ -21,6 +21,7 @@ export const ROUTES = {
   AI_CONSULT: 'pages/ai-consult/index',
   COURSE_INDEX: 'pages/course/index',
   COURSE_DETAIL: 'pages/course/detail',
+  COURSE_CONTENT: 'pages/course/content',
   QUIZ_INDEX: 'pages/quiz/index',
   QUIZ_PRACTICE: 'pages/quiz/practice',
   QUIZ_MOCK: 'pages/quiz/mock',

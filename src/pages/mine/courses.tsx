@@ -7,6 +7,7 @@ import { TagFilter } from '@/components/TagFilter'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
+import { ROUTES } from '@/constants/routes'
 import { getMyCourses } from '@/services/dataService'
 import type { MyCourse } from '@/types/mine'
 import styles from './courses.module.scss'
@@ -56,7 +57,7 @@ export default function MyCoursesPage() {
                     <Text className={styles.progressText}>{course.completedLessons}/{course.totalLessons}{STRINGS.MINE_COURSES_UNIT}</Text>
                   </View>
                   {course.status === 'active' && (
-                    <Button size='sm' onClick={() => Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })}>
+                    <Button size='sm' onClick={() => Taro.navigateTo({ url: `/${ROUTES.COURSE_CONTENT}?id=${course.id}` })}>
                       {STRINGS.MINE_COURSES_CONTINUE}
                     </Button>
                   )}

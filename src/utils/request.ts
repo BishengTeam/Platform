@@ -52,6 +52,15 @@ export interface ApiResponse<T = unknown> {
   message: string
 }
 
+export class ApiError extends Error {
+  code: number
+  constructor(message: string, code: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.code = code
+  }
+}
+
 export interface RequestOptions {
   url: string
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
@@ -98,13 +107,21 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
 
     const result = res.data as ApiResponse<T>
 
-    if (result.code === 0) {
+    // HTTP 层错误（如 502 Bad Gateway）：
+    // 如果后端仍返回了带 code 的业务 JSON，优先走下面的业务错误处理；
+    // 否则按网络异常抛错。
+    const hasBusinessCode = result && typeof result.code === 'number'
+    if ((res.statusCode < 200 || res.statusCode >= 300) && !hasBusinessCode) {
+      throw new Error(result?.message || `服务器异常 (${res.statusCode})`)
+    }
+
+    if (result && result.code === 0) {
       return result
     }
 
-    // 业务错误：先 toast，再按错误码分流
+    // 业务错误：按错误码分流
     // 后端认证错误码: 40100-40199，HTTP 401
-    if (result.code === 40100 || res.statusCode === 401) {
+    if ((result && result.code === 40100) || res.statusCode === 401) {
       if (isDev) {
         console.warn('[Request] 401 detected — message:', result.message, 'code:', result.code)
       }
@@ -118,12 +135,17 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
       })
       throw new Error('UNAUTHORIZED')
     }
-    Taro.showToast({ title: result.message || '请求失败', icon: 'none' })
 
-    return result
+    // 其他业务错误统一抛错，避免调用方读到空 data
+    throw new ApiError(result?.message || '请求失败', result?.code ?? -1)
   } catch (err: unknown) {
     if (showLoading) {
       Taro.hideLoading()
+    }
+
+    // 业务错误已由后端返回明确信息，交给上层调用方处理/提示，避免重复 toast
+    if (err instanceof ApiError) {
+      throw err
     }
 
     const msg = err instanceof Error ? err.message : '网络异常，请稍后重试'
