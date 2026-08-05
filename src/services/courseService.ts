@@ -6,8 +6,8 @@
  *   - getCourseCategories 适配后端 string[] 响应
  */
 import { courseList, courseCategories, myCourses } from '@/constants/mock'
-import { get, post } from '@/utils/request'
-import type { CourseBrief, CourseDetail, CoursePurchaseResponse, CourseContent } from '@/types'
+import { get, post, resolveUrl } from '@/utils/request'
+import type { CourseBrief, CourseDetail, CoursePurchaseResponse, CourseContent, CourseAssetPlayback } from '@/types'
 
 /** 全局开关：true=mock，false=真实API */
 const USE_MOCK = false
@@ -95,19 +95,42 @@ export async function getCourseContent(courseId: number): Promise<CourseContent 
     const detail = await getCourseById(courseId)
     return detail
       ? {
-          id: detail.id,
+          course_id: detail.id,
           title: detail.title,
-          description: detail.description,
-          cover_url: detail.cover_url,
-          video_url: detail.video_url,
-          teacher_name: detail.teacher_name,
-          has_access: detail.has_access,
-          chapters: detail.chapters,
+          learning_access: detail.has_access,
+          assets: detail.chapters.map((chapter) => ({
+            id: chapter.id,
+            course_id: detail.id,
+            title: chapter.title,
+            asset_type: 'video',
+            sort_order: chapter.sort_order,
+            is_preview: false,
+            content_url: chapter.video_url || '',
+          })),
         }
       : null
   }
   const res = await get<CourseContent>(`/api/courses/${courseId}/content`)
   return res.data ?? null
+}
+
+/** POST /api/course-assets/{asset_id}/playback-url — 获取两小时短期播放地址 */
+export async function getCourseAssetPlaybackUrl(assetId: number): Promise<CourseAssetPlayback> {
+  if (USE_MOCK) {
+    return { asset_id: assetId, url: '', expires_at: Math.floor(Date.now() / 1000) + 7200 }
+  }
+  const res = await post<CourseAssetPlayback>(
+    `/api/course-assets/${assetId}/playback-url`,
+    undefined,
+    false,
+  )
+  if (res.code !== 0 || !res.data) {
+    throw new Error(res.message || '课程资源地址获取失败')
+  }
+  return {
+    ...res.data,
+    url: resolveUrl(res.data.url),
+  }
 }
 
 const POLL_INTERVAL_MS = 2000

@@ -58,19 +58,33 @@ export interface CourseChapter {
 export interface CoursePurchaseResponse {
   learning_access: boolean
   payment_required: boolean
-  order_id: string | null
+  order_id: number | null
 }
 
-/** 课程内容（学习页） */
-export interface CourseContent {
+/** 私有课程资源 */
+export interface CourseAsset {
   id: number
+  course_id: number
   title: string
-  description: string | null
-  cover_url: string | null
-  video_url: string | null
-  teacher_name: string | null
-  has_access: boolean
-  chapters: CourseChapter[]
+  asset_type: string
+  sort_order: number
+  is_preview: boolean
+  content_url: string
+}
+
+/** 课程内容（学习页），对齐 Backend CourseContentResponse */
+export interface CourseContent {
+  course_id: number
+  title: string
+  learning_access: boolean
+  assets: CourseAsset[]
+}
+
+/** 私有资源短期播放地址 */
+export interface CourseAssetPlayback {
+  asset_id: number
+  url: string
+  expires_at: number
 }
 
 /** 课程的一次具体上课安排 */
