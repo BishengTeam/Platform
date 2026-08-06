@@ -5,8 +5,9 @@
  *   - getCourseById 返回 CourseDetail（对齐后端 CourseDetailResponse）
  *   - getCourseCategories 适配后端 string[] 响应
  */
+import Taro from '@tarojs/taro'
 import { courseList, courseCategories, myCourses } from '@/constants/mock'
-import { get, post, resolveUrl } from '@/utils/request'
+import { get, getToken, post, resolveUrl } from '@/utils/request'
 import type { CourseBrief, CourseDetail, CoursePurchaseResponse, CourseContent, CourseAssetPlayback } from '@/types'
 
 /** 全局开关：true=mock，false=真实API */
@@ -131,6 +132,24 @@ export async function getCourseAssetPlaybackUrl(assetId: number): Promise<Course
     ...res.data,
     url: resolveUrl(res.data.url),
   }
+}
+
+/**
+ * 兼容尚未部署签名播放接口的旧后端。
+ * 旧接口仍要求 Authorization，但 Taro Video 不能附加自定义请求头，
+ * 因此先下载到临时文件，再将本地文件路径交给播放器。
+ */
+export async function downloadCourseAssetContent(assetId: number): Promise<string> {
+  const token = getToken()
+  const result = await Taro.downloadFile({
+    url: resolveUrl(`/api/course-assets/${assetId}/content`),
+    header: token ? { Authorization: `Bearer ${token}` } : undefined,
+  })
+  const statusCode = result.statusCode ?? 0
+  if (statusCode < 200 || statusCode >= 300 || !result.tempFilePath) {
+    throw new Error(`课程资源下载失败 (${statusCode || 'unknown'})`)
+  }
+  return result.tempFilePath
 }
 
 const POLL_INTERVAL_MS = 2000

@@ -7,7 +7,11 @@ import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import { getCourseAssetPlaybackUrl, getCourseContent } from '@/services/dataService'
+import {
+  downloadCourseAssetContent,
+  getCourseAssetPlaybackUrl,
+  getCourseContent,
+} from '@/services/dataService'
 import { ApiError } from '@/utils/request'
 import type { CourseAsset, CourseContent as CourseContentType } from '@/types'
 import styles from './content.module.scss'
@@ -40,6 +44,7 @@ export default function CourseContentPage() {
   const [content, setContent] = useState<CourseContentType | null>(null)
   const [currentAsset, setCurrentAsset] = useState<CourseAsset | null>(null)
   const [playbackUrl, setPlaybackUrl] = useState('')
+  const [playbackIsLocal, setPlaybackIsLocal] = useState(false)
   const [playbackExpiresAt, setPlaybackExpiresAt] = useState(0)
   const [assetLoading, setAssetLoading] = useState(false)
   const [openingDocument, setOpeningDocument] = useState(false)
@@ -99,10 +104,28 @@ export default function CourseContentPage() {
       const playback = await getCourseAssetPlaybackUrl(asset.id)
       if (requestId !== playbackRequestRef.current) return
       setPlaybackUrl(playback.url)
+      setPlaybackIsLocal(false)
       setPlaybackExpiresAt(playback.expires_at)
       setAccessLost(false)
     } catch (err) {
       if (requestId !== playbackRequestRef.current) return
+
+      // 线上旧版本尚未提供签名播放接口时，临时走带 Authorization 的旧内容接口。
+      // 业务资源 404（code=40300）不走降级，避免掩盖资源记录/文件缺失。
+      if (err instanceof ApiError && err.code === 404 && err.statusCode === 404) {
+        try {
+          const localPath = await downloadCourseAssetContent(asset.id)
+          if (requestId !== playbackRequestRef.current) return
+          setPlaybackUrl(localPath)
+          setPlaybackIsLocal(true)
+          setPlaybackExpiresAt(0)
+          setAccessLost(false)
+          return
+        } catch (fallbackErr) {
+          console.warn('[CourseContent] legacy asset fallback failed:', fallbackErr)
+        }
+      }
+
       if (err instanceof ApiError && err.code === 40101) {
         setAccessLost(true)
         setPlaybackUrl('')
@@ -123,6 +146,7 @@ export default function CourseContentPage() {
   useEffect(() => {
     playbackRequestRef.current += 1
     setPlaybackUrl('')
+    setPlaybackIsLocal(false)
     setPlaybackExpiresAt(0)
     if (currentAsset) {
       void loadPlaybackUrl(currentAsset)
@@ -160,12 +184,16 @@ export default function CourseContentPage() {
     setOpeningDocument(true)
     Taro.showLoading({ title: '正在打开...', mask: true })
     try {
-      const result = await Taro.downloadFile({ url: playbackUrl })
-      if (result.statusCode < 200 || result.statusCode >= 300) {
-        throw new Error('文件下载失败')
+      let filePath = playbackUrl
+      if (!playbackIsLocal) {
+        const result = await Taro.downloadFile({ url: playbackUrl })
+        if (result.statusCode < 200 || result.statusCode >= 300) {
+          throw new Error('文件下载失败')
+        }
+        filePath = result.tempFilePath
       }
       await Taro.openDocument({
-        filePath: result.tempFilePath,
+        filePath,
         showMenu: true,
       })
     } catch (err) {

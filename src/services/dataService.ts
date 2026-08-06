@@ -45,6 +45,7 @@ export {
   purchaseCourse,
   getCourseContent,
   getCourseAssetPlaybackUrl,
+  downloadCourseAssetContent,
   pollCourseAccess,
 } from './courseService'
 

@@ -54,10 +54,13 @@ export interface ApiResponse<T = unknown> {
 
 export class ApiError extends Error {
   code: number
-  constructor(message: string, code: number) {
+  statusCode: number
+
+  constructor(message: string, code: number, statusCode = 0) {
     super(message)
     this.name = 'ApiError'
     this.code = code
+    this.statusCode = statusCode
   }
 }
 
@@ -112,7 +115,12 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
     // 否则按网络异常抛错。
     const hasBusinessCode = result && typeof result.code === 'number'
     if ((res.statusCode < 200 || res.statusCode >= 300) && !hasBusinessCode) {
-      throw new Error(result?.message || `服务器异常 (${res.statusCode})`)
+      // 保留 HTTP 状态码，调用方可以区分“接口未部署”和业务资源 404。
+      throw new ApiError(
+        result?.message || `服务器异常 (${res.statusCode})`,
+        res.statusCode,
+        res.statusCode,
+      )
     }
 
     if (result && result.code === 0) {
@@ -137,7 +145,11 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
     }
 
     // 其他业务错误统一抛错，避免调用方读到空 data
-    throw new ApiError(result?.message || '请求失败', result?.code ?? -1)
+    throw new ApiError(
+      result?.message || '请求失败',
+      result?.code ?? -1,
+      res.statusCode,
+    )
   } catch (err: unknown) {
     if (showLoading) {
       Taro.hideLoading()
