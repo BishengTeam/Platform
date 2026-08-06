@@ -552,6 +552,7 @@ export const STRINGS = {
   COURSE_VIEW_DETAIL: '查看详情',
   COURSE_SELECT_SESSION_TOAST: '请选择班次',
   COURSE_ENROLL_SUCCESS: '报名成功',
+  COURSE_FREE_ENROLL_SUCCESS: '报名成功',
   COURSE_NOT_FOUND: '课程不存在',
   COURSE_LOAD_ERROR: '课程加载失败，请稍后重试',
   COURSE_BUY_BTN: '立即购买',
