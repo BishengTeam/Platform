@@ -13,12 +13,10 @@
   overflow-y: auto;
   padding: $spacing-md $spacing-lg;
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
+  box-sizing: border-box;
 }
 
-.notice { display: flex; flex-direction: column; gap: $spacing-sm; margin: $spacing-md $spacing-lg 0; padding: $spacing-md; color: $color-text-secondary; background: $color-blue-tint; border-radius: $radius-md; font-size: $font-sm; line-height: 1.5; }
+.notice { display: flex; flex-direction: column; gap: $spacing-sm; margin: $spacing-md $spacing-md 0; padding: $spacing-md; color: $color-text-secondary; background: $color-blue-tint; border-radius: $radius-md; font-size: $font-sm; line-height: 1.5; }
 .state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
 .disabled { display: block; margin-top: $spacing-sm; color: $color-price; font-size: $font-sm; }
 .pager { display: flex; align-items: center; justify-content: space-between; padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom}); }
@@ -27,6 +25,7 @@
   background: $color-white;
   border-radius: $radius-md;
   padding: $spacing-md;
+  margin-bottom: $spacing-md;
 }
 
 .cardHeader {

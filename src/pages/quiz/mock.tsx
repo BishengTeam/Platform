@@ -5,6 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
+import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
 import type { QuizAnswer, QuizCategoryNode, QuizExamDetail, QuizExamInProgress, QuizExamQuestionState } from '@/contracts/quiz'
 import {
   abandonQuizExam,
@@ -49,7 +50,9 @@ function isNotFound(error: unknown): boolean {
 export default function QuizMockPage() {
   const [exam, setExam] = useState<QuizExamDetail | null>(null)
   const [categories, setCategories] = useState<QuizCategoryNode[]>([])
+  const [quizTree, setQuizTree] = useState<QuizCategoryNode[]>([])
   const [categoryId, setCategoryId] = useState<number | null>(null)
+  const [quizPickerVisible, setQuizPickerVisible] = useState(false)
   const [questionCount, setQuestionCount] = useState<number>(20)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -109,6 +112,7 @@ export default function QuizMockPage() {
       .then(([tree, current]) => {
         const flat = flattenCategories(tree)
         setCategories(flat)
+        setQuizTree(tree)
         if (!Number.isInteger(explicitCategoryId) && flat.length > 0) setCategoryId(flat[0].id)
         if (current) applyExam(current)
       })
@@ -148,14 +152,12 @@ export default function QuizMockPage() {
   }
 
   const chooseCategory = () => {
-    if (categories.length === 0) return
-    Taro.showActionSheet({
-      itemList: categories.map(category => `${'　'.repeat(category.depth - 1)}${category.name}（${category.question_count}题）`),
-      success: result => {
-        const selected = categories[result.tapIndex]
-        if (selected) setCategoryId(selected.id)
-      },
-    })
+    setQuizPickerVisible(true)
+  }
+
+  const handleSelectCategory = (node: QuizCategoryNode) => {
+    setCategoryId(node.id)
+    setQuizPickerVisible(false)
   }
 
   const selectAnswer = async (question: QuizExamQuestionState, label: string) => {
@@ -271,6 +273,15 @@ export default function QuizMockPage() {
   }
 
   const selectedCategory = categories.find(category => category.id === categoryId)
+  const availableCounts = QUESTION_COUNTS.filter(count => count <= (selectedCategory?.question_count ?? 0))
+
+  useEffect(() => {
+    const max = selectedCategory?.question_count ?? 0
+    if (max > 0 && questionCount > max) {
+      const fallback = QUESTION_COUNTS.filter(count => count <= max).pop()
+      if (fallback) setQuestionCount(fallback)
+    }
+  }, [selectedCategory?.id, questionCount])
   if (loading) return <AuthGuard><View className={styles.page}><PageHeader title='模拟考试' shouldShowBack /><View className={styles.emptyBody}><Text>正在恢复考试…</Text></View></View></AuthGuard>
 
   if (terminalAction) {
@@ -316,12 +327,23 @@ export default function QuizMockPage() {
             <Text className={styles.setupTitle}>创建 60 分钟模拟考试</Text>
             <Text className={styles.setupHint}>同一时间只能有一场进行中考试；题目顺序由服务端随机固定。</Text>
             <View className={styles.selector} onClick={chooseCategory}><Text>{selectedCategory?.name ?? '请选择分类'}</Text><Text>›</Text></View>
-            <View className={styles.countGrid}>{QUESTION_COUNTS.map(count => <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}><Text>{count} 题</Text></View>)}</View>
+            {availableCounts.length > 0 ? (
+              <View className={styles.countGrid}>{availableCounts.map(count => <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}><Text>{count} 题</Text></View>)}</View>
+            ) : (
+              <Text className={styles.errorText}>该分类题目不足 10 题，无法创建模拟考试</Text>
+            )}
             {loadError && <Text className={styles.errorText}>{loadError}</Text>}
-            <Button variant='gradient' size='lg' loading={creating} disabled={!categoryId || creating} onClick={create}>{creating ? '创建中…' : '开始考试'}</Button>
+            <Button variant='gradient' size='lg' loading={creating} disabled={!categoryId || availableCounts.length === 0 || creating} onClick={create}>{creating ? '创建中…' : '开始考试'}</Button>
             <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: '/pages/quiz/exam-history' })}>查看考试历史</Button>
           </View>
         </View>
+        <QuizCategoryPicker
+          visible={quizPickerVisible}
+          tree={quizTree}
+          selectedId={categoryId}
+          onSelect={handleSelectCategory}
+          onClose={() => setQuizPickerVisible(false)}
+        />
       </AuthGuard>
     )
   }
@@ -338,7 +360,7 @@ export default function QuizMockPage() {
         <View className={styles.page}>
           <PageHeader title='考试结果' shouldShowBack />
           <ScrollView className={styles.body} scrollY>
-            <View className={styles.resultCard}>
+            <View className={`${styles.resultCard} ${styles.resultCardScroll}`}>
               <Text className={styles.resultScore}>{exam.score.toFixed(1)} 分</Text>
               <Text className={styles.resultAccuracy}>{exam.status === 'timed_out' ? '服务端超时结算' : '正常交卷'} · 对 {exam.correct_count} / 错 {exam.wrong_count} / 未答 {exam.unanswered_count}</Text>
             </View>

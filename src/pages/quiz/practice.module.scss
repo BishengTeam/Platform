@@ -12,7 +12,7 @@
   flex: 1;
   overflow-y: auto;
   padding: $spacing-md 0;
-  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  padding-bottom: $spacing-lg;
 }
 
 .resultBody {
@@ -58,16 +58,11 @@
 .countItem { padding: $spacing-lg; text-align: center; color: $color-text-secondary; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
 .countItemActive { color: $color-primary; background: $color-blue-tint; border-color: $color-primary; font-weight: 700; }
 .sessionBar { display: flex; justify-content: space-between; padding: 0 $spacing-md $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
-.abandonLink { color: $color-price; }
+.abandonLink { color: $color-price; font-size: $font-sm; }
 .shortageHint { padding: 0 $spacing-md $spacing-sm; color: $color-warning; }
 .pathText { display: block; margin-bottom: $spacing-xs; color: $color-text-tertiary; font-size: $font-2xs; }
 .answerButton { width: 100%; margin-top: $spacing-lg; }
 .attemptText { display: block; margin-top: $spacing-xs; color: $color-text-tertiary; font-size: $font-2xs; }
-.questionMap { display: grid; grid-template-columns: repeat(5, 1fr); gap: $spacing-sm; padding: $spacing-md; }
-.questionDot { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; color: $color-text-secondary; background: $color-white; border: 1px solid $color-border; border-radius: 50%; font-size: $font-sm; }
-.questionDotAnswered { color: $color-success; background: #F6FFED; border-color: #B7EB8F; }
-.questionDotCurrent { color: $color-white; background: $color-primary; border-color: $color-primary; }
-
 .btnWrap {
   width: 100%;
   display: flex;
@@ -119,16 +114,6 @@
   background: $color-blue-tint;
   padding: 2px $spacing-sm;
   border-radius: $radius-sm;
-}
-
-.headerActions {
-  display: flex;
-  gap: $spacing-sm;
-}
-
-.actionBtn {
-  font-size: $font-sm;
-  color: $color-text-tertiary;
 }
 
 .stem {
@@ -231,4 +216,124 @@
   justify-content: space-between;
   gap: $spacing-md;
   padding: $spacing-md;
+}
+
+// ---- 底部固定操作栏 ----
+.bottomBar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  padding-bottom: calc(#{$spacing-sm} + #{$safe-bottom});
+  background: $color-white;
+  border-top: $border-thin solid $color-border;
+  box-shadow: $shadow-bottom;
+}
+
+.barItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+  color: $color-text-secondary;
+  font-size: $font-xs;
+}
+
+.barStat {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+}
+
+.barStatNum {
+  font-size: $font-base;
+  font-weight: 700;
+  color: $color-text;
+  min-width: 40px;
+}
+
+.barDone {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+  margin-left: auto;
+  padding: $spacing-2xs $spacing-sm;
+  background: $color-blue-tint;
+  border-radius: $radius-full;
+}
+
+.barDoneCount {
+  font-size: $font-base;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.barDoneLabel {
+  font-size: $font-2xs;
+  color: $color-primary;
+}
+
+// ---- 答题卡抽屉 ----
+.drawer {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: $color-white;
+  border-radius: $radius-lg $radius-lg 0 0;
+  overflow: hidden;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: $border-thin solid $color-border;
+}
+
+.drawerTitle {
+  font-size: $font-lg;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.drawerBody {
+  flex: 1;
+  overflow: hidden;
+}
+
+.drawerGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg $spacing-lg;
+}
+
+.drawerDot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: $font-sm;
+  color: $color-text-secondary;
+  background: $color-bg-secondary;
+  border: 1px solid $color-border;
+}
+
+.drawerDotCorrect {
+  color: $color-white;
+  background: $color-success;
+  border-color: $color-success;
+}
+
+.drawerDotWrong {
+  color: $color-white;
+  background: $color-price;
+  border-color: $color-price;
+}
+
+.drawerDotCurrent {
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.3);
 }

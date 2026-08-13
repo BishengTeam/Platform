@@ -1,4 +1,4 @@
-/** Quiz API client. All 22 user operations use the frozen 2026-08-08 contract. */
+/** Quiz API client. All 22 user operations use the frozen 2026-08-13 contract. */
 
 import { del, get, post, put } from '@/utils/request'
 import {

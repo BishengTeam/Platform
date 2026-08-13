@@ -1,5 +1,5 @@
 /**
- * Frozen Platform view of the Backend quiz contract (2026-08-08).
+ * Frozen Platform view of the Backend quiz contract (2026-08-13).
  *
  * `unknown` is deliberately accepted only by the parsers in this file. Quiz
  * pages and services receive fully validated, non-optional DTOs.

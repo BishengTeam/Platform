@@ -1,0 +1,1355 @@
+0 verbose cli D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\.superpowers\tools\node\node.exe D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\.superpowers\tools\node\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.8.2
+2 info using node@v20.20.2
+3 silly config load:file:D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\.superpowers\tools\node\node_modules\npm\npmrc
+4 silly config load:file:D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\.npmrc
+5 silly config load:file:C:\Users\21202\.npmrc
+6 silly config load:file:D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\.superpowers\tools\node\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--ignore-scripts" "--no-audit" "--no-fund" "--registry" "https://registry.npmjs.org/" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\.npm-cache\_logs\2026-08-12T00_39_14_907Z-
+10 verbose logfile D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\.npm-cache\_logs\2026-08-12T00_39_14_907Z-debug-0.log
+11 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+12 silly logfile done cleaning log files
+13 silly idealTree buildDeps
+14 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+15 silly reify mark retired [
+15 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\bidi-js'
+15 silly reify ]
+16 silly reify mark retired [
+16 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\chai'
+16 silly reify ]
+17 silly reify mark retired [
+17 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\data-urls'
+17 silly reify ]
+18 silly reify mark retired [
+18 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\entities'
+18 silly reify ]
+19 silly reify mark retired [
+19 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\es-module-lexer'
+19 silly reify ]
+20 silly reify mark retired [
+20 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\html-encoding-sniffer'
+20 silly reify ]
+21 silly reify mark retired [
+21 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\jsdom'
+21 silly reify ]
+22 silly reify mark retired [
+22 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\lightningcss-win32-x64-msvc'
+22 silly reify ]
+23 silly reify mark retired [
+23 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\lightningcss'
+23 silly reify ]
+24 silly reify mark retired [
+24 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\nanoid',
+24 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\nanoid',
+24 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\nanoid.cmd',
+24 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\nanoid.ps1'
+24 silly reify ]
+25 silly reify mark retired [
+25 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\obug'
+25 silly reify ]
+26 silly reify mark retired [
+26 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\picomatch'
+26 silly reify ]
+27 silly reify mark retired [
+27 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\postcss'
+27 silly reify ]
+28 silly reify mark retired [
+28 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\rolldown',
+28 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\rolldown',
+28 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\rolldown.cmd',
+28 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\rolldown.ps1'
+28 silly reify ]
+29 silly reify mark retired [
+29 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\std-env'
+29 silly reify ]
+30 silly reify mark retired [
+30 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tldts',
+30 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\tldts',
+30 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\tldts.cmd',
+30 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\tldts.ps1'
+30 silly reify ]
+31 silly reify mark retired [
+31 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tldts-core'
+31 silly reify ]
+32 silly reify mark retired [
+32 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tinyrainbow'
+32 silly reify ]
+33 silly reify mark retired [
+33 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tr46'
+33 silly reify ]
+34 silly reify mark retired [
+34 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tough-cookie'
+34 silly reify ]
+35 silly reify mark retired [
+35 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\undici'
+35 silly reify ]
+36 silly reify mark retired [
+36 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest',
+36 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\vitest',
+36 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\vitest.cmd',
+36 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\vitest.ps1'
+36 silly reify ]
+37 silly reify mark retired [
+37 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\webidl-conversions'
+37 silly reify ]
+38 silly reify mark retired [
+38 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\whatwg-url'
+38 silly reify ]
+39 silly reify mark retired [
+39 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\whatwg-mimetype'
+39 silly reify ]
+40 silly reify mark retired [
+40 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\css-color'
+40 silly reify ]
+41 silly reify mark retired [
+41 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\dom-selector'
+41 silly reify ]
+42 silly reify mark retired [
+42 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\generational-cache'
+42 silly reify ]
+43 silly reify mark retired [
+43 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\nwsapi'
+43 silly reify ]
+44 silly reify mark retired [
+44 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@bramus\\specificity',
+44 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\specificity',
+44 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\specificity.cmd',
+44 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\specificity.ps1'
+44 silly reify ]
+45 silly reify mark retired [
+45 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@csstools\\color-helpers'
+45 silly reify ]
+46 silly reify mark retired [
+46 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@exodus\\bytes'
+46 silly reify ]
+47 silly reify mark retired [
+47 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@oxc-project\\types'
+47 silly reify ]
+48 silly reify mark retired [
+48 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rolldown\\binding-win32-x64-msvc'
+48 silly reify ]
+49 silly reify mark retired [
+49 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@standard-schema\\spec'
+49 silly reify ]
+50 silly reify mark retired [
+50 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@testing-library\\jest-dom'
+50 silly reify ]
+51 silly reify mark retired [
+51 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@types\\estree'
+51 silly reify ]
+52 silly reify mark retired [
+52 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\expect'
+52 silly reify ]
+53 silly reify mark retired [
+53 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\runner'
+53 silly reify ]
+54 silly reify mark retired [
+54 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\snapshot'
+54 silly reify ]
+55 silly reify mark retired [
+55 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\spy'
+55 silly reify ]
+56 silly reify mark retired [
+56 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\pretty-format'
+56 silly reify ]
+57 silly reify mark retired [
+57 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\utils'
+57 silly reify ]
+58 silly reify moves {
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\bidi-js': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bidi-js-IvPc7iOO',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\chai': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.chai-SRwOVKqS',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\data-urls': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.data-urls-PSDFhy8b',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\entities': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.entities-cwJ9SYva',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\es-module-lexer': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.es-module-lexer-FsIGBT7P',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\html-encoding-sniffer': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.html-encoding-sniffer-Ch2B4odR',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\jsdom': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.jsdom-XakaPNaR',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\lightningcss-win32-x64-msvc': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.lightningcss-win32-x64-msvc-mvnTqePJ',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\lightningcss': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.lightningcss-bFVl7nef',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\nanoid': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.nanoid-5TTQUitG',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\nanoid': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.nanoid-ldZYfa2b',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\nanoid.cmd': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.nanoid.cmd-vkrfEuKd',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\nanoid.ps1': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.nanoid.ps1-EicKzngf',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\obug': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.obug-Z0N3imzn',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\picomatch': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.picomatch-IB0ZNrld',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\postcss': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.postcss-63cRlRcN',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\rolldown': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.rolldown-RaFKECGe',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\rolldown': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.rolldown-Jq72znQE',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\rolldown.cmd': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.rolldown.cmd-TmPEBC0t',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\rolldown.ps1': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.rolldown.ps1-jhg244yd',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\std-env': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.std-env-eVDbLTG7',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tldts': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.tldts-BLOFfia6',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\tldts': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.tldts-SoLv0EII',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\tldts.cmd': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.tldts.cmd-U0DiBpTo',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\tldts.ps1': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.tldts.ps1-s8eTLVsp',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tldts-core': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.tldts-core-bn9X935m',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tinyrainbow': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.tinyrainbow-mgvAczkn',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tr46': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.tr46-IbIv3Pm1',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\tough-cookie': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.tough-cookie-PYggwUYi',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\undici': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.undici-ICbKiOzc',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.vitest-ra9fNThP',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\vitest': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.vitest-vZmKO0GF',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\vitest.cmd': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.vitest.cmd-gQ3CYYGh',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\vitest.ps1': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.vitest.ps1-0mbNYpOM',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\webidl-conversions': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.webidl-conversions-XBjOgRyF',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\whatwg-url': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.whatwg-url-CayoTVwY',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\whatwg-mimetype': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.whatwg-mimetype-TbqNrvb4',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\css-color': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\.css-color-x19xXsVb',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\dom-selector': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\.dom-selector-07GoAZ4O',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\generational-cache': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\.generational-cache-XVWxUKgz',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\nwsapi': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@asamuzakjp\\.nwsapi-WmZqcl80',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@bramus\\specificity': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@bramus\\.specificity-fVf6deKs',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\specificity': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.specificity-J6ItReBx',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\specificity.cmd': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.specificity.cmd-YlFpqbry',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\specificity.ps1': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\.bin\\.specificity.ps1-oFtUwXhs',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@csstools\\color-helpers': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@csstools\\.color-helpers-N4Ni4kZ7',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@exodus\\bytes': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@exodus\\.bytes-LpWVOdcZ',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@oxc-project\\types': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@oxc-project\\.types-C2jcsaCJ',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rolldown\\binding-win32-x64-msvc': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rolldown\\.binding-win32-x64-msvc-qD5NnDm2',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@standard-schema\\spec': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@standard-schema\\.spec-CtbfJoKU',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@testing-library\\jest-dom': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@testing-library\\.jest-dom-srmmh2QW',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@types\\estree': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@types\\.estree-euIKEFxE',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\expect': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\.expect-wfA5ITPL',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\runner': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\.runner-ReN1z0WQ',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\snapshot': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\.snapshot-RzS3haEr',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\spy': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\.spy-P4PparB4',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\pretty-format': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\.pretty-format-E7ezuXM6',
+58 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\utils': 'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@vitest\\.utils-2xpgeWBv'
+58 silly reify }
+59 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\win32-ia32
+60 silly reify mark deleted [
+60 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\win32-ia32'
+60 silly reify ]
+61 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\win32-arm64
+62 silly reify mark deleted [
+62 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\win32-arm64'
+62 silly reify ]
+63 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\sunos-x64
+64 silly reify mark deleted [
+64 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\sunos-x64'
+64 silly reify ]
+65 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\openbsd-x64
+66 silly reify mark deleted [
+66 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\openbsd-x64'
+66 silly reify ]
+67 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\netbsd-x64
+68 silly reify mark deleted [
+68 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\netbsd-x64'
+68 silly reify ]
+69 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-x64
+70 silly reify mark deleted [
+70 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-x64'
+70 silly reify ]
+71 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-s390x
+72 silly reify mark deleted [
+72 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-s390x'
+72 silly reify ]
+73 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-riscv64
+74 silly reify mark deleted [
+74 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-riscv64'
+74 silly reify ]
+75 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-ppc64
+76 silly reify mark deleted [
+76 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-ppc64'
+76 silly reify ]
+77 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-mips64el
+78 silly reify mark deleted [
+78 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-mips64el'
+78 silly reify ]
+79 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-loong64
+80 silly reify mark deleted [
+80 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-loong64'
+80 silly reify ]
+81 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-ia32
+82 silly reify mark deleted [
+82 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-ia32'
+82 silly reify ]
+83 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-arm64
+84 silly reify mark deleted [
+84 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-arm64'
+84 silly reify ]
+85 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\linux-arm
+86 silly reify mark deleted [
+86 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\linux-arm'
+86 silly reify ]
+87 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\freebsd-x64
+88 silly reify mark deleted [
+88 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\freebsd-x64'
+88 silly reify ]
+89 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\freebsd-arm64
+90 silly reify mark deleted [
+90 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\freebsd-arm64'
+90 silly reify ]
+91 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\darwin-x64
+92 silly reify mark deleted [
+92 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\darwin-x64'
+92 silly reify ]
+93 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\darwin-arm64
+94 silly reify mark deleted [
+94 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\darwin-arm64'
+94 silly reify ]
+95 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\android-x64
+96 silly reify mark deleted [
+96 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\android-x64'
+96 silly reify ]
+97 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\android-arm64
+98 silly reify mark deleted [
+98 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\android-arm64'
+98 silly reify ]
+99 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\android-arm
+100 silly reify mark deleted [
+100 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\android-arm'
+100 silly reify ]
+101 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite-node\node_modules\@esbuild\aix-ppc64
+102 silly reify mark deleted [
+102 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite-node\\node_modules\\@esbuild\\aix-ppc64'
+102 silly reify ]
+103 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\fsevents
+104 silly reify mark deleted [
+104 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\fsevents'
+104 silly reify ]
+105 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-win32-ia32-msvc
+106 silly reify mark deleted [
+106 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-win32-ia32-msvc'
+106 silly reify ]
+107 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-linux-x64-musl
+108 silly reify mark deleted [
+108 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-linux-x64-musl'
+108 silly reify ]
+109 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-linux-x64-gnu
+110 silly reify mark deleted [
+110 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-linux-x64-gnu'
+110 silly reify ]
+111 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-linux-arm64-musl
+112 silly reify mark deleted [
+112 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-linux-arm64-musl'
+112 silly reify ]
+113 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-linux-arm64-gnu
+114 silly reify mark deleted [
+114 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-linux-arm64-gnu'
+114 silly reify ]
+115 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-linux-arm-gnueabihf
+116 silly reify mark deleted [
+116 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-linux-arm-gnueabihf'
+116 silly reify ]
+117 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-darwin-x64
+118 silly reify mark deleted [
+118 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-darwin-x64'
+118 silly reify ]
+119 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-darwin-universal
+120 silly reify mark deleted [
+120 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-darwin-universal'
+120 silly reify ]
+121 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\plugin-doctor-darwin-arm64
+122 silly reify mark deleted [
+122 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\plugin-doctor-darwin-arm64'
+122 silly reify ]
+123 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-linux-x64-musl
+124 silly reify mark deleted [
+124 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-linux-x64-musl'
+124 silly reify ]
+125 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-linux-x64-gnu
+126 silly reify mark deleted [
+126 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-linux-x64-gnu'
+126 silly reify ]
+127 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-linux-arm64-musl
+128 silly reify mark deleted [
+128 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-linux-arm64-musl'
+128 silly reify ]
+129 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-linux-arm64-gnu
+130 silly reify mark deleted [
+130 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-linux-arm64-gnu'
+130 silly reify ]
+131 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-linux-arm-gnueabihf
+132 silly reify mark deleted [
+132 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-linux-arm-gnueabihf'
+132 silly reify ]
+133 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-darwin-x64
+134 silly reify mark deleted [
+134 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-darwin-x64'
+134 silly reify ]
+135 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-darwin-universal
+136 silly reify mark deleted [
+136 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-darwin-universal'
+136 silly reify ]
+137 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-darwin-arm64
+138 silly reify mark deleted [
+138 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-darwin-arm64'
+138 silly reify ]
+139 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-android-arm64
+140 silly reify mark deleted [
+140 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-android-arm64'
+140 silly reify ]
+141 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\parse-css-to-stylesheet-android-arm-eabi
+142 silly reify mark deleted [
+142 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\parse-css-to-stylesheet-android-arm-eabi'
+142 silly reify ]
+143 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\binding-linux-x64-gnu
+144 silly reify mark deleted [
+144 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\binding-linux-x64-gnu'
+144 silly reify ]
+145 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\binding-linux-arm64-gnu
+146 silly reify mark deleted [
+146 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\binding-linux-arm64-gnu'
+146 silly reify ]
+147 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\binding-darwin-x64
+148 silly reify mark deleted [
+148 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\binding-darwin-x64'
+148 silly reify ]
+149 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@tarojs\binding-darwin-arm64
+150 silly reify mark deleted [
+150 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@tarojs\\binding-darwin-arm64'
+150 silly reify ]
+151 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-win32-ia32-msvc
+152 silly reify mark deleted [
+152 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-win32-ia32-msvc'
+152 silly reify ]
+153 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-win32-arm64-msvc
+154 silly reify mark deleted [
+154 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-win32-arm64-msvc'
+154 silly reify ]
+155 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-linux-x64-musl
+156 silly reify mark deleted [
+156 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-linux-x64-musl'
+156 silly reify ]
+157 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-linux-x64-gnu
+158 silly reify mark deleted [
+158 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-linux-x64-gnu'
+158 silly reify ]
+159 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-linux-arm64-musl
+160 silly reify mark deleted [
+160 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-linux-arm64-musl'
+160 silly reify ]
+161 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-linux-arm64-gnu
+162 silly reify mark deleted [
+162 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-linux-arm64-gnu'
+162 silly reify ]
+163 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-linux-arm-gnueabihf
+164 silly reify mark deleted [
+164 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-linux-arm-gnueabihf'
+164 silly reify ]
+165 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-darwin-x64
+166 silly reify mark deleted [
+166 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-darwin-x64'
+166 silly reify ]
+167 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@swc\core-darwin-arm64
+168 silly reify mark deleted [
+168 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@swc\\core-darwin-arm64'
+168 silly reify ]
+169 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-win32-ia32-msvc
+170 silly reify mark deleted [
+170 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-win32-ia32-msvc'
+170 silly reify ]
+171 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-win32-arm64-msvc
+172 silly reify mark deleted [
+172 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-win32-arm64-msvc'
+172 silly reify ]
+173 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-openharmony-arm64
+174 silly reify mark deleted [
+174 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-openharmony-arm64'
+174 silly reify ]
+175 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-openbsd-x64
+176 silly reify mark deleted [
+176 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-openbsd-x64'
+176 silly reify ]
+177 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-x64-musl
+178 silly reify mark deleted [
+178 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-x64-musl'
+178 silly reify ]
+179 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-x64-gnu
+180 silly reify mark deleted [
+180 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-x64-gnu'
+180 silly reify ]
+181 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-s390x-gnu
+182 silly reify mark deleted [
+182 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-s390x-gnu'
+182 silly reify ]
+183 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-riscv64-musl
+184 silly reify mark deleted [
+184 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-riscv64-musl'
+184 silly reify ]
+185 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-riscv64-gnu
+186 silly reify mark deleted [
+186 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-riscv64-gnu'
+186 silly reify ]
+187 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-ppc64-musl
+188 silly reify mark deleted [
+188 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-ppc64-musl'
+188 silly reify ]
+189 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-ppc64-gnu
+190 silly reify mark deleted [
+190 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-ppc64-gnu'
+190 silly reify ]
+191 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-loong64-musl
+192 silly reify mark deleted [
+192 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-loong64-musl'
+192 silly reify ]
+193 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-loong64-gnu
+194 silly reify mark deleted [
+194 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-loong64-gnu'
+194 silly reify ]
+195 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-arm64-musl
+196 silly reify mark deleted [
+196 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-arm64-musl'
+196 silly reify ]
+197 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-arm64-gnu
+198 silly reify mark deleted [
+198 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-arm64-gnu'
+198 silly reify ]
+199 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-arm-musleabihf
+200 silly reify mark deleted [
+200 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-arm-musleabihf'
+200 silly reify ]
+201 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-linux-arm-gnueabihf
+202 silly reify mark deleted [
+202 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-linux-arm-gnueabihf'
+202 silly reify ]
+203 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-freebsd-x64
+204 silly reify mark deleted [
+204 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-freebsd-x64'
+204 silly reify ]
+205 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-freebsd-arm64
+206 silly reify mark deleted [
+206 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-freebsd-arm64'
+206 silly reify ]
+207 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-darwin-x64
+208 silly reify mark deleted [
+208 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-darwin-x64'
+208 silly reify ]
+209 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-darwin-arm64
+210 silly reify mark deleted [
+210 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-darwin-arm64'
+210 silly reify ]
+211 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-android-arm64
+212 silly reify mark deleted [
+212 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-android-arm64'
+212 silly reify ]
+213 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@rollup\rollup-android-arm-eabi
+214 silly reify mark deleted [
+214 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@rollup\\rollup-android-arm-eabi'
+214 silly reify ]
+215 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-win32-ia32
+216 silly reify mark deleted [
+216 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-win32-ia32'
+216 silly reify ]
+217 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-win32-arm64
+218 silly reify mark deleted [
+218 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-win32-arm64'
+218 silly reify ]
+219 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-linux-x64-musl
+220 silly reify mark deleted [
+220 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-linux-x64-musl'
+220 silly reify ]
+221 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-linux-x64-glibc
+222 silly reify mark deleted [
+222 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-linux-x64-glibc'
+222 silly reify ]
+223 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-linux-arm64-musl
+224 silly reify mark deleted [
+224 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-linux-arm64-musl'
+224 silly reify ]
+225 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-linux-arm64-glibc
+226 silly reify mark deleted [
+226 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-linux-arm64-glibc'
+226 silly reify ]
+227 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-linux-arm-musl
+228 silly reify mark deleted [
+228 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-linux-arm-musl'
+228 silly reify ]
+229 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-linux-arm-glibc
+230 silly reify mark deleted [
+230 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-linux-arm-glibc'
+230 silly reify ]
+231 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-freebsd-x64
+232 silly reify mark deleted [
+232 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-freebsd-x64'
+232 silly reify ]
+233 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-darwin-x64
+234 silly reify mark deleted [
+234 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-darwin-x64'
+234 silly reify ]
+235 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-darwin-arm64
+236 silly reify mark deleted [
+236 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-darwin-arm64'
+236 silly reify ]
+237 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@parcel\watcher-android-arm64
+238 silly reify mark deleted [
+238 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@parcel\\watcher-android-arm64'
+238 silly reify ]
+239 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@napi-rs\lzma-linux-x64-gnu
+240 silly reify mark deleted [
+240 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@napi-rs\\lzma-linux-x64-gnu'
+240 silly reify ]
+241 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-win32-ia32
+242 silly reify mark deleted [
+242 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-win32-ia32'
+242 silly reify ]
+243 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-win32-arm64
+244 silly reify mark deleted [
+244 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-win32-arm64'
+244 silly reify ]
+245 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-wasm32
+246 silly reify mark deleted [
+246 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-wasm32'
+246 silly reify ]
+247 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@emnapi\runtime
+248 silly reify mark deleted [
+248 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@emnapi\\runtime'
+248 silly reify ]
+249 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linuxmusl-x64
+250 silly reify mark deleted [
+250 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linuxmusl-x64'
+250 silly reify ]
+251 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linuxmusl-arm64
+252 silly reify mark deleted [
+252 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linuxmusl-arm64'
+252 silly reify ]
+253 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linux-x64
+254 silly reify mark deleted [
+254 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linux-x64'
+254 silly reify ]
+255 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linux-s390x
+256 silly reify mark deleted [
+256 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linux-s390x'
+256 silly reify ]
+257 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linux-riscv64
+258 silly reify mark deleted [
+258 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linux-riscv64'
+258 silly reify ]
+259 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linux-ppc64
+260 silly reify mark deleted [
+260 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linux-ppc64'
+260 silly reify ]
+261 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linux-arm64
+262 silly reify mark deleted [
+262 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linux-arm64'
+262 silly reify ]
+263 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-linux-arm
+264 silly reify mark deleted [
+264 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-linux-arm'
+264 silly reify ]
+265 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linuxmusl-x64
+266 silly reify mark deleted [
+266 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linuxmusl-x64'
+266 silly reify ]
+267 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linuxmusl-arm64
+268 silly reify mark deleted [
+268 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linuxmusl-arm64'
+268 silly reify ]
+269 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linux-x64
+270 silly reify mark deleted [
+270 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linux-x64'
+270 silly reify ]
+271 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linux-s390x
+272 silly reify mark deleted [
+272 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linux-s390x'
+272 silly reify ]
+273 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linux-riscv64
+274 silly reify mark deleted [
+274 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linux-riscv64'
+274 silly reify ]
+275 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linux-ppc64
+276 silly reify mark deleted [
+276 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linux-ppc64'
+276 silly reify ]
+277 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linux-arm64
+278 silly reify mark deleted [
+278 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linux-arm64'
+278 silly reify ]
+279 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-linux-arm
+280 silly reify mark deleted [
+280 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-linux-arm'
+280 silly reify ]
+281 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-darwin-x64
+282 silly reify mark deleted [
+282 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-darwin-x64'
+282 silly reify ]
+283 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-libvips-darwin-arm64
+284 silly reify mark deleted [
+284 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-libvips-darwin-arm64'
+284 silly reify ]
+285 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-darwin-x64
+286 silly reify mark deleted [
+286 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-darwin-x64'
+286 silly reify ]
+287 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@img\sharp-darwin-arm64
+288 silly reify mark deleted [
+288 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@img\\sharp-darwin-arm64'
+288 silly reify ]
+289 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\win32-ia32
+290 silly reify mark deleted [
+290 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\win32-ia32'
+290 silly reify ]
+291 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\win32-arm64
+292 silly reify mark deleted [
+292 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\win32-arm64'
+292 silly reify ]
+293 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\sunos-x64
+294 silly reify mark deleted [
+294 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\sunos-x64'
+294 silly reify ]
+295 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\openharmony-arm64
+296 silly reify mark deleted [
+296 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\openharmony-arm64'
+296 silly reify ]
+297 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\openbsd-x64
+298 silly reify mark deleted [
+298 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\openbsd-x64'
+298 silly reify ]
+299 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\openbsd-arm64
+300 silly reify mark deleted [
+300 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\openbsd-arm64'
+300 silly reify ]
+301 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\netbsd-x64
+302 silly reify mark deleted [
+302 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\netbsd-x64'
+302 silly reify ]
+303 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\netbsd-arm64
+304 silly reify mark deleted [
+304 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\netbsd-arm64'
+304 silly reify ]
+305 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-x64
+306 silly reify mark deleted [
+306 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-x64'
+306 silly reify ]
+307 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-s390x
+308 silly reify mark deleted [
+308 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-s390x'
+308 silly reify ]
+309 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-riscv64
+310 silly reify mark deleted [
+310 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-riscv64'
+310 silly reify ]
+311 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-ppc64
+312 silly reify mark deleted [
+312 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-ppc64'
+312 silly reify ]
+313 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-mips64el
+314 silly reify mark deleted [
+314 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-mips64el'
+314 silly reify ]
+315 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-loong64
+316 silly reify mark deleted [
+316 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-loong64'
+316 silly reify ]
+317 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-ia32
+318 silly reify mark deleted [
+318 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-ia32'
+318 silly reify ]
+319 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-arm64
+320 silly reify mark deleted [
+320 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-arm64'
+320 silly reify ]
+321 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\linux-arm
+322 silly reify mark deleted [
+322 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\linux-arm'
+322 silly reify ]
+323 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\freebsd-x64
+324 silly reify mark deleted [
+324 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\freebsd-x64'
+324 silly reify ]
+325 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\freebsd-arm64
+326 silly reify mark deleted [
+326 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\freebsd-arm64'
+326 silly reify ]
+327 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\darwin-x64
+328 silly reify mark deleted [
+328 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\darwin-x64'
+328 silly reify ]
+329 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\darwin-arm64
+330 silly reify mark deleted [
+330 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\darwin-arm64'
+330 silly reify ]
+331 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\android-x64
+332 silly reify mark deleted [
+332 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\android-x64'
+332 silly reify ]
+333 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\android-arm64
+334 silly reify mark deleted [
+334 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\android-arm64'
+334 silly reify ]
+335 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\android-arm
+336 silly reify mark deleted [
+336 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\android-arm'
+336 silly reify ]
+337 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\@esbuild\aix-ppc64
+338 silly reify mark deleted [
+338 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\@esbuild\\aix-ppc64'
+338 silly reify ]
+339 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\win32-ia32
+340 silly reify mark deleted [
+340 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\win32-ia32'
+340 silly reify ]
+341 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\win32-arm64
+342 silly reify mark deleted [
+342 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\win32-arm64'
+342 silly reify ]
+343 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\sunos-x64
+344 silly reify mark deleted [
+344 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\sunos-x64'
+344 silly reify ]
+345 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\openbsd-x64
+346 silly reify mark deleted [
+346 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\openbsd-x64'
+346 silly reify ]
+347 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\netbsd-x64
+348 silly reify mark deleted [
+348 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\netbsd-x64'
+348 silly reify ]
+349 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-x64
+350 silly reify mark deleted [
+350 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-x64'
+350 silly reify ]
+351 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-s390x
+352 silly reify mark deleted [
+352 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-s390x'
+352 silly reify ]
+353 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-riscv64
+354 silly reify mark deleted [
+354 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-riscv64'
+354 silly reify ]
+355 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-ppc64
+356 silly reify mark deleted [
+356 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-ppc64'
+356 silly reify ]
+357 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-mips64el
+358 silly reify mark deleted [
+358 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-mips64el'
+358 silly reify ]
+359 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-loong64
+360 silly reify mark deleted [
+360 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-loong64'
+360 silly reify ]
+361 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-ia32
+362 silly reify mark deleted [
+362 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-ia32'
+362 silly reify ]
+363 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-arm64
+364 silly reify mark deleted [
+364 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-arm64'
+364 silly reify ]
+365 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\linux-arm
+366 silly reify mark deleted [
+366 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\linux-arm'
+366 silly reify ]
+367 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\freebsd-x64
+368 silly reify mark deleted [
+368 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\freebsd-x64'
+368 silly reify ]
+369 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\freebsd-arm64
+370 silly reify mark deleted [
+370 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\freebsd-arm64'
+370 silly reify ]
+371 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\darwin-x64
+372 silly reify mark deleted [
+372 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\darwin-x64'
+372 silly reify ]
+373 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\darwin-arm64
+374 silly reify mark deleted [
+374 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\darwin-arm64'
+374 silly reify ]
+375 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\android-x64
+376 silly reify mark deleted [
+376 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\android-x64'
+376 silly reify ]
+377 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\android-arm64
+378 silly reify mark deleted [
+378 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\android-arm64'
+378 silly reify ]
+379 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vite\node_modules\@esbuild\android-arm
+380 silly reify mark deleted [
+380 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vite\\node_modules\\@esbuild\\android-arm'
+380 silly reify ]
+381 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\win32-ia32
+382 silly reify mark deleted [
+382 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\win32-ia32'
+382 silly reify ]
+383 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\win32-arm64
+384 silly reify mark deleted [
+384 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\win32-arm64'
+384 silly reify ]
+385 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\sunos-x64
+386 silly reify mark deleted [
+386 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\sunos-x64'
+386 silly reify ]
+387 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\openbsd-x64
+388 silly reify mark deleted [
+388 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\openbsd-x64'
+388 silly reify ]
+389 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\netbsd-x64
+390 silly reify mark deleted [
+390 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\netbsd-x64'
+390 silly reify ]
+391 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-x64
+392 silly reify mark deleted [
+392 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-x64'
+392 silly reify ]
+393 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-s390x
+394 silly reify mark deleted [
+394 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-s390x'
+394 silly reify ]
+395 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-riscv64
+396 silly reify mark deleted [
+396 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-riscv64'
+396 silly reify ]
+397 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-ppc64
+398 silly reify mark deleted [
+398 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-ppc64'
+398 silly reify ]
+399 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-mips64el
+400 silly reify mark deleted [
+400 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-mips64el'
+400 silly reify ]
+401 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-loong64
+402 silly reify mark deleted [
+402 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-loong64'
+402 silly reify ]
+403 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-ia32
+404 silly reify mark deleted [
+404 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-ia32'
+404 silly reify ]
+405 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-arm64
+406 silly reify mark deleted [
+406 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-arm64'
+406 silly reify ]
+407 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\linux-arm
+408 silly reify mark deleted [
+408 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\linux-arm'
+408 silly reify ]
+409 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\freebsd-x64
+410 silly reify mark deleted [
+410 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\freebsd-x64'
+410 silly reify ]
+411 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\freebsd-arm64
+412 silly reify mark deleted [
+412 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\freebsd-arm64'
+412 silly reify ]
+413 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\darwin-x64
+414 silly reify mark deleted [
+414 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\darwin-x64'
+414 silly reify ]
+415 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\darwin-arm64
+416 silly reify mark deleted [
+416 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\darwin-arm64'
+416 silly reify ]
+417 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\android-x64
+418 silly reify mark deleted [
+418 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\android-x64'
+418 silly reify ]
+419 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\android-arm64
+420 silly reify mark deleted [
+420 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\android-arm64'
+420 silly reify ]
+421 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\android-arm
+422 silly reify mark deleted [
+422 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\android-arm'
+422 silly reify ]
+423 verbose reify failed optional dependency D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform\node_modules\vitest\node_modules\@esbuild\aix-ppc64
+424 silly reify mark deleted [
+424 silly reify   'D:\\Users\\21202\\Documents\\文件\\工作室\\projects\\Customer\\Platform\\node_modules\\vitest\\node_modules\\@esbuild\\aix-ppc64'
+424 silly reify ]
+425 silly tarball no local data for whatwg-encoding@https://registry.npmjs.org/whatwg-encoding/-/whatwg-encoding-3.1.1.tgz. Extracting by manifest.
+426 silly tarball no local data for tinyspy@https://registry.npmjs.org/tinyspy/-/tinyspy-4.0.4.tgz. Extracting by manifest.
+427 silly tarball no local data for vite-node@https://registry.npmjs.org/vite-node/-/vite-node-3.2.4.tgz. Extracting by manifest.
+428 silly tarball no local data for ws@https://registry.npmjs.org/ws/-/ws-8.21.3.tgz. Extracting by manifest.
+429 silly tarball no local data for tinypool@https://registry.npmjs.org/tinypool/-/tinypool-1.1.1.tgz. Extracting by manifest.
+430 silly tarball no local data for strip-literal@https://registry.npmjs.org/strip-literal/-/strip-literal-3.1.0.tgz. Extracting by manifest.
+431 silly tarball no local data for pathval@https://registry.npmjs.org/pathval/-/pathval-2.0.1.tgz. Extracting by manifest.
+432 silly tarball no local data for rrweb-cssom@https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.8.0.tgz. Extracting by manifest.
+433 silly tarball no local data for nwsapi@https://registry.npmjs.org/nwsapi/-/nwsapi-2.2.24.tgz. Extracting by manifest.
+434 silly tarball no local data for loupe@https://registry.npmjs.org/loupe/-/loupe-3.2.1.tgz. Extracting by manifest.
+435 silly tarball no local data for deep-eql@https://registry.npmjs.org/deep-eql/-/deep-eql-5.0.2.tgz. Extracting by manifest.
+436 silly tarball no local data for cssstyle@https://registry.npmjs.org/cssstyle/-/cssstyle-4.6.0.tgz. Extracting by manifest.
+437 silly tarball no local data for check-error@https://registry.npmjs.org/check-error/-/check-error-2.1.3.tgz. Extracting by manifest.
+438 silly tarball no local data for cac@https://registry.npmjs.org/cac/-/cac-6.7.14.tgz. Extracting by manifest.
+439 silly tarball no local data for @rollup/rollup-win32-x64-msvc@https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.62.4.tgz. Extracting by manifest.
+440 silly tarball no local data for @emnapi/runtime@https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.10.0.tgz. Extracting by manifest.
+441 silly tarball no local data for @rollup/rollup-win32-x64-gnu@https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.62.4.tgz. Extracting by manifest.
+442 silly tarball no local data for @csstools/css-color-parser@https://registry.npmjs.org/@csstools/css-color-parser/-/css-color-parser-3.1.0.tgz. Extracting by manifest.
+443 silly tarball no local data for @vitest/utils@https://registry.npmjs.org/@vitest/utils/-/utils-3.2.7.tgz. Extracting by manifest.
+444 silly tarball no local data for @csstools/css-calc@https://registry.npmjs.org/@csstools/css-calc/-/css-calc-2.1.4.tgz. Extracting by manifest.
+445 silly tarball no local data for @vitest/pretty-format@https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-3.2.7.tgz. Extracting by manifest.
+446 silly tarball no local data for @vitest/runner@https://registry.npmjs.org/@vitest/runner/-/runner-3.2.7.tgz. Extracting by manifest.
+447 silly tarball no local data for @vitest/snapshot@https://registry.npmjs.org/@vitest/snapshot/-/snapshot-3.2.7.tgz. Extracting by manifest.
+448 silly tarball no local data for @types/estree@https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz. Extracting by manifest.
+449 silly tarball no local data for @vitest/expect@https://registry.npmjs.org/@vitest/expect/-/expect-3.2.7.tgz. Extracting by manifest.
+450 silly tarball no local data for @csstools/color-helpers@https://registry.npmjs.org/@csstools/color-helpers/-/color-helpers-5.1.0.tgz. Extracting by manifest.
+451 silly tarball no local data for @vitest/spy@https://registry.npmjs.org/@vitest/spy/-/spy-3.2.7.tgz. Extracting by manifest.
+452 silly tarball no local data for @testing-library/jest-dom@https://registry.npmjs.org/@testing-library/jest-dom/-/jest-dom-6.9.1.tgz. Extracting by manifest.
+453 silly tarball no local data for @asamuzakjp/css-color@https://registry.npmjs.org/@asamuzakjp/css-color/-/css-color-3.2.0.tgz. Extracting by manifest.
+454 silly tarball no local data for whatwg-mimetype@https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-4.0.0.tgz. Extracting by manifest.
+455 silly tarball no local data for webidl-conversions@https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-7.0.0.tgz. Extracting by manifest.
+456 silly tarball no local data for whatwg-url@https://registry.npmjs.org/whatwg-url/-/whatwg-url-14.2.0.tgz. Extracting by manifest.
+457 silly tarball no local data for vitest@https://registry.npmjs.org/vitest/-/vitest-3.2.7.tgz. Extracting by manifest.
+458 silly tarball no local data for tough-cookie@https://registry.npmjs.org/tough-cookie/-/tough-cookie-5.1.2.tgz. Extracting by manifest.
+459 silly tarball no local data for tr46@https://registry.npmjs.org/tr46/-/tr46-5.1.1.tgz. Extracting by manifest.
+460 silly tarball no local data for tinyrainbow@https://registry.npmjs.org/tinyrainbow/-/tinyrainbow-2.0.0.tgz. Extracting by manifest.
+461 silly tarball no local data for tldts-core@https://registry.npmjs.org/tldts-core/-/tldts-core-6.1.86.tgz. Extracting by manifest.
+462 silly tarball no local data for tldts@https://registry.npmjs.org/tldts/-/tldts-6.1.86.tgz. Extracting by manifest.
+463 silly tarball no local data for std-env@https://registry.npmjs.org/std-env/-/std-env-3.10.0.tgz. Extracting by manifest.
+464 silly tarball no local data for postcss@https://registry.npmjs.org/postcss/-/postcss-8.5.14.tgz. Extracting by manifest.
+465 silly tarball no local data for picomatch@https://registry.npmjs.org/picomatch/-/picomatch-4.0.4.tgz. Extracting by manifest.
+466 silly tarball no local data for nanoid@https://registry.npmjs.org/nanoid/-/nanoid-3.3.12.tgz. Extracting by manifest.
+467 silly tarball no local data for jsdom@https://registry.npmjs.org/jsdom/-/jsdom-26.1.0.tgz. Extracting by manifest.
+468 silly tarball no local data for es-module-lexer@https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-1.7.0.tgz. Extracting by manifest.
+469 silly tarball no local data for entities@https://registry.npmjs.org/entities/-/entities-6.0.1.tgz. Extracting by manifest.
+470 silly tarball no local data for esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz. Extracting by manifest.
+471 silly tarball no local data for vite@https://registry.npmjs.org/vite/-/vite-7.3.6.tgz. Extracting by manifest.
+472 silly tarball no local data for iconv-lite@https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.6.3.tgz. Extracting by manifest.
+473 silly tarball no local data for html-encoding-sniffer@https://registry.npmjs.org/html-encoding-sniffer/-/html-encoding-sniffer-4.0.0.tgz. Extracting by manifest.
+474 silly tarball no local data for js-tokens@https://registry.npmjs.org/js-tokens/-/js-tokens-9.0.1.tgz. Extracting by manifest.
+475 silly tarball no local data for data-urls@https://registry.npmjs.org/data-urls/-/data-urls-5.0.0.tgz. Extracting by manifest.
+476 silly tarball no local data for chai@https://registry.npmjs.org/chai/-/chai-5.3.3.tgz. Extracting by manifest.
+477 silly tarball no local data for @esbuild/win32-x64@https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.2.tgz. Extracting by manifest.
+478 silly tarball no local data for @esbuild/win32-x64@https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.2.tgz. Extracting by manifest.
+479 silly tarball no local data for rollup@https://registry.npmjs.org/rollup/-/rollup-4.62.4.tgz. Extracting by manifest.
+480 silly tarball no local data for @vitest/mocker@https://registry.npmjs.org/@vitest/mocker/-/mocker-3.2.7.tgz. Extracting by manifest.
+481 silly tarball no local data for esbuild@https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz. Extracting by manifest.
+482 silly tarball no local data for tinyexec@https://registry.npmjs.org/tinyexec/-/tinyexec-0.3.2.tgz. Extracting by manifest.
+483 silly tarball no local data for https-proxy-agent@https://registry.npmjs.org/https-proxy-agent/-/https-proxy-agent-7.0.6.tgz. Extracting by manifest.
+484 silly tarball no local data for rollup@https://registry.npmjs.org/rollup/-/rollup-4.62.4.tgz. Extracting by manifest.
+485 silly tarball no local data for vite@https://registry.npmjs.org/vite/-/vite-7.3.6.tgz. Extracting by manifest.
+486 silly tarball no local data for lru-cache@https://registry.npmjs.org/lru-cache/-/lru-cache-10.4.3.tgz. Extracting by manifest.
+487 silly tarball no local data for http-proxy-agent@https://registry.npmjs.org/http-proxy-agent/-/http-proxy-agent-7.0.2.tgz. Extracting by manifest.
+488 silly tarball no local data for agent-base@https://registry.npmjs.org/agent-base/-/agent-base-7.1.4.tgz. Extracting by manifest.
+489 silly tarball no local data for parse5@https://registry.npmjs.org/parse5/-/parse5-7.3.0.tgz. Extracting by manifest.
+490 http fetch GET 200 https://registry.npmjs.org/tinyspy/-/tinyspy-4.0.4.tgz 1554ms (cache miss)
+491 http fetch GET 200 https://registry.npmjs.org/check-error/-/check-error-2.1.3.tgz 1561ms (cache miss)
+492 http fetch GET 200 https://registry.npmjs.org/deep-eql/-/deep-eql-5.0.2.tgz 1563ms (cache miss)
+493 http fetch GET 200 https://registry.npmjs.org/loupe/-/loupe-3.2.1.tgz 1601ms (cache miss)
+494 http fetch GET 200 https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.8.0.tgz 1625ms (cache miss)
+495 http fetch GET 200 https://registry.npmjs.org/pathval/-/pathval-2.0.1.tgz 1629ms (cache miss)
+496 http fetch GET 200 https://registry.npmjs.org/whatwg-encoding/-/whatwg-encoding-3.1.1.tgz 1634ms (cache miss)
+497 http fetch GET 200 https://registry.npmjs.org/nwsapi/-/nwsapi-2.2.24.tgz 1631ms (cache miss)
+498 warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+499 http fetch GET 200 https://registry.npmjs.org/cssstyle/-/cssstyle-4.6.0.tgz 1645ms (cache miss)
+500 http fetch GET 200 https://registry.npmjs.org/cac/-/cac-6.7.14.tgz 1753ms (cache miss)
+501 http fetch GET 200 https://registry.npmjs.org/@csstools/css-color-parser/-/css-color-parser-3.1.0.tgz 1845ms (cache miss)
+502 http fetch GET 200 https://registry.npmjs.org/vite-node/-/vite-node-3.2.4.tgz 1849ms (cache miss)
+503 http fetch GET 200 https://registry.npmjs.org/@csstools/css-calc/-/css-calc-2.1.4.tgz 1846ms (cache miss)
+504 http fetch GET 200 https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz 1849ms (cache miss)
+505 http fetch GET 200 https://registry.npmjs.org/@vitest/utils/-/utils-3.2.7.tgz 1856ms (cache miss)
+506 http fetch GET 200 https://registry.npmjs.org/@vitest/snapshot/-/snapshot-3.2.7.tgz 1932ms (cache miss)
+507 http fetch GET 200 https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.10.0.tgz 1940ms (cache miss)
+508 http fetch GET 200 https://registry.npmjs.org/@vitest/runner/-/runner-3.2.7.tgz 1943ms (cache miss)
+509 http fetch GET 200 https://registry.npmjs.org/@vitest/spy/-/spy-3.2.7.tgz 2045ms (cache miss)
+510 http fetch GET 200 https://registry.npmjs.org/strip-literal/-/strip-literal-3.1.0.tgz 2057ms (cache miss)
+511 http fetch GET 200 https://registry.npmjs.org/ws/-/ws-8.21.3.tgz 2079ms (cache miss)
+512 http fetch GET 200 https://registry.npmjs.org/@vitest/expect/-/expect-3.2.7.tgz 2135ms (cache miss)
+513 http fetch GET 200 https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-3.2.7.tgz 2142ms (cache miss)
+514 http fetch GET 200 https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-4.0.0.tgz 2139ms (cache miss)
+515 http fetch GET 200 https://registry.npmjs.org/@csstools/color-helpers/-/color-helpers-5.1.0.tgz 2146ms (cache miss)
+516 http fetch GET 200 https://registry.npmjs.org/@testing-library/jest-dom/-/jest-dom-6.9.1.tgz 2154ms (cache miss)
+517 http fetch GET 200 https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-7.0.0.tgz 2222ms (cache miss)
+518 http fetch GET 200 https://registry.npmjs.org/whatwg-url/-/whatwg-url-14.2.0.tgz 2224ms (cache miss)
+519 http fetch GET 200 https://registry.npmjs.org/tinyrainbow/-/tinyrainbow-2.0.0.tgz 2260ms (cache miss)
+520 http fetch GET 200 https://registry.npmjs.org/tough-cookie/-/tough-cookie-5.1.2.tgz 2351ms (cache miss)
+521 http fetch GET 200 https://registry.npmjs.org/std-env/-/std-env-3.10.0.tgz 2357ms (cache miss)
+522 http fetch GET 200 https://registry.npmjs.org/picomatch/-/picomatch-4.0.4.tgz 2425ms (cache miss)
+523 http fetch GET 200 https://registry.npmjs.org/tr46/-/tr46-5.1.1.tgz 2447ms (cache miss)
+524 http fetch GET 200 https://registry.npmjs.org/postcss/-/postcss-8.5.14.tgz 2452ms (cache miss)
+525 http fetch GET 200 https://registry.npmjs.org/nanoid/-/nanoid-3.3.12.tgz 2468ms (cache miss)
+526 http fetch GET 200 https://registry.npmjs.org/tldts-core/-/tldts-core-6.1.86.tgz 2477ms (cache miss)
+527 http fetch GET 200 https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.62.4.tgz 2527ms (cache miss)
+528 http fetch GET 200 https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-1.7.0.tgz 2536ms (cache miss)
+529 http fetch GET 200 https://registry.npmjs.org/vitest/-/vitest-3.2.7.tgz 2604ms (cache miss)
+530 http fetch GET 200 https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz 2617ms (cache miss)
+531 http fetch GET 200 https://registry.npmjs.org/html-encoding-sniffer/-/html-encoding-sniffer-4.0.0.tgz 2660ms (cache miss)
+532 http fetch GET 200 https://registry.npmjs.org/js-tokens/-/js-tokens-9.0.1.tgz 2662ms (cache miss)
+533 http fetch GET 200 https://registry.npmjs.org/data-urls/-/data-urls-5.0.0.tgz 2723ms (cache miss)
+534 http fetch GET 200 https://registry.npmjs.org/entities/-/entities-6.0.1.tgz 2742ms (cache miss)
+535 http fetch GET 200 https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.62.4.tgz 2779ms (cache miss)
+536 http fetch GET 200 https://registry.npmjs.org/@asamuzakjp/css-color/-/css-color-3.2.0.tgz 2789ms (cache miss)
+537 http fetch GET 200 https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz 2927ms (cache miss)
+538 http fetch GET 200 https://registry.npmjs.org/tinyexec/-/tinyexec-0.3.2.tgz 2946ms (cache miss)
+539 http fetch GET 200 https://registry.npmjs.org/chai/-/chai-5.3.3.tgz 2956ms (cache miss)
+540 http fetch GET 200 https://registry.npmjs.org/https-proxy-agent/-/https-proxy-agent-7.0.6.tgz 2956ms (cache miss)
+541 http fetch GET 200 https://registry.npmjs.org/@vitest/mocker/-/mocker-3.2.7.tgz 2963ms (cache miss)
+542 http fetch GET 200 https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.6.3.tgz 3054ms (cache miss)
+543 http fetch GET 200 https://registry.npmjs.org/vite/-/vite-7.3.6.tgz 3098ms (cache miss)
+544 http fetch GET 200 https://registry.npmjs.org/http-proxy-agent/-/http-proxy-agent-7.0.2.tgz 3136ms (cache miss)
+545 http fetch GET 200 https://registry.npmjs.org/agent-base/-/agent-base-7.1.4.tgz 3154ms (cache miss)
+546 http fetch GET 200 https://registry.npmjs.org/tldts/-/tldts-6.1.86.tgz 3187ms (cache miss)
+547 http fetch GET 200 https://registry.npmjs.org/parse5/-/parse5-7.3.0.tgz 3275ms (cache miss)
+548 http fetch GET 200 https://registry.npmjs.org/vite/-/vite-7.3.6.tgz 3332ms (cache miss)
+549 http fetch GET 200 https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.2.tgz 3385ms (cache miss)
+550 http fetch GET 200 https://registry.npmjs.org/jsdom/-/jsdom-26.1.0.tgz 3413ms (cache miss)
+551 http fetch GET 200 https://registry.npmjs.org/lru-cache/-/lru-cache-10.4.3.tgz 3428ms (cache miss)
+552 http fetch GET 200 https://registry.npmjs.org/tinypool/-/tinypool-1.1.1.tgz 3504ms (cache miss)
+553 http fetch GET 200 https://registry.npmjs.org/rollup/-/rollup-4.62.4.tgz 3490ms (cache miss)
+554 http fetch GET 200 https://registry.npmjs.org/rollup/-/rollup-4.62.4.tgz 3656ms (cache miss)
+555 http fetch GET 200 https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.2.tgz 3740ms (cache miss)
+556 silly ADD node_modules/ws
+557 silly ADD node_modules/whatwg-encoding
+558 silly ADD node_modules/whatwg-encoding/node_modules/iconv-lite
+559 silly ADD node_modules/vite-node
+560 silly ADD node_modules/vite-node/node_modules/vite
+561 silly ADD node_modules/vite-node/node_modules/rollup
+562 silly ADD node_modules/vite-node/node_modules/esbuild
+563 silly ADD node_modules/vite-node/node_modules/@esbuild/win32-x64
+564 silly ADD
+565 silly ADD
+566 silly ADD
+567 silly ADD
+568 silly ADD
+569 silly ADD
+570 silly ADD
+571 silly ADD
+572 silly ADD
+573 silly ADD
+574 silly ADD
+575 silly ADD
+576 silly ADD
+577 silly ADD
+578 silly ADD
+579 silly ADD
+580 silly ADD
+581 silly ADD
+582 silly ADD
+583 silly ADD
+584 silly ADD
+585 silly ADD
+586 silly ADD node_modules/tinyspy
+587 silly ADD node_modules/tinypool
+588 silly ADD node_modules/strip-literal
+589 silly ADD node_modules/strip-literal/node_modules/js-tokens
+590 silly ADD node_modules/rrweb-cssom
+591 silly ADD node_modules/pathval
+592 silly ADD node_modules/nwsapi
+593 silly ADD node_modules/loupe
+594 silly ADD
+595 silly ADD node_modules/deep-eql
+596 silly ADD node_modules/cssstyle
+597 silly ADD node_modules/check-error
+598 silly ADD node_modules/cac
+599 silly ADD
+600 silly ADD
+601 silly ADD
+602 silly ADD
+603 silly ADD
+604 silly ADD
+605 silly ADD
+606 silly ADD
+607 silly ADD
+608 silly ADD
+609 silly ADD
+610 silly ADD
+611 silly ADD
+612 silly ADD
+613 silly ADD
+614 silly ADD
+615 silly ADD
+616 silly ADD
+617 silly ADD
+618 silly ADD
+619 silly ADD
+620 silly ADD
+621 silly ADD
+622 silly ADD
+623 silly ADD
+624 silly ADD
+625 silly ADD
+626 silly ADD
+627 silly ADD
+628 silly ADD
+629 silly ADD
+630 silly ADD
+631 silly ADD node_modules/@rollup/rollup-win32-x64-msvc
+632 silly ADD node_modules/@rollup/rollup-win32-x64-gnu
+633 silly ADD
+634 silly ADD
+635 silly ADD
+636 silly ADD
+637 silly ADD
+638 silly ADD
+639 silly ADD
+640 silly ADD
+641 silly ADD
+642 silly ADD
+643 silly ADD
+644 silly ADD
+645 silly ADD
+646 silly ADD
+647 silly ADD
+648 silly ADD
+649 silly ADD
+650 silly ADD
+651 silly ADD
+652 silly ADD
+653 silly ADD
+654 silly ADD
+655 silly ADD
+656 silly ADD
+657 silly ADD
+658 silly ADD
+659 silly ADD
+660 silly ADD
+661 silly ADD
+662 silly ADD
+663 silly ADD
+664 silly ADD
+665 silly ADD
+666 silly ADD
+667 silly ADD
+668 silly ADD
+669 silly ADD
+670 silly ADD
+671 silly ADD
+672 silly ADD
+673 silly ADD
+674 silly ADD
+675 silly ADD
+676 silly ADD
+677 silly ADD
+678 silly ADD
+679 silly ADD
+680 silly ADD
+681 silly ADD
+682 silly ADD
+683 silly ADD
+684 silly ADD
+685 silly ADD
+686 silly ADD
+687 silly ADD
+688 silly ADD
+689 silly ADD
+690 silly ADD
+691 silly ADD
+692 silly ADD
+693 silly ADD
+694 silly ADD
+695 silly ADD
+696 silly ADD
+697 silly ADD
+698 silly ADD
+699 silly ADD
+700 silly ADD
+701 silly ADD
+702 silly ADD
+703 silly ADD
+704 silly ADD
+705 silly ADD
+706 silly ADD
+707 silly ADD
+708 silly ADD
+709 silly ADD
+710 silly ADD
+711 silly ADD
+712 silly ADD
+713 silly ADD
+714 silly ADD
+715 silly ADD
+716 silly ADD
+717 silly ADD
+718 silly ADD node_modules/@csstools/css-color-parser
+719 silly ADD node_modules/@csstools/css-calc
+720 silly CHANGE node_modules/@vitest/utils
+721 silly CHANGE node_modules/@vitest/pretty-format
+722 silly CHANGE node_modules/@vitest/spy
+723 silly CHANGE node_modules/@vitest/snapshot
+724 silly CHANGE node_modules/@vitest/runner
+725 silly CHANGE node_modules/@vitest/expect
+726 silly CHANGE node_modules/@types/estree
+727 silly CHANGE node_modules/@testing-library/jest-dom
+728 silly REMOVE node_modules/@standard-schema/spec
+729 silly REMOVE node_modules/@rolldown/binding-win32-x64-msvc
+730 silly REMOVE node_modules/@oxc-project/types
+731 silly REMOVE node_modules/@exodus/bytes
+732 silly CHANGE node_modules/@csstools/color-helpers
+733 silly REMOVE node_modules/@bramus/specificity
+734 silly REMOVE node_modules/@asamuzakjp/nwsapi
+735 silly REMOVE node_modules/@asamuzakjp/generational-cache
+736 silly REMOVE node_modules/@asamuzakjp/dom-selector
+737 silly CHANGE node_modules/@asamuzakjp/css-color
+738 silly ADD node_modules/@asamuzakjp/css-color/node_modules/lru-cache
+739 silly REMOVE node_modules/@asamuzakjp/css-color/node_modules/@csstools/css-tokenizer
+740 silly REMOVE node_modules/@asamuzakjp/css-color/node_modules/@csstools/css-color-parser
+741 silly REMOVE node_modules/@asamuzakjp/css-color/node_modules/@csstools/css-parser-algorithms
+742 silly REMOVE node_modules/@asamuzakjp/css-color/node_modules/@csstools/css-calc
+743 silly CHANGE node_modules/whatwg-mimetype
+744 silly CHANGE node_modules/whatwg-url
+745 silly ADD
+746 silly ADD
+747 silly ADD
+748 silly ADD
+749 silly ADD
+750 silly ADD
+751 silly ADD
+752 silly ADD
+753 silly ADD
+754 silly ADD
+755 silly ADD
+756 silly ADD
+757 silly ADD
+758 silly ADD
+759 silly ADD
+760 silly ADD
+761 silly ADD
+762 silly ADD
+763 silly ADD
+764 silly ADD
+765 silly ADD
+766 silly CHANGE node_modules/webidl-conversions
+767 silly CHANGE node_modules/vitest
+768 silly ADD node_modules/vitest/node_modules/tinyexec
+769 silly ADD node_modules/vitest/node_modules/rollup
+770 silly ADD node_modules/vitest/node_modules/esbuild
+771 silly ADD node_modules/vitest/node_modules/@esbuild/win32-x64
+772 silly ADD
+773 silly ADD
+774 silly ADD
+775 silly ADD
+776 silly ADD
+777 silly ADD
+778 silly ADD
+779 silly ADD
+780 silly ADD
+781 silly ADD
+782 silly ADD
+783 silly ADD
+784 silly ADD
+785 silly ADD
+786 silly ADD
+787 silly ADD
+788 silly ADD
+789 silly ADD
+790 silly ADD
+791 silly ADD
+792 silly ADD
+793 silly ADD
+794 silly CHANGE node_modules/vitest/node_modules/@vitest/mocker
+795 silly CHANGE node_modules/vitest/node_modules/vite
+796 silly REMOVE node_modules/undici
+797 silly CHANGE node_modules/tough-cookie
+798 silly CHANGE node_modules/tr46
+799 silly CHANGE node_modules/tinyrainbow
+800 silly CHANGE node_modules/tldts-core
+801 silly CHANGE node_modules/tldts
+802 silly CHANGE node_modules/std-env
+803 silly REMOVE node_modules/rolldown
+804 silly REMOVE node_modules/rolldown/node_modules/@rolldown/pluginutils
+805 silly CHANGE node_modules/postcss
+806 silly CHANGE node_modules/picomatch
+807 silly REMOVE node_modules/obug
+808 silly CHANGE node_modules/nanoid
+809 silly REMOVE node_modules/lightningcss
+810 silly REMOVE node_modules/lightningcss-win32-x64-msvc
+811 silly CHANGE node_modules/jsdom
+812 silly ADD node_modules/jsdom/node_modules/https-proxy-agent
+813 silly ADD node_modules/jsdom/node_modules/http-proxy-agent
+814 silly ADD node_modules/jsdom/node_modules/agent-base
+815 silly REMOVE node_modules/jsdom/node_modules/lru-cache
+816 silly CHANGE node_modules/jsdom/node_modules/parse5
+817 silly CHANGE node_modules/html-encoding-sniffer
+818 silly CHANGE node_modules/es-module-lexer
+819 silly CHANGE node_modules/entities
+820 silly CHANGE node_modules/data-urls
+821 silly CHANGE node_modules/chai
+822 silly REMOVE node_modules/bidi-js
+823 verbose cwd D:\Users\21202\Documents\文件\工作室\projects\Customer\Platform
+824 verbose os Windows_NT 10.0.26200
+825 verbose node v20.20.2
+826 verbose npm  v10.8.2
+827 verbose exit 0
+828 info ok

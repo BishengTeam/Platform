@@ -13,6 +13,7 @@
   overflow-y: auto;
   padding: $spacing-md $spacing-lg;
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: $spacing-md;

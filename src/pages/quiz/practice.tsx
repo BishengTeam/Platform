@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
+import { Popup } from '@nutui/nutui-react-taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
+import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import type { QuizAnswer, QuizPracticeQuestionState, QuizPracticeSession } from '@/contracts/quiz'
 import {
@@ -62,6 +64,7 @@ export default function QuizPracticePage() {
   const [submitting, setSubmitting] = useState(false)
   const [collectionBusy, setCollectionBusy] = useState(false)
   const [loadError, setLoadError] = useState('')
+  const [drawerVisible, setDrawerVisible] = useState(false)
 
   const applySession = (next: QuizPracticeSession) => {
     setSession(next)
@@ -225,6 +228,7 @@ export default function QuizPracticePage() {
 
   const abandon = () => {
     if (!session || session.status !== 'in_progress') return
+    setDrawerVisible(false)
     Taro.showModal({
       title: '放弃本轮练习',
       content: '已提交的作答仍计入练习统计和错题本，本轮会话将标记为已放弃。',
@@ -266,6 +270,7 @@ export default function QuizPracticePage() {
 
   const answeredCount = session?.questions.filter(question => question.answered).length ?? 0
   const correctCount = session?.questions.filter(question => question.latest_result?.is_correct).length ?? 0
+  const wrongCount = session?.questions.filter(question => question.answered && question.latest_result && !question.latest_result.is_correct).length ?? 0
   const optionItems = useMemo(() => currentQuestion ? quizOptions(currentQuestion.options) : [], [currentQuestion])
 
   if (loading) {
@@ -333,20 +338,10 @@ export default function QuizPracticePage() {
       <View className={styles.page}>
         <PageHeader title={session.mode === 'wrong' ? '错题专项' : '章节练习'} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          <View className={styles.sessionBar}>
-            <Text>{answeredCount} / {session.actual_count} 已至少作答一次</Text>
-            <Text className={styles.abandonLink} onClick={abandon}>放弃本轮</Text>
-          </View>
           {session.actual_count < session.requested_count && <Text className={styles.shortageHint}>该范围题量不足，已使用全部 {session.actual_count} 题</Text>}
-          <View className={styles.progressBar}><View className={styles.progressFill} style={{ width: `${((currentIndex + 1) / session.actual_count) * 100}%` }} /></View>
-          <Text className={styles.progressText}>{currentIndex + 1} / {session.actual_count}</Text>
-
           <View className={styles.questionCard}>
             <View className={styles.questionHeader}>
               <Text className={styles.questionType}>{quizTypeLabel(currentQuestion.question_type)}</Text>
-              <Text className={styles.actionBtn} onClick={toggleCollection}>
-                {collectionBusy ? '处理中…' : collectionIds.has(currentQuestion.id) ? '取消收藏' : '收藏'}
-              </Text>
             </View>
             <Text className={styles.pathText}>{currentQuestion.category_path.map(item => item.name).join(' / ')}</Text>
             <Text className={styles.stem}>{currentQuestion.question_text}</Text>
@@ -374,19 +369,51 @@ export default function QuizPracticePage() {
             )}
           </View>
 
-          <View className={styles.questionMap}>
-            {session.questions.map((question, index) => (
-              <View key={question.session_question_id} className={`${styles.questionDot} ${question.answered ? styles.questionDotAnswered : ''} ${index === currentIndex ? styles.questionDotCurrent : ''}`} onClick={() => setCurrentIndex(index)}>
-                <Text>{index + 1}</Text>
-              </View>
-            ))}
-          </View>
-
           <View className={styles.navRow}>
             <Button variant='secondary' onClick={() => setCurrentIndex(index => Math.max(0, index - 1))} disabled={currentIndex === 0}>上一题</Button>
             <Button variant='primary' onClick={() => setCurrentIndex(index => Math.min(session.actual_count - 1, index + 1))} disabled={currentIndex >= session.actual_count - 1}>下一题</Button>
           </View>
         </ScrollView>
+        <View className={styles.bottomBar}>
+          <View className={styles.barItem} onClick={toggleCollection}>
+            <Icon name={collectionIds.has(currentQuestion.id) ? 'star-filled' : 'star'} size={22} color={collectionIds.has(currentQuestion.id) ? '#FFB800' : '#999999'} />
+            <Text>{collectionIds.has(currentQuestion.id) ? '已收藏' : '收藏'}</Text>
+          </View>
+          <View className={styles.barStat}>
+            <Icon name='check' size={20} color='#52C41A' />
+            <Text className={styles.barStatNum}>{correctCount}</Text>
+          </View>
+          <View className={styles.barStat}>
+            <Icon name='close' size={20} color='#FF4D4F' />
+            <Text className={styles.barStatNum}>{wrongCount}</Text>
+          </View>
+          <View className={styles.barDone} onClick={() => setDrawerVisible(true)}>
+            <Text className={styles.barDoneCount}>{answeredCount}/{session.actual_count}</Text>
+            <Text className={styles.barDoneLabel}>已做题</Text>
+          </View>
+        </View>
+        <Popup visible={drawerVisible} position='bottom' round closeOnOverlayClick onClose={() => setDrawerVisible(false)}>
+          <View className={styles.drawer}>
+            <View className={styles.drawerHeader}>
+              <Text className={styles.drawerTitle}>答题卡</Text>
+              <Text className={styles.abandonLink} onClick={abandon}>放弃本轮</Text>
+            </View>
+            <ScrollView className={styles.drawerBody} scrollY>
+              <View className={styles.drawerGrid}>
+                {session.questions.map((question, index) => {
+                  const isCorrect = question.latest_result?.is_correct === true
+                  const isWrong = question.answered && question.latest_result?.is_correct === false
+                  const dotClass = `${styles.drawerDot}${isCorrect ? ` ${styles.drawerDotCorrect}` : ''}${isWrong ? ` ${styles.drawerDotWrong}` : ''}${index === currentIndex ? ` ${styles.drawerDotCurrent}` : ''}`
+                  return (
+                    <View key={question.session_question_id} className={dotClass} onClick={() => { setCurrentIndex(index); setDrawerVisible(false) }}>
+                      <Text>{index + 1}</Text>
+                    </View>
+                  )
+                })}
+              </View>
+            </ScrollView>
+          </View>
+        </Popup>
       </View>
     </AuthGuard>
   )

@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { Icon } from '@/components/Icon'
 import { QuizBottomNav } from '@/components/QuizBottomNav'
+import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
@@ -33,6 +34,7 @@ export default function TrainingPage() {
   const [quizCategories, setQuizCategories] = useState<QuizCategoryNode[]>([])
   const [quizTree, setQuizTree] = useState<QuizCategoryNode[]>([])
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null)
+  const [quizPickerVisible, setQuizPickerVisible] = useState(false)
   const [quizStats, setQuizStats] = useState<QuizStats | null>(null)
 
   useEffect(() => {
@@ -84,20 +86,13 @@ export default function TrainingPage() {
   }, [techTag, allCourses])
 
   const handleQuizSelect = useCallback(() => {
-    const choose = (nodes: QuizCategoryNode[]) => {
-      if (nodes.length === 0) return
-      Taro.showActionSheet({
-        itemList: nodes.map(node => `${node.name}（${node.question_count}题）`),
-        success: result => {
-          const selected = nodes[result.tapIndex]
-          if (!selected) return
-          setSelectedQuizId(selected.id)
-          if (selected.children.length > 0) choose(selected.children)
-        },
-      })
-    }
-    choose(quizTree)
-  }, [quizTree])
+    setQuizPickerVisible(true)
+  }, [])
+
+  const handleQuizSelectNode = useCallback((node: QuizCategoryNode) => {
+    setSelectedQuizId(node.id)
+    setQuizPickerVisible(false)
+  }, [])
 
   const handleQuizBottomNav = useCallback((item: QuizBottomItem) => {
     Taro.navigateTo({ url: `/${item.route}` })
@@ -204,7 +199,7 @@ export default function TrainingPage() {
         </View>
       </View>
 
-      <QuizBottomNav items={TRAINING_QUIZ_BOTTOM} onItemClick={handleQuizBottomNav} />
+      <QuizBottomNav items={TRAINING_QUIZ_BOTTOM} onItemClick={handleQuizBottomNav} iconSize={32} />
     </View>
   )
 
@@ -221,6 +216,13 @@ export default function TrainingPage() {
         </ScrollView>
       </AuthGuard>
       <CustomTabBar activeTabKey='pages/training/index' onSwitch={(url: string) => Taro.switchTab({ url })} />
+      <QuizCategoryPicker
+        visible={quizPickerVisible}
+        tree={quizTree}
+        selectedId={selectedQuizId}
+        onSelect={handleQuizSelectNode}
+        onClose={() => setQuizPickerVisible(false)}
+      />
     </View>
   )
 }
