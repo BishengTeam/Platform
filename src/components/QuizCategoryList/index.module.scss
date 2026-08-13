@@ -20,6 +20,14 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .quizCategoryName {

@@ -10,9 +10,10 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import type { QuizBottomItem } from '@/constants/quiz'
-import { getCourseList, getQuizCategoryTree, getQuizProgress } from '@/services/dataService'
+import { getCourseList, getQuizStats, listQuizCategories } from '@/services/dataService'
 import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
-import type { CourseBrief, QuizCategory, QuizStats } from '@/types'
+import type { CourseBrief } from '@/types'
+import type { QuizCategoryNode, QuizStats } from '@/contracts/quiz'
 import styles from './index.module.scss'
 
 const MAIN_TABS = [STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
@@ -25,46 +26,39 @@ const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
 
 export default function TrainingPage() {
   const [mainTab, setMainTab] = useState<string>(MAIN_TABS[0])
-  const [techTag, setTechTag] = useState(STRINGS.STUDY_TAG_ALL)
+  const [techTag, setTechTag] = useState<string>(STRINGS.STUDY_TAG_ALL)
 
   const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
   const [failedCovers, setFailedCovers] = useState<Set<number>>(new Set())
-  const [quizCategories, setQuizCategories] = useState<QuizCategory[]>([])
-  const [quizTree, setQuizTree] = useState<QuizCategory[]>([])
-  const [selectedQuizId, setSelectedQuizId] = useState('')
+  const [quizCategories, setQuizCategories] = useState<QuizCategoryNode[]>([])
+  const [quizTree, setQuizTree] = useState<QuizCategoryNode[]>([])
+  const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null)
   const [quizStats, setQuizStats] = useState<QuizStats | null>(null)
 
   useEffect(() => {
     getCourseList().then((data) => {
       setAllCourses(data)
-    }).catch((err) => {
+    }).catch(() => {
       // 课程数据加载失败静默处理
     })
-    getQuizCategoryTree().then((tree) => {
+    listQuizCategories().then((tree) => {
       setQuizTree(tree)
       // 从树中提取平铺列表，用于 selectedQuiz 查找
-      const flat: QuizCategory[] = []
-      const walk = (nodes: QuizCategory[]) => {
+      const flat: QuizCategoryNode[] = []
+      const walk = (nodes: QuizCategoryNode[]) => {
         for (const n of nodes) {
           flat.push(n)
-          if (n.children) walk(n.children)
+          walk(n.children)
         }
       }
       walk(tree)
       setQuizCategories(flat)
-      setSelectedQuizId(flat[0]?.id || '')
-    }).catch((err) => {
+      setSelectedQuizId(flat[0]?.id ?? null)
+    }).catch(() => {
       // 题库分类加载失败静默处理
     })
+    getQuizStats().then(setQuizStats).catch(() => {})
   }, [])
-
-  // 切换题库分类时重新获取统计数据
-  useEffect(() => {
-    if (!selectedQuizId) return
-    getQuizProgress(selectedQuizId).then((stats) => {
-      setQuizStats(stats)
-    }).catch(() => {})
-  }, [selectedQuizId])
 
 
   // 从课程数据动态提取分类标签，统一使用品牌蓝/灰配色
@@ -90,34 +84,19 @@ export default function TrainingPage() {
   }, [techTag, allCourses])
 
   const handleQuizSelect = useCallback(() => {
-    const parents = quizTree
-    if (!parents.length) return
-    Taro.showActionSheet({
-      itemList: parents.map(p => p.name),
-      success: (res1) => {
-        const parent = parents[res1.tapIndex]
-        if (!parent) return
-        // 无子分类 → 直接选中叶子节点
-        if (!parent.children?.length) {
-          setSelectedQuizId(parent.id)
-          return
-        }
-        // 有子分类 → 弹出第二级；取消则默认选中父分类
-        Taro.showActionSheet({
-          itemList: parent.children.map(c => c.name),
-          success: (res2) => {
-            const child = parent.children[res2.tapIndex]
-            if (child) setSelectedQuizId(child.id)
-          },
-          fail: () => {
-            setSelectedQuizId(parent.id)
-          },
-        })
-      },
-      fail: () => {
-        // 用户取消选择，不做任何操作
-      },
-    })
+    const choose = (nodes: QuizCategoryNode[]) => {
+      if (nodes.length === 0) return
+      Taro.showActionSheet({
+        itemList: nodes.map(node => `${node.name}（${node.question_count}题）`),
+        success: result => {
+          const selected = nodes[result.tapIndex]
+          if (!selected) return
+          setSelectedQuizId(selected.id)
+          if (selected.children.length > 0) choose(selected.children)
+        },
+      })
+    }
+    choose(quizTree)
   }, [quizTree])
 
   const handleQuizBottomNav = useCallback((item: QuizBottomItem) => {
@@ -202,27 +181,25 @@ export default function TrainingPage() {
           <View className={styles.statsItem}>
             <Text className={styles.statsValue}>
               {(() => {
-                const total = quizStats?.totalQuestions || selectedQuiz?.questionCount || 0
-                const done = quizStats?.answeredQuestions ?? 0
-                return quizStats ? total - done : '-'
+                return selectedQuiz?.question_count ?? '-'
               })()}
             </Text>
-            <Text className={styles.statsLabel}>未做题</Text>
+            <Text className={styles.statsLabel}>分类可用题量</Text>
           </View>
           <View className={styles.statsItem}>
             <Text className={styles.statsValue}>
-              {quizStats ? (quizStats.answeredQuestions ?? 0) : '-'}
+              {quizStats ? quizStats.practice.answered_questions : '-'}
             </Text>
-            <Text className={styles.statsLabel}>已做题</Text>
+            <Text className={styles.statsLabel}>全局已答题目</Text>
           </View>
           <View className={styles.statsItem}>
             <Text className={styles.statsValue}>
-              {quizStats ? `${quizStats.accuracy ?? 0}%` : '-'}
+              {quizStats ? `${quizStats.practice.accuracy}%` : '-'}
             </Text>
-            <Text className={styles.statsLabel}>正确率</Text>
+            <Text className={styles.statsLabel}>全局首答正确率</Text>
           </View>
         </View>
-        <View className={styles.statsCta} onClick={() => Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}?categoryId=${selectedQuizId}` })}>
+        <View className={styles.statsCta} onClick={() => selectedQuizId && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}?categoryId=${selectedQuizId}` })}>
           <Text className={styles.statsCtaText}>开始练习</Text>
         </View>
       </View>

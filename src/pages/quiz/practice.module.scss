@@ -48,6 +48,26 @@
   display: block;
 }
 
+.resultHint { display: block; margin-top: $spacing-md; color: $color-text-tertiary; font-size: $font-sm; }
+.resultActions { width: 100%; display: flex; flex-direction: column; gap: $spacing-sm; }
+.setupBody { flex: 1; display: flex; flex-direction: column; gap: $spacing-lg; padding: $spacing-xl $spacing-lg; }
+.setupTitle { color: $color-text; font-size: $font-xl; font-weight: 700; }
+.setupHint, .shortageHint { display: block; color: $color-text-tertiary; font-size: $font-sm; }
+.errorText { display: block; padding: $spacing-sm; color: $color-price; background: $color-red-tint; border-radius: $radius-sm; }
+.countGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: $spacing-sm; }
+.countItem { padding: $spacing-lg; text-align: center; color: $color-text-secondary; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
+.countItemActive { color: $color-primary; background: $color-blue-tint; border-color: $color-primary; font-weight: 700; }
+.sessionBar { display: flex; justify-content: space-between; padding: 0 $spacing-md $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
+.abandonLink { color: $color-price; }
+.shortageHint { padding: 0 $spacing-md $spacing-sm; color: $color-warning; }
+.pathText { display: block; margin-bottom: $spacing-xs; color: $color-text-tertiary; font-size: $font-2xs; }
+.answerButton { width: 100%; margin-top: $spacing-lg; }
+.attemptText { display: block; margin-top: $spacing-xs; color: $color-text-tertiary; font-size: $font-2xs; }
+.questionMap { display: grid; grid-template-columns: repeat(5, 1fr); gap: $spacing-sm; padding: $spacing-md; }
+.questionDot { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; color: $color-text-secondary; background: $color-white; border: 1px solid $color-border; border-radius: 50%; font-size: $font-sm; }
+.questionDotAnswered { color: $color-success; background: #F6FFED; border-color: #B7EB8F; }
+.questionDotCurrent { color: $color-white; background: $color-primary; border-color: $color-primary; }
+
 .btnWrap {
   width: 100%;
   display: flex;

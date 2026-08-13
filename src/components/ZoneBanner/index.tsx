@@ -68,7 +68,7 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
             ) : (
             <View
               className={styles.slide}
-              style={{ background: GRADIENTS[item.gradient] || GRADIENTS['gradient-blue'] }}
+              style={{ background: GRADIENTS[item.gradient ?? 'gradient-blue'] || GRADIENTS['gradient-blue'] }}
             >
               <View className={styles.content}>
                 <View className={styles.title}>{item.title}</View>
@@ -77,7 +77,7 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
                   <Button
                     size='sm'
                     className={styles.bannerBtn}
-                    style={{ color: item.buttonColor }}
+                    style={item.buttonColor ? { color: item.buttonColor } : undefined}
                     variant='secondary'
                   >
                     {item.buttonText}

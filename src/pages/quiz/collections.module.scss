@@ -17,6 +17,11 @@
   flex-direction: column;
   gap: $spacing-md;
 }
+.notice { margin: $spacing-md $spacing-lg 0; padding: $spacing-sm $spacing-md; color: $color-text-secondary; background: $color-blue-tint; border-radius: $radius-md; font-size: $font-sm; }
+.state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
+.disabled { color: $color-price; font-size: $font-sm; }
+.options { display: flex; flex-direction: column; gap: 4px; margin-bottom: $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
+.pager { display: flex; align-items: center; justify-content: space-between; padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom}); }
 
 .card {
   background: $color-white;

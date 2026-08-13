@@ -290,9 +290,13 @@ export default function EditProfilePage() {
       if (avatarFile) { Taro.showLoading({ title: '上传二寸照...' }); const r = await uploadFile(avatarFile); avatarOssFinal = r.url; Taro.hideLoading() }
     } catch { Taro.hideLoading(); Taro.showToast({ title: '二寸照上传失败', icon: 'none' }); return }
 
+    const realName = realname?.real_name || `${lastNameZh}${firstNameZh}`.trim()
+    if (!realName) return Taro.showToast({ title: '请填写中文姓名', icon: 'none' })
+
     setSavingIdentity(true)
     const payload = {
       user_type: userType,
+      real_name: realName,
       id_card_number: idCardNumber.trim(),
       id_card_front_oss: frontOss,
       id_card_back_oss: backOss,
@@ -345,14 +349,17 @@ export default function EditProfilePage() {
     try {
       if (degreeCertFile) { Taro.showLoading({ title: '上传学信网学历证明...' }); const r = await uploadFile(degreeCertFile); certOss = r.url }
     } catch { Taro.showToast({ title: '学信网学历证明上传失败', icon: 'none' }); return } finally { Taro.hideLoading() }
+    if (!cardOss || !pdfOss || !certOss) {
+      return Taro.showToast({ title: '学生证、学信网电子注册表和学历证明均为必填材料', icon: 'none' })
+    }
     setSavingStudent(true)
     const payload = {
       education: education.trim(),
       school: school.trim(),
       major: major.trim(),
-      student_card_oss: cardOss || undefined,
-      enrollment_pdf_oss: pdfOss || undefined,
-      degree_cert_oss: certOss || undefined,
+      student_card_oss: cardOss,
+      enrollment_pdf_oss: pdfOss,
+      degree_cert_oss: certOss,
     }
     try {
       if (student && studentStatus !== null) {
@@ -431,7 +438,7 @@ export default function EditProfilePage() {
             </View>
             <FormInput label='昵称' placeholder='请输入昵称' value={nickname} onChange={setNickname} />
             <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} />
-            <FormInput label={STRINGS.FORM_PHONE} placeholder='手机号通过微信授权获取' value={phone} disabled />
+            <FormInput label={STRINGS.FORM_PHONE} placeholder='手机号通过微信授权获取' value={phone} disabled onChange={() => undefined} />
             <Text className={styles.subTitle}>通讯地址</Text>
             <View className={styles.formPair}>
               <View className={styles.formHalf}>

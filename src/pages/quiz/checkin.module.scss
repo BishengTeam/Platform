@@ -15,6 +15,10 @@
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
+.notice { padding: $spacing-md; color: $color-text-secondary; background: $color-blue-tint; border-radius: $radius-md; font-size: $font-sm; line-height: 1.5; }
+.error { display: block; padding: $spacing-lg; color: $color-price; text-align: center; }
+.todayStatus { display: block; margin-top: $spacing-md; color: $color-text-secondary; text-align: center; font-size: $font-sm; }
+
 .statsCard {
   display: flex;
   align-items: center;

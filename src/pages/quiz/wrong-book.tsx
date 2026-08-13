@@ -1,83 +1,64 @@
-import { useState, useEffect } from 'react'
-import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import { useState } from 'react'
+import { ScrollView, Text, View } from '@tarojs/components'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
-import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
-import { STRINGS } from '@/constants/strings'
-import { ROUTES } from '@/constants/routes'
-import { getWrongBook, removeWrongBook } from '@/services/dataService'
-import type { WrongQuestion } from '@/types'
+import { PageHeader } from '@/components/PageHeader'
+import type { PageData, QuizWrongBookItem } from '@/contracts/quiz'
+import { listWrongBook } from '@/services/dataService'
+import { quizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './wrong-book.module.scss'
 
+const PAGE_SIZE = 20
+
 export default function WrongBookPage() {
-  const [items, setItems] = useState<WrongQuestion[]>([])
+  const [page, setPage] = useState<PageData<QuizWrongBookItem> | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getWrongBook().then(setItems).catch(() => {})
-  }, [])
-
-  const handleRemove = (recordId: number) => {
-    setItems(prev => prev.filter(item => item.recordId !== recordId))
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    removeWrongBook(recordId)
+  const load = (pageNumber = 1) => {
+    setLoading(true)
+    setError(false)
+    listWrongBook({ page: pageNumber, page_size: PAGE_SIZE })
+      .then(setPage)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
   }
 
-  const handleRedo = (item: WrongQuestion) => {
-    Taro.navigateTo({ url: `/pages/quiz/practice?categoryId=${item.categoryId}` })
-  }
-
-  if (items.length === 0) {
-    return (
-      <AuthGuard>
-        <View className={styles.page}>
-          <PageHeader title={STRINGS.QUIZ_WRONG_BOOK_TITLE} shouldShowBack />
-          <EmptyState title={STRINGS.QUIZ_WRONG_BOOK_EMPTY} />
-        </View>
-      </AuthGuard>
-    )
-  }
+  useDidShow(() => load())
 
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.QUIZ_WRONG_BOOK_TITLE} shouldShowBack />
-        <View className={styles.body}>
-          {items.map(item => (
+        <PageHeader title='错题本' shouldShowBack />
+        <View className={styles.notice}>
+          <Text>错题完全由系统维护；同一会话重答正确不会清除，后续练习会话首次答对后自动移出。列表只展示题干和选项，进入错题专项并提交后才展示答案与解析。</Text>
+          <Button size='sm' variant='gradient' disabled={(page?.total ?? 0) === 0} onClick={() => Taro.navigateTo({ url: '/pages/quiz/practice?mode=wrong' })}>最近 20 题专项</Button>
+        </View>
+        <ScrollView className={styles.body} scrollY>
+          {loading && <Text className={styles.state}>正在加载错题本…</Text>}
+          {!loading && error && <EmptyState title='错题本加载失败' />}
+          {!loading && !error && page?.items.length === 0 && <EmptyState title='暂无错题' />}
+          {page?.items.map(item => (
             <View key={item.id} className={styles.card}>
               <View className={styles.cardHeader}>
-                <Text className={styles.wrongCount}>
-                  {STRINGS.QUIZ_WRONG_COUNT}: {item.wrongCount}
-                </Text>
-                <Text className={styles.wrongDate}>{item.wrongDate}</Text>
+                <Text className={styles.wrongCount}>{quizTypeLabel(item.question.question_type)}</Text>
+                <Text className={styles.wrongDate}>{item.latest_wrong_at.slice(0, 10)}</Text>
               </View>
-              <Text className={styles.stem}>{item.stem}</Text>
-              <View className={styles.options}>
-                {item.options.map((opt, idx) => {
-                  const correct = Array.isArray(item.correctAnswer)
-                    ? item.correctAnswer.includes(idx)
-                    : item.correctAnswer === idx
-                  return (
-                    <Text key={opt.label} className={`${styles.optionText} ${correct ? styles.optionCorrect : ''}`}>
-                      {opt.label}. {opt.text}
-                    </Text>
-                  )
-                })}
-              </View>
-              <Text className={styles.explanation}>{item.explanation}</Text>
-              <View className={styles.actions}>
-                <Button size='sm' variant='secondary' onClick={() => handleRemove(item.recordId)}>
-                  {STRINGS.QUIZ_WRONG_BOOK_REMOVE}
-                </Button>
-                <Button size='sm' onClick={() => handleRedo(item)}>
-                  {STRINGS.QUIZ_WRONG_BOOK_REDO}
-                </Button>
-              </View>
+              <Text className={styles.stem}>{item.question.question_text}</Text>
+              <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label} className={styles.optionText}>{option.label}. {option.text}</Text>)}</View>
+              {!item.usable_for_practice && <Text className={styles.disabled}>题目已停用，可查看历史内容，但不会进入新的错题专项</Text>}
             </View>
           ))}
-        </View>
+          {page && page.total > page.page_size && (
+            <View className={styles.pager}>
+              <Button variant='secondary' disabled={page.page <= 1 || loading} onClick={() => load(page.page - 1)}>上一页</Button>
+              <Text>{page.page} / {Math.ceil(page.total / page.page_size)}</Text>
+              <Button variant='secondary' disabled={page.page * page.page_size >= page.total || loading} onClick={() => load(page.page + 1)}>下一页</Button>
+            </View>
+          )}
+        </ScrollView>
       </View>
     </AuthGuard>
   )

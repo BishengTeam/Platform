@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { wxLogin } from '@/services/dataService'
-import { setToken } from '@/utils/request'
+import { setAuthTokens } from '@/utils/request'
+import { clearQuizCache } from '@/utils/quizRuntime'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { Icon } from '@/components/Icon'
@@ -28,7 +29,9 @@ export default function AuthPage() {
         if (loginRes.code) {
           wxLogin(loginRes.code)
             .then((data) => {
-              setToken(data.access_token)
+              // A new explicit WeChat login may represent a different account.
+              clearQuizCache()
+              setAuthTokens(data.access_token, data.refresh_token)
               Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
             })
             .catch((err: unknown) => {
@@ -50,6 +53,10 @@ export default function AuthPage() {
     })
   }
 
+  const browseQuiz = () => {
+    Taro.navigateTo({ url: `/${ROUTES.QUIZ_INDEX}` })
+  }
+
   return (
     <View className={styles.page}>
       <View className={styles.bgDecor} />
@@ -67,6 +74,9 @@ export default function AuthPage() {
           <View className={styles.wechatBtn} onClick={handleLogin}>
             <Icon name='message-circle' size={20} color='#ffffff' />
             <Text className={styles.wechatBtnText}>{isLoggingIn ? '登录中...' : STRINGS.AUTH_WECHAT_BTN}</Text>
+          </View>
+          <View className={styles.browseBtn} onClick={browseQuiz}>
+            <Text className={styles.browseBtnText}>先浏览题库</Text>
           </View>
         </View>
 

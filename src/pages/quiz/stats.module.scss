@@ -1,0 +1,10 @@
+@use '../../styles/variables' as *;
+.page { min-height: 100vh; min-height: 100dvh; background: $color-bg; }
+.body { padding: $spacing-md $spacing-lg calc(#{$spacing-xl} + #{$safe-bottom}); }
+.state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
+.section { margin-bottom: $spacing-md; padding: $spacing-md; background: $color-white; border-radius: $radius-md; }
+.title { display: block; margin-bottom: $spacing-md; color: $color-text; font-size: $font-lg; font-weight: 700; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: $spacing-sm; }
+.metric { display: flex; flex-direction: column; align-items: center; padding: $spacing-sm; background: $color-bg-secondary; border-radius: $radius-sm; }
+.value { color: $color-primary; font-size: $font-xl; font-weight: 700; }
+.label { margin-top: 4px; color: $color-text-tertiary; font-size: $font-2xs; }

@@ -18,6 +18,11 @@
   gap: $spacing-md;
 }
 
+.notice { display: flex; flex-direction: column; gap: $spacing-sm; margin: $spacing-md $spacing-lg 0; padding: $spacing-md; color: $color-text-secondary; background: $color-blue-tint; border-radius: $radius-md; font-size: $font-sm; line-height: 1.5; }
+.state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
+.disabled { display: block; margin-top: $spacing-sm; color: $color-price; font-size: $font-sm; }
+.pager { display: flex; align-items: center; justify-content: space-between; padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom}); }
+
 .card {
   background: $color-white;
   border-radius: $radius-md;
@@ -61,25 +66,4 @@
 .optionText {
   font-size: $font-sm;
   color: $color-text-secondary;
-}
-
-.optionCorrect {
-  color: $color-success;
-  font-weight: 600;
-}
-
-.explanation {
-  font-size: $font-sm;
-  color: $color-text-tertiary;
-  background: $color-bg-secondary;
-  padding: $spacing-sm;
-  border-radius: $radius-sm;
-  margin-bottom: $spacing-sm;
-  display: block;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: $spacing-sm;
 }

@@ -1,31 +1,15 @@
 import { useLaunch } from '@tarojs/taro'
-import Taro from '@tarojs/taro'
 import type { PropsWithChildren } from 'react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { wxLogin } from '@/services/dataService'
-import { setToken } from '@/utils/request'
+import { restoreAuthSession } from '@/utils/request'
 import '@nutui/nutui-react-taro/dist/style.css'
 import './app.scss'
 
 export default function App({ children }: PropsWithChildren) {
   useLaunch(() => {
-    // 每次打开小程序自动调用微信登录，获取 token
-    Taro.login({
-      success: (loginRes) => {
-        if (loginRes.code) {
-          wxLogin(loginRes.code)
-            .then(({ access_token }) => {
-              setToken(access_token)
-            })
-            .catch(() => {
-              // 后端登录失败不阻塞，用户可手动在 auth 页重试
-            })
-        }
-      },
-      fail: () => {
-        // wx.login 失败静默处理
-      },
-    })
+    // 尊重登录页的协议确认：已有 access token 时不重复 wx.login；仅恢复
+    // 已存在的 refresh 会话。无本地会话时由用户在登录页显式发起微信登录。
+    void restoreAuthSession()
   })
 
   return <ErrorBoundary>{children}</ErrorBoundary>

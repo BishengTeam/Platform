@@ -89,6 +89,27 @@
   font-weight: 500;
 }
 
+.browseBtn {
+  width: 100%;
+  height: $button-height;
+  color: $color-primary;
+  background: rgba($color-white, 0.8);
+  border: 1px solid $color-primary;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    background: $color-blue-tint;
+  }
+}
+
+.browseBtnText {
+  font-size: $font-lg;
+  font-weight: 500;
+}
+
 .link {
   color: $color-primary;
 }

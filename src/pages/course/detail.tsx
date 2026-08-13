@@ -61,7 +61,7 @@ export default function CourseDetailPage() {
     result: CoursePurchaseResponse,
   ) => {
     if (result.learning_access) {
-      Taro.showToast({ title: STRINGS.COURSE_FREE_ENROLL_SUCCESS, icon: 'success' })
+      Taro.showToast({ title: STRINGS.COURSE_ENROLL_SUCCESS, icon: 'success' })
       enterContent(id)
       return
     }
@@ -96,7 +96,7 @@ export default function CourseDetailPage() {
       const access = await pollCourseAccess(id)
       Taro.hideLoading()
       if (access) {
-        Taro.showToast({ title: STRINGS.COURSE_FREE_ENROLL_SUCCESS, icon: 'success' })
+        Taro.showToast({ title: STRINGS.COURSE_ENROLL_SUCCESS, icon: 'success' })
         enterContent(id)
       } else {
         Taro.showToast({ title: STRINGS.COURSE_PAYMENT_TIMEOUT, icon: 'none' })

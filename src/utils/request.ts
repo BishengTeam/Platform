@@ -9,6 +9,7 @@
  */
 
 import Taro from '@tarojs/taro'
+import { clearQuizCache } from './quizRuntime.ts'
 
 // ---- 配置 ----
 
@@ -29,6 +30,7 @@ export function resolveUrl(path: string | null | undefined): string {
 }
 
 const TOKEN_KEY = 'auth_token'
+const REFRESH_TOKEN_KEY = 'auth_refresh_token'
 
 // ---- Token 管理 ----
 
@@ -36,12 +38,20 @@ export function getToken(): string {
   return Taro.getStorageSync(TOKEN_KEY) || ''
 }
 
-export function setToken(token: string): void {
-  Taro.setStorageSync(TOKEN_KEY, token)
+export function getRefreshToken(): string {
+  return Taro.getStorageSync(REFRESH_TOKEN_KEY) || ''
 }
 
-export function removeToken(): void {
+export function setAuthTokens(accessToken: string, refreshToken: string): void {
+  if (!accessToken || !refreshToken) throw new Error('登录响应缺少令牌')
+  Taro.setStorageSync(TOKEN_KEY, accessToken)
+  Taro.setStorageSync(REFRESH_TOKEN_KEY, refreshToken)
+}
+
+export function clearAuthTokens(): void {
   Taro.removeStorageSync(TOKEN_KEY)
+  Taro.removeStorageSync(REFRESH_TOKEN_KEY)
+  clearQuizCache()
 }
 
 // ---- 类型 ----
@@ -75,7 +85,68 @@ export interface RequestOptions {
 
 // ---- 核心请求函数 ----
 
-export async function request<T = unknown>(options: RequestOptions): Promise<ApiResponse<T>> {
+let refreshPromise: Promise<boolean> | null = null
+let reloginPromptVisible = false
+
+async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return false
+  try {
+    const response = await Taro.request({
+      url: `${BASE_URL}/api/auth/refresh`,
+      method: 'POST',
+      data: { refresh_token: refreshToken },
+      header: { 'Content-Type': 'application/json' },
+      timeout: 15000,
+    })
+    const envelope = response.data as ApiResponse<unknown>
+    if (response.statusCode < 200 || response.statusCode >= 300 || envelope?.code !== 0) return false
+    const data = envelope.data
+    if (typeof data !== 'object' || data === null) return false
+    const values = data as Record<string, unknown>
+    if (typeof values.access_token !== 'string' || typeof values.refresh_token !== 'string') return false
+    setAuthTokens(values.access_token, values.refresh_token)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function runSingleFlightRefresh(): Promise<boolean> {
+  refreshPromise ||= refreshAccessToken().finally(() => { refreshPromise = null })
+  return refreshPromise
+}
+
+/**
+ * Restore a locally persisted login before an authentication guard decides
+ * whether to redirect. App startup and every mounted guard share the same
+ * refresh request, which is important because refresh tokens are rotated.
+ */
+export async function restoreAuthSession(): Promise<boolean> {
+  if (getToken()) return true
+  if (!getRefreshToken()) return false
+  const restored = await runSingleFlightRefresh()
+  if (!restored) clearAuthTokens()
+  return restored
+}
+
+function requireRelogin(message: string): void {
+  clearAuthTokens()
+  if (reloginPromptVisible) return
+  reloginPromptVisible = true
+  Taro.showModal({
+    title: '提示',
+    content: message,
+    showCancel: false,
+    success: () => {
+      reloginPromptVisible = false
+      Taro.reLaunch({ url: '/pages/auth/index' })
+    },
+    fail: () => { reloginPromptVisible = false },
+  })
+}
+
+export async function request<T = unknown>(options: RequestOptions, allowRefresh = true): Promise<ApiResponse<T>> {
   const { url, method = 'GET', data, header = {}, showLoading = true } = options
 
   const token = getToken()
@@ -133,14 +204,18 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
       if (isDev) {
         console.warn('[Request] 401 detected — message:', result.message, 'code:', result.code)
       }
-      removeToken()
       const msg = result.message || '登录已过期，请重新登录'
-      Taro.showModal({
-        title: '提示',
-        content: msg,
-        showCancel: false,
-        success: () => Taro.reLaunch({ url: '/pages/auth/index' }),
-      })
+      const isAuthEndpoint = url === '/api/auth/login' || url === '/api/auth/refresh'
+      if (allowRefresh && !isAuthEndpoint && getRefreshToken()) {
+        // A startup restore may have rotated the token while this request was
+        // in flight. In that case retry with the new access token directly;
+        // otherwise join/start the one permitted refresh request.
+        const tokenWasRefreshed = Boolean(getToken()) && getToken() !== token
+        if (tokenWasRefreshed || await runSingleFlightRefresh()) {
+          return request<T>({ ...options, showLoading: false }, false)
+        }
+      }
+      requireRelogin(msg)
       throw new Error('UNAUTHORIZED')
     }
 
@@ -160,10 +235,22 @@ export async function request<T = unknown>(options: RequestOptions): Promise<Api
       throw err
     }
 
+    // The re-login modal/guard owns authentication feedback. Showing the
+    // sentinel as a toast would produce a second, user-visible error.
+    if (err instanceof Error && err.message === 'UNAUTHORIZED') {
+      throw err
+    }
+
     const msg = err instanceof Error ? err.message : '网络异常，请稍后重试'
     Taro.showToast({ title: msg, icon: 'none' })
     throw err
   }
+}
+
+/** Test-only reset for module-level single-flight/prompt state. */
+export function resetRequestStateForTest(): void {
+  refreshPromise = null
+  reloginPromptVisible = false
 }
 
 // ---- 便捷方法 ----

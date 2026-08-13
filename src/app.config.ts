@@ -46,7 +46,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/quiz',
-      pages: ['index', 'practice', 'mock', 'wrong-book', 'collections', 'checkin'],
+      pages: ['index', 'questions', 'practice', 'history', 'mock', 'exam-history', 'wrong-book', 'collections', 'checkin', 'stats'],
     },
     {
       root: 'pages/mine',

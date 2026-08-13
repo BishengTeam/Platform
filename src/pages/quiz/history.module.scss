@@ -1,0 +1,21 @@
+@use '../../styles/variables' as *;
+.page { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: $color-bg; }
+.filters { display: flex; flex-wrap: wrap; gap: $spacing-sm; padding: $spacing-sm $spacing-lg 0; }
+.dateFilters { display: flex; align-items: center; gap: $spacing-sm; padding: $spacing-sm $spacing-lg; }
+.dateButton { min-width: 92px; padding: 7px $spacing-sm; color: $color-text-secondary; text-align: center; background: $color-white; border: 1px solid $color-border; border-radius: $radius-sm; font-size: $font-xs; }
+.dateDivider { color: $color-text-tertiary; font-size: $font-xs; }
+.clearDate { color: $color-primary; font-size: $font-xs; }
+.body { flex: 1; padding: 0 $spacing-lg; box-sizing: border-box; }
+.state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
+.card { margin-bottom: $spacing-md; padding: $spacing-md; background: $color-white; border-radius: $radius-md; }
+.header { display: flex; justify-content: space-between; gap: $spacing-sm; }
+.correct { color: $color-success; font-weight: 700; }
+.wrong, .disabled { color: $color-price; }
+.time, .path, .disabled { font-size: $font-2xs; }
+.time, .path { color: $color-text-tertiary; }
+.path, .stem, .answer, .explanation, .disabled { display: block; margin-top: $spacing-sm; }
+.stem { color: $color-text; font-weight: 600; line-height: 1.5; }
+.options { display: flex; flex-direction: column; gap: 4px; margin-top: $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
+.answer { color: $color-primary; font-size: $font-sm; }
+.explanation { padding: $spacing-sm; color: $color-text-secondary; background: $color-bg-secondary; border-radius: $radius-sm; font-size: $font-sm; }
+.pager { display: flex; align-items: center; justify-content: space-between; padding: $spacing-md 0 calc(#{$spacing-xl} + #{$safe-bottom}); }

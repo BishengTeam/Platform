@@ -47,7 +47,7 @@ export function NispExtraSection(props: NispExtraSectionProps) {
 
       {/* 级别切换 */}
       <View className={styles.identityRow}>
-        <Text className={styles.identityLabel}>{STRINGS.NISP_LEVEL}</Text>
+        <Text className={styles.identityLabel}>报考级别</Text>
         <View className={styles.identityToggle}>
           <View className={`${styles.identityOption} ${level === '1' ? styles.identityActive : ''}`} onClick={() => setLevel('1')}>
             <Text>{STRINGS.NISP_LEVEL_1}</Text>

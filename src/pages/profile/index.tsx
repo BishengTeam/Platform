@@ -14,8 +14,8 @@ import { getUserProfile } from '@/services/dataService'
 import styles from './index.module.scss'
 
 export default function ProfilePage() {
-  const [userName, setUserName] = useState(STRINGS.PROFILE_MOCK_NAME)
-  const [userStatus, setUserStatus] = useState(STRINGS.PROFILE_MOCK_STATUS)
+  const [userName, setUserName] = useState<string>(STRINGS.PROFILE_MOCK_NAME)
+  const [userStatus, setUserStatus] = useState<string>(STRINGS.PROFILE_MOCK_STATUS)
   const [avatar, setAvatar] = useState('')
 
   useEffect(() => {

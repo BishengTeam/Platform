@@ -99,7 +99,7 @@ export default function AgreementsPage() {
                   <View className={styles.signArea}>
                     <View
                       className={styles.signCanvas}
-                      onTouchMove={(e) => {
+                      onTouchMove={(e: any) => {
                         const touch = e.touches[0]
                         if (touch) {
                           setSignPaths(prev => [...prev, { x: touch.x, y: touch.y }])

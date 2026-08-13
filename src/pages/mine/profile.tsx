@@ -7,7 +7,7 @@ import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { logout } from '@/services/dataService'
-import { removeToken } from '@/utils/request'
+import { clearAuthTokens, getRefreshToken } from '@/utils/request'
 import styles from './profile.module.scss'
 
 interface MenuItem {
@@ -42,9 +42,12 @@ export default function SettingsPage() {
       confirmText: STRINGS.LOGOUT_MODAL_CONFIRM,
       success: (res) => {
         if (res.confirm) {
-          removeToken()
-          logout().catch(() => {})
-          Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
+          const refreshToken = getRefreshToken()
+          const request = refreshToken ? logout(refreshToken) : Promise.resolve()
+          void request.finally(() => {
+            clearAuthTokens()
+            Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
+          }).catch(() => undefined)
         }
       },
     })
@@ -71,7 +74,7 @@ export default function SettingsPage() {
           </View>
 
           <View className={styles.btnSection}>
-            <Button variant='white' size='lg' onClick={handleLogout}>
+            <Button variant='secondary' size='lg' onClick={handleLogout}>
               {STRINGS.PROFILE_LOGOUT}
             </Button>
           </View>

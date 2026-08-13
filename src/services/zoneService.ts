@@ -90,8 +90,10 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
     return {
       banners: competitionBannerItems.map((item, idx) => ({
         id: idx + 1,
-        image_url: item.image,
-        jump_link: item.link || null,
+        image_url: '',
+        jump_link: null,
+        target_type: null,
+        target_id: null,
         sort: idx,
       })),
       zones: {
@@ -126,7 +128,7 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
           ],
         },
       },
-    } as HomeAggregationResponse
+    }
   }
   const res = await get<HomeAggregationResponse>('/api/zones')
   return resolveMedia(res.data)
@@ -150,7 +152,7 @@ export async function getCourseList(): Promise<CourseBrief[]> {
   }
   if (USE_MOCK) return []
   const res = await get<{ items?: CourseBrief[] }>('/api/courses')
-  const items = res.data?.items || res.data || []
+  const items = res.data?.items ?? []
   return items.map(item => ({ ...item, cover_url: resolveUrl(item.cover_url) }))
 }
 
@@ -158,14 +160,14 @@ export async function getCourseList(): Promise<CourseBrief[]> {
 export async function getActivityList(): Promise<ActivityBrief[]> {
   if (USE_MOCK) return []
   const res = await get<{ items?: ActivityBrief[] }>('/api/activities')
-  return res.data?.items || res.data || []
+  return res.data?.items ?? []
 }
 
 /** GET /api/jobs — 岗位列表 */
 export async function getJobList(): Promise<JobBrief[]> {
   if (USE_MOCK) return []
   const res = await get<{ items?: JobBrief[] }>('/api/jobs')
-  return res.data?.items || res.data || []
+  return res.data?.items ?? []
 }
 
 /** GET /api/cert/certifications — 认证列表 */

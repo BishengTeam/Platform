@@ -29,23 +29,29 @@ export interface IdentityInfo {
 // ================================================================
 
 /** POST /api/auth/login — 微信 code 登录，返回 token */
-export async function wxLogin(code: string): Promise<{ access_token: string; refresh_token?: string; expires_in?: number }> {
-  if (USE_MOCK) return { access_token: 'mock_token_' + Date.now() }
-  const res = await post<{ access_token: string; refresh_token?: string; expires_in?: number }>('/api/auth/login', { code })
+export interface AuthTokens {
+  access_token: string
+  refresh_token: string
+  expires_in: number
+}
+
+export async function wxLogin(code: string): Promise<AuthTokens> {
+  if (USE_MOCK) throw new Error('认证模块禁止使用 mock 登录')
+  const res = await post<AuthTokens>('/api/auth/login', { code })
   return res.data
 }
 
 /** POST /api/auth/refresh — 刷新 token，需传 refresh_token */
-export async function refreshToken(refresh_token: string): Promise<{ access_token: string; refresh_token: string }> {
-  if (USE_MOCK) return { access_token: 'mock_refreshed_' + Date.now(), refresh_token: 'mock_refresh_' + Date.now() }
-  const res = await post<{ access_token: string; refresh_token: string }>('/api/auth/refresh', { refresh_token })
+export async function refreshToken(refresh_token: string): Promise<AuthTokens> {
+  if (USE_MOCK) throw new Error('认证模块禁止使用 mock 刷新')
+  const res = await post<AuthTokens>('/api/auth/refresh', { refresh_token })
   return res.data
 }
 
 /** POST /api/auth/logout — 退出登录，需传 refresh_token */
-export async function logout(refresh_token?: string): Promise<void> {
-  if (USE_MOCK) return
-  await post('/api/auth/logout', refresh_token ? { refresh_token } : undefined)
+export async function logout(refresh_token: string): Promise<void> {
+  if (USE_MOCK) throw new Error('认证模块禁止使用 mock 退出')
+  await post('/api/auth/logout', { refresh_token })
 }
 
 // ================================================================

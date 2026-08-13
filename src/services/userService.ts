@@ -14,6 +14,7 @@ import {
 } from '@/constants/mock'
 
 import type { OrderBackendItem, Order, OrderDetail } from '@/types/orders'
+import type { CertificationResponse } from '@/types/zone'
 import type {
   UserProfileDetail,
   UserProfileAggregated,
@@ -25,7 +26,6 @@ import type {
   UpdateEnterprisePayload,
 } from '@/types/profile'
 
-import type { CheckinStatus } from '@/types/quiz'
 import Taro from '@tarojs/taro'
 import { get, post, put, del, getToken } from '@/utils/request'
 import { getIdentityStatus } from './authService'
@@ -33,6 +33,13 @@ import { getIdentityStatus } from './authService'
 import { getCertificationList } from './zoneService'
 
 const USE_MOCK = false
+
+const MOCK_PROFILE_META = {
+  openid: 'mock-openid',
+  created_at: '2026-01-01T00:00:00Z',
+  edit_count_limit: 5,
+  edit_count_reset_hours: null,
+} as const
 
 // ---- 认证 ----
 
@@ -51,7 +58,7 @@ export async function getCertDetail(certId: number): Promise<import('@/types').C
     const certs = await getCertificationList()
     const matched = certs.find(c => c.id === certId)
     if (!matched) return null
-    const oldCert = certifications.find(c => c.name === matched.name || c.chinese_name === matched.chinese_name)
+    const oldCert = certifications.find(c => c.name === matched.name || c.name === matched.chinese_name)
     return {
       ...matched,
       price: oldCert?.price ?? 1200,
@@ -127,7 +134,7 @@ export async function getOrders() {
   if (USE_MOCK) return orders
   const res = await get<{ items?: OrderBackendItem[] }>(`/api/orders`)
   const data = res.data
-  const items: OrderBackendItem[] = data?.items || data || []
+  const items: OrderBackendItem[] = data?.items ?? []
   return items.map(toOrder)
 }
 
@@ -149,7 +156,7 @@ export async function getOrderDetail(id: number) {
   if (USE_MOCK) {
     const found = orderDetails[id]
     if (found) return found
-    return Object.values(orderDetails).find(d => d.orderId === id) || null
+    return Object.values(orderDetails).find(d => d.orderId === String(id)) || null
   }
   const res = await get<OrderBackendItem>(`/api/orders/${id}`)
   const data = res.data
@@ -275,6 +282,7 @@ export async function prepayOrder(orderId: number): Promise<{
 }> {
   if (USE_MOCK) {
     return {
+      ...MOCK_PROFILE_META,
       prepay_id: 'prepay_mock_' + orderId,
       time_stamp: String(Math.floor(Date.now() / 1000)),
       nonce_str: Math.random().toString(36).slice(2),
@@ -316,25 +324,6 @@ export async function removeFavorite(courseId: number): Promise<void> {
   const item = listRes.data?.items?.[0]
   if (!item) return
   await del(`/api/collections/${item.id}`)
-}
-
-// ================================================================
-// 打卡
-// ================================================================
-
-/** POST /api/quiz/checkin — 执行今日签到，返回签到状态 */
-export async function submitCheckin(): Promise<CheckinStatus> {
-  if (USE_MOCK) {
-    return {
-      id: 1,
-      checkinDate: new Date().toISOString().slice(0, 10),
-      checkedIn: true,
-      questionsCompleted: 0,
-      consecutiveDays: 3,
-    }
-  }
-  const res = await post<CheckinStatus>('/api/quiz/checkin', { questions_completed: 0 })
-  return res.data
 }
 
 // ================================================================
@@ -492,6 +481,8 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
 /** PUT /api/user/profile — 更新用户资料（重构后仅 Level-1 字段：nickname, email, phone） */
 export async function updateUserProfile(data: UserProfileUpdatePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) return {
+    openid: 'mock-openid',
+    created_at: new Date(0).toISOString(),
     profile: { nickname: data.nickname || '张三', email: data.email || 'zhangsan@example.com', phone: data.phone || '138****1234', province: data.province || null, city: data.city || null, address: data.address || null },
     realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
     student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', enrollment_pdf_oss: null, degree_cert_oss: null },
@@ -553,7 +544,7 @@ export async function getTickets(): Promise<Array<{ id: string; title: string; s
   if (USE_MOCK) return []
   const res = await get<{ items?: Array<{ id: number; content: string; status: string; created_at: string }> }>('/api/tickets')
   const data = res.data
-  return (data?.items || data || []).map((t) => ({
+  return (data?.items ?? []).map((t) => ({
     id: String(t.id),
     title: t.content?.slice(0, 50) || '',
     status: t.status,
@@ -632,7 +623,7 @@ export async function getPrices(): Promise<Array<{ cert_type: string; price: num
   if (USE_MOCK) return []
   const res = await get<{ items?: Array<{ cert_type: string; price: number }> }>('/api/prices')
   const data = res.data
-  return data?.items || data || []
+  return data?.items ?? []
 }
 
 // ================================================================
@@ -662,7 +653,7 @@ export async function getActivities(): Promise<import('@/types').ActivityBrief[]
   if (USE_MOCK) return []
   const res = await get<{ items?: import('@/types').ActivityBrief[] }>('/api/activities')
   const data = res.data
-  return data?.items || data || []
+  return data?.items ?? []
 }
 
 export async function registerActivity(activityId: number, name: string, phone: string, remark?: string): Promise<void> {
@@ -689,7 +680,7 @@ export async function getJobs(): Promise<import('@/types').JobBrief[]> {
   if (USE_MOCK) return []
   const res = await get<{ items?: import('@/types').JobBrief[] }>('/api/jobs')
   const data = res.data
-  return data?.items || data || []
+  return data?.items ?? []
 }
 
 export async function createTicket(data: { title: string; description: string }): Promise<{ id: string }> {
@@ -827,6 +818,7 @@ export async function fetchQuickQuestions(): Promise<string[]> {
 export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
+      ...MOCK_PROFILE_META,
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
       realname: {
         user_type: data.user_type || 'student',
@@ -848,11 +840,11 @@ export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserP
   // 后端 POST /api/user/identity 要求必填字段，先拉取现有数据合并
   const current = await get<import('@/types/profile').UserRealnameL2>('/api/user/identity')
   const merged = {
+    ...data,
     user_type: data.user_type || current.data?.user_type,
     id_card_number: data.id_card_number || current.data?.id_card,
     id_card_front_oss: data.id_card_front_oss || current.data?.id_card_front_oss,
     id_card_back_oss: data.id_card_back_oss || current.data?.id_card_back_oss,
-    ...data,
   }
   const res = await post<UserProfileAggregated>('/api/user/identity', merged as unknown as Record<string, unknown>)
   return res.data
@@ -862,6 +854,7 @@ export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserP
 export async function submitStudent(data: SubmitStudentPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
+      ...MOCK_PROFILE_META,
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
       realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
       student: { ...data, student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null, enrollment_pdf_oss: data.enrollment_pdf_oss || null, degree_cert_oss: data.degree_cert_oss || null },
@@ -877,6 +870,7 @@ export async function submitStudent(data: SubmitStudentPayload): Promise<UserPro
 export async function updateStudent(data: UpdateStudentPayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
+      ...MOCK_PROFILE_META,
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
       realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
       student: { education: data.education || '本科', school: data.school || '清华大学', major: data.major || '计算机科学与技术', student_card_oss: data.student_card_oss || null, student_status: 'pending', reject_reason: null, verified_at: null, enrollment_pdf_oss: data.enrollment_pdf_oss || null, degree_cert_oss: data.degree_cert_oss || null },
@@ -891,8 +885,8 @@ export async function updateStudent(data: UpdateStudentPayload): Promise<UserPro
     school: data.school || current.data?.school || '',
     major: data.major || current.data?.major || '',
     student_card_oss: data.student_card_oss || current.data?.student_card_oss || '',
-    enrollment_pdf_oss: data.enrollment_pdf_oss || current.data?.enrollment_pdf_oss,
-    degree_cert_oss: data.degree_cert_oss || current.data?.degree_cert_oss,
+    enrollment_pdf_oss: data.enrollment_pdf_oss || current.data?.enrollment_pdf_oss || undefined,
+    degree_cert_oss: data.degree_cert_oss || current.data?.degree_cert_oss || undefined,
   }
   const res = await post<UserProfileAggregated>('/api/user/student', merged as unknown as Record<string, unknown>)
   return res.data
@@ -902,6 +896,7 @@ export async function updateStudent(data: UpdateStudentPayload): Promise<UserPro
 export async function submitEnterprise(data: SubmitEnterprisePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
+      ...MOCK_PROFILE_META,
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
       realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
       enterprise: { ...data, enterprise_status: 'pending', reject_reason: null, verified_at: null },
@@ -917,6 +912,7 @@ export async function submitEnterprise(data: SubmitEnterprisePayload): Promise<U
 export async function updateEnterprise(data: UpdateEnterprisePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) {
     return {
+      ...MOCK_PROFILE_META,
       profile: { nickname: '张三', email: 'zhangsan@example.com', phone: '138****1234', province: null, city: null, address: null },
       realname: { user_type: 'enterprise', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: 'male', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
       enterprise: { organization: data.organization || '新华三集团', enterprise_status: 'pending', reject_reason: null, verified_at: null },

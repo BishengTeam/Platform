@@ -1,68 +1,73 @@
-import { useState, useEffect } from 'react'
-import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import { useState } from 'react'
+import { ScrollView, Text, View } from '@tarojs/components'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
-import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
-import { STRINGS } from '@/constants/strings'
-import { getFavoriteQuestions, removeQuizFavorite } from '@/services/dataService'
-import type { QuizQuestion } from '@/types'
+import { PageHeader } from '@/components/PageHeader'
+import type { PageData, QuizCollectionItem } from '@/contracts/quiz'
+import { listQuizCollections, removeQuizCollection } from '@/services/dataService'
+import { quizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './collections.module.scss'
 
+const PAGE_SIZE = 20
+
 export default function QuizCollectionsPage() {
-  const [items, setItems] = useState<(QuizQuestion & { recordId: number })[]>([])
+  const [page, setPage] = useState<PageData<QuizCollectionItem> | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [busyQuestion, setBusyQuestion] = useState<number | null>(null)
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getFavoriteQuestions().then(setItems).catch(() => {})
-  }, [])
-
-  const handleRemove = (recordId: number) => {
-    setItems(prev => prev.filter(item => item.recordId !== recordId))
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    removeQuizFavorite(recordId)
+  const load = (pageNumber = 1) => {
+    setLoading(true)
+    listQuizCollections({ page: pageNumber, page_size: PAGE_SIZE })
+      .then(setPage)
+      .catch(() => Taro.showToast({ title: '收藏列表加载失败', icon: 'none' }))
+      .finally(() => setLoading(false))
   }
 
-  const handlePractice = (item: QuizQuestion) => {
-    Taro.navigateTo({ url: `/pages/quiz/practice?categoryId=${item.categoryId}` })
-  }
+  useDidShow(() => load())
 
-  if (items.length === 0) {
-    return (
-      <AuthGuard>
-        <View className={styles.page}>
-          <PageHeader title={STRINGS.QUIZ_COLLECTIONS_TITLE} shouldShowBack />
-          <EmptyState title={STRINGS.QUIZ_COLLECTIONS_EMPTY} />
-        </View>
-      </AuthGuard>
-    )
+  const remove = async (questionId: number) => {
+    if (busyQuestion !== null) return
+    setBusyQuestion(questionId)
+    try {
+      await removeQuizCollection(questionId)
+      if (page) setPage({ ...page, items: page.items.filter(item => item.question_id !== questionId), total: Math.max(0, page.total - 1) })
+      Taro.showToast({ title: '已取消收藏', icon: 'none' })
+    } catch {
+      Taro.showToast({ title: '取消收藏失败，请重试', icon: 'none' })
+    } finally {
+      setBusyQuestion(null)
+    }
   }
 
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.QUIZ_COLLECTIONS_TITLE} shouldShowBack />
-        <View className={styles.body}>
-          {items.map(item => (
+        <PageHeader title='收藏题目' shouldShowBack />
+        <View className={styles.notice}><Text>收藏题仅供浏览，不作为专项练习题池。</Text></View>
+        <ScrollView className={styles.body} scrollY>
+          {loading && <Text className={styles.state}>正在加载收藏…</Text>}
+          {!loading && page?.items.length === 0 && <EmptyState title='暂无收藏' />}
+          {page?.items.map(item => (
             <View key={item.id} className={styles.card}>
               <View className={styles.cardHeader}>
-                <Text className={styles.typeTag}>
-                  {item.type === 'single' ? STRINGS.QUIZ_TYPE_SINGLE : STRINGS.QUIZ_TYPE_MULTIPLE}
-                </Text>
+                <Text className={styles.typeTag}>{quizTypeLabel(item.question.question_type)}</Text>
+                {item.question_status === 'disabled' && <Text className={styles.disabled}>题目已停用</Text>}
               </View>
-              <Text className={styles.stem}>{item.stem}</Text>
-              <View className={styles.actions}>
-                <Button size='sm' variant='secondary' onClick={() => handleRemove(item.recordId)}>
-                  {STRINGS.QUIZ_UNCOLLECT}
-                </Button>
-                <Button size='sm' onClick={() => handlePractice(item)}>
-                  {STRINGS.QUIZ_START_PRACTICE}
-                </Button>
-              </View>
+              <Text className={styles.stem}>{item.question.question_text}</Text>
+              <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
+              <View className={styles.actions}><Button size='sm' variant='secondary' disabled={busyQuestion !== null} loading={busyQuestion === item.question_id} onClick={() => remove(item.question_id)}>取消收藏</Button></View>
             </View>
           ))}
-        </View>
+          {page && page.total > page.page_size && (
+            <View className={styles.pager}>
+              <Button variant='secondary' disabled={page.page <= 1 || loading} onClick={() => load(page.page - 1)}>上一页</Button>
+              <Text>{page.page} / {Math.ceil(page.total / page.page_size)}</Text>
+              <Button variant='secondary' disabled={page.page * page.page_size >= page.total || loading} onClick={() => load(page.page + 1)}>下一页</Button>
+            </View>
+          )}
+        </ScrollView>
       </View>
     </AuthGuard>
   )

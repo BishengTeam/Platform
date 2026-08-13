@@ -13,11 +13,13 @@
 
 // Quiz
 export {
-  getQuizCategories, getQuizQuestions, getWrongBook,
-  getFavoriteQuestions, getCheckinRecords,
-  getCheckinStatus, addWrongBook, removeWrongBook, submitQuizAnswer,
-  addQuizFavorite, removeQuizFavorite,
-  getQuizStats, getQuizProgress, getQuizCategoryTree,
+  listQuizCategories, listQuizQuestions,
+  createPracticeSession, getCurrentPracticeSession, getPracticeSession,
+  submitPracticeAttempt, abandonPracticeSession, listPracticeHistory,
+  listWrongBook, listQuizCollections, addQuizCollection, removeQuizCollection,
+  getQuizCheckinStatus, getQuizCheckinCalendar, getQuizStats,
+  createQuizExam, getCurrentQuizExam, listQuizExams, getQuizExam,
+  saveQuizExamAnswer, submitQuizExam, abandonQuizExam,
 } from './quizService'
 
 // Auth
@@ -56,7 +58,7 @@ export {
   getAgreements,
   getMyCollections, getRegisteredExams,
   createOrder, prepayOrder,
-  addFavorite, removeFavorite, submitCheckin,
+  addFavorite, removeFavorite,
   validateCoupon,
   getUserProfile, updateUserProfile,
   updateIdentity, submitStudent, updateStudent, submitEnterprise, updateEnterprise,

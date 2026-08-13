@@ -14,6 +14,22 @@
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
+.loginHint {
+  margin: $spacing-md $spacing-lg;
+  padding: $spacing-md;
+  color: $color-primary;
+  background: $color-blue-tint;
+  border-radius: $radius-md;
+  font-size: $font-sm;
+}
+
+.stateText {
+  display: block;
+  padding: $spacing-lg;
+  color: $color-text-tertiary;
+  text-align: center;
+}
+
 .checkinBar {
   display: flex;
   align-items: center;

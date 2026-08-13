@@ -251,8 +251,7 @@ export default function ActivityZonePage() {
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#FA8C16'
-                      onButtonClick={async (e: unknown) => {
-                        e?.stopPropagation?.()
+                      onButtonClick={async () => {
                         try {
                           await signupCompetition(item.track, '', undefined)
                           Taro.showToast({ title: '报名成功', icon: 'success' })

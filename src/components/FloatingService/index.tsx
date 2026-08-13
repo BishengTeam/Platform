@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
 import { View } from '@tarojs/components'
-import type { ITouchEvent } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import styles from './index.module.scss'
@@ -29,13 +28,13 @@ export function FloatingService({ onPress }: FloatingServiceProps) {
 
   const x = side === 'left' ? edgeGap : windowWidth - btnPx - edgeGap
 
-  const handleTouchStart = useCallback((e: ITouchEvent) => {
+  const handleTouchStart = useCallback((e: any) => {
     const touch = e.touches[0]
     startRef.current = { y: touch.clientY - y, moved: 0, lastTouchX: touch.clientX }
     dragY.current = y
   }, [y])
 
-  const handleTouchMove = useCallback((e: ITouchEvent) => {
+  const handleTouchMove = useCallback((e: any) => {
     const touch = e.touches[0]
     const newY = touch.clientY - startRef.current.y
     const dy = Math.abs(newY - dragY.current)

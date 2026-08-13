@@ -11,7 +11,7 @@ import styles from '../form.module.scss'
 
 interface Props { children: ReactNode }
 
-function pickIdCard(p: import('@/types').UserProfileAggregated | null): string {
+function pickIdCard(p: import('@/types/profile').UserProfileAggregated | null): string {
   return p?.realname?.id_card_raw || ''
 }
 
@@ -33,7 +33,7 @@ export function IdentityCheckGate({ children }: Props) {
     if (identity.phase === 'checking') return
 
     getUserProfile()
-      .then((profile: import('@/types').UserProfileAggregated | null) => {
+      .then((profile: import('@/types/profile').UserProfileAggregated | null) => {
         // 资料不完整
         if (!profile?.realname?.real_name) {
           Taro.showModal({

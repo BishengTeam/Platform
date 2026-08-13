@@ -1,0 +1,12 @@
+@use '../../styles/variables' as *;
+.page { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: $color-bg; }
+.body { flex: 1; padding: $spacing-md $spacing-lg; box-sizing: border-box; }
+.state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
+.card { margin-bottom: $spacing-md; padding: $spacing-md; background: $color-white; border-radius: $radius-md; }
+.header { display: flex; justify-content: space-between; }
+.status { color: $color-primary; font-weight: 700; }
+.score { color: $color-price; font-size: $font-lg; font-weight: 700; }
+.detail, .hint { display: block; margin-top: $spacing-sm; font-size: $font-sm; }
+.detail { color: $color-text-secondary; }
+.hint { color: $color-text-tertiary; }
+.pager { display: flex; align-items: center; justify-content: space-between; padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom}); }

@@ -16,12 +16,13 @@ export interface QuizBottomItem {
 export const QUIZ_GRID: QuizGridItem[] = [
   { label: STRINGS.QUIZ_SECTION_PRACTICE, icon: '📝', mode: 'practice' },
   { label: STRINGS.QUIZ_MOCK_EXAM, icon: '📋', mode: 'mock' },
-  { label: STRINGS.QUIZ_CHALLENGE, icon: '⚡', mode: 'challenge' },
-  { label: STRINGS.QUIZ_ASSESSMENT, icon: '🎯', mode: 'assessment' },
+  { label: '练习历史', icon: '📚', mode: 'history' },
+  { label: '个人统计', icon: '📊', mode: 'stats' },
 ]
 
 export const QUIZ_BOTTOM: QuizBottomItem[] = [
   { label: STRINGS.QUIZ_WRONG_BOOK_TITLE, icon: '📕', route: ROUTES.QUIZ_WRONG_BOOK },
   { label: STRINGS.QUIZ_COLLECTIONS_TITLE, icon: '⭐', route: ROUTES.QUIZ_COLLECTIONS },
   { label: STRINGS.QUIZ_CHECKIN_TITLE, icon: '📅', route: ROUTES.QUIZ_CHECKIN },
+  { label: '考试历史', icon: '🧾', route: ROUTES.QUIZ_EXAM_HISTORY },
 ]

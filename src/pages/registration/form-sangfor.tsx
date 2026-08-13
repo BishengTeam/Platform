@@ -131,7 +131,7 @@ export default function SangforFormPage() {
         Taro.showToast({ title: '请填写完整信息', icon: 'none' })
         return
       }
-      const ok = await identity.submit(identityName.trim(), identityIdCard.trim())
+      const ok = await identity.submit('student', identityName.trim(), identityIdCard.trim())
       if (!ok) {
         Taro.showToast({ title: STRINGS.IDENTITY_CHECK_FAILED, icon: 'none' })
       }

@@ -14,6 +14,30 @@
   justify-content: space-between;
   padding: $spacing-sm $spacing-lg;
 }
+.abandonLink { color: $color-price; font-size: $font-sm; }
+.saveState { color: $color-success; font-size: $font-sm; }
+.pathText, .noResultHint, .hiddenNotice { display: block; color: $color-text-tertiary; font-size: $font-sm; }
+.pathText { margin-bottom: $spacing-xs; }
+.noResultHint { margin-top: $spacing-md; }
+.setupBody { display: flex; flex-direction: column; gap: $spacing-lg; padding: $spacing-xl $spacing-lg; }
+.setupTitle { color: $color-text; font-size: $font-xl; font-weight: 700; }
+.setupHint { color: $color-text-tertiary; font-size: $font-sm; line-height: 1.5; }
+.selector { display: flex; justify-content: space-between; padding: $spacing-md; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
+.countGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: $spacing-sm; }
+.countItem { padding: $spacing-lg; text-align: center; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
+.countItemActive { color: $color-primary; background: $color-blue-tint; border-color: $color-primary; font-weight: 700; }
+.errorText { padding: $spacing-sm; color: $color-price; background: $color-red-tint; border-radius: $radius-sm; }
+.questionMap { display: grid; grid-template-columns: repeat(5, 1fr); gap: $spacing-sm; padding: $spacing-md; }
+.questionDot { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; color: $color-text-secondary; background: $color-white; border: 1px solid $color-border; border-radius: 50%; font-size: $font-sm; }
+.questionDotAnswered { color: $color-success; background: #F6FFED; border-color: #B7EB8F; }
+.questionDotCurrent { color: $color-white; background: $color-primary; border-color: $color-primary; }
+.resultQuestion { margin: 0 $spacing-md $spacing-md; padding: $spacing-md; background: $color-white; border-radius: $radius-md; }
+.correct { display: block; color: $color-success; font-weight: 600; }
+.wrong { display: block; color: $color-price; font-weight: 600; }
+.resultOptions { display: flex; flex-direction: column; gap: 4px; margin-top: $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
+.answerLine { display: block; margin-top: $spacing-sm; color: $color-primary; font-size: $font-sm; }
+.explanation { display: block; margin-top: $spacing-sm; padding: $spacing-sm; color: $color-text-secondary; background: $color-bg-secondary; border-radius: $radius-sm; font-size: $font-sm; }
+.resultActions { display: flex; flex-direction: column; gap: $spacing-sm; padding: $spacing-md calc(#{$spacing-md} + #{$safe-bottom}); }
 
 .timer {
   display: flex;

@@ -7,7 +7,7 @@ import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { deleteAccount } from '@/services/dataService'
-import { removeToken } from '@/utils/request'
+import { clearAuthTokens } from '@/utils/request'
 import styles from './deactivate.module.scss'
 
 const CONDITIONS = [
@@ -35,7 +35,7 @@ export default function DeactivatePage() {
     setDeleting(true)
     try {
       await deleteAccount()
-      removeToken()
+      clearAuthTokens()
       Taro.showToast({ title: STRINGS.MINE_DEACTIVATE_SUCCESS, icon: 'success' })
       setTimeout(() => {
         Taro.reLaunch({ url: `/${ROUTES.AUTH}` })

@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react'
-import { isLoggedIn as checkIsLoggedIn } from '@/utils/storage'
+import { restoreAuthSession } from '@/utils/request'
 
 export function useAuth() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isChecked, setIsChecked] = useState(false)
 
   useEffect(() => {
-    const loggedIn = checkIsLoggedIn()
-    setIsLoggedIn(loggedIn)
-    setIsChecked(true)
+    let mounted = true
+    restoreAuthSession()
+      .catch(() => false)
+      .then(loggedIn => {
+        if (!mounted) return
+        setIsLoggedIn(loggedIn)
+        setIsChecked(true)
+      })
+    return () => { mounted = false }
   }, [])
 
   return { isLoggedIn, isChecked }
