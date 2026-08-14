@@ -21,6 +21,7 @@ const MAIN_TABS = [STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
 
 const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
   { label: '模拟考试', icon: 'clipboard', color: '#1677FF', route: ROUTES.QUIZ_MOCK },
+  { label: '练习历史', icon: 'file-text', color: '#722ED1', route: ROUTES.QUIZ_HISTORY },
   { label: '错题', icon: 'book-open', color: '#FF4D4F', route: ROUTES.QUIZ_WRONG_BOOK },
   { label: '收藏', icon: 'star', color: '#FA8C16', route: ROUTES.QUIZ_COLLECTIONS },
 ]
@@ -66,8 +67,24 @@ export default function TrainingPage() {
     }).catch(() => {
       // 无权益时服务端返回空目录；加载失败保持题库区域为空。
     })
-    getQuizStats().then(setQuizStats).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!selectedScope) {
+      setQuizStats(null)
+      return
+    }
+    setQuizStats(null)
+    let active = true
+    getQuizStats({ scope_type: selectedScope.type, scope_id: selectedScope.id })
+      .then(stats => {
+        if (active) setQuizStats(stats)
+      })
+      .catch(() => {
+        if (active) setQuizStats(null)
+      })
+    return () => { active = false }
+  }, [selectedScope?.id, selectedScope?.type])
 
 
   // 从课程数据动态提取分类标签，统一使用品牌蓝/灰配色
@@ -243,13 +260,13 @@ export default function TrainingPage() {
             <Text className={styles.statsValue}>
               {quizStats ? quizStats.practice.answered_questions : '-'}
             </Text>
-            <Text className={styles.statsLabel}>全局已答题目</Text>
+            <Text className={styles.statsLabel}>范围已答题目</Text>
           </View>
           <View className={styles.statsItem}>
             <Text className={styles.statsValue}>
               {quizStats ? `${quizStats.practice.accuracy}%` : '-'}
             </Text>
-            <Text className={styles.statsLabel}>全局首答正确率</Text>
+            <Text className={styles.statsLabel}>范围首答正确率</Text>
           </View>
         </View>
         <View className={styles.statsCta} onClick={() => selectedScope && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}` })}>

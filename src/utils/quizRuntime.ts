@@ -6,17 +6,20 @@ import {
   canonicalAnswer,
   clearStoredAttemptKey,
   clearStoredExamId,
+  clearStoredPendingExamAbandonId,
   clearStoredPracticeAttemptKeys,
   clearStoredPracticeSessionId,
   clearStoredQuizCache,
   createIdempotencyKey,
   formatCountdown,
   getStoredExamId,
+  getStoredPendingExamAbandonId,
   getStoredPracticeSessionId,
   getOrCreateStoredAttemptKey,
   remainingSeconds,
   serverClockOffset,
   setStoredExamId,
+  setStoredPendingExamAbandonId,
   setStoredPracticeSessionId,
   shanghaiDate,
 } from './quizCore.ts'
@@ -78,4 +81,16 @@ export function cacheExamId(examId: number): void {
 
 export function clearCachedExamId(expected?: number): void {
   clearStoredExamId(taroStorage, expected)
+}
+
+export function getPendingExamAbandonId(): number | null {
+  return getStoredPendingExamAbandonId(taroStorage)
+}
+
+export function cachePendingExamAbandonId(examId: number): void {
+  setStoredPendingExamAbandonId(taroStorage, examId)
+}
+
+export function clearPendingExamAbandonId(expected?: number): void {
+  clearStoredPendingExamAbandonId(taroStorage, expected)
 }

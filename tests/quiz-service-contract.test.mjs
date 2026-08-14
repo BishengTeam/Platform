@@ -46,3 +46,9 @@ test('quiz service implements exactly the frozen 28 user operations', async () =
   assert.equal(expected.length, 28)
   assert.deepEqual(actual, expected)
 })
+
+test('stats request reuses the frozen route with an optional exact scope', async () => {
+  const source = await readFile(SERVICE_FILE, 'utf8')
+  assert.match(source, /getQuizStats\(input\?: \{[\s\S]*scope_type\?: QuizPracticeScopeType[\s\S]*scope_id\?: number/)
+  assert.match(source, /get<unknown>\('\/api\/quiz\/stats', input \? queryData\(input\) : undefined\)/)
+})

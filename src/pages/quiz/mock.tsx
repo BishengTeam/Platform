@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ScrollView, Text, View } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import Taro, { useLoad, useUnload } from '@tarojs/taro'
+import { Popup } from '@nutui/nutui-react-taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
-import type { QuizAnswer, QuizExamDetail, QuizExamInProgress, QuizExamQuestionState, QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType } from '@/contracts/quiz'
+import type { QuizAnswer, QuizExamDetail, QuizExamInProgress, QuizExamQuestionState, QuizLibraryCatalogDetail, QuizPracticeScopeType } from '@/contracts/quiz'
 import {
   abandonQuizExam,
   createQuizExam,
@@ -20,9 +21,12 @@ import {
 import { ApiError } from '@/utils/request'
 import {
   cacheExamId,
+  cachePendingExamAbandonId,
   clearCachedExamId,
+  clearPendingExamAbandonId,
   formatCountdown,
   getCachedExamId,
+  getPendingExamAbandonId,
   remainingSeconds,
   serverClockOffset,
 } from '@/utils/quizRuntime'
@@ -58,8 +62,7 @@ function isNotFound(error: unknown): boolean {
 
 export default function QuizMockPage() {
   const [exam, setExam] = useState<QuizExamDetail | null>(null)
-  const [libraries, setLibraries] = useState<QuizLibraryCatalogItem[]>([])
-  const [library, setLibrary] = useState<QuizLibraryCatalogDetail | null>(null)
+  const [libraryDetails, setLibraryDetails] = useState<QuizLibraryCatalogDetail[]>([])
   const [scope, setScope] = useState<ExamScope | null>(null)
   const [scopePickerVisible, setScopePickerVisible] = useState(false)
   const [questionCount, setQuestionCount] = useState<number>(20)
@@ -71,14 +74,23 @@ export default function QuizMockPage() {
   const [remaining, setRemaining] = useState(0)
   const [loadError, setLoadError] = useState('')
   const [terminalAction, setTerminalAction] = useState<TerminalActionFallback | null>(null)
+  const [drawerVisible, setDrawerVisible] = useState(false)
   const clockOffsetRef = useRef(0)
   const timeoutRefreshRef = useRef(false)
+  const activeExamIdRef = useRef<number | null>(null)
+  const allowUnloadRef = useRef(false)
 
   const applyExam = (next: QuizExamDetail) => {
     setExam(next)
     setTerminalAction(null)
-    if (next.status === 'in_progress') cacheExamId(next.id)
-    else clearCachedExamId(next.id)
+    setDrawerVisible(false)
+    if (next.status === 'in_progress') {
+      cacheExamId(next.id)
+      activeExamIdRef.current = next.id
+    } else {
+      clearCachedExamId(next.id)
+      activeExamIdRef.current = null
+    }
     if (next.status === 'in_progress') {
       const receivedAt = Date.now()
       clockOffsetRef.current = serverClockOffset(next.server_time, receivedAt)
@@ -97,53 +109,71 @@ export default function QuizMockPage() {
     return next
   }
 
+  const retryPendingAbandon = async (): Promise<boolean> => {
+    const pendingId = getPendingExamAbandonId()
+    if (!pendingId) return true
+    try {
+      await abandonQuizExam(pendingId)
+      clearPendingExamAbandonId(pendingId)
+      clearCachedExamId(pendingId)
+      return true
+    } catch (error) {
+      if (isNotFound(error)) {
+        clearPendingExamAbandonId(pendingId)
+        clearCachedExamId(pendingId)
+        return true
+      }
+      setLoadError(`上次退出的考试仍在放弃重试中：${messageOf(error)}`)
+      return false
+    }
+  }
+
   useLoad(options => {
     const explicitExamId = Number(options?.examId)
     const explicitScopeId = Number(options?.scopeId)
     const explicitScopeType = options?.scopeType as QuizPracticeScopeType | undefined
-    const cachedExamId = getCachedExamId()
-    const librariesRequest = listQuizLibraries().catch(error => {
-      setLoadError(`题库加载失败：${messageOf(error)}`)
-      return []
-    })
-    Promise.all([
-      librariesRequest,
-      Number.isInteger(explicitExamId) && explicitExamId > 0
-        ? getQuizExam(explicitExamId)
-        : cachedExamId
-          ? getQuizExam(cachedExamId).catch(error => {
-            if (!isNotFound(error)) throw error
-            clearCachedExamId(cachedExamId)
-            return getCurrentQuizExam()
-          })
-          : getCurrentQuizExam(),
-    ])
-      .then(async ([items, current]) => {
-        setLibraries(items)
-        const first = items[0]
+    const initialize = async () => {
+      try {
+        const items = await listQuizLibraries()
+        const details = await Promise.all(items.map(item => getQuizLibrary(item.id)))
+        setLibraryDetails(details)
+        const first = details[0]
         if (first) {
-          const detail = await getQuizLibrary(first.id)
-          setLibrary(detail)
           if (explicitScopeType && Number.isInteger(explicitScopeId) && explicitScopeId > 0) {
             const explicitName = explicitScopeType === 'library'
-              ? detail.name
+              ? details.find(item => item.id === explicitScopeId)?.name
               : explicitScopeType === 'module'
-                ? detail.modules.find(item => item.id === explicitScopeId)?.name
-                : detail.modules.flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.name
+                ? details.flatMap(item => item.modules).find(item => item.id === explicitScopeId)?.name
+                : details.flatMap(item => item.modules).flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.name
             const explicitCount = explicitScopeType === 'library'
-              ? detail.question_count
+              ? details.find(item => item.id === explicitScopeId)?.question_count
               : explicitScopeType === 'module'
-                ? detail.modules.find(item => item.id === explicitScopeId)?.question_count
-                : detail.modules.flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.question_count
+                ? details.flatMap(item => item.modules).find(item => item.id === explicitScopeId)?.question_count
+                : details.flatMap(item => item.modules).flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.question_count
             setScope({ type: explicitScopeType, id: explicitScopeId, name: explicitName ?? '已选范围', questionCount: explicitCount ?? 0 })
           } else {
-            setScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
+            setScope({ type: 'library', id: first.id, name: first.name, questionCount: first.question_count })
           }
         }
+        if (!await retryPendingAbandon()) return
+        const cachedExamId = getCachedExamId()
+        const current = Number.isInteger(explicitExamId) && explicitExamId > 0
+          ? await getQuizExam(explicitExamId)
+          : cachedExamId
+            ? await getQuizExam(cachedExamId).catch(error => {
+              if (!isNotFound(error)) throw error
+              clearCachedExamId(cachedExamId)
+              return getCurrentQuizExam()
+            })
+            : await getCurrentQuizExam()
         if (current) applyExam(current)
-      })
-      .catch(error => setLoadError(messageOf(error)))
-      .finally(() => setLoading(false))
+      } catch (error) {
+        setLoadError(messageOf(error))
+      } finally {
+        setLoading(false)
+      }
+    }
+    void initialize()
   })
 
   useEffect(() => {
@@ -163,11 +193,41 @@ export default function QuizMockPage() {
     return () => clearInterval(timer)
   }, [exam?.id, exam?.status, exam?.deadline_at])
 
+  useEffect(() => {
+    if (!exam || exam.status !== 'in_progress') {
+      try { Taro.disableAlertBeforeUnload() } catch { /* unsupported platform */ }
+      return undefined
+    }
+    allowUnloadRef.current = false
+    activeExamIdRef.current = exam.id
+    try {
+      Taro.enableAlertBeforeUnload({
+        message: '返回将放弃本场考试，已保存答案保留，但不生成成绩且计时停止。',
+      })
+    } catch {
+      // Some non-WeChat targets do not implement the native unload alert.
+    }
+    return () => {
+      try { Taro.disableAlertBeforeUnload() } catch { /* unsupported platform */ }
+    }
+  }, [exam?.id, exam?.status])
+
+  useUnload(() => {
+    const examId = activeExamIdRef.current
+    if (!examId || allowUnloadRef.current) return
+    cachePendingExamAbandonId(examId)
+    clearCachedExamId(examId)
+    void abandonQuizExam(examId)
+      .then(() => clearPendingExamAbandonId(examId))
+      .catch(() => undefined)
+  })
+
   const create = async () => {
     if (!scope || creating) return
     setCreating(true)
     setLoadError('')
     try {
+      if (!await retryPendingAbandon()) return
       const created = await createQuizExam({ scope_type: scope.type, scope_id: scope.id, question_count: questionCount })
       applyExam(created)
     } catch (error) {
@@ -178,14 +238,13 @@ export default function QuizMockPage() {
   }
 
   const scopeTree = useMemo<ExamScopePickerNode[]>(() => {
-    if (!library) return []
-    return [{
-      type: 'library',
-      id: library.id,
-      name: library.name,
-      questionCount: library.question_count,
-      question_count: library.question_count,
-      children: library.modules.map(module => ({
+    return libraryDetails.map(detail => ({
+      type: 'library' as const,
+      id: detail.id,
+      name: detail.name,
+      questionCount: detail.question_count,
+      question_count: detail.question_count,
+      children: detail.modules.map(module => ({
         type: 'module',
         id: module.id,
         name: module.name,
@@ -200,11 +259,11 @@ export default function QuizMockPage() {
           children: [],
         })),
       })),
-    }]
-  }, [library])
+    }))
+  }, [libraryDetails])
 
   const chooseScope = () => {
-    if (!library) return
+    if (libraryDetails.length === 0) return
     setScopePickerVisible(true)
   }
 
@@ -216,21 +275,6 @@ export default function QuizMockPage() {
       questionCount: selected.questionCount,
     })
     setScopePickerVisible(false)
-  }
-
-  const chooseLibrary = () => {
-    if (libraries.length === 0) return
-    Taro.showActionSheet({
-      itemList: libraries.map(item => `${item.name}（${item.question_count}题）`),
-      success: result => {
-        const selected = libraries[result.tapIndex]
-        if (!selected) return
-        getQuizLibrary(selected.id).then(detail => {
-          setLibrary(detail)
-          setScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
-        }).catch(error => setLoadError(messageOf(error)))
-      },
-    })
   }
 
   const selectAnswer = async (question: QuizExamQuestionState, label: string) => {
@@ -290,6 +334,7 @@ export default function QuizMockPage() {
 
   const submit = () => {
     if (!exam || exam.status !== 'in_progress' || actionBusy) return
+    setDrawerVisible(false)
     const unanswered = exam.questions.filter(question => question.user_answer === null).length
     Taro.showModal({
       title: '确认交卷',
@@ -345,6 +390,35 @@ export default function QuizMockPage() {
     })
   }
 
+  const handleExamBack = async () => {
+    if (!exam || exam.status !== 'in_progress' || actionBusy) return
+    const choice = await Taro.showModal({
+      title: '放弃并返回？',
+      content: '返回将放弃本场考试，已保存答案保留，但不生成成绩且计时停止。',
+      confirmText: '确认放弃',
+      cancelText: '继续考试',
+    })
+    if (!choice.confirm) return
+    setActionBusy(true)
+    try {
+      const action = await abandonQuizExam(exam.id)
+      clearCachedExamId(exam.id)
+      clearPendingExamAbandonId(exam.id)
+      activeExamIdRef.current = null
+      allowUnloadRef.current = true
+      try { Taro.disableAlertBeforeUnload() } catch { /* unsupported platform */ }
+      if (action.status === 'abandoned' || action.status === 'completed' || action.status === 'timed_out') {
+        const pages = Taro.getCurrentPages()
+        if (pages.length > 1) await Taro.navigateBack()
+        else await Taro.switchTab({ url: '/pages/training/index' })
+      }
+    } catch (error) {
+      Taro.showToast({ title: `放弃考试失败：${messageOf(error)}`, icon: 'none', duration: 2500 })
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
   const availableCounts = QUESTION_COUNTS.filter(count => count <= (scope?.questionCount ?? 0))
 
   useEffect(() => {
@@ -398,8 +472,7 @@ export default function QuizMockPage() {
           <View className={styles.setupBody}>
             <Text className={styles.setupTitle}>创建 60 分钟模拟考试</Text>
             <Text className={styles.setupHint}>同一时间只能有一场进行中考试；题目顺序由服务端随机固定。</Text>
-            <View className={styles.selector} onClick={chooseLibrary}><Text>{library?.name ?? '请选择题库'}</Text><Text>›</Text></View>
-            <View className={styles.selector} onClick={chooseScope}><Text>{scope ? `${scope.name}（可用 ${scope.questionCount} 题）` : '请选择考试范围'}</Text><Text>›</Text></View>
+            <View className={styles.selector} onClick={chooseScope}><Text>{scope ? `${scope.name}（可用 ${scope.questionCount} 题）` : '请选择题库、模块或知识点'}</Text><Text>›</Text></View>
             {availableCounts.length > 0 ? (
               <View className={styles.countGrid}>{availableCounts.map(count => <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}><Text>{count} 题</Text></View>)}</View>
             ) : (
@@ -414,6 +487,7 @@ export default function QuizMockPage() {
           visible={scopePickerVisible}
           tree={scopeTree}
           selectedId={scope?.id ?? null}
+          selectedType={scope?.type ?? null}
           onSelect={selectScope}
           onClose={() => setScopePickerVisible(false)}
           title='选择考试范围'
@@ -462,13 +536,11 @@ export default function QuizMockPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title='模拟考试' shouldShowBack />
+        <PageHeader title='模拟考试' shouldShowBack onBack={() => void handleExamBack()} />
         <View className={styles.topBar}>
           <View className={styles.timer}><Text className={styles.timerIcon}>⏱</Text><Text className={styles.timerText}>{formatCountdown(remaining)}</Text></View>
-          <Text className={styles.progressText}>{answeredCount} / {inProgress.question_count} 已答</Text>
           <Text className={styles.abandonLink} onClick={abandon}>放弃</Text>
         </View>
-        <View className={styles.progressBar}><View className={styles.progressFill} style={{ width: `${(answeredCount / inProgress.question_count) * 100}%` }} /></View>
         <ScrollView className={styles.body} scrollY>
           <View className={styles.questionCard}>
             <View className={styles.questionHeader}><Text className={styles.questionIndex}>{currentIndex + 1}. {quizTypeLabel(currentQuestion.question_type)}</Text><Text className={styles.saveState}>{savingQuestionId === currentQuestion.exam_question_id ? '保存中…' : currentQuestion.answer_lock_version ? '已保存' : '未作答'}</Text></View>
@@ -480,9 +552,38 @@ export default function QuizMockPage() {
             })}</View>
             <Text className={styles.noResultHint}>考试进行中不展示答案、正误或解析；选择变化会自动保存。</Text>
           </View>
-          <View className={styles.questionMap}>{inProgress.questions.map((question, index) => <View key={question.exam_question_id} className={`${styles.questionDot} ${question.user_answer !== null ? styles.questionDotAnswered : ''} ${index === currentIndex ? styles.questionDotCurrent : ''}`} onClick={() => setCurrentIndex(index)}><Text>{index + 1}</Text></View>)}</View>
           <View className={styles.navRow}><Button variant='secondary' disabled={currentIndex === 0} onClick={() => setCurrentIndex(index => Math.max(0, index - 1))}>上一题</Button>{currentIndex < inProgress.question_count - 1 ? <Button onClick={() => setCurrentIndex(index => Math.min(inProgress.question_count - 1, index + 1))}>下一题</Button> : <Button variant='gradient' loading={actionBusy} disabled={savingQuestionId !== null || remaining <= 0} onClick={submit}>交卷</Button>}</View>
         </ScrollView>
+        <View className={styles.bottomBar}>
+          <View className={styles.barStat}>
+            <Text className={styles.barStatLabel}>未答</Text>
+            <Text className={styles.barStatNum}>{inProgress.question_count - answeredCount}</Text>
+          </View>
+          <View className={styles.barDone} onClick={() => setDrawerVisible(true)}>
+            <Text className={styles.barDoneCount}>{answeredCount}/{inProgress.question_count}</Text>
+            <Text className={styles.barDoneLabel}>已做题</Text>
+          </View>
+        </View>
+        <Popup visible={drawerVisible} position='bottom' round closeOnOverlayClick onClose={() => setDrawerVisible(false)}>
+          <View className={styles.drawer}>
+            <View className={styles.drawerHeader}>
+              <Text className={styles.drawerTitle}>答题卡</Text>
+              <Text className={styles.submitLink} onClick={submit}>交卷</Text>
+            </View>
+            <ScrollView className={styles.drawerBody} scrollY>
+              <View className={styles.drawerGrid}>
+                {inProgress.questions.map((question, index) => {
+                  const dotClass = `${styles.drawerDot}${question.user_answer !== null ? ` ${styles.drawerDotAnswered}` : ''}${index === currentIndex ? ` ${styles.drawerDotCurrent}` : ''}`
+                  return (
+                    <View key={question.exam_question_id} className={dotClass} onClick={() => { setCurrentIndex(index); setDrawerVisible(false) }}>
+                      <Text>{index + 1}</Text>
+                    </View>
+                  )
+                })}
+              </View>
+            </ScrollView>
+          </View>
+        </Popup>
       </View>
     </AuthGuard>
   )

@@ -24,8 +24,8 @@
   padding: $spacing-lg;
 }
 
-.resultScroll { flex: 1; overflow-y: auto; padding: $spacing-md $spacing-lg calc(#{$spacing-xl} + #{$safe-bottom}); }
-.resultList { display: flex; flex-direction: column; gap: $spacing-md; margin-bottom: $spacing-lg; }
+.resultScroll { flex: 1; overflow-y: auto; padding: $spacing-md 0 calc(#{$spacing-xl} + #{$safe-bottom}); }
+.resultList { display: flex; flex-direction: column; gap: $spacing-md; margin: 0 $spacing-lg $spacing-lg; }
 .resultQuestionCard { padding: $spacing-md; background: $color-white; border-radius: $radius-md; box-shadow: $shadow-sm; }
 .resultCorrect, .resultWrong, .resultUnanswered { display: block; margin-bottom: $spacing-sm; font-weight: 700; }
 .resultCorrect { color: $color-success; }
@@ -40,8 +40,8 @@
   border-radius: $radius-lg;
   padding: $spacing-xl;
   text-align: center;
-  width: 100%;
-  margin-bottom: $spacing-xl;
+  width: auto;
+  margin: 0 $spacing-lg $spacing-xl;
 }
 
 .resultScore {
@@ -60,7 +60,7 @@
 }
 
 .resultHint { display: block; margin-top: $spacing-md; color: $color-text-tertiary; font-size: $font-sm; }
-.resultActions { width: 100%; display: flex; flex-direction: column; gap: $spacing-sm; }
+.resultActions { width: auto; display: flex; flex-direction: column; gap: $spacing-sm; margin: 0 $spacing-lg; }
 .setupBody { flex: 1; display: flex; flex-direction: column; gap: $spacing-lg; padding: $spacing-xl $spacing-lg; }
 .setupTitle { color: $color-text; font-size: $font-xl; font-weight: 700; }
 .setupHint, .shortageHint { display: block; color: $color-text-tertiary; font-size: $font-sm; }
@@ -68,7 +68,6 @@
 .countGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: $spacing-sm; }
 .countItem { padding: $spacing-lg; text-align: center; color: $color-text-secondary; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
 .countItemActive { color: $color-primary; background: $color-blue-tint; border-color: $color-primary; font-weight: 700; }
-.sessionBar { display: flex; justify-content: space-between; padding: 0 $spacing-md $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
 .abandonLink { color: $color-price; font-size: $font-sm; }
 .submitLink { color: $color-primary; font-size: $font-sm; font-weight: 600; }
 .shortageHint { padding: 0 $spacing-md $spacing-sm; color: $color-warning; }
@@ -80,21 +79,6 @@
   width: 100%;
   display: flex;
   justify-content: center;
-}
-
-.progressBar {
-  height: 6px;
-  background: $color-border;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: $spacing-xs;
-}
-
-.progressFill {
-  height: 100%;
-  background: $color-primary;
-  border-radius: 3px;
-  transition: width 0.3s;
 }
 
 .progressText {

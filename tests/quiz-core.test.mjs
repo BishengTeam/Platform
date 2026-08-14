@@ -6,17 +6,20 @@ import {
   canonicalAnswer,
   clearStoredAttemptKey,
   clearStoredExamId,
+  clearStoredPendingExamAbandonId,
   clearStoredPracticeAttemptKeys,
   clearStoredPracticeSessionId,
   clearStoredQuizCache,
   createIdempotencyKey,
   formatCountdown,
   getStoredExamId,
+  getStoredPendingExamAbandonId,
   getStoredPracticeSessionId,
   getOrCreateStoredAttemptKey,
   remainingSeconds,
   serverClockOffset,
   setStoredExamId,
+  setStoredPendingExamAbandonId,
   setStoredPracticeSessionId,
   shanghaiDate,
 } from '../src/utils/quizCore.ts'
@@ -88,6 +91,17 @@ test('activity IDs are validated and conditionally cleared', () => {
   assert.equal(getStoredPracticeSessionId(storage), null)
   assert.equal(getStoredExamId(storage), null)
   assert.throws(() => setStoredExamId(storage, 0), /正整数/)
+})
+
+test('pending exam abandonment survives unload and clears conditionally', () => {
+  const storage = memoryStorage()
+  assert.equal(getStoredPendingExamAbandonId(storage), null)
+  setStoredPendingExamAbandonId(storage, 41)
+  assert.equal(getStoredPendingExamAbandonId(storage), 41)
+  clearStoredPendingExamAbandonId(storage, 99)
+  assert.equal(getStoredPendingExamAbandonId(storage), 41)
+  clearStoredPendingExamAbandonId(storage, 41)
+  assert.equal(getStoredPendingExamAbandonId(storage), null)
 })
 
 test('keys satisfy the backend 8 to 64 character contract', () => {

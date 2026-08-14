@@ -200,8 +200,11 @@ export async function getQuizCheckinCalendar(dateFrom: string, dateTo: string): 
   return parseCheckinCalendar(response.data)
 }
 
-export async function getQuizStats(): Promise<QuizStats> {
-  const response = await get<unknown>('/api/quiz/stats')
+export async function getQuizStats(input?: {
+  scope_type?: QuizPracticeScopeType
+  scope_id?: number
+}): Promise<QuizStats> {
+  const response = await get<unknown>('/api/quiz/stats', input ? queryData(input) : undefined)
   return parseQuizStats(response.data)
 }
 

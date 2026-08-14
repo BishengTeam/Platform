@@ -4,6 +4,7 @@ import styles from './index.module.scss'
 
 export interface QuizPickerNode {
   id: number
+  type?: string
   name: string
   question_count: number
   children: QuizPickerNode[]
@@ -13,6 +14,7 @@ interface QuizCategoryPickerProps<T extends QuizPickerNode> {
   visible: boolean
   tree: T[]
   selectedId: number | null
+  selectedType?: string | null
   onSelect: (node: T) => void
   onClose: () => void
   title?: string
@@ -26,6 +28,7 @@ export function QuizCategoryPicker<T extends QuizPickerNode>({
   visible,
   tree,
   selectedId,
+  selectedType,
   onSelect,
   onClose,
   title = '选择题库',
@@ -33,11 +36,11 @@ export function QuizCategoryPicker<T extends QuizPickerNode>({
   if (!visible) return null
 
   const renderNodes = (nodes: T[], depth = 1): ReactNode[] => nodes.map(node => {
-    const isSelected = node.id === selectedId
+    const isSelected = node.id === selectedId && (selectedType == null || node.type === selectedType)
     const hasChildren = node.children.length > 0
     const indent = INDENT_BASE + Math.max(0, depth - 1) * INDENT_STEP
     return (
-      <View key={node.id}>
+      <View key={`${node.type ?? 'category'}:${node.id}`}>
         <View
           className={`${styles.item} ${isSelected ? styles.itemSelected : ''}`}
           style={{ paddingLeft: `${indent}px` }}

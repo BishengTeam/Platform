@@ -9,11 +9,13 @@ export interface QuizKeyValueStorage {
 
 const PRACTICE_SESSION_ID_KEY = 'quiz_active_practice_id'
 const EXAM_ID_KEY = 'quiz_active_exam_id'
+const PENDING_EXAM_ABANDON_ID_KEY = 'quiz_pending_exam_abandon_id'
 
 export const QUIZ_CACHE_PREFIXES = [
   'quiz_attempt_pending:',
   PRACTICE_SESSION_ID_KEY,
   EXAM_ID_KEY,
+  PENDING_EXAM_ABANDON_ID_KEY,
 ] as const
 
 const ATTEMPT_PREFIX = QUIZ_CACHE_PREFIXES[0]
@@ -113,6 +115,18 @@ export function setStoredExamId(storage: QuizKeyValueStorage, examId: number): v
 
 export function clearStoredExamId(storage: QuizKeyValueStorage, expected?: number): void {
   clearStoredInteger(storage, EXAM_ID_KEY, expected)
+}
+
+export function getStoredPendingExamAbandonId(storage: QuizKeyValueStorage): number | null {
+  return storedPositiveInteger(storage, PENDING_EXAM_ABANDON_ID_KEY)
+}
+
+export function setStoredPendingExamAbandonId(storage: QuizKeyValueStorage, examId: number): void {
+  setStoredPositiveInteger(storage, PENDING_EXAM_ABANDON_ID_KEY, examId)
+}
+
+export function clearStoredPendingExamAbandonId(storage: QuizKeyValueStorage, expected?: number): void {
+  clearStoredInteger(storage, PENDING_EXAM_ABANDON_ID_KEY, expected)
 }
 
 export function serverClockOffset(serverTime: string, receivedAt = Date.now()): number {

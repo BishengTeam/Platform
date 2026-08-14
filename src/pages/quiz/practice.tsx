@@ -370,14 +370,21 @@ export default function QuizPracticePage() {
     }
   }
 
-  const startNextSession = () => {
+  const openPracticeHistory = async () => {
+    try {
+      await Taro.navigateTo({ url: '/pages/quiz/history' })
+    } catch (error) {
+      Taro.showToast({ title: `打开练习历史失败：${errorMessage(error)}`, icon: 'none' })
+    }
+  }
+
+  const startNextSession = async () => {
     if (!session || starting) return
-    setSession(null)
-    setCurrentSessionQuestionId(null)
+    setLoadError('')
     if (session.scope_type && session.scope_id && (session.mode === 'full' || session.mode === 'wrong_only')) {
-      void prepareV2Session(session.scope_type, session.scope_id, session.mode)
+      await prepareV2Session(session.scope_type, session.scope_id, session.mode)
     } else {
-      void startLegacySession(session.mode === 'wrong' ? 'wrong' : 'normal', session.category_id, session.requested_count)
+      await startLegacySession(session.mode === 'wrong' ? 'wrong' : 'normal', session.category_id, session.requested_count)
     }
   }
 
@@ -457,9 +464,10 @@ export default function QuizPracticePage() {
                 ))}
               </View>
             )}
+            {loadError && <Text className={styles.errorText}>{loadError}</Text>}
             <View className={styles.resultActions}>
-              <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: '/pages/quiz/history' })}>查看练习历史</Button>
-              {session.status !== 'terminated' && <Button variant='gradient' size='lg' loading={starting} onClick={startNextSession}>开始新一轮</Button>}
+              <Button variant='secondary' size='lg' onClick={() => void openPracticeHistory()}>查看练习历史</Button>
+              {session.status !== 'terminated' && <Button variant='gradient' size='lg' loading={starting} onClick={() => void startNextSession()}>开始新一轮</Button>}
             </View>
           </ScrollView>
         </View>
@@ -476,8 +484,6 @@ export default function QuizPracticePage() {
       <View className={styles.page}>
         <PageHeader title={sessionTitle(session, requestedMode)} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          <View className={styles.sessionBar}><Text>{answeredCount} / {session.actual_count} 已作答</Text><Text className={styles.submitLink} onClick={submit}>交卷</Text></View>
-          <View className={styles.progressBar}><View className={styles.progressFill} style={{ width: `${(answeredCount / session.actual_count) * 100}%` }} /></View>
           <Text className={styles.progressText}>第 {currentQuestion.position} / {session.actual_count} 题</Text>
 
           <View className={styles.questionCard}>

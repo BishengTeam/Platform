@@ -15,7 +15,7 @@ const PAGE_SIZE = 20
 export default function QuizCollectionsPage() {
   const [page, setPage] = useState<PageData<QuizCollectionItem> | null>(null)
   const [loading, setLoading] = useState(true)
-  const [busyQuestion, setBusyQuestion] = useState<number | null>(null)
+  const [busyQuestions, setBusyQuestions] = useState<Set<number>>(new Set())
 
   const load = (pageNumber = 1) => {
     setLoading(true)
@@ -28,16 +28,22 @@ export default function QuizCollectionsPage() {
   useDidShow(() => load())
 
   const remove = async (questionId: number) => {
-    if (busyQuestion !== null) return
-    setBusyQuestion(questionId)
+    if (busyQuestions.has(questionId)) return
+    setBusyQuestions(previous => new Set(previous).add(questionId))
     try {
       await removeQuizCollection(questionId)
-      if (page) setPage({ ...page, items: page.items.filter(item => item.question_id !== questionId), total: Math.max(0, page.total - 1) })
+      setPage(current => current
+        ? { ...current, items: current.items.filter(item => item.question_id !== questionId), total: Math.max(0, current.total - 1) }
+        : current)
       Taro.showToast({ title: '已取消收藏', icon: 'none' })
     } catch {
       Taro.showToast({ title: '取消收藏失败，请重试', icon: 'none' })
     } finally {
-      setBusyQuestion(null)
+      setBusyQuestions(previous => {
+        const next = new Set(previous)
+        next.delete(questionId)
+        return next
+      })
     }
   }
 
@@ -57,7 +63,7 @@ export default function QuizCollectionsPage() {
               </View>
               <Text className={styles.stem}>{item.question.question_text}</Text>
               <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
-              <View className={styles.actions}><Button size='sm' variant='secondary' disabled={busyQuestion !== null} loading={busyQuestion === item.question_id} onClick={() => remove(item.question_id)}>取消收藏</Button></View>
+              <View className={styles.actions}><Button size='sm' variant='secondary' disabled={busyQuestions.has(item.question_id)} loading={busyQuestions.has(item.question_id)} onClick={() => void remove(item.question_id)}>取消收藏</Button></View>
             </View>
           ))}
           {page && page.total > page.page_size && (

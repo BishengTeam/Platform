@@ -27,10 +27,6 @@
 .countItem { padding: $spacing-lg; text-align: center; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
 .countItemActive { color: $color-primary; background: $color-blue-tint; border-color: $color-primary; font-weight: 700; }
 .errorText { padding: $spacing-sm; color: $color-price; background: $color-red-tint; border-radius: $radius-sm; }
-.questionMap { display: grid; grid-template-columns: repeat(5, 1fr); gap: $spacing-sm; padding: $spacing-md; }
-.questionDot { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; color: $color-text-secondary; background: $color-white; border: 1px solid $color-border; border-radius: 50%; font-size: $font-sm; }
-.questionDotAnswered { color: $color-success; background: #F6FFED; border-color: #B7EB8F; }
-.questionDotCurrent { color: $color-white; background: $color-primary; border-color: $color-primary; }
 .resultQuestion { margin: 0 $spacing-md $spacing-md; padding: $spacing-md; background: $color-white; border-radius: $radius-md; }
 .correct { display: block; color: $color-success; font-weight: 600; }
 .wrong { display: block; color: $color-price; font-weight: 600; }
@@ -53,26 +49,6 @@
   font-size: $font-xl;
   font-weight: 700;
   color: $color-price;
-}
-
-.progressText {
-  font-size: $font-sm;
-  color: $color-text-secondary;
-}
-
-.progressBar {
-  height: 4px;
-  background: $color-border;
-  margin: 0;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: $color-primary;
-  border-radius: 2px;
-  transition: width 0.3s;
 }
 
 .body {
@@ -179,6 +155,122 @@
   justify-content: space-between;
   gap: $spacing-md;
   padding: $spacing-md;
+}
+
+.bottomBar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  padding-bottom: calc(#{$spacing-sm} + #{$safe-bottom});
+  background: $color-white;
+  border-top: $border-thin solid $color-border;
+  box-shadow: $shadow-bottom;
+}
+
+.barStat {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+}
+
+.barStatNum {
+  min-width: 40px;
+  color: $color-text;
+  font-size: $font-base;
+  font-weight: 700;
+}
+
+.barStatLabel {
+  color: $color-text-tertiary;
+  font-size: $font-xs;
+}
+
+.barDone {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+  margin-left: auto;
+  padding: $spacing-2xs $spacing-sm;
+  background: $color-blue-tint;
+  border-radius: $radius-full;
+}
+
+.barDoneCount {
+  color: $color-primary;
+  font-size: $font-base;
+  font-weight: 700;
+}
+
+.barDoneLabel {
+  color: $color-primary;
+  font-size: $font-2xs;
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  height: 60vh;
+  overflow: hidden;
+  background: $color-white;
+  border-radius: $radius-lg $radius-lg 0 0;
+}
+
+.drawerHeader {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: $border-thin solid $color-border;
+}
+
+.drawerTitle {
+  color: $color-text;
+  font-size: $font-lg;
+  font-weight: 700;
+}
+
+.submitLink {
+  color: $color-primary;
+  font-size: $font-sm;
+  font-weight: 600;
+}
+
+.drawerBody {
+  flex: 1;
+  overflow: hidden;
+}
+
+.drawerGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg $spacing-lg;
+}
+
+.drawerDot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: 64px;
+  height: 64px;
+  color: $color-text-secondary;
+  font-size: $font-sm;
+  background: $color-bg-secondary;
+  border: 1px solid $color-border;
+  border-radius: 50%;
+}
+
+.drawerDotAnswered {
+  color: $color-white;
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.drawerDotCurrent {
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.3);
 }
 
 .resultBody {
