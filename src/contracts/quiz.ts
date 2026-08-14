@@ -1,5 +1,5 @@
 /**
- * Frozen Platform view of the Backend quiz contract (2026-08-13).
+ * Frozen Platform view of the Backend quiz contract (2026-08-14).
  *
  * `unknown` is deliberately accepted only by the parsers in this file. Quiz
  * pages and services receive fully validated, non-optional DTOs.
@@ -7,7 +7,7 @@
 
 export type QuizAnswer = string | string[]
 export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'judge'
-export type QuizQuestionStatus = 'draft' | 'published' | 'disabled'
+export type QuizQuestionStatus = 'draft' | 'published' | 'disabled' | 'deleted'
 export type QuizPracticeMode = 'normal' | 'wrong' | 'full' | 'wrong_only' | 'legacy_limited'
 export type QuizPracticeStatus = 'in_progress' | 'paused' | 'completed' | 'abandoned' | 'expired' | 'terminated'
 export type QuizPracticeScopeType = 'library' | 'module' | 'knowledge_point'
@@ -107,8 +107,21 @@ export interface QuizPracticeQuestionState extends QuizPublicQuestion {
   position: number
   category_path: QuizCategoryPathItem[]
   answered: boolean
+  user_answer: QuizAnswer | null
+  answer_lock_version: number
+  correct_answer: QuizAnswer | null
+  explanation: string | null
+  is_correct: boolean | null
   attempt_count: number
   latest_result: QuizPracticeAttemptResult | null
+}
+
+export interface QuizPracticeAnswerSaved {
+  session_id: number
+  session_question_id: number
+  user_answer: QuizAnswer
+  lock_version: number
+  saved_at: string
 }
 
 export interface QuizPracticeSession {
@@ -441,7 +454,7 @@ function questionTypeAt(value: unknown, path: string): QuizQuestionType {
 }
 
 function questionStatusAt(value: unknown, path: string): QuizQuestionStatus {
-  return literalAt(value, path, ['draft', 'published', 'disabled'] as const)
+  return literalAt(value, path, ['draft', 'published', 'disabled', 'deleted'] as const)
 }
 
 function categoryPathAt(value: unknown, path: string): QuizCategoryPathItem[] {
@@ -596,7 +609,7 @@ export function parsePracticeAttempt(value: unknown, path = 'data'): QuizPractic
 
 function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuestionState {
   const object = objectAt(value, path)
-  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'session_question_id', 'position', 'category_path', 'answered', 'attempt_count', 'latest_result']
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'session_question_id', 'position', 'category_path', 'answered', 'user_answer', 'answer_lock_version', 'correct_answer', 'explanation', 'is_correct', 'attempt_count', 'latest_result']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
   const allowed = new Set([...baseKeys, ...optionalKeys])
   for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
@@ -607,6 +620,11 @@ function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuesti
     position: integerAt(object.position, `${path}.position`),
     category_path: categoryPathAt(object.category_path, `${path}.category_path`),
     answered: booleanAt(object.answered, `${path}.answered`),
+    user_answer: nullable(object.user_answer, `${path}.user_answer`, answerAt),
+    answer_lock_version: integerAt(object.answer_lock_version, `${path}.answer_lock_version`),
+    correct_answer: nullable(object.correct_answer, `${path}.correct_answer`, answerAt),
+    explanation: nullable(object.explanation, `${path}.explanation`, stringAt),
+    is_correct: nullable(object.is_correct, `${path}.is_correct`, booleanAt),
     attempt_count: integerAt(object.attempt_count, `${path}.attempt_count`),
     latest_result: nullable(object.latest_result, `${path}.latest_result`, parsePracticeAttempt),
   }
@@ -619,6 +637,21 @@ export function parsePracticeSession(value: unknown): QuizPracticeSession {
   const hasExtendedShape = 'scope_type' in object
   const expected = hasExtendedShape ? extendedKeys : legacyKeys
   exactObject(value, 'data', expected)
+  const status = literalAt(object.status, 'data.status', ['in_progress', 'paused', 'completed', 'abandoned', 'expired', 'terminated'] as const)
+  const questions = arrayOf(object.questions, 'data.questions', parsePracticeQuestion)
+  for (const [index, question] of questions.entries()) {
+    if (status !== 'completed' && (question.correct_answer !== null || question.explanation !== null || question.is_correct !== null)) {
+      throw new QuizContractError(`data.questions[${index}]`, '交卷前不得包含答案、正误或解析')
+    }
+    if (status === 'completed') {
+      if (question.correct_answer === null || question.explanation === null) {
+        throw new QuizContractError(`data.questions[${index}]`, '交卷结果必须包含标准答案和解析')
+      }
+      if ((question.user_answer === null) !== (question.is_correct === null)) {
+        throw new QuizContractError(`data.questions[${index}].is_correct`, '必须与是否作答一致')
+      }
+    }
+  }
   return {
     id: integerAt(object.id, 'data.id'),
     mode: literalAt(object.mode, 'data.mode', ['normal', 'wrong', 'full', 'wrong_only', 'legacy_limited'] as const),
@@ -628,7 +661,7 @@ export function parsePracticeSession(value: unknown): QuizPracticeSession {
     scope_id: hasExtendedShape ? nullable(object.scope_id, 'data.scope_id', integerAt) : null,
     requested_count: integerAt(object.requested_count, 'data.requested_count'),
     actual_count: integerAt(object.actual_count, 'data.actual_count'),
-    status: literalAt(object.status, 'data.status', ['in_progress', 'paused', 'completed', 'abandoned', 'expired', 'terminated'] as const),
+    status,
     started_at: dateTimeAt(object.started_at, 'data.started_at'),
     completed_at: nullable(object.completed_at, 'data.completed_at', dateTimeAt),
     abandoned_at: nullable(object.abandoned_at, 'data.abandoned_at', dateTimeAt),
@@ -641,7 +674,7 @@ export function parsePracticeSession(value: unknown): QuizPracticeSession {
     created_new: hasExtendedShape ? booleanAt(object.created_new, 'data.created_new') : true,
     resume_available: hasExtendedShape ? booleanAt(object.resume_available, 'data.resume_available') : false,
     lock_version: integerAt(object.lock_version, 'data.lock_version'),
-    questions: arrayOf(object.questions, 'data.questions', parsePracticeQuestion),
+    questions,
   }
 }
 
@@ -654,6 +687,17 @@ export function parsePracticeSkip(value: unknown): QuizPracticeSkipResult {
     session_question_id: integerAt(object.session_question_id, 'data.session_question_id'),
     skip_count: 1,
     next_question: nullable(object.next_question, 'data.next_question', parsePracticeQuestion),
+  }
+}
+
+export function parsePracticeAnswerSaved(value: unknown): QuizPracticeAnswerSaved {
+  const object = exactObject(value, 'data', ['session_id', 'session_question_id', 'user_answer', 'lock_version', 'saved_at'])
+  return {
+    session_id: integerAt(object.session_id, 'data.session_id'),
+    session_question_id: integerAt(object.session_question_id, 'data.session_question_id'),
+    user_answer: answerAt(object.user_answer, 'data.user_answer'),
+    lock_version: integerAt(object.lock_version, 'data.lock_version'),
+    saved_at: dateTimeAt(object.saved_at, 'data.saved_at'),
   }
 }
 

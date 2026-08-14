@@ -23,7 +23,7 @@ function normalizeTemplatePath(path) {
     .replaceAll('${examQuestionId}', '{exam_question_id}')
 }
 
-test('quiz service implements exactly the frozen 26 user operations', async () => {
+test('quiz service implements exactly the frozen 28 user operations', async () => {
   const [source, manifestText] = await Promise.all([
     readFile(SERVICE_FILE, 'utf8'),
     readFile(MANIFEST_FILE, 'utf8'),
@@ -43,6 +43,6 @@ test('quiz service implements exactly the frozen 26 user operations', async () =
   }
   actual.sort()
 
-  assert.equal(expected.length, 26)
+  assert.equal(expected.length, 28)
   assert.deepEqual(actual, expected)
 })

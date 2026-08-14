@@ -53,7 +53,7 @@ export default function QuizCollectionsPage() {
             <View key={item.id} className={styles.card}>
               <View className={styles.cardHeader}>
                 <Text className={styles.typeTag}>{quizTypeLabel(item.question.question_type)}</Text>
-                {item.question_status === 'disabled' && <Text className={styles.disabled}>题目已停用</Text>}
+                {item.question_status !== 'published' && <Text className={styles.disabled}>{item.question_status === 'deleted' ? '题目已删除' : '题目已停用'}</Text>}
               </View>
               <Text className={styles.stem}>{item.question.question_text}</Text>
               <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>

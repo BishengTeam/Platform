@@ -24,6 +24,17 @@
   padding: $spacing-lg;
 }
 
+.resultScroll { flex: 1; overflow-y: auto; padding: $spacing-md $spacing-lg calc(#{$spacing-xl} + #{$safe-bottom}); }
+.resultList { display: flex; flex-direction: column; gap: $spacing-md; margin-bottom: $spacing-lg; }
+.resultQuestionCard { padding: $spacing-md; background: $color-white; border-radius: $radius-md; box-shadow: $shadow-sm; }
+.resultCorrect, .resultWrong, .resultUnanswered { display: block; margin-bottom: $spacing-sm; font-weight: 700; }
+.resultCorrect { color: $color-success; }
+.resultWrong { color: $color-price; }
+.resultUnanswered { color: $color-warning; }
+.resultStem { display: block; color: $color-text; font-weight: 600; line-height: 1.6; }
+.resultAnswer { display: block; margin-top: $spacing-sm; color: $color-primary; font-size: $font-sm; }
+.resultExplanation { display: block; margin-top: $spacing-sm; color: $color-text-secondary; font-size: $font-sm; line-height: 1.5; }
+
 .resultCard {
   background: $color-white;
   border-radius: $radius-lg;
@@ -59,6 +70,7 @@
 .countItemActive { color: $color-primary; background: $color-blue-tint; border-color: $color-primary; font-weight: 700; }
 .sessionBar { display: flex; justify-content: space-between; padding: 0 $spacing-md $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
 .abandonLink { color: $color-price; font-size: $font-sm; }
+.submitLink { color: $color-primary; font-size: $font-sm; font-weight: 600; }
 .shortageHint { padding: 0 $spacing-md $spacing-sm; color: $color-warning; }
 .pathText { display: block; margin-bottom: $spacing-xs; color: $color-text-tertiary; font-size: $font-2xs; }
 .answerButton { width: 100%; margin-top: $spacing-lg; }
@@ -116,6 +128,9 @@
   padding: 2px $spacing-sm;
   border-radius: $radius-sm;
 }
+
+.saveState { color: $color-text-tertiary; font-size: $font-xs; }
+.noResultHint { display: block; margin-top: $spacing-md; color: $color-text-tertiary; font-size: $font-sm; line-height: 1.5; }
 
 .stem {
   font-size: $font-lg;
@@ -252,6 +267,8 @@
   min-width: 40px;
 }
 
+.barStatLabel { color: $color-text-tertiary; font-size: $font-xs; }
+
 .barDone {
   display: flex;
   align-items: center;
@@ -334,6 +351,12 @@
   color: $color-white;
   background: $color-price;
   border-color: $color-price;
+}
+
+.drawerDotAnswered {
+  color: $color-white;
+  background: $color-primary;
+  border-color: $color-primary;
 }
 
 .drawerDotCurrent {

@@ -115,7 +115,7 @@ export default function QuizPracticeHistoryPage() {
               <View className={styles.options}>{quizOptions(item.options).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
               <Text className={styles.answer}>本次答案：{answerText(item.user_answer)}　正确答案：{answerText(item.correct_answer)}</Text>
               <Text className={styles.explanation}>解析：{item.explanation}</Text>
-              {item.current_question_status === 'disabled' && <Text className={styles.disabled}>当前题目已停用，以上为作答时快照</Text>}
+              {item.current_question_status && item.current_question_status !== 'published' && <Text className={styles.disabled}>当前题目{item.current_question_status === 'deleted' ? '已删除' : '已停用'}，以上为作答时快照</Text>}
             </View>
           ))}
           {page && page.total > page.page_size && (
