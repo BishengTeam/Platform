@@ -150,6 +150,61 @@
   display: block;
 }
 
+.quizLibraryList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.quizLibraryItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: $color-white;
+  border: $border-thin solid $color-border;
+  border-radius: $radius-md;
+}
+
+.quizLibraryInfo {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quizLibraryName {
+  color: $color-text;
+  font-size: $font-base;
+  font-weight: 600;
+}
+
+.quizLibraryDescription {
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+  line-height: 1.4;
+}
+
+.quizLibraryAvailable,
+.quizLibraryPending {
+  flex-shrink: 0;
+  padding: 4px $spacing-sm;
+  border-radius: $radius-sm;
+  font-size: $font-sm;
+}
+
+.quizLibraryAvailable {
+  color: $color-success;
+  background: #F6FFED;
+}
+
+.quizLibraryPending {
+  color: $color-text-tertiary;
+  background: $color-bg-secondary;
+}
+
 .reviewCard {
   background: $color-white;
   border-radius: $radius-md;

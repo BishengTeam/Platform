@@ -231,6 +231,25 @@ export default function CourseDetailPage() {
             </View>
           )}
 
+          {course.included_quiz_libraries.length > 0 && (
+            <View className={styles.section}>
+              <Text className={styles.sectionTitle}>课程赠送题库</Text>
+              <View className={styles.quizLibraryList}>
+                {course.included_quiz_libraries.map(item => (
+                  <View key={item.id} className={styles.quizLibraryItem}>
+                    <View className={styles.quizLibraryInfo}>
+                      <Text className={styles.quizLibraryName}>{item.name}</Text>
+                      {item.description && <Text className={styles.quizLibraryDescription}>{item.description}</Text>}
+                    </View>
+                    <Text className={item.available ? styles.quizLibraryAvailable : styles.quizLibraryPending}>
+                      {item.available ? '购买后开放' : item.status === 'suspended' ? '暂时停用' : '准备中'}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* 讲师联系方式 */}
           {course.teacher_contact && (
             <View className={styles.section}>

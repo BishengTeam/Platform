@@ -1,4 +1,4 @@
-/** Quiz API client. All 22 user operations use the frozen 2026-08-13 contract. */
+/** Quiz API client. All 26 user operations use the frozen 2026-08-13 contract. */
 
 import { del, get, post, put } from '@/utils/request'
 import {
@@ -15,8 +15,12 @@ import {
   parsePracticeAbandon,
   parsePracticeAttempt,
   parsePracticeHistoryPage,
+  parsePracticeScopePreview,
+  parsePracticeSkip,
   parsePracticeSession,
   parseQuizCategories,
+  parseQuizLibraries,
+  parseQuizLibrary,
   parseQuizQuestionPage,
   parseQuizStats,
   parseWrongBookPage,
@@ -37,7 +41,12 @@ import type {
   QuizPracticeAttemptResult,
   QuizPracticeHistoryItem,
   QuizPracticeMode,
+  QuizPracticeScopePreview,
+  QuizPracticeScopeType,
+  QuizPracticeSkipResult,
   QuizPracticeSession,
+  QuizLibraryCatalogDetail,
+  QuizLibraryCatalogItem,
   QuizPublicQuestion,
   QuizQuestionType,
   QuizStats,
@@ -75,6 +84,25 @@ export async function listQuizCategories(): Promise<QuizCategoryNode[]> {
   return parseQuizCategories(response.data)
 }
 
+export async function listQuizLibraries(): Promise<QuizLibraryCatalogItem[]> {
+  const response = await get<unknown>('/api/quiz/libraries')
+  return parseQuizLibraries(response.data)
+}
+
+export async function getQuizLibrary(libraryId: number): Promise<QuizLibraryCatalogDetail> {
+  const response = await get<unknown>(`/api/quiz/libraries/${libraryId}`)
+  return parseQuizLibrary(response.data)
+}
+
+export async function previewPracticeScope(input: {
+  scope_type: QuizPracticeScopeType
+  scope_id: number
+  mode?: 'full' | 'wrong_only'
+}): Promise<QuizPracticeScopePreview> {
+  const response = await get<unknown>('/api/quiz/practice-scopes/preview', queryData(input))
+  return parsePracticeScopePreview(response.data)
+}
+
 export async function listQuizQuestions(query: QuizQuestionQuery = {}): Promise<PageData<QuizPublicQuestion>> {
   const response = await get<unknown>('/api/quiz/questions', queryData(query))
   return parseQuizQuestionPage(response.data)
@@ -84,9 +112,18 @@ export async function createPracticeSession(input: {
   mode: QuizPracticeMode
   category_id?: number
   question_count?: number
+  scope_type?: QuizPracticeScopeType
+  scope_id?: number
+  restart_existing?: boolean
+  confirm_large_scope?: boolean
 }): Promise<QuizPracticeSession> {
   const response = await post<unknown>('/api/quiz/practice-sessions', queryData(input))
   return parsePracticeSession(response.data)
+}
+
+export async function skipPracticeQuestion(sessionId: number, sessionQuestionId: number): Promise<QuizPracticeSkipResult> {
+  const response = await post<unknown>(`/api/quiz/practice-sessions/${sessionId}/questions/${sessionQuestionId}/skip`)
+  return parsePracticeSkip(response.data)
 }
 
 export async function getCurrentPracticeSession(): Promise<QuizPracticeSession | null> {
@@ -153,8 +190,13 @@ export async function getQuizStats(): Promise<QuizStats> {
   return parseQuizStats(response.data)
 }
 
-export async function createQuizExam(categoryId: number, questionCount: number): Promise<QuizExamDetail> {
-  const response = await post<unknown>('/api/quiz/exams', { category_id: categoryId, question_count: questionCount })
+export async function createQuizExam(input: {
+  question_count: number
+  category_id?: number
+  scope_type?: QuizPracticeScopeType
+  scope_id?: number
+}): Promise<QuizExamDetail> {
+  const response = await post<unknown>('/api/quiz/exams', queryData(input))
   return parseExamDetail(response.data)
 }
 

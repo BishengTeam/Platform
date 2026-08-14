@@ -13,7 +13,8 @@
 
 // Quiz
 export {
-  listQuizCategories, listQuizQuestions,
+  listQuizCategories, listQuizQuestions, listQuizLibraries, getQuizLibrary,
+  previewPracticeScope, skipPracticeQuestion,
   createPracticeSession, getCurrentPracticeSession, getPracticeSession,
   submitPracticeAttempt, abandonPracticeSession, listPracticeHistory,
   listWrongBook, listQuizCollections, addQuizCollection, removeQuizCollection,

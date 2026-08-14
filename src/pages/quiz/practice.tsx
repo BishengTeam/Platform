@@ -7,7 +7,14 @@ import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
-import type { QuizAnswer, QuizPracticeQuestionState, QuizPracticeSession } from '@/contracts/quiz'
+import type {
+  QuizAnswer,
+  QuizPracticeMode,
+  QuizPracticeQuestionState,
+  QuizPracticeScopePreview,
+  QuizPracticeScopeType,
+  QuizPracticeSession,
+} from '@/contracts/quiz'
 import {
   abandonPracticeSession,
   addQuizCollection,
@@ -15,7 +22,9 @@ import {
   getCurrentPracticeSession,
   getPracticeSession,
   listQuizCollections,
+  previewPracticeScope,
   removeQuizCollection,
+  skipPracticeQuestion,
   submitPracticeAttempt,
 } from '@/services/dataService'
 import {
@@ -31,7 +40,7 @@ import { ApiError } from '@/utils/request'
 import { answerIncludes, isMultipleChoice, quizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './practice.module.scss'
 
-const QUESTION_COUNTS = [10, 20, 50, 100] as const
+const LEGACY_QUESTION_COUNTS = [10, 20, 50, 100] as const
 
 function errorMessage(error: unknown): string {
   return error instanceof Error && error.message && error.message !== 'UNAUTHORIZED'
@@ -43,6 +52,10 @@ function isNotFound(error: unknown): boolean {
   return error instanceof ApiError && (error.statusCode === 404 || error.code === 40300)
 }
 
+function isScopeType(value: string | undefined): value is QuizPracticeScopeType {
+  return value === 'library' || value === 'module' || value === 'knowledge_point'
+}
+
 function initialAnswers(session: QuizPracticeSession): Record<number, QuizAnswer> {
   const answers: Record<number, QuizAnswer> = {}
   for (const question of session.questions) {
@@ -51,28 +64,51 @@ function initialAnswers(session: QuizPracticeSession): Record<number, QuizAnswer
   return answers
 }
 
+function sessionTitle(session: QuizPracticeSession | null, requestedMode: QuizPracticeMode): string {
+  const mode = session?.mode ?? requestedMode
+  if (mode === 'wrong' || mode === 'wrong_only') return '错题专项'
+  return mode === 'full' ? '全量练习' : '章节练习'
+}
+
+function terminalLabel(status: QuizPracticeSession['status']): string {
+  if (status === 'completed') return '本轮练习已完成'
+  if (status === 'expired') return '本轮练习已过期'
+  if (status === 'terminated') return '题库已归档，本轮练习已终止'
+  return '本轮练习已放弃'
+}
+
 export default function QuizPracticePage() {
   const [categoryId, setCategoryId] = useState<number | null>(null)
-  const [requestedMode, setRequestedMode] = useState<'normal' | 'wrong'>('normal')
+  const [scopeType, setScopeType] = useState<QuizPracticeScopeType | null>(null)
+  const [scopeId, setScopeId] = useState<number | null>(null)
+  const [requestedMode, setRequestedMode] = useState<QuizPracticeMode>('normal')
   const [questionCount, setQuestionCount] = useState<number>(20)
+  const [preview, setPreview] = useState<QuizPracticeScopePreview | null>(null)
   const [session, setSession] = useState<QuizPracticeSession | null>(null)
   const [answers, setAnswers] = useState<Record<number, QuizAnswer>>({})
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentSessionQuestionId, setCurrentSessionQuestionId] = useState<number | null>(null)
   const [collectionIds, setCollectionIds] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [skipping, setSkipping] = useState(false)
   const [collectionBusy, setCollectionBusy] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [drawerVisible, setDrawerVisible] = useState(false)
 
-  const applySession = (next: QuizPracticeSession) => {
+  const applySession = (next: QuizPracticeSession, preferredQuestionId?: number) => {
     setSession(next)
-    if (next.status === 'in_progress') cachePracticeSessionId(next.id)
+    if (next.status === 'in_progress' || next.status === 'paused') cachePracticeSessionId(next.id)
     else clearCachedPracticeSessionId(next.id)
     setAnswers(initialAnswers(next))
-    const firstUnanswered = next.questions.findIndex(question => !question.answered)
-    setCurrentIndex(firstUnanswered >= 0 ? firstUnanswered : 0)
+    const preferred = preferredQuestionId
+      ? next.questions.find(question => question.session_question_id === preferredQuestionId)
+      : undefined
+    const focused = preferred
+      ?? next.questions.find(question => question.position === next.current_position)
+      ?? next.questions.find(question => !question.answered)
+      ?? next.questions[0]
+    setCurrentSessionQuestionId(focused?.session_question_id ?? null)
   }
 
   const refreshCollections = () => {
@@ -81,38 +117,84 @@ export default function QuizPracticePage() {
       .catch(() => undefined)
   }
 
-  useLoad(options => {
-    const parsedCategory = Number(options?.categoryId)
-    const mode = options?.mode === 'wrong' ? 'wrong' : 'normal'
-    const explicitSessionId = Number(options?.sessionId)
-    setRequestedMode(mode)
-    if (Number.isInteger(parsedCategory) && parsedCategory > 0) setCategoryId(parsedCategory)
-    refreshCollections()
+  const createV2Session = async (
+    scope: QuizPracticeScopeType,
+    id: number,
+    mode: 'full' | 'wrong_only',
+    options: { restart?: boolean; confirmLarge?: boolean } = {},
+  ) => {
+    const created = await createPracticeSession({
+      mode,
+      scope_type: scope,
+      scope_id: id,
+      restart_existing: options.restart ?? false,
+      confirm_large_scope: options.confirmLarge ?? false,
+    })
+    applySession(created)
+  }
 
-    const cachedSessionId = getCachedPracticeSessionId()
-    const loadSession = Number.isInteger(explicitSessionId) && explicitSessionId > 0
-      ? getPracticeSession(explicitSessionId)
-      : cachedSessionId
-        ? getPracticeSession(cachedSessionId).catch(error => {
-          if (!isNotFound(error)) throw error
-          clearCachedPracticeSessionId(cachedSessionId)
-          return getCurrentPracticeSession()
+  const prepareV2Session = async (
+    scope: QuizPracticeScopeType,
+    id: number,
+    mode: 'full' | 'wrong_only' = 'full',
+  ) => {
+    setStarting(true)
+    setLoadError('')
+    try {
+      const nextPreview = await previewPracticeScope({ scope_type: scope, scope_id: id, mode })
+      setPreview(nextPreview)
+      if (nextPreview.question_count === 0) {
+        setLoadError(mode === 'wrong_only' ? '该范围暂无可练错题' : '该范围暂无可用题目')
+        return
+      }
+      if (nextPreview.unfinished_session_id) {
+        const choice = await Taro.showModal({
+          title: '发现未完成的练习',
+          content: `该范围还有一轮 ${nextPreview.question_count} 题的练习未完成。继续会保留原题目和进度；重新开始会放弃旧会话并按当前题库生成新快照。`,
+          confirmText: '继续练习',
+          cancelText: '重新开始',
         })
-        : getCurrentPracticeSession()
-    loadSession
-      .then(current => {
-        if (current) applySession(current)
-        else if (mode === 'wrong') return startSession('wrong', null, 20)
-        return undefined
+        if (choice.confirm) {
+          applySession(await getPracticeSession(nextPreview.unfinished_session_id))
+          return
+        }
+        await createV2Session(scope, id, mode, {
+          restart: true,
+          confirmLarge: nextPreview.requires_large_scope_confirmation,
+        })
+        return
+      }
+      if (nextPreview.requires_large_scope_confirmation) {
+        const choice = await Taro.showModal({
+          title: `练习全部 ${nextPreview.question_count} 题？`,
+          content: `预计需要约 ${nextPreview.estimated_minutes} 分钟。会话从最后一次成功作答起 7 天有效，题库或权益暂停期间不计时。`,
+          confirmText: '开始练习',
+          cancelText: '暂不开始',
+        })
+        if (!choice.confirm) {
+          setLoadError('已取消开始，可返回目录重新选择范围')
+          return
+        }
+      }
+      await createV2Session(scope, id, mode, {
+        confirmLarge: nextPreview.requires_large_scope_confirmation,
       })
-      .catch(error => setLoadError(errorMessage(error)))
-      .finally(() => setLoading(false))
-  })
+    } catch (error) {
+      setLoadError(errorMessage(error))
+    } finally {
+      setStarting(false)
+      setLoading(false)
+    }
+  }
 
-  const startSession = async (mode = requestedMode, selectedCategory = categoryId, count = questionCount) => {
+  const startLegacySession = async (
+    mode: 'normal' | 'wrong' = requestedMode === 'wrong' ? 'wrong' : 'normal',
+    selectedCategory = categoryId,
+    count = questionCount,
+  ) => {
     if (starting) return
     if (mode === 'normal' && !selectedCategory) {
-      Taro.showToast({ title: '请从题库分类进入练习', icon: 'none' })
+      Taro.showToast({ title: '请从题库目录进入练习', icon: 'none' })
       return
     }
     setStarting(true)
@@ -133,7 +215,53 @@ export default function QuizPracticePage() {
     }
   }
 
-  const currentQuestion = session?.questions[currentIndex]
+  useLoad(options => {
+    const parsedCategory = Number(options?.categoryId)
+    const parsedScopeId = Number(options?.scopeId)
+    const nextScopeType = isScopeType(options?.scopeType) ? options.scopeType : null
+    const mode: QuizPracticeMode = options?.mode === 'wrong' ? 'wrong' : options?.mode === 'wrong_only' ? 'wrong_only' : nextScopeType ? 'full' : 'normal'
+    const explicitSessionId = Number(options?.sessionId)
+    setRequestedMode(mode)
+    if (Number.isInteger(parsedCategory) && parsedCategory > 0) setCategoryId(parsedCategory)
+    if (nextScopeType && Number.isInteger(parsedScopeId) && parsedScopeId > 0) {
+      setScopeType(nextScopeType)
+      setScopeId(parsedScopeId)
+    }
+    refreshCollections()
+
+    if (Number.isInteger(explicitSessionId) && explicitSessionId > 0) {
+      getPracticeSession(explicitSessionId)
+        .then(applySession)
+        .catch(error => setLoadError(errorMessage(error)))
+        .finally(() => setLoading(false))
+      return
+    }
+    if (nextScopeType && Number.isInteger(parsedScopeId) && parsedScopeId > 0) {
+      void prepareV2Session(nextScopeType, parsedScopeId, mode === 'wrong_only' ? 'wrong_only' : 'full')
+      return
+    }
+
+    const cachedSessionId = getCachedPracticeSessionId()
+    const loadSession = cachedSessionId
+      ? getPracticeSession(cachedSessionId).catch(error => {
+        if (!isNotFound(error)) throw error
+        clearCachedPracticeSessionId(cachedSessionId)
+        return getCurrentPracticeSession()
+      })
+      : getCurrentPracticeSession()
+    loadSession
+      .then(current => {
+        if (current) applySession(current)
+        else if (mode === 'wrong') return startLegacySession('wrong', null, 20)
+        return undefined
+      })
+      .catch(error => setLoadError(errorMessage(error)))
+      .finally(() => setLoading(false))
+  })
+
+  const currentQuestion = session?.questions.find(question => question.session_question_id === currentSessionQuestionId)
+    ?? session?.questions.find(question => question.position === session.current_position)
+    ?? session?.questions[0]
   const selectedAnswer = currentQuestion ? answers[currentQuestion.session_question_id] : undefined
   const displayedResult = currentQuestion?.latest_result
     && selectedAnswer
@@ -142,7 +270,7 @@ export default function QuizPracticePage() {
     : null
 
   const chooseOption = (question: QuizPracticeQuestionState, label: string) => {
-    if (submitting || session?.status !== 'in_progress') return
+    if (submitting || question.answered || session?.status !== 'in_progress') return
     setAnswers(previous => {
       if (!isMultipleChoice(question.question_type)) {
         return { ...previous, [question.session_question_id]: label }
@@ -160,7 +288,7 @@ export default function QuizPracticePage() {
   }
 
   const submitCurrent = async () => {
-    if (!session || !currentQuestion || !selectedAnswer || submitting) return
+    if (!session || !currentQuestion || !selectedAnswer || submitting || currentQuestion.answered) return
     const idempotencyKey = getOrCreateAttemptKey(session.id, currentQuestion.session_question_id, selectedAnswer)
     setSubmitting(true)
     try {
@@ -170,31 +298,27 @@ export default function QuizPracticePage() {
         user_answer: selectedAnswer,
       })
       clearAttemptKey(session.id, currentQuestion.session_question_id)
+      const answeredCount = session.answered_count + 1
       const locallyUpdated: QuizPracticeSession = {
         ...session,
+        answered_count: answeredCount,
+        remaining_count: Math.max(0, session.actual_count - answeredCount),
         questions: session.questions.map(question => question.session_question_id === currentQuestion.session_question_id
           ? { ...question, answered: true, attempt_count: question.attempt_count + 1, latest_result: result }
           : question),
       }
-      if (locallyUpdated.questions.every(question => question.answered)) {
+      if (answeredCount >= session.actual_count) {
         const completedFallback: QuizPracticeSession = {
           ...locallyUpdated,
           status: 'completed',
           completed_at: result.submitted_at,
+          current_position: null,
           lock_version: locallyUpdated.lock_version + 1,
         }
-        // The successful final-attempt response proves that the server has
-        // completed this session. Enter a terminal local state before the
-        // detail refresh so a transient GET failure cannot expose resubmit or
-        // abandon controls for an already-finished session.
-        applySession(completedFallback)
+        applySession(completedFallback, currentQuestion.session_question_id)
         clearPracticeAttemptKeys(session.id)
-        try {
-          const completed = await getPracticeSession(session.id)
-          applySession(completed)
-        } catch {
-          Taro.showToast({ title: '练习已完成，服务端详情暂未刷新', icon: 'none', duration: 3000 })
-        }
+        try { applySession(await getPracticeSession(session.id), currentQuestion.session_question_id) }
+        catch { Taro.showToast({ title: '练习已完成，服务端详情暂未刷新', icon: 'none', duration: 3000 }) }
       } else {
         setSession(locallyUpdated)
       }
@@ -202,6 +326,27 @@ export default function QuizPracticePage() {
       Taro.showToast({ title: `${errorMessage(error)}；再次提交会安全重试`, icon: 'none', duration: 3000 })
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const advance = async () => {
+    if (!session || starting) return
+    setStarting(true)
+    try { applySession(await getPracticeSession(session.id)) }
+    catch (error) { Taro.showToast({ title: errorMessage(error), icon: 'none' }) }
+    finally { setStarting(false) }
+  }
+
+  const skipCurrent = async () => {
+    if (!session || !currentQuestion || skipping || currentQuestion.answered || !session.scope_type) return
+    setSkipping(true)
+    try {
+      await skipPracticeQuestion(session.id, currentQuestion.session_question_id)
+      applySession(await getPracticeSession(session.id))
+    } catch (error) {
+      Taro.showToast({ title: errorMessage(error), icon: 'none' })
+    } finally {
+      setSkipping(false)
     }
   }
 
@@ -227,7 +372,7 @@ export default function QuizPracticePage() {
   }
 
   const abandon = () => {
-    if (!session || session.status !== 'in_progress') return
+    if (!session || !['in_progress', 'paused'].includes(session.status)) return
     setDrawerVisible(false)
     Taro.showModal({
       title: '放弃本轮练习',
@@ -237,19 +382,7 @@ export default function QuizPracticePage() {
         try {
           const action = await abandonPracticeSession(session.id)
           clearPracticeAttemptKeys(session.id)
-          applySession({
-            ...session,
-            status: 'abandoned',
-            completed_at: null,
-            abandoned_at: action.abandoned_at,
-            lock_version: session.lock_version + 1,
-          })
-          try {
-            const abandoned = await getPracticeSession(session.id)
-            applySession(abandoned)
-          } catch {
-            Taro.showToast({ title: '本轮已放弃，服务端详情暂未刷新', icon: 'none', duration: 3000 })
-          }
+          applySession({ ...session, status: 'abandoned', completed_at: null, abandoned_at: action.abandoned_at, lock_version: session.lock_version + 1 })
         } catch (error) {
           Taro.showToast({ title: errorMessage(error), icon: 'none' })
         }
@@ -259,46 +392,51 @@ export default function QuizPracticePage() {
 
   const startNextSession = () => {
     if (!session || starting) return
-    const nextMode = session.mode
-    const nextCategoryId = session.category_id
-    const nextCount = session.requested_count
     setSession(null)
     setAnswers({})
-    setCurrentIndex(0)
-    void startSession(nextMode, nextCategoryId, nextCount)
+    setCurrentSessionQuestionId(null)
+    if (session.scope_type && session.scope_id && (session.mode === 'full' || session.mode === 'wrong_only')) {
+      void prepareV2Session(session.scope_type, session.scope_id, session.mode)
+    } else {
+      void startLegacySession(session.mode === 'wrong' ? 'wrong' : 'normal', session.category_id, session.requested_count)
+    }
   }
 
-  const answeredCount = session?.questions.filter(question => question.answered).length ?? 0
+  const answeredCount = session?.scope_type ? session.answered_count : session?.questions.filter(question => question.answered).length ?? 0
   const correctCount = session?.questions.filter(question => question.latest_result?.is_correct).length ?? 0
   const wrongCount = session?.questions.filter(question => question.answered && question.latest_result && !question.latest_result.is_correct).length ?? 0
   const optionItems = useMemo(() => currentQuestion ? quizOptions(currentQuestion.options) : [], [currentQuestion])
 
   if (loading) {
-    return <AuthGuard><View className={styles.page}><PageHeader title='练习' shouldShowBack /><View className={styles.resultBody}><Text>正在恢复练习…</Text></View></View></AuthGuard>
+    return <AuthGuard><View className={styles.page}><PageHeader title='练习' shouldShowBack /><View className={styles.resultBody}><Text>正在检查练习范围…</Text></View></View></AuthGuard>
   }
 
   if (!session) {
+    const isV2 = scopeType !== null && scopeId !== null
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title={requestedMode === 'wrong' ? '错题专项' : '章节练习'} shouldShowBack />
+          <PageHeader title={sessionTitle(null, requestedMode)} shouldShowBack />
           <View className={styles.setupBody}>
             {loadError && <Text className={styles.errorText}>{loadError}</Text>}
-            {requestedMode === 'normal' && categoryId ? (
+            {isV2 ? (
               <>
-                <Text className={styles.setupTitle}>选择本轮题目数量</Text>
-                <Text className={styles.setupHint}>若范围内不足 10 题，将自动使用全部可用题目。</Text>
+                {preview && <Text className={styles.setupHint}>该范围共 {preview.question_count} 题，预计约 {preview.estimated_minutes} 分钟，练习有效期 7 天。</Text>}
+                <Button variant='gradient' size='lg' loading={starting} onClick={() => void prepareV2Session(scopeType, scopeId, requestedMode === 'wrong_only' ? 'wrong_only' : 'full')}>{starting ? '创建中…' : '重新检查并开始'}</Button>
+              </>
+            ) : requestedMode === 'normal' && categoryId ? (
+              <>
+                <Text className={styles.setupTitle}>旧版限量练习</Text>
+                <Text className={styles.setupHint}>这是兼容期旧分类入口；新题库目录已改为范围内全部题。</Text>
                 <View className={styles.countGrid}>
-                  {QUESTION_COUNTS.map(count => (
-                    <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}>
-                      <Text>{count} 题</Text>
-                    </View>
+                  {LEGACY_QUESTION_COUNTS.map(count => (
+                    <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}><Text>{count} 题</Text></View>
                   ))}
                 </View>
-                <Button variant='gradient' size='lg' loading={starting} onClick={() => startSession()}>{starting ? '创建中…' : '开始练习'}</Button>
+                <Button variant='gradient' size='lg' loading={starting} onClick={() => void startLegacySession()}>{starting ? '创建中…' : '开始旧版练习'}</Button>
               </>
             ) : (
-              <EmptyState title={requestedMode === 'wrong' ? '暂无可用错题，或创建失败' : '请从题库分类选择练习范围'} />
+              <EmptyState title={requestedMode === 'wrong' ? '暂无可用错题，或创建失败' : '请从题库目录选择练习范围'} />
             )}
           </View>
         </View>
@@ -306,22 +444,29 @@ export default function QuizPracticePage() {
     )
   }
 
+  if (session.status === 'paused') {
+    return (
+      <AuthGuard><View className={styles.page}><PageHeader title={sessionTitle(session, requestedMode)} shouldShowBack /><View className={styles.resultBody}>
+        <View className={styles.resultCard}><Text className={styles.resultScore}>本轮练习已暂停</Text><Text className={styles.resultHint}>{session.pause_reason === 'quiz_entitlement_inactive' ? '课程题库权益当前不可用' : '题库当前暂停开放'}；暂停期间不消耗 7 天有效期，恢复后会自动顺延。</Text></View>
+        <View className={styles.resultActions}><Button variant='secondary' size='lg' onClick={() => void advance()}>检查是否恢复</Button><Button variant='secondary' size='lg' onClick={abandon}>放弃本轮</Button></View>
+      </View></View></AuthGuard>
+    )
+  }
+
   if (session.status !== 'in_progress') {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title={session.mode === 'wrong' ? '错题专项' : '练习结果'} shouldShowBack />
+          <PageHeader title={sessionTitle(session, requestedMode)} shouldShowBack />
           <View className={styles.resultBody}>
             <View className={styles.resultCard}>
-              <Text className={styles.resultScore}>{session.status === 'completed' ? '本轮练习已完成' : '本轮练习已放弃'}</Text>
+              <Text className={styles.resultScore}>{terminalLabel(session.status)}</Text>
               <Text className={styles.resultAccuracy}>已答 {answeredCount} / {session.actual_count}，当前答对 {correctCount}</Text>
               <Text className={styles.resultHint}>完整的每次作答记录可在练习历史中查看。</Text>
             </View>
             <View className={styles.resultActions}>
               <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: '/pages/quiz/history' })}>查看练习历史</Button>
-              <Button variant='gradient' size='lg' loading={starting} onClick={startNextSession}>
-                {session.mode === 'wrong' ? '再练最近错题' : '开始新一轮'}
-              </Button>
+              {session.status !== 'terminated' && <Button variant='gradient' size='lg' loading={starting} onClick={startNextSession}>开始新一轮</Button>}
             </View>
           </View>
         </View>
@@ -330,15 +475,18 @@ export default function QuizPracticePage() {
   }
 
   if (!currentQuestion) {
-    return <AuthGuard><View className={styles.page}><PageHeader title='练习' shouldShowBack /><EmptyState title='会话中没有题目' /></View></AuthGuard>
+    return <AuthGuard><View className={styles.page}><PageHeader title='练习' shouldShowBack /><EmptyState title='暂未取得当前题，请稍后刷新' ><Button variant='primary' onClick={() => void advance()}>刷新当前题</Button></EmptyState></View></AuthGuard>
   }
 
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={session.mode === 'wrong' ? '错题专项' : '章节练习'} shouldShowBack />
+        <PageHeader title={sessionTitle(session, requestedMode)} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          {session.actual_count < session.requested_count && <Text className={styles.shortageHint}>该范围题量不足，已使用全部 {session.actual_count} 题</Text>}
+          <View className={styles.sessionBar}><Text>{answeredCount} / {session.actual_count} 已作答</Text><Text className={styles.abandonLink} onClick={abandon}>放弃本轮</Text></View>
+          <View className={styles.progressBar}><View className={styles.progressFill} style={{ width: `${(answeredCount / session.actual_count) * 100}%` }} /></View>
+          <Text className={styles.progressText}>第 {currentQuestion.position} / {session.actual_count} 题</Text>
+
           <View className={styles.questionCard}>
             <View className={styles.questionHeader}>
               <Text className={styles.questionType}>{quizTypeLabel(currentQuestion.question_type)}</Text>
@@ -356,9 +504,8 @@ export default function QuizPracticePage() {
                 )
               })}
             </View>
-            <Button className={styles.answerButton} variant='gradient' size='lg' disabled={!selectedAnswer || submitting} loading={submitting} onClick={submitCurrent}>
-              {submitting ? '提交中…' : currentQuestion.answered && !displayedResult ? '再次提交答案' : '提交答案'}
-            </Button>
+            {!currentQuestion.answered && <Button className={styles.answerButton} variant='gradient' size='lg' disabled={!selectedAnswer || submitting} loading={submitting} onClick={submitCurrent}>{submitting ? '提交中…' : '提交答案'}</Button>}
+            {!currentQuestion.answered && session.scope_type && <Text className={styles.skipLink} onClick={() => void skipCurrent()}>{skipping ? '正在跳过…' : '暂时跳过（每题一次）'}</Text>}
 
             {displayedResult && (
               <View className={`${styles.feedback} ${displayedResult.is_correct ? styles.feedbackCorrect : styles.feedbackWrong}`}>
@@ -370,8 +517,11 @@ export default function QuizPracticePage() {
           </View>
 
           <View className={styles.navRow}>
-            <Button variant='secondary' onClick={() => setCurrentIndex(index => Math.max(0, index - 1))} disabled={currentIndex === 0}>上一题</Button>
-            <Button variant='primary' onClick={() => setCurrentIndex(index => Math.min(session.actual_count - 1, index + 1))} disabled={currentIndex >= session.actual_count - 1}>下一题</Button>
+            <Button variant='secondary' onClick={() => {
+              const previous = session.questions.filter(item => item.position < currentQuestion.position).sort((a, b) => b.position - a.position)[0]
+              if (previous) setCurrentSessionQuestionId(previous.session_question_id)
+            }} disabled={!session.questions.some(item => item.position < currentQuestion.position)}>查看上一题</Button>
+            <Button variant='primary' loading={starting} onClick={() => void advance()} disabled={!currentQuestion.answered}>{answeredCount >= session.actual_count ? '查看结果' : '下一题'}</Button>
           </View>
         </ScrollView>
         <View className={styles.bottomBar}>
@@ -400,13 +550,14 @@ export default function QuizPracticePage() {
             </View>
             <ScrollView className={styles.drawerBody} scrollY>
               <View className={styles.drawerGrid}>
-                {session.questions.map((question, index) => {
+                {session.questions.map((question) => {
                   const isCorrect = question.latest_result?.is_correct === true
                   const isWrong = question.answered && question.latest_result?.is_correct === false
-                  const dotClass = `${styles.drawerDot}${isCorrect ? ` ${styles.drawerDotCorrect}` : ''}${isWrong ? ` ${styles.drawerDotWrong}` : ''}${index === currentIndex ? ` ${styles.drawerDotCurrent}` : ''}`
+                  const isCurrent = question.session_question_id === currentQuestion.session_question_id
+                  const dotClass = `${styles.drawerDot}${isCorrect ? ` ${styles.drawerDotCorrect}` : ''}${isWrong ? ` ${styles.drawerDotWrong}` : ''}${isCurrent ? ` ${styles.drawerDotCurrent}` : ''}`
                   return (
-                    <View key={question.session_question_id} className={dotClass} onClick={() => { setCurrentIndex(index); setDrawerVisible(false) }}>
-                      <Text>{index + 1}</Text>
+                    <View key={question.session_question_id} className={dotClass} onClick={() => { setCurrentSessionQuestionId(question.session_question_id); setDrawerVisible(false) }}>
+                      <Text>{question.position}</Text>
                     </View>
                   )
                 })}

@@ -3,11 +3,64 @@ import test from 'node:test'
 import {
   QuizContractError,
   parseExamDetail,
+  parsePracticeScopePreview,
   parsePracticeSession,
+  parsePracticeSkip,
   parseQuizCategories,
+  parseQuizLibraries,
+  parseQuizLibrary,
   parseQuizStats,
   parseWrongBookPage,
 } from '../src/contracts/quiz.ts'
+
+const v2Question = {
+  id: 301,
+  category_id: null,
+  library_id: 11,
+  knowledge_point_id: 31,
+  question_revision_id: 401,
+  question_type: 'judge',
+  question_text: 'TCP 是面向连接的协议。',
+  options: { A: '正确', B: '错误' },
+  session_question_id: 501,
+  position: 1,
+  category_path: [
+    { id: 11, name: '网络工程师题库', kind: 'library' },
+    { id: 21, name: '网络基础', kind: 'module' },
+    { id: 31, name: 'TCP/IP', kind: 'knowledge_point' },
+  ],
+  answered: false,
+  attempt_count: 0,
+  latest_result: null,
+}
+
+function v2Session(overrides = {}) {
+  return {
+    id: 601,
+    mode: 'full',
+    category_id: null,
+    library_id: 11,
+    scope_type: 'knowledge_point',
+    scope_id: 31,
+    requested_count: 120,
+    actual_count: 120,
+    status: 'in_progress',
+    started_at: '2026-08-13T00:00:00Z',
+    completed_at: null,
+    abandoned_at: null,
+    expires_at: '2026-08-20T00:00:00Z',
+    paused_at: null,
+    pause_reason: null,
+    answered_count: 0,
+    remaining_count: 120,
+    current_position: 1,
+    created_new: true,
+    resume_available: false,
+    lock_version: 1,
+    questions: [v2Question],
+    ...overrides,
+  }
+}
 
 test('category parser accepts the frozen recursive shape', () => {
   const result = parseQuizCategories([{ id: 1, name: '网络', parent_id: null, depth: 1, description: null, sort_order: 0, question_count: 10, children: [] }])
@@ -17,6 +70,101 @@ test('category parser accepts the frozen recursive shape', () => {
 test('strict parser rejects missing and extra response fields', () => {
   assert.throws(() => parseQuizCategories([{ id: 1 }]), QuizContractError)
   assert.throws(() => parseQuizCategories([{ id: 1, name: '网络', parent_id: null, depth: 1, description: null, sort_order: 0, question_count: 10, children: [], legacy: true }]), QuizContractError)
+})
+
+test('V2 library catalog and fixed hierarchy reject contract drift', () => {
+  const summary = {
+    id: 11,
+    library_code: 'QL00000011',
+    name: '网络工程师题库',
+    description: '课程配套题库',
+    cover_url: 'https://example.invalid/quiz.png',
+    access_mode: 'course_entitlement',
+    question_count: 120,
+    module_count: 1,
+  }
+  assert.equal(parseQuizLibraries([summary])[0].library_code, 'QL00000011')
+  const detail = parseQuizLibrary({
+    ...summary,
+    details: null,
+    modules: [{
+      id: 21,
+      library_id: 11,
+      name: '网络基础',
+      description: null,
+      sort_order: 1,
+      question_count: 120,
+      knowledge_points: [{
+        id: 31,
+        module_id: 21,
+        name: 'TCP/IP',
+        description: null,
+        sort_order: 1,
+        question_count: 120,
+      }],
+    }],
+  })
+  assert.equal(detail.modules[0].knowledge_points[0].question_count, 120)
+  assert.throws(() => parseQuizLibraries([{ ...summary, entitlement_id: 9 }]), QuizContractError)
+})
+
+test('V2 scope preview preserves unfinished-session and large-scope semantics', () => {
+  const preview = parsePracticeScopePreview({
+    library_id: 11,
+    scope_type: 'knowledge_point',
+    scope_id: 31,
+    mode: 'full',
+    question_count: 120,
+    estimated_minutes: 180,
+    valid_days: 7,
+    requires_large_scope_confirmation: true,
+    unfinished_session_id: 601,
+    unfinished_session_expires_at: '2026-08-20T00:00:00Z',
+  })
+  assert.equal(preview.requires_large_scope_confirmation, true)
+  assert.equal(preview.unfinished_session_id, 601)
+  assert.throws(() => parsePracticeScopePreview({ ...preview, valid_days: 30 }), QuizContractError)
+})
+
+test('V2 small-window session strictly parses pause and terminal states', () => {
+  const active = parsePracticeSession(v2Session())
+  assert.equal(active.actual_count, 120)
+  assert.equal(active.questions.length, 1)
+  assert.equal(active.questions[0].question_revision_id, 401)
+
+  const paused = parsePracticeSession(v2Session({
+    status: 'paused',
+    paused_at: '2026-08-14T00:00:00Z',
+    pause_reason: 'quiz_entitlement_inactive',
+  }))
+  assert.equal(paused.pause_reason, 'quiz_entitlement_inactive')
+  assert.equal(parsePracticeSession(v2Session({ status: 'terminated' })).status, 'terminated')
+  assert.throws(() => parsePracticeSession(v2Session({
+    status: 'paused',
+    pause_reason: 'payment_failed',
+  })), QuizContractError)
+})
+
+test('skip response is parsed directly and cannot introduce a loose DTO', () => {
+  const result = parsePracticeSkip({
+    session_id: 601,
+    session_question_id: 501,
+    skip_count: 1,
+    next_question: { ...v2Question, id: 302, session_question_id: 502, position: 2 },
+  })
+  assert.equal(result.next_question?.session_question_id, 502)
+  assert.equal(parsePracticeSkip({
+    session_id: 601,
+    session_question_id: 501,
+    skip_count: 1,
+    next_question: null,
+  }).next_question, null)
+  assert.throws(() => parsePracticeSkip({
+    session_id: 601,
+    session_question_id: 501,
+    skip_count: 2,
+    next_question: null,
+  }), QuizContractError)
 })
 
 test('stats parser converts Pydantic Decimal strings without accepting guesses', () => {
@@ -29,7 +177,17 @@ test('stats parser converts Pydantic Decimal strings without accepting guesses',
 })
 
 test('exam discriminator hides answers while in progress and requires results when settled', () => {
-  const base = { id: 1, category_id: 2, question_count: 10, duration_seconds: 3600, started_at: '2026-08-12T00:00:00Z', deadline_at: '2026-08-12T01:00:00Z' }
+  const base = {
+    id: 1,
+    category_id: null,
+    library_id: 11,
+    scope_type: 'knowledge_point',
+    scope_id: 31,
+    question_count: 10,
+    duration_seconds: 3600,
+    started_at: '2026-08-12T00:00:00Z',
+    deadline_at: '2026-08-12T01:00:00Z',
+  }
   const inProgress = parseExamDetail({ ...base, status: 'in_progress', server_time: '2026-08-12T00:10:00Z', questions: [] })
   assert.equal(inProgress.status, 'in_progress')
   assert.throws(() => parseExamDetail({ ...base, status: 'in_progress', server_time: '2026-08-12T00:10:00Z', score: '90.0', questions: [] }), QuizContractError)

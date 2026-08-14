@@ -72,6 +72,7 @@ export async function getCourseById(id: number): Promise<CourseDetail | null> {
       enrollment_id: null,
       chapters: [],
       free_preview_seconds: null,
+      included_quiz_libraries: [],
     }
   }
   const res = await get<CourseDetail>(`/api/courses/${id}`)

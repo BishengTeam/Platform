@@ -11,10 +11,10 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import type { QuizBottomItem } from '@/constants/quiz'
-import { getCourseList, getQuizStats, listQuizCategories } from '@/services/dataService'
+import { getCourseList, getQuizLibrary, getQuizStats, listQuizLibraries } from '@/services/dataService'
 import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
 import type { CourseBrief } from '@/types'
-import type { QuizCategoryNode, QuizStats } from '@/contracts/quiz'
+import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import styles from './index.module.scss'
 
 const MAIN_TABS = [STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
@@ -25,16 +25,28 @@ const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
   { label: '收藏', icon: '⭐', route: ROUTES.QUIZ_COLLECTIONS },
 ]
 
+interface TrainingScope {
+  type: QuizPracticeScopeType
+  id: number
+  name: string
+  questionCount: number
+}
+
+interface TrainingScopePickerNode extends TrainingScope {
+  question_count: number
+  children: TrainingScopePickerNode[]
+}
+
 export default function TrainingPage() {
   const [mainTab, setMainTab] = useState<string>(MAIN_TABS[0])
   const [techTag, setTechTag] = useState<string>(STRINGS.STUDY_TAG_ALL)
 
   const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
   const [failedCovers, setFailedCovers] = useState<Set<number>>(new Set())
-  const [quizCategories, setQuizCategories] = useState<QuizCategoryNode[]>([])
-  const [quizTree, setQuizTree] = useState<QuizCategoryNode[]>([])
-  const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null)
-  const [quizPickerVisible, setQuizPickerVisible] = useState(false)
+  const [quizLibraries, setQuizLibraries] = useState<QuizLibraryCatalogItem[]>([])
+  const [selectedLibrary, setSelectedLibrary] = useState<QuizLibraryCatalogDetail | null>(null)
+  const [selectedScope, setSelectedScope] = useState<TrainingScope | null>(null)
+  const [scopePickerVisible, setScopePickerVisible] = useState(false)
   const [quizStats, setQuizStats] = useState<QuizStats | null>(null)
 
   useEffect(() => {
@@ -43,21 +55,16 @@ export default function TrainingPage() {
     }).catch(() => {
       // 课程数据加载失败静默处理
     })
-    listQuizCategories().then((tree) => {
-      setQuizTree(tree)
-      // 从树中提取平铺列表，用于 selectedQuiz 查找
-      const flat: QuizCategoryNode[] = []
-      const walk = (nodes: QuizCategoryNode[]) => {
-        for (const n of nodes) {
-          flat.push(n)
-          walk(n.children)
-        }
-      }
-      walk(tree)
-      setQuizCategories(flat)
-      setSelectedQuizId(flat[0]?.id ?? null)
+    listQuizLibraries().then((libraries) => {
+      setQuizLibraries(libraries)
+      const first = libraries[0]
+      if (!first) return undefined
+      return getQuizLibrary(first.id).then(detail => {
+        setSelectedLibrary(detail)
+        setSelectedScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
+      })
     }).catch(() => {
-      // 题库分类加载失败静默处理
+      // 无权益时服务端返回空目录；加载失败保持题库区域为空。
     })
     getQuizStats().then(setQuizStats).catch(() => {})
   }, [])
@@ -76,8 +83,6 @@ export default function TrainingPage() {
     ]
   }, [allCourses])
 
-  const selectedQuiz = quizCategories.find(q => q.id === selectedQuizId) || quizCategories[0]
-
   const techCourses = useMemo(() => {
     if (techTag === STRINGS.STUDY_TAG_ALL) return allCourses
     const eng = CATEGORY_LABEL_MAP[techTag] || techTag
@@ -85,13 +90,66 @@ export default function TrainingPage() {
     return allCourses.filter(c => c.category?.toLowerCase() === lower)
   }, [techTag, allCourses])
 
-  const handleQuizSelect = useCallback(() => {
-    setQuizPickerVisible(true)
+  const scopeTree = useMemo<TrainingScopePickerNode[]>(() => {
+    if (!selectedLibrary) return []
+    return [{
+      type: 'library',
+      id: selectedLibrary.id,
+      name: selectedLibrary.name,
+      questionCount: selectedLibrary.question_count,
+      question_count: selectedLibrary.question_count,
+      children: selectedLibrary.modules.map(module => ({
+        type: 'module',
+        id: module.id,
+        name: module.name,
+        questionCount: module.question_count,
+        question_count: module.question_count,
+        children: module.knowledge_points.map(point => ({
+          type: 'knowledge_point',
+          id: point.id,
+          name: point.name,
+          questionCount: point.question_count,
+          question_count: point.question_count,
+          children: [],
+        })),
+      })),
+    }]
+  }, [selectedLibrary])
+
+  const openLibraryScope = useCallback((library: QuizLibraryCatalogItem) => {
+    getQuizLibrary(library.id).then(detail => {
+      setSelectedLibrary(detail)
+      setSelectedScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
+      setScopePickerVisible(true)
+    }).catch(() => Taro.showToast({ title: '题库目录加载失败', icon: 'none' }))
   }, [])
 
-  const handleQuizSelectNode = useCallback((node: QuizCategoryNode) => {
-    setSelectedQuizId(node.id)
-    setQuizPickerVisible(false)
+  const handleQuizSelect = useCallback(() => {
+    if (quizLibraries.length === 0) return
+    if (quizLibraries.length === 1) {
+      if (selectedLibrary?.id === quizLibraries[0].id) setScopePickerVisible(true)
+      else openLibraryScope(quizLibraries[0])
+      return
+    }
+    Taro.showActionSheet({
+      itemList: quizLibraries.map(item => `${item.name}（${item.question_count}题）`),
+      success: result => {
+        const library = quizLibraries[result.tapIndex]
+        if (!library) return
+        if (selectedLibrary?.id === library.id) setScopePickerVisible(true)
+        else openLibraryScope(library)
+      },
+    })
+  }, [openLibraryScope, quizLibraries, selectedLibrary?.id])
+
+  const handleScopeSelect = useCallback((node: TrainingScopePickerNode) => {
+    setSelectedScope({
+      type: node.type,
+      id: node.id,
+      name: node.name,
+      questionCount: node.questionCount,
+    })
+    setScopePickerVisible(false)
   }, [])
 
   const handleQuizBottomNav = useCallback((item: QuizBottomItem) => {
@@ -165,8 +223,8 @@ export default function TrainingPage() {
     <View>
       <View className={styles.quizSelector} onClick={handleQuizSelect}>
         <View className={styles.quizSelectorInfo}>
-          <Text className={styles.quizSelectorTitle}>{selectedQuiz?.name || '请选择题库'}</Text>
-          <Text className={styles.quizSelectorHint}>点击可选择/切换题库</Text>
+          <Text className={styles.quizSelectorTitle}>{selectedScope?.name || selectedLibrary?.name || '暂无可用题库'}</Text>
+          <Text className={styles.quizSelectorHint}>点击按题库、模块或知识点选择范围</Text>
         </View>
         <Text className={styles.quizSelectorArrow}>▼</Text>
       </View>
@@ -176,10 +234,10 @@ export default function TrainingPage() {
           <View className={styles.statsItem}>
             <Text className={styles.statsValue}>
               {(() => {
-                return selectedQuiz?.question_count ?? '-'
+                return selectedScope?.questionCount ?? '-'
               })()}
             </Text>
-            <Text className={styles.statsLabel}>分类可用题量</Text>
+            <Text className={styles.statsLabel}>范围全部题量</Text>
           </View>
           <View className={styles.statsItem}>
             <Text className={styles.statsValue}>
@@ -194,7 +252,7 @@ export default function TrainingPage() {
             <Text className={styles.statsLabel}>全局首答正确率</Text>
           </View>
         </View>
-        <View className={styles.statsCta} onClick={() => selectedQuizId && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}?categoryId=${selectedQuizId}` })}>
+        <View className={styles.statsCta} onClick={() => selectedScope && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}` })}>
           <Text className={styles.statsCtaText}>开始练习</Text>
         </View>
       </View>
@@ -217,11 +275,12 @@ export default function TrainingPage() {
       </AuthGuard>
       <CustomTabBar activeTabKey='pages/training/index' onSwitch={(url: string) => Taro.switchTab({ url })} />
       <QuizCategoryPicker
-        visible={quizPickerVisible}
-        tree={quizTree}
-        selectedId={selectedQuizId}
-        onSelect={handleQuizSelectNode}
-        onClose={() => setQuizPickerVisible(false)}
+        visible={scopePickerVisible}
+        tree={scopeTree}
+        selectedId={selectedScope?.id ?? null}
+        onSelect={handleScopeSelect}
+        onClose={() => setScopePickerVisible(false)}
+        title='选择练习范围'
       />
     </View>
   )

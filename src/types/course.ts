@@ -95,6 +95,16 @@ export interface CourseSchedule {
   location?: string | null
 }
 
+export interface CourseQuizLibrarySummary {
+  id: number
+  library_code: string
+  name: string
+  description: string | null
+  cover_url: string | null
+  status: 'draft' | 'published' | 'suspended'
+  available: boolean
+}
+
 /** 课程详情 — 对齐 Backend CourseDetailResponse */
 export interface CourseDetail {
   id: number
@@ -116,4 +126,6 @@ export interface CourseDetail {
   chapters: CourseChapter[]
   /** 试看时长（秒） */
   free_preview_seconds: number | null
+  /** 购买课程后赠送的题库；展示资料始终读取当前绑定状态 */
+  included_quiz_libraries: CourseQuizLibrarySummary[]
 }

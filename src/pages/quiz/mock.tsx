@@ -6,13 +6,14 @@ import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
-import type { QuizAnswer, QuizCategoryNode, QuizExamDetail, QuizExamInProgress, QuizExamQuestionState } from '@/contracts/quiz'
+import type { QuizAnswer, QuizExamDetail, QuizExamInProgress, QuizExamQuestionState, QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType } from '@/contracts/quiz'
 import {
   abandonQuizExam,
   createQuizExam,
   getCurrentQuizExam,
   getQuizExam,
-  listQuizCategories,
+  getQuizLibrary,
+  listQuizLibraries,
   saveQuizExamAnswer,
   submitQuizExam,
 } from '@/services/dataService'
@@ -35,8 +36,16 @@ interface TerminalActionFallback {
   status: 'completed' | 'timed_out' | 'abandoned'
 }
 
-function flattenCategories(nodes: QuizCategoryNode[]): QuizCategoryNode[] {
-  return nodes.flatMap(node => [node, ...flattenCategories(node.children)])
+interface ExamScope {
+  type: QuizPracticeScopeType
+  id: number
+  name: string
+  questionCount: number
+}
+
+interface ExamScopePickerNode extends ExamScope {
+  question_count: number
+  children: ExamScopePickerNode[]
 }
 
 function messageOf(error: unknown): string {
@@ -49,10 +58,10 @@ function isNotFound(error: unknown): boolean {
 
 export default function QuizMockPage() {
   const [exam, setExam] = useState<QuizExamDetail | null>(null)
-  const [categories, setCategories] = useState<QuizCategoryNode[]>([])
-  const [quizTree, setQuizTree] = useState<QuizCategoryNode[]>([])
-  const [categoryId, setCategoryId] = useState<number | null>(null)
-  const [quizPickerVisible, setQuizPickerVisible] = useState(false)
+  const [libraries, setLibraries] = useState<QuizLibraryCatalogItem[]>([])
+  const [library, setLibrary] = useState<QuizLibraryCatalogDetail | null>(null)
+  const [scope, setScope] = useState<ExamScope | null>(null)
+  const [scopePickerVisible, setScopePickerVisible] = useState(false)
   const [questionCount, setQuestionCount] = useState<number>(20)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -90,15 +99,15 @@ export default function QuizMockPage() {
 
   useLoad(options => {
     const explicitExamId = Number(options?.examId)
-    const explicitCategoryId = Number(options?.categoryId)
+    const explicitScopeId = Number(options?.scopeId)
+    const explicitScopeType = options?.scopeType as QuizPracticeScopeType | undefined
     const cachedExamId = getCachedExamId()
-    if (Number.isInteger(explicitCategoryId) && explicitCategoryId > 0) setCategoryId(explicitCategoryId)
-    const categoriesRequest = listQuizCategories().catch(error => {
-      setLoadError(`分类加载失败：${messageOf(error)}`)
+    const librariesRequest = listQuizLibraries().catch(error => {
+      setLoadError(`题库加载失败：${messageOf(error)}`)
       return []
     })
     Promise.all([
-      categoriesRequest,
+      librariesRequest,
       Number.isInteger(explicitExamId) && explicitExamId > 0
         ? getQuizExam(explicitExamId)
         : cachedExamId
@@ -109,11 +118,28 @@ export default function QuizMockPage() {
           })
           : getCurrentQuizExam(),
     ])
-      .then(([tree, current]) => {
-        const flat = flattenCategories(tree)
-        setCategories(flat)
-        setQuizTree(tree)
-        if (!Number.isInteger(explicitCategoryId) && flat.length > 0) setCategoryId(flat[0].id)
+      .then(async ([items, current]) => {
+        setLibraries(items)
+        const first = items[0]
+        if (first) {
+          const detail = await getQuizLibrary(first.id)
+          setLibrary(detail)
+          if (explicitScopeType && Number.isInteger(explicitScopeId) && explicitScopeId > 0) {
+            const explicitName = explicitScopeType === 'library'
+              ? detail.name
+              : explicitScopeType === 'module'
+                ? detail.modules.find(item => item.id === explicitScopeId)?.name
+                : detail.modules.flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.name
+            const explicitCount = explicitScopeType === 'library'
+              ? detail.question_count
+              : explicitScopeType === 'module'
+                ? detail.modules.find(item => item.id === explicitScopeId)?.question_count
+                : detail.modules.flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.question_count
+            setScope({ type: explicitScopeType, id: explicitScopeId, name: explicitName ?? '已选范围', questionCount: explicitCount ?? 0 })
+          } else {
+            setScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
+          }
+        }
         if (current) applyExam(current)
       })
       .catch(error => setLoadError(messageOf(error)))
@@ -138,11 +164,11 @@ export default function QuizMockPage() {
   }, [exam?.id, exam?.status, exam?.deadline_at])
 
   const create = async () => {
-    if (!categoryId || creating) return
+    if (!scope || creating) return
     setCreating(true)
     setLoadError('')
     try {
-      const created = await createQuizExam(categoryId, questionCount)
+      const created = await createQuizExam({ scope_type: scope.type, scope_id: scope.id, question_count: questionCount })
       applyExam(created)
     } catch (error) {
       setLoadError(messageOf(error))
@@ -151,13 +177,60 @@ export default function QuizMockPage() {
     }
   }
 
-  const chooseCategory = () => {
-    setQuizPickerVisible(true)
+  const scopeTree = useMemo<ExamScopePickerNode[]>(() => {
+    if (!library) return []
+    return [{
+      type: 'library',
+      id: library.id,
+      name: library.name,
+      questionCount: library.question_count,
+      question_count: library.question_count,
+      children: library.modules.map(module => ({
+        type: 'module',
+        id: module.id,
+        name: module.name,
+        questionCount: module.question_count,
+        question_count: module.question_count,
+        children: module.knowledge_points.map(point => ({
+          type: 'knowledge_point',
+          id: point.id,
+          name: point.name,
+          questionCount: point.question_count,
+          question_count: point.question_count,
+          children: [],
+        })),
+      })),
+    }]
+  }, [library])
+
+  const chooseScope = () => {
+    if (!library) return
+    setScopePickerVisible(true)
   }
 
-  const handleSelectCategory = (node: QuizCategoryNode) => {
-    setCategoryId(node.id)
-    setQuizPickerVisible(false)
+  const selectScope = (selected: ExamScopePickerNode) => {
+    setScope({
+      type: selected.type,
+      id: selected.id,
+      name: selected.name,
+      questionCount: selected.questionCount,
+    })
+    setScopePickerVisible(false)
+  }
+
+  const chooseLibrary = () => {
+    if (libraries.length === 0) return
+    Taro.showActionSheet({
+      itemList: libraries.map(item => `${item.name}（${item.question_count}题）`),
+      success: result => {
+        const selected = libraries[result.tapIndex]
+        if (!selected) return
+        getQuizLibrary(selected.id).then(detail => {
+          setLibrary(detail)
+          setScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
+        }).catch(error => setLoadError(messageOf(error)))
+      },
+    })
   }
 
   const selectAnswer = async (question: QuizExamQuestionState, label: string) => {
@@ -272,16 +345,15 @@ export default function QuizMockPage() {
     })
   }
 
-  const selectedCategory = categories.find(category => category.id === categoryId)
-  const availableCounts = QUESTION_COUNTS.filter(count => count <= (selectedCategory?.question_count ?? 0))
+  const availableCounts = QUESTION_COUNTS.filter(count => count <= (scope?.questionCount ?? 0))
 
   useEffect(() => {
-    const max = selectedCategory?.question_count ?? 0
+    const max = scope?.questionCount ?? 0
     if (max > 0 && questionCount > max) {
       const fallback = QUESTION_COUNTS.filter(count => count <= max).pop()
       if (fallback) setQuestionCount(fallback)
     }
-  }, [selectedCategory?.id, questionCount])
+  }, [scope?.id, scope?.questionCount, questionCount])
   if (loading) return <AuthGuard><View className={styles.page}><PageHeader title='模拟考试' shouldShowBack /><View className={styles.emptyBody}><Text>正在恢复考试…</Text></View></View></AuthGuard>
 
   if (terminalAction) {
@@ -326,23 +398,25 @@ export default function QuizMockPage() {
           <View className={styles.setupBody}>
             <Text className={styles.setupTitle}>创建 60 分钟模拟考试</Text>
             <Text className={styles.setupHint}>同一时间只能有一场进行中考试；题目顺序由服务端随机固定。</Text>
-            <View className={styles.selector} onClick={chooseCategory}><Text>{selectedCategory?.name ?? '请选择分类'}</Text><Text>›</Text></View>
+            <View className={styles.selector} onClick={chooseLibrary}><Text>{library?.name ?? '请选择题库'}</Text><Text>›</Text></View>
+            <View className={styles.selector} onClick={chooseScope}><Text>{scope ? `${scope.name}（可用 ${scope.questionCount} 题）` : '请选择考试范围'}</Text><Text>›</Text></View>
             {availableCounts.length > 0 ? (
               <View className={styles.countGrid}>{availableCounts.map(count => <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}><Text>{count} 题</Text></View>)}</View>
             ) : (
-              <Text className={styles.errorText}>该分类题目不足 10 题，无法创建模拟考试</Text>
+              <Text className={styles.errorText}>{scope ? '该范围题目不足 10 题，无法创建模拟考试' : '请先选择考试范围'}</Text>
             )}
             {loadError && <Text className={styles.errorText}>{loadError}</Text>}
-            <Button variant='gradient' size='lg' loading={creating} disabled={!categoryId || availableCounts.length === 0 || creating} onClick={create}>{creating ? '创建中…' : '开始考试'}</Button>
+            <Button variant='gradient' size='lg' loading={creating} disabled={!scope || availableCounts.length === 0 || creating} onClick={create}>{creating ? '创建中…' : '开始考试'}</Button>
             <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: '/pages/quiz/exam-history' })}>查看考试历史</Button>
           </View>
         </View>
         <QuizCategoryPicker
-          visible={quizPickerVisible}
-          tree={quizTree}
-          selectedId={categoryId}
-          onSelect={handleSelectCategory}
-          onClose={() => setQuizPickerVisible(false)}
+          visible={scopePickerVisible}
+          tree={scopeTree}
+          selectedId={scope?.id ?? null}
+          onSelect={selectScope}
+          onClose={() => setScopePickerVisible(false)}
+          title='选择考试范围'
         />
       </AuthGuard>
     )
