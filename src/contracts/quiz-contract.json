@@ -1,7 +1,7 @@
 {
   "admin_operation_count": 52,
-  "fingerprint_sha256": "2c40ec34ca35b2ec599ee1bfadb6de29c21f3d86fc0e5e60c1774f02dd99b068",
-  "operation_count": 78,
+  "fingerprint_sha256": "6552cee33a6e6f6025a00910d7549167ef32b9ce39f9d4f7bf5e15733ccc44c4",
+  "operation_count": 80,
   "operations": [
     {
       "auth": "admin",
@@ -516,6 +516,13 @@
     },
     {
       "auth": "user",
+      "method": "PUT",
+      "path": "/api/quiz/practice-sessions/{session_id}/answers/{session_question_id}",
+      "permission": null,
+      "rate_limit_per_minute": 120
+    },
+    {
+      "auth": "user",
       "method": "POST",
       "path": "/api/quiz/practice-sessions/{session_id}/attempts",
       "permission": null,
@@ -525,6 +532,13 @@
       "auth": "user",
       "method": "POST",
       "path": "/api/quiz/practice-sessions/{session_id}/questions/{session_question_id}/skip",
+      "permission": null,
+      "rate_limit_per_minute": null
+    },
+    {
+      "auth": "user",
+      "method": "POST",
+      "path": "/api/quiz/practice-sessions/{session_id}/submit",
       "permission": null,
       "rate_limit_per_minute": null
     },
@@ -550,7 +564,7 @@
       "rate_limit_per_minute": null
     }
   ],
-  "quiz_contract_version": "2026-08-13",
+  "quiz_contract_version": "2026-08-14",
   "removed_operation_count": 14,
   "removed_operations": [
     {
@@ -611,5 +625,5 @@
     }
   ],
   "schema_version": 1,
-  "user_operation_count": 26
+  "user_operation_count": 28
 }

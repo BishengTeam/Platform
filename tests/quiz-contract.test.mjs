@@ -4,6 +4,7 @@ import {
   QuizContractError,
   parseExamDetail,
   parsePracticeScopePreview,
+  parsePracticeAnswerSaved,
   parsePracticeSession,
   parsePracticeSkip,
   parseQuizCategories,
@@ -30,6 +31,11 @@ const v2Question = {
     { id: 31, name: 'TCP/IP', kind: 'knowledge_point' },
   ],
   answered: false,
+  user_answer: null,
+  answer_lock_version: 0,
+  correct_answer: null,
+  explanation: null,
+  is_correct: null,
   attempt_count: 0,
   latest_result: null,
 }
@@ -126,7 +132,7 @@ test('V2 scope preview preserves unfinished-session and large-scope semantics', 
   assert.throws(() => parsePracticeScopePreview({ ...preview, valid_days: 30 }), QuizContractError)
 })
 
-test('V2 small-window session strictly parses pause and terminal states', () => {
+test('V2 full-question session strictly parses pause and terminal states', () => {
   const active = parsePracticeSession(v2Session())
   assert.equal(active.actual_count, 120)
   assert.equal(active.questions.length, 1)
@@ -165,6 +171,18 @@ test('skip response is parsed directly and cannot introduce a loose DTO', () => 
     skip_count: 2,
     next_question: null,
   }), QuizContractError)
+})
+
+test('practice answer save parses only the non-grading receipt', () => {
+  const saved = parsePracticeAnswerSaved({
+    session_id: 601,
+    session_question_id: 501,
+    user_answer: ['A', 'C'],
+    lock_version: 2,
+    saved_at: '2026-08-14T01:00:00Z',
+  })
+  assert.equal(saved.lock_version, 2)
+  assert.throws(() => parsePracticeAnswerSaved({ ...saved, is_correct: true }), QuizContractError)
 })
 
 test('stats parser converts Pydantic Decimal strings without accepting guesses', () => {
@@ -206,7 +224,7 @@ test('practice parser rejects answer leakage outside a submitted result', () => 
     completed_at: null,
     abandoned_at: null,
     lock_version: 1,
-    questions: [{ id: 3, category_id: 2, question_type: 'single_choice', question_text: '题干', options: { A: '甲', B: '乙', C: '丙' }, session_question_id: 4, position: 1, category_path: [{ id: 2, name: '分类' }], answered: false, attempt_count: 0, latest_result: null }],
+    questions: [{ id: 3, category_id: 2, question_type: 'single_choice', question_text: '题干', options: { A: '甲', B: '乙', C: '丙' }, session_question_id: 4, position: 1, category_path: [{ id: 2, name: '分类' }], answered: false, user_answer: null, answer_lock_version: 0, correct_answer: null, explanation: null, is_correct: null, attempt_count: 0, latest_result: null }],
   }
   assert.equal(parsePracticeSession(session).questions[0].latest_result, null)
   session.questions[0].correct_answer = 'A'
@@ -221,6 +239,8 @@ test('wrong-book parser permits status markers but rejects answers and explanati
     page_size: 20,
   }
   assert.equal(parseWrongBookPage(page).items[0].question_status, 'disabled')
+  page.items[0].question_status = 'deleted'
+  assert.equal(parseWrongBookPage(page).items[0].question_status, 'deleted')
   page.items[0].question.explanation = '不应泄露'
   assert.throws(() => parseWrongBookPage(page), QuizContractError)
 })

@@ -1,4 +1,4 @@
-/** Quiz API client. All 26 user operations use the frozen 2026-08-13 contract. */
+/** Quiz API client. All 28 user operations use the frozen 2026-08-14 contract. */
 
 import { del, get, post, put } from '@/utils/request'
 import {
@@ -13,6 +13,7 @@ import {
   parseNullableExam,
   parseNullablePracticeSession,
   parsePracticeAbandon,
+  parsePracticeAnswerSaved,
   parsePracticeAttempt,
   parsePracticeHistoryPage,
   parsePracticeScopePreview,
@@ -38,6 +39,7 @@ import type {
   QuizExamDetail,
   QuizExamListItem,
   QuizPracticeAbandonResult,
+  QuizPracticeAnswerSaved,
   QuizPracticeAttemptResult,
   QuizPracticeHistoryItem,
   QuizPracticeMode,
@@ -143,6 +145,19 @@ export async function submitPracticeAttempt(sessionId: number, input: {
 }): Promise<QuizPracticeAttemptResult> {
   const response = await post<unknown>(`/api/quiz/practice-sessions/${sessionId}/attempts`, queryData(input))
   return parsePracticeAttempt(response.data)
+}
+
+export async function savePracticeAnswer(sessionId: number, sessionQuestionId: number, input: {
+  user_answer: QuizAnswer
+  lock_version: number
+}): Promise<QuizPracticeAnswerSaved> {
+  const response = await put<unknown>(`/api/quiz/practice-sessions/${sessionId}/answers/${sessionQuestionId}`, queryData(input))
+  return parsePracticeAnswerSaved(response.data)
+}
+
+export async function submitPracticeSession(sessionId: number): Promise<QuizPracticeSession> {
+  const response = await post<unknown>(`/api/quiz/practice-sessions/${sessionId}/submit`)
+  return parsePracticeSession(response.data)
 }
 
 export async function abandonPracticeSession(sessionId: number): Promise<QuizPracticeAbandonResult> {
