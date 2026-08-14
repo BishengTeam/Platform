@@ -20,9 +20,9 @@ import styles from './index.module.scss'
 const MAIN_TABS = [STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
 
 const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
-  { label: '模拟考试', icon: '📋', route: ROUTES.QUIZ_MOCK },
-  { label: '错题', icon: '📕', route: ROUTES.QUIZ_WRONG_BOOK },
-  { label: '收藏', icon: '⭐', route: ROUTES.QUIZ_COLLECTIONS },
+  { label: '模拟考试', icon: 'clipboard', color: '#1677FF', route: ROUTES.QUIZ_MOCK },
+  { label: '错题', icon: 'book-open', color: '#FF4D4F', route: ROUTES.QUIZ_WRONG_BOOK },
+  { label: '收藏', icon: 'star', color: '#FA8C16', route: ROUTES.QUIZ_COLLECTIONS },
 ]
 
 export default function TrainingPage() {

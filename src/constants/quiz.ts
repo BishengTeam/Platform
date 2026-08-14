@@ -11,6 +11,7 @@ export interface QuizBottomItem {
   label: string
   icon: string
   route: string
+  color?: string
 }
 
 export const QUIZ_GRID: QuizGridItem[] = [

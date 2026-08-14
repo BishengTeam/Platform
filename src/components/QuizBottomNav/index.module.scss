@@ -17,6 +17,15 @@
   font-size: 24px;
 }
 
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: $radius-md;
+}
+
 .quizBottomLabel {
   font-size: $font-sm;
   color: $color-text-secondary;
