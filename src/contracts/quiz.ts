@@ -8,8 +8,10 @@
 export type QuizAnswer = string | string[]
 export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'judge'
 export type QuizQuestionStatus = 'draft' | 'published' | 'disabled'
-export type QuizPracticeMode = 'normal' | 'wrong'
-export type QuizPracticeStatus = 'in_progress' | 'completed' | 'abandoned'
+export type QuizPracticeMode = 'normal' | 'wrong' | 'full' | 'wrong_only' | 'legacy_limited'
+export type QuizPracticeStatus = 'in_progress' | 'paused' | 'completed' | 'abandoned' | 'expired' | 'terminated'
+export type QuizPracticeScopeType = 'library' | 'module' | 'knowledge_point'
+export type QuizPracticePauseReason = 'quiz_library_suspended' | 'quiz_entitlement_inactive'
 export type QuizExamStatus = 'in_progress' | 'completed' | 'timed_out' | 'abandoned'
 
 export interface QuizCategoryNode {
@@ -23,9 +25,62 @@ export interface QuizCategoryNode {
   children: QuizCategoryNode[]
 }
 
+export type QuizLibraryAccessMode = 'free' | 'course_entitlement'
+
+export interface QuizKnowledgePointCatalogItem {
+  id: number
+  module_id: number
+  name: string
+  description: string | null
+  sort_order: number
+  question_count: number
+}
+
+export interface QuizModuleCatalogItem {
+  id: number
+  library_id: number
+  name: string
+  description: string | null
+  sort_order: number
+  question_count: number
+  knowledge_points: QuizKnowledgePointCatalogItem[]
+}
+
+export interface QuizLibraryCatalogItem {
+  id: number
+  library_code: string
+  name: string
+  description: string
+  cover_url: string
+  access_mode: QuizLibraryAccessMode
+  question_count: number
+  module_count: number
+}
+
+export interface QuizLibraryCatalogDetail extends QuizLibraryCatalogItem {
+  details: string | null
+  modules: QuizModuleCatalogItem[]
+}
+
+export interface QuizPracticeScopePreview {
+  library_id: number
+  scope_type: QuizPracticeScopeType
+  scope_id: number
+  mode: 'full' | 'wrong_only'
+  question_count: number
+  estimated_minutes: number
+  valid_days: 7
+  requires_large_scope_confirmation: boolean
+  unfinished_session_id: number | null
+  unfinished_session_expires_at: string | null
+}
+
 export interface QuizPublicQuestion {
   id: number
-  category_id: number
+  category_id: number | null
+  library_id?: number | null
+  knowledge_point_id?: number | null
+  question_revision_id?: number | null
   question_type: QuizQuestionType
   question_text: string
   options: Record<string, string>
@@ -34,6 +89,7 @@ export interface QuizPublicQuestion {
 export interface QuizCategoryPathItem {
   id: number
   name: string
+  kind?: 'library' | 'module' | 'knowledge_point' | 'category' | null
 }
 
 export interface QuizPracticeAttemptResult {
@@ -59,14 +115,32 @@ export interface QuizPracticeSession {
   id: number
   mode: QuizPracticeMode
   category_id: number | null
+  library_id: number | null
+  scope_type: QuizPracticeScopeType | null
+  scope_id: number | null
   requested_count: number
   actual_count: number
   status: QuizPracticeStatus
   started_at: string
   completed_at: string | null
   abandoned_at: string | null
+  expires_at: string | null
+  paused_at: string | null
+  pause_reason: QuizPracticePauseReason | null
+  answered_count: number
+  remaining_count: number
+  current_position: number | null
+  created_new: boolean
+  resume_available: boolean
   lock_version: number
   questions: QuizPracticeQuestionState[]
+}
+
+export interface QuizPracticeSkipResult {
+  session_id: number
+  session_question_id: number
+  skip_count: 1
+  next_question: QuizPracticeQuestionState | null
 }
 
 export interface QuizPracticeAbandonResult {
@@ -164,7 +238,10 @@ export interface QuizStats {
 
 interface QuizExamBase {
   id: number
-  category_id: number
+  category_id: number | null
+  library_id: number | null
+  scope_type: QuizPracticeScopeType | null
+  scope_id: number | null
   question_count: number
   duration_seconds: 3600
   started_at: string
@@ -220,7 +297,10 @@ export type QuizExamDetail = QuizExamInProgress | QuizExamAbandoned | QuizExamSe
 
 export interface QuizExamListItem {
   id: number
-  category_id: number
+  category_id: number | null
+  library_id: number | null
+  scope_type: QuizPracticeScopeType | null
+  scope_id: number | null
   question_count: number
   duration_seconds: 3600
   status: QuizExamStatus
@@ -366,9 +446,89 @@ function questionStatusAt(value: unknown, path: string): QuizQuestionStatus {
 
 function categoryPathAt(value: unknown, path: string): QuizCategoryPathItem[] {
   return arrayOf(value, path, (item, itemPath) => {
-    const object = exactObject(item, itemPath, ['id', 'name'])
-    return { id: integerAt(object.id, `${itemPath}.id`), name: stringAt(object.name, `${itemPath}.name`) }
+    const object = objectAt(item, itemPath)
+    const keys = Object.keys(object).sort().join(',')
+    if (keys !== 'id,name' && keys !== 'id,kind,name') {
+      throw new QuizContractError(itemPath, 'id/name 或 id/name/kind 对象')
+    }
+    return {
+      id: integerAt(object.id, `${itemPath}.id`),
+      name: stringAt(object.name, `${itemPath}.name`),
+      ...(object.kind !== undefined ? { kind: nullable(object.kind, `${itemPath}.kind`, (entry, entryPath) => literalAt(entry, entryPath, ['library', 'module', 'knowledge_point', 'category'] as const)) } : {}),
+    }
   })
+}
+
+function parseKnowledgePoint(value: unknown, path: string): QuizKnowledgePointCatalogItem {
+  const object = exactObject(value, path, ['id', 'module_id', 'name', 'description', 'sort_order', 'question_count'])
+  return {
+    id: integerAt(object.id, `${path}.id`),
+    module_id: integerAt(object.module_id, `${path}.module_id`),
+    name: stringAt(object.name, `${path}.name`),
+    description: nullable(object.description, `${path}.description`, stringAt),
+    sort_order: integerAt(object.sort_order, `${path}.sort_order`),
+    question_count: integerAt(object.question_count, `${path}.question_count`),
+  }
+}
+
+function parseModule(value: unknown, path: string): QuizModuleCatalogItem {
+  const object = exactObject(value, path, ['id', 'library_id', 'name', 'description', 'sort_order', 'question_count', 'knowledge_points'])
+  return {
+    id: integerAt(object.id, `${path}.id`),
+    library_id: integerAt(object.library_id, `${path}.library_id`),
+    name: stringAt(object.name, `${path}.name`),
+    description: nullable(object.description, `${path}.description`, stringAt),
+    sort_order: integerAt(object.sort_order, `${path}.sort_order`),
+    question_count: integerAt(object.question_count, `${path}.question_count`),
+    knowledge_points: arrayOf(object.knowledge_points, `${path}.knowledge_points`, parseKnowledgePoint),
+  }
+}
+
+function parseLibraryBase(value: unknown, path: string, detail: boolean): QuizLibraryCatalogItem | QuizLibraryCatalogDetail {
+  const keys = ['id', 'library_code', 'name', 'description', 'cover_url', 'access_mode', 'question_count', 'module_count']
+  const object = exactObject(value, path, detail ? [...keys, 'details', 'modules'] : keys)
+  const base: QuizLibraryCatalogItem = {
+    id: integerAt(object.id, `${path}.id`),
+    library_code: stringAt(object.library_code, `${path}.library_code`),
+    name: stringAt(object.name, `${path}.name`),
+    description: stringAt(object.description, `${path}.description`),
+    cover_url: stringAt(object.cover_url, `${path}.cover_url`),
+    access_mode: literalAt(object.access_mode, `${path}.access_mode`, ['free', 'course_entitlement'] as const),
+    question_count: integerAt(object.question_count, `${path}.question_count`),
+    module_count: integerAt(object.module_count, `${path}.module_count`),
+  }
+  if (!detail) return base
+  return {
+    ...base,
+    details: nullable(object.details, `${path}.details`, stringAt),
+    modules: arrayOf(object.modules, `${path}.modules`, parseModule),
+  }
+}
+
+export function parseQuizLibraries(value: unknown): QuizLibraryCatalogItem[] {
+  return arrayOf(value, 'data', (item, path) => parseLibraryBase(item, path, false) as QuizLibraryCatalogItem)
+}
+
+export function parseQuizLibrary(value: unknown): QuizLibraryCatalogDetail {
+  return parseLibraryBase(value, 'data', true) as QuizLibraryCatalogDetail
+}
+
+export function parsePracticeScopePreview(value: unknown): QuizPracticeScopePreview {
+  const object = exactObject(value, 'data', ['library_id', 'scope_type', 'scope_id', 'mode', 'question_count', 'estimated_minutes', 'valid_days', 'requires_large_scope_confirmation', 'unfinished_session_id', 'unfinished_session_expires_at'])
+  const validDays = integerAt(object.valid_days, 'data.valid_days')
+  if (validDays !== 7) throw new QuizContractError('data.valid_days', '7')
+  return {
+    library_id: integerAt(object.library_id, 'data.library_id'),
+    scope_type: literalAt(object.scope_type, 'data.scope_type', ['library', 'module', 'knowledge_point'] as const),
+    scope_id: integerAt(object.scope_id, 'data.scope_id'),
+    mode: literalAt(object.mode, 'data.mode', ['full', 'wrong_only'] as const),
+    question_count: integerAt(object.question_count, 'data.question_count'),
+    estimated_minutes: integerAt(object.estimated_minutes, 'data.estimated_minutes'),
+    valid_days: 7,
+    requires_large_scope_confirmation: booleanAt(object.requires_large_scope_confirmation, 'data.requires_large_scope_confirmation'),
+    unfinished_session_id: nullable(object.unfinished_session_id, 'data.unfinished_session_id', integerAt),
+    unfinished_session_expires_at: nullable(object.unfinished_session_expires_at, 'data.unfinished_session_expires_at', dateTimeAt),
+  }
 }
 
 export function parseQuizCategory(value: unknown, path = 'data'): QuizCategoryNode {
@@ -392,10 +552,17 @@ export function parseQuizCategories(value: unknown): QuizCategoryNode[] {
 }
 
 export function parseQuizQuestion(value: unknown, path = 'data'): QuizPublicQuestion {
-  const object = exactObject(value, path, ['id', 'category_id', 'question_type', 'question_text', 'options'])
+  const object = objectAt(value, path)
+  const required = ['id', 'category_id', 'question_type', 'question_text', 'options']
+  const allowed = new Set([...required, 'library_id', 'knowledge_point_id', 'question_revision_id'])
+  for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
+  for (const key of required) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
     id: integerAt(object.id, `${path}.id`),
-    category_id: integerAt(object.category_id, `${path}.category_id`),
+    category_id: nullable(object.category_id, `${path}.category_id`, integerAt),
+    ...(object.library_id !== undefined ? { library_id: nullable(object.library_id, `${path}.library_id`, integerAt) } : {}),
+    ...(object.knowledge_point_id !== undefined ? { knowledge_point_id: nullable(object.knowledge_point_id, `${path}.knowledge_point_id`, integerAt) } : {}),
+    ...(object.question_revision_id !== undefined ? { question_revision_id: nullable(object.question_revision_id, `${path}.question_revision_id`, integerAt) } : {}),
     question_type: questionTypeAt(object.question_type, `${path}.question_type`),
     question_text: stringAt(object.question_text, `${path}.question_text`),
     options: optionsAt(object.options, `${path}.options`),
@@ -428,9 +595,14 @@ export function parsePracticeAttempt(value: unknown, path = 'data'): QuizPractic
 }
 
 function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuestionState {
-  const object = exactObject(value, path, ['id', 'category_id', 'question_type', 'question_text', 'options', 'session_question_id', 'position', 'category_path', 'answered', 'attempt_count', 'latest_result'])
+  const object = objectAt(value, path)
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'session_question_id', 'position', 'category_path', 'answered', 'attempt_count', 'latest_result']
+  const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
+  const allowed = new Set([...baseKeys, ...optionalKeys])
+  for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
+  for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion({ id: object.id, category_id: object.category_id, question_type: object.question_type, question_text: object.question_text, options: object.options }, path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     session_question_id: integerAt(object.session_question_id, `${path}.session_question_id`),
     position: integerAt(object.position, `${path}.position`),
     category_path: categoryPathAt(object.category_path, `${path}.category_path`),
@@ -441,19 +613,47 @@ function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuesti
 }
 
 export function parsePracticeSession(value: unknown): QuizPracticeSession {
-  const object = exactObject(value, 'data', ['id', 'mode', 'category_id', 'requested_count', 'actual_count', 'status', 'started_at', 'completed_at', 'abandoned_at', 'lock_version', 'questions'])
+  const object = objectAt(value, 'data')
+  const legacyKeys = ['id', 'mode', 'category_id', 'requested_count', 'actual_count', 'status', 'started_at', 'completed_at', 'abandoned_at', 'lock_version', 'questions']
+  const extendedKeys = [...legacyKeys, 'library_id', 'scope_type', 'scope_id', 'expires_at', 'paused_at', 'pause_reason', 'answered_count', 'remaining_count', 'current_position', 'created_new', 'resume_available']
+  const hasExtendedShape = 'scope_type' in object
+  const expected = hasExtendedShape ? extendedKeys : legacyKeys
+  exactObject(value, 'data', expected)
   return {
     id: integerAt(object.id, 'data.id'),
-    mode: literalAt(object.mode, 'data.mode', ['normal', 'wrong'] as const),
+    mode: literalAt(object.mode, 'data.mode', ['normal', 'wrong', 'full', 'wrong_only', 'legacy_limited'] as const),
     category_id: nullable(object.category_id, 'data.category_id', integerAt),
+    library_id: hasExtendedShape ? nullable(object.library_id, 'data.library_id', integerAt) : null,
+    scope_type: hasExtendedShape ? nullable(object.scope_type, 'data.scope_type', (entry, path) => literalAt(entry, path, ['library', 'module', 'knowledge_point'] as const)) : null,
+    scope_id: hasExtendedShape ? nullable(object.scope_id, 'data.scope_id', integerAt) : null,
     requested_count: integerAt(object.requested_count, 'data.requested_count'),
     actual_count: integerAt(object.actual_count, 'data.actual_count'),
-    status: literalAt(object.status, 'data.status', ['in_progress', 'completed', 'abandoned'] as const),
+    status: literalAt(object.status, 'data.status', ['in_progress', 'paused', 'completed', 'abandoned', 'expired', 'terminated'] as const),
     started_at: dateTimeAt(object.started_at, 'data.started_at'),
     completed_at: nullable(object.completed_at, 'data.completed_at', dateTimeAt),
     abandoned_at: nullable(object.abandoned_at, 'data.abandoned_at', dateTimeAt),
+    expires_at: hasExtendedShape ? nullable(object.expires_at, 'data.expires_at', dateTimeAt) : null,
+    paused_at: hasExtendedShape ? nullable(object.paused_at, 'data.paused_at', dateTimeAt) : null,
+    pause_reason: hasExtendedShape ? nullable(object.pause_reason, 'data.pause_reason', (entry, path) => literalAt(entry, path, ['quiz_library_suspended', 'quiz_entitlement_inactive'] as const)) : null,
+    answered_count: hasExtendedShape ? integerAt(object.answered_count, 'data.answered_count') : 0,
+    remaining_count: hasExtendedShape ? integerAt(object.remaining_count, 'data.remaining_count') : 0,
+    current_position: hasExtendedShape ? nullable(object.current_position, 'data.current_position', integerAt) : null,
+    created_new: hasExtendedShape ? booleanAt(object.created_new, 'data.created_new') : true,
+    resume_available: hasExtendedShape ? booleanAt(object.resume_available, 'data.resume_available') : false,
     lock_version: integerAt(object.lock_version, 'data.lock_version'),
     questions: arrayOf(object.questions, 'data.questions', parsePracticeQuestion),
+  }
+}
+
+export function parsePracticeSkip(value: unknown): QuizPracticeSkipResult {
+  const object = exactObject(value, 'data', ['session_id', 'session_question_id', 'skip_count', 'next_question'])
+  const skipCount = integerAt(object.skip_count, 'data.skip_count')
+  if (skipCount !== 1) throw new QuizContractError('data.skip_count', '1')
+  return {
+    session_id: integerAt(object.session_id, 'data.session_id'),
+    session_question_id: integerAt(object.session_question_id, 'data.session_question_id'),
+    skip_count: 1,
+    next_question: nullable(object.next_question, 'data.next_question', parsePracticeQuestion),
   }
 }
 
@@ -589,7 +789,10 @@ function parseExamBase(value: JsonObject, path: string): QuizExamBase {
   if (duration !== 3600) throw new QuizContractError(`${path}.duration_seconds`, '3600')
   return {
     id: integerAt(value.id, `${path}.id`),
-    category_id: integerAt(value.category_id, `${path}.category_id`),
+    category_id: nullable(value.category_id, `${path}.category_id`, integerAt),
+    library_id: nullable(value.library_id, `${path}.library_id`, integerAt),
+    scope_type: nullable(value.scope_type, `${path}.scope_type`, (entry, entryPath) => literalAt(entry, entryPath, ['library', 'module', 'knowledge_point'] as const)),
+    scope_id: nullable(value.scope_id, `${path}.scope_id`, integerAt),
     question_count: integerAt(value.question_count, `${path}.question_count`),
     duration_seconds: 3600,
     started_at: dateTimeAt(value.started_at, `${path}.started_at`),
@@ -598,9 +801,13 @@ function parseExamBase(value: JsonObject, path: string): QuizExamBase {
 }
 
 function parseExamQuestionState(value: unknown, path: string): QuizExamQuestionState {
-  const object = exactObject(value, path, ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'category_path', 'user_answer', 'answer_lock_version'])
+  const object = objectAt(value, path)
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'category_path', 'user_answer', 'answer_lock_version']
+  const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
+  for (const key of Object.keys(object)) if (![...baseKeys, ...optionalKeys].includes(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
+  for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion({ id: object.id, category_id: object.category_id, question_type: object.question_type, question_text: object.question_text, options: object.options }, path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     exam_question_id: integerAt(object.exam_question_id, `${path}.exam_question_id`),
     position: integerAt(object.position, `${path}.position`),
     category_path: categoryPathAt(object.category_path, `${path}.category_path`),
@@ -610,9 +817,13 @@ function parseExamQuestionState(value: unknown, path: string): QuizExamQuestionS
 }
 
 function parseExamAbandonedQuestion(value: unknown, path: string): QuizExamAbandonedQuestion {
-  const object = exactObject(value, path, ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'answered'])
+  const object = objectAt(value, path)
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'answered']
+  const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
+  for (const key of Object.keys(object)) if (![...baseKeys, ...optionalKeys].includes(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
+  for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion({ id: object.id, category_id: object.category_id, question_type: object.question_type, question_text: object.question_text, options: object.options }, path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     exam_question_id: integerAt(object.exam_question_id, `${path}.exam_question_id`),
     position: integerAt(object.position, `${path}.position`),
     answered: booleanAt(object.answered, `${path}.answered`),
@@ -620,9 +831,13 @@ function parseExamAbandonedQuestion(value: unknown, path: string): QuizExamAband
 }
 
 function parseExamQuestionResult(value: unknown, path: string): QuizExamQuestionResult {
-  const object = exactObject(value, path, ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'user_answer', 'correct_answer', 'explanation', 'is_correct'])
+  const object = objectAt(value, path)
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'user_answer', 'correct_answer', 'explanation', 'is_correct']
+  const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
+  for (const key of Object.keys(object)) if (![...baseKeys, ...optionalKeys].includes(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
+  for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion({ id: object.id, category_id: object.category_id, question_type: object.question_type, question_text: object.question_text, options: object.options }, path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     exam_question_id: integerAt(object.exam_question_id, `${path}.exam_question_id`),
     position: integerAt(object.position, `${path}.position`),
     user_answer: nullable(object.user_answer, `${path}.user_answer`, answerAt),
@@ -636,14 +851,14 @@ export function parseExamDetail(value: unknown): QuizExamDetail {
   const object = objectAt(value, 'data')
   const status = literalAt(object.status, 'data.status', ['in_progress', 'completed', 'timed_out', 'abandoned'] as const)
   if (status === 'in_progress') {
-    const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'server_time', 'questions'])
+    const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'server_time', 'questions'])
     return { ...parseExamBase(checked, 'data'), status, server_time: dateTimeAt(checked.server_time, 'data.server_time'), questions: arrayOf(checked.questions, 'data.questions', parseExamQuestionState) }
   }
   if (status === 'abandoned') {
-    const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'abandoned_at', 'questions'])
+    const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'abandoned_at', 'questions'])
     return { ...parseExamBase(checked, 'data'), status, abandoned_at: dateTimeAt(checked.abandoned_at, 'data.abandoned_at'), questions: arrayOf(checked.questions, 'data.questions', parseExamAbandonedQuestion) }
   }
-  const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'finished_at', 'correct_count', 'wrong_count', 'unanswered_count', 'score', 'questions'])
+  const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'finished_at', 'correct_count', 'wrong_count', 'unanswered_count', 'score', 'questions'])
   return {
     ...parseExamBase(checked, 'data'), status,
     finished_at: dateTimeAt(checked.finished_at, 'data.finished_at'),
@@ -660,11 +875,14 @@ export function parseNullableExam(value: unknown): QuizExamDetail | null {
 }
 
 function parseExamListItem(value: unknown, path: string): QuizExamListItem {
-  const object = exactObject(value, path, ['id', 'category_id', 'question_count', 'duration_seconds', 'status', 'started_at', 'deadline_at', 'finished_at', 'score'])
+  const object = exactObject(value, path, ['id', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'status', 'started_at', 'deadline_at', 'finished_at', 'score'])
   const duration = integerAt(object.duration_seconds, `${path}.duration_seconds`)
   if (duration !== 3600) throw new QuizContractError(`${path}.duration_seconds`, '3600')
   return {
-    id: integerAt(object.id, `${path}.id`), category_id: integerAt(object.category_id, `${path}.category_id`),
+    id: integerAt(object.id, `${path}.id`), category_id: nullable(object.category_id, `${path}.category_id`, integerAt),
+    library_id: nullable(object.library_id, `${path}.library_id`, integerAt),
+    scope_type: nullable(object.scope_type, `${path}.scope_type`, (entry, entryPath) => literalAt(entry, entryPath, ['library', 'module', 'knowledge_point'] as const)),
+    scope_id: nullable(object.scope_id, `${path}.scope_id`, integerAt),
     question_count: integerAt(object.question_count, `${path}.question_count`), duration_seconds: 3600,
     status: literalAt(object.status, `${path}.status`, ['in_progress', 'completed', 'timed_out', 'abandoned'] as const),
     started_at: dateTimeAt(object.started_at, `${path}.started_at`), deadline_at: dateTimeAt(object.deadline_at, `${path}.deadline_at`),

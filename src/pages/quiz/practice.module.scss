@@ -63,6 +63,7 @@
 .pathText { display: block; margin-bottom: $spacing-xs; color: $color-text-tertiary; font-size: $font-2xs; }
 .answerButton { width: 100%; margin-top: $spacing-lg; }
 .attemptText { display: block; margin-top: $spacing-xs; color: $color-text-tertiary; font-size: $font-2xs; }
+.skipLink { display: block; padding: $spacing-md 0 0; color: $color-text-tertiary; font-size: $font-sm; text-align: center; }
 .btnWrap {
   width: 100%;
   display: flex;
@@ -288,6 +289,7 @@
   justify-content: space-between;
   padding: $spacing-md $spacing-lg;
   border-bottom: $border-thin solid $color-border;
+  flex-shrink: 0;
 }
 
 .drawerTitle {

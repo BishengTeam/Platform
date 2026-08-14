@@ -30,6 +30,22 @@
   text-align: center;
 }
 
+.libraryList { padding: 0 $spacing-lg; display: flex; flex-direction: column; gap: $spacing-md; }
+.libraryCard { overflow: hidden; background: $color-white; border-radius: $radius-lg; box-shadow: $shadow-sm; }
+.libraryHeader { display: flex; align-items: center; gap: $spacing-md; padding: $spacing-md; }
+.libraryCover, .libraryCoverPlaceholder { width: 112px; height: 88px; flex-shrink: 0; border-radius: $radius-md; }
+.libraryCoverPlaceholder { display: flex; align-items: center; justify-content: center; color: $color-primary; background: $color-blue-tint; font-weight: 700; }
+.libraryInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.libraryName { color: $color-text; font-size: $font-lg; font-weight: 700; }
+.libraryDescription { color: $color-text-secondary; font-size: $font-sm; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.libraryMeta { color: $color-text-tertiary; font-size: $font-xs; }
+.expandIcon, .scopeAction { color: $color-primary; font-size: $font-sm; }
+.catalogTree { padding: 0 $spacing-md $spacing-md; border-top: $border-thin solid $color-border; }
+.moduleBlock { margin-top: $spacing-sm; padding-left: $spacing-sm; border-left: 4px solid $color-blue-tint; }
+.scopeRow, .pointRow { display: flex; align-items: center; justify-content: space-between; gap: $spacing-sm; padding: $spacing-md $spacing-sm; border-bottom: $border-thin solid $color-border; }
+.scopeName, .moduleName { color: $color-text; font-weight: 600; }
+.pointRow { padding-left: $spacing-lg; color: $color-text-secondary; font-size: $font-sm; }
+
 .checkinBar {
   display: flex;
   align-items: center;
