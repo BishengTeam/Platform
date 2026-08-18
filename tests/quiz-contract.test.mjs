@@ -227,6 +227,13 @@ test('practice parser rejects answer leakage outside a submitted result', () => 
     questions: [{ id: 3, category_id: 2, question_type: 'single_choice', question_text: '题干', options: { A: '甲', B: '乙', C: '丙' }, session_question_id: 4, position: 1, category_path: [{ id: 2, name: '分类' }], answered: false, user_answer: null, answer_lock_version: 0, correct_answer: null, explanation: null, is_correct: null, attempt_count: 0, latest_result: null }],
   }
   assert.equal(parsePracticeSession(session).questions[0].latest_result, null)
+  for (const key of ['correct_answer', 'explanation', 'is_correct']) {
+    delete session.questions[0][key]
+  }
+  const omitted = parsePracticeSession(session)
+  assert.equal(omitted.questions[0].correct_answer, null)
+  assert.equal(omitted.questions[0].explanation, null)
+  assert.equal(omitted.questions[0].is_correct, null)
   session.questions[0].correct_answer = 'A'
   assert.throws(() => parsePracticeSession(session), QuizContractError)
 })
