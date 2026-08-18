@@ -53,10 +53,6 @@ export default function AuthPage() {
     })
   }
 
-  const browseQuiz = () => {
-    Taro.navigateTo({ url: `/${ROUTES.QUIZ_INDEX}` })
-  }
-
   return (
     <View className={styles.page}>
       <View className={styles.bgDecor} />
@@ -74,9 +70,6 @@ export default function AuthPage() {
           <View className={styles.wechatBtn} onClick={handleLogin}>
             <Icon name='message-circle' size={20} color='#ffffff' />
             <Text className={styles.wechatBtnText}>{isLoggingIn ? '登录中...' : STRINGS.AUTH_WECHAT_BTN}</Text>
-          </View>
-          <View className={styles.browseBtn} onClick={browseQuiz}>
-            <Text className={styles.browseBtnText}>先浏览题库</Text>
           </View>
         </View>
 

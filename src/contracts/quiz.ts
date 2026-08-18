@@ -609,9 +609,10 @@ export function parsePracticeAttempt(value: unknown, path = 'data'): QuizPractic
 
 function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuestionState {
   const object = objectAt(value, path)
-  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'session_question_id', 'position', 'category_path', 'answered', 'user_answer', 'answer_lock_version', 'correct_answer', 'explanation', 'is_correct', 'attempt_count', 'latest_result']
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'session_question_id', 'position', 'category_path', 'answered', 'user_answer', 'answer_lock_version', 'attempt_count', 'latest_result']
+  const optionalResultKeys = ['correct_answer', 'explanation', 'is_correct']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
-  const allowed = new Set([...baseKeys, ...optionalKeys])
+  const allowed = new Set([...baseKeys, ...optionalResultKeys, ...optionalKeys])
   for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
@@ -622,9 +623,9 @@ function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuesti
     answered: booleanAt(object.answered, `${path}.answered`),
     user_answer: nullable(object.user_answer, `${path}.user_answer`, answerAt),
     answer_lock_version: integerAt(object.answer_lock_version, `${path}.answer_lock_version`),
-    correct_answer: nullable(object.correct_answer, `${path}.correct_answer`, answerAt),
-    explanation: nullable(object.explanation, `${path}.explanation`, stringAt),
-    is_correct: nullable(object.is_correct, `${path}.is_correct`, booleanAt),
+    correct_answer: object.correct_answer === undefined ? null : nullable(object.correct_answer, `${path}.correct_answer`, answerAt),
+    explanation: object.explanation === undefined ? null : nullable(object.explanation, `${path}.explanation`, stringAt),
+    is_correct: object.is_correct === undefined ? null : nullable(object.is_correct, `${path}.is_correct`, booleanAt),
     attempt_count: integerAt(object.attempt_count, `${path}.attempt_count`),
     latest_result: nullable(object.latest_result, `${path}.latest_result`, parsePracticeAttempt),
   }
