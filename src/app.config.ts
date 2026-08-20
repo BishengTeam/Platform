@@ -25,6 +25,10 @@ export default defineAppConfig({
       pages: ['index', 'category', 'form', 'form-sangfor', 'form-nisp', 'form-renshe', 'xuexin-guide', 'confirm'],
     },
     {
+      root: 'pages/h3c',
+      pages: ['index', 'form', 'records'],
+    },
+    {
       root: 'pages/payment',
       pages: ['result'],
     },

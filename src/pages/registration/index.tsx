@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
+import { ROUTES } from '@/constants/routes'
 import type { CertificationResponse } from '@/types'
 import styles from './index.module.scss'
 
@@ -56,6 +57,10 @@ export default function RegistrationIndexPage() {
   }, [grouped])
 
   const handleCategoryClick = useCallback((vendor: string) => {
+    if (vendor === 'H3C') {
+      Taro.navigateTo({ url: `/${ROUTES.H3C_INDEX}` })
+      return
+    }
     Taro.navigateTo({ url: `/pages/registration/category?vendor=${encodeURIComponent(vendor)}` })
   }, [])
 

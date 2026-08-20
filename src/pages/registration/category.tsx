@@ -8,6 +8,7 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
+import { ROUTES } from '@/constants/routes'
 import type { CertificationResponse } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './category.module.scss'
@@ -85,6 +86,10 @@ export default function RegistrationCategoryPage() {
   }, [])
 
   const handleCardClick = useCallback((cert: CertificationResponse) => {
+    if (cert.vendor === 'H3C') {
+      Taro.navigateTo({ url: `/${ROUTES.H3C_INDEX}` })
+      return
+    }
     Taro.navigateTo({ url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}` })
   }, [])
 

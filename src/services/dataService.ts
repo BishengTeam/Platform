@@ -24,6 +24,11 @@ export {
   saveQuizExamAnswer, submitQuizExam, abandonQuizExam,
 } from './quizService'
 
+export {
+  h3cService,
+} from './h3cService'
+export type { PageData as H3CPageData } from './h3cService'
+
 // Auth
 export {
   wxLogin, refreshToken, logout,
