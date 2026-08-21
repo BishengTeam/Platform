@@ -1,8 +1,9 @@
-import { View } from '@tarojs/components'
+import { Image, View } from '@tarojs/components'
 import { Button } from '@/components/Button'
 import styles from './index.module.scss'
 
 interface ZoneCardProps {
+  coverUrl?: string
   title: string
   subtitle?: string
   tags?: string[]
@@ -20,6 +21,7 @@ interface ZoneCardProps {
 }
 
 export function ZoneCard({
+  coverUrl,
   title,
   subtitle,
   tags = [],
@@ -40,6 +42,9 @@ export function ZoneCard({
       onClick={onCardClick}
       className={`${styles.card} ${isFaded ? styles.faded : ''} ${className}`}
     >
+      {coverUrl && (
+        <Image className={styles.cover} src={coverUrl} mode='aspectFill' />
+      )}
       <View className={styles.header}>
         <View className={styles.title}>{title}</View>
         {statusLabel && (

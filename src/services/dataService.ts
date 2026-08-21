@@ -52,9 +52,10 @@ export {
   getCourseById,
   getMyCourses,
   purchaseCourse,
-  getCourseContent,
-  getCourseAssetPlaybackUrl,
-  downloadCourseAssetContent,
+  getCourseChapters,
+  getChapterPlaybackUrl,
+  getCourseProgress,
+  saveCourseProgress,
   pollCourseAccess,
 } from './courseService'
 

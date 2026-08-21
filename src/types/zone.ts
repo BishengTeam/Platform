@@ -40,8 +40,9 @@ export interface CourseBrief {
   title: string
   category: string
   description: string | null
-  cover_url: string | null
+  cover_url: string
   price: number
+  price_yuan: string
   teacher_name: string | null
 }
 

@@ -145,8 +145,9 @@ export async function getCourseList(): Promise<CourseBrief[]> {
       title: c.title,
       category: c.category,
       description: c.description,
-      cover_url: c.cover || null,
+      cover_url: c.cover || '',
       price: c.price,
+      price_yuan: (c.price / 100).toFixed(2),
       teacher_name: c.instructor || null,
     }))
   }

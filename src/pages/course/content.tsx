@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { View, Text, ScrollView, Video, Audio, Image } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { View, Text, ScrollView, Video } from '@tarojs/components'
+import Taro, { useLoad, useUnload } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -8,200 +8,129 @@ import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import {
-  downloadCourseAssetContent,
-  getCourseAssetPlaybackUrl,
-  getCourseContent,
+  getChapterPlaybackUrl,
+  getCourseById,
+  getCourseChapters,
+  getCourseProgress,
+  saveCourseProgress,
 } from '@/services/dataService'
-import { ApiError } from '@/utils/request'
-import type { CourseAsset, CourseContent as CourseContentType } from '@/types'
+import type { CourseChapter, CourseDetail } from '@/types'
 import styles from './content.module.scss'
 
-const VIDEO_ID = 'course-resource-video'
-const RENEW_EARLY_MS = 5 * 60 * 1000
-const RENEW_RETRY_MS = 30 * 1000
+const VIDEO_ID = 'course-chapter-video'
+const RENEW_BEFORE_EXPIRY_MS = 30 * 1000
 
-type AssetKind = 'video' | 'audio' | 'image' | 'document'
-
-function getAssetKind(asset: CourseAsset): AssetKind {
-  const type = asset.asset_type.toLowerCase()
-  if (type.includes('video')) return 'video'
-  if (type.includes('audio')) return 'audio'
-  if (type.includes('image')) return 'image'
-  return 'document'
-}
-
-function getAssetIcon(asset: CourseAsset): string {
-  switch (getAssetKind(asset)) {
-    case 'video': return 'play-circle'
-    case 'audio': return 'headphones'
-    case 'image': return 'image'
-    default: return 'file-text'
-  }
+function formatDuration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`
 }
 
 export default function CourseContentPage() {
   const [courseId, setCourseId] = useState('')
-  const [content, setContent] = useState<CourseContentType | null>(null)
-  const [currentAsset, setCurrentAsset] = useState<CourseAsset | null>(null)
+  const [course, setCourse] = useState<CourseDetail | null>(null)
+  const [chapters, setChapters] = useState<CourseChapter[]>([])
+  const [currentChapter, setCurrentChapter] = useState<CourseChapter | null>(null)
   const [playbackUrl, setPlaybackUrl] = useState('')
-  const [playbackIsLocal, setPlaybackIsLocal] = useState(false)
-  const [playbackExpiresAt, setPlaybackExpiresAt] = useState(0)
-  const [assetLoading, setAssetLoading] = useState(false)
-  const [openingDocument, setOpeningDocument] = useState(false)
-  const [accessLost, setAccessLost] = useState(false)
+  const [expiresAt, setExpiresAt] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [playerLoading, setPlayerLoading] = useState(false)
   const [error, setError] = useState('')
-  const currentTimeRef = useRef(0)
-  const resumeTimeRef = useRef(0)
-  const wasPlayingRef = useRef(false)
-  const resumePlayingRef = useRef(false)
-  const playbackRequestRef = useRef(0)
+  const videoTimeRef = useRef(0)
+  const renewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savingRef = useRef(false)
 
-  useLoad((options) => {
-    setCourseId(options?.id || '')
-  })
+  const persistProgress = useCallback(async (completed = false) => {
+    const id = Number(courseId)
+    if (!Number.isFinite(id) || !currentChapter || savingRef.current) return
+    savingRef.current = true
+    try {
+      await saveCourseProgress(id, currentChapter.id, videoTimeRef.current, completed)
+    } finally {
+      savingRef.current = false
+    }
+  }, [courseId, currentChapter])
+
+  const loadPlayback = useCallback(async (chapter: CourseChapter) => {
+    const id = Number(courseId)
+    if (!Number.isFinite(id) || !chapter.can_play) return
+    setPlayerLoading(true)
+    try {
+      const playback = await getChapterPlaybackUrl(id, chapter.id)
+      setPlaybackUrl(playback.url)
+      setExpiresAt(playback.expires_at)
+      videoTimeRef.current = 0
+      const delay = Math.max(
+        30_000,
+        playback.expires_at * 1000 - Date.now() - RENEW_BEFORE_EXPIRY_MS,
+      )
+      renewTimerRef.current = setTimeout(() => { void loadPlayback(chapter) }, delay)
+    } catch {
+      setPlaybackUrl('')
+      Taro.showToast({ title: '播放地址已过期，请重新进入', icon: 'none' })
+    } finally {
+      setPlayerLoading(false)
+    }
+  }, [courseId])
+
+  useLoad(options => { setCourseId(options?.id || '') })
 
   useEffect(() => {
-    if (!courseId) return
+    if (!courseId) {
+      setLoading(false)
+      return
+    }
     const id = Number(courseId)
-    if (Number.isNaN(id)) {
+    if (!Number.isFinite(id)) {
       setError(STRINGS.COURSE_NOT_FOUND)
       setLoading(false)
       return
     }
-
     setLoading(true)
     setError('')
-    getCourseContent(id)
-      .then((data) => {
-        if (data) {
-          setContent(data)
-          setCurrentAsset(data.assets?.[0] || null)
-        } else {
+    void (async () => {
+      try {
+        const [detail, chapterResult, progress] = await Promise.all([
+          getCourseById(id),
+          getCourseChapters(id),
+          getCourseProgress(id).catch(() => null),
+        ])
+        if (!detail || !chapterResult) {
           setError(STRINGS.COURSE_NOT_FOUND)
-        }
-      })
-      .catch((err) => {
-        console.error('[CourseContent] load error:', err)
-        setError(err?.message || STRINGS.COURSE_LOAD_ERROR)
-      })
-      .finally(() => setLoading(false))
-  }, [courseId])
-
-  const loadPlaybackUrl = useCallback(async (asset: CourseAsset, renewing = false) => {
-    const requestId = ++playbackRequestRef.current
-    if (renewing) {
-      resumeTimeRef.current = currentTimeRef.current
-      resumePlayingRef.current = wasPlayingRef.current
-    } else {
-      currentTimeRef.current = 0
-      resumeTimeRef.current = 0
-      resumePlayingRef.current = false
-      setAssetLoading(true)
-    }
-
-    try {
-      const playback = await getCourseAssetPlaybackUrl(asset.id)
-      if (requestId !== playbackRequestRef.current) return
-      setPlaybackUrl(playback.url)
-      setPlaybackIsLocal(false)
-      setPlaybackExpiresAt(playback.expires_at)
-      setAccessLost(false)
-    } catch (err) {
-      if (requestId !== playbackRequestRef.current) return
-
-      // 线上旧版本尚未提供签名播放接口时，临时走带 Authorization 的旧内容接口。
-      // 业务资源 404（code=40300）不走降级，避免掩盖资源记录/文件缺失。
-      if (err instanceof ApiError && err.code === 404 && err.statusCode === 404) {
-        try {
-          const localPath = await downloadCourseAssetContent(asset.id)
-          if (requestId !== playbackRequestRef.current) return
-          setPlaybackUrl(localPath)
-          setPlaybackIsLocal(true)
-          setPlaybackExpiresAt(0)
-          setAccessLost(false)
           return
-        } catch (fallbackErr) {
-          console.warn('[CourseContent] legacy asset fallback failed:', fallbackErr)
         }
+        setCourse(detail)
+        setChapters(chapterResult.chapters)
+        const playable = chapterResult.chapters.filter(item => item.can_play)
+        const initial =
+          playable.find(item => item.id === progress?.last_chapter_id) ??
+          playable[0] ??
+          null
+        setCurrentChapter(initial)
+        if (initial) await loadPlayback(initial)
+      } catch {
+        setError(STRINGS.COURSE_LOAD_ERROR)
+      } finally {
+        setLoading(false)
       }
+    })()
+  }, [courseId, loadPlayback])
 
-      if (err instanceof ApiError && err.code === 40101) {
-        setAccessLost(true)
-        setPlaybackUrl('')
-      } else {
-        Taro.showToast({ title: '课程资源加载失败，请稍后重试', icon: 'none' })
-        if (renewing) {
-          const retryExpiry = Date.now() + RENEW_EARLY_MS + RENEW_RETRY_MS
-          setPlaybackExpiresAt(Math.floor(retryExpiry / 1000))
-        }
-      }
-    } finally {
-      if (requestId === playbackRequestRef.current) {
-        setAssetLoading(false)
-      }
-    }
+  useEffect(() => () => {
+    if (renewTimerRef.current) clearTimeout(renewTimerRef.current)
   }, [])
 
-  useEffect(() => {
-    playbackRequestRef.current += 1
-    setPlaybackUrl('')
-    setPlaybackIsLocal(false)
-    setPlaybackExpiresAt(0)
-    if (currentAsset) {
-      void loadPlaybackUrl(currentAsset)
+  useUnload(() => { void persistProgress() })
+
+  const switchChapter = async (chapter: CourseChapter) => {
+    if (!chapter.can_play) {
+      Taro.showToast({ title: '购买后解锁该章节', icon: 'none' })
+      return
     }
-  }, [currentAsset, loadPlaybackUrl])
-
-  useEffect(() => {
-    if (!currentAsset || !playbackExpiresAt) return
-    const renewAt = playbackExpiresAt * 1000 - RENEW_EARLY_MS
-    const delay = Math.max(renewAt - Date.now(), 1000)
-    const timer = setTimeout(() => {
-      void loadPlaybackUrl(currentAsset, true)
-    }, delay)
-    return () => clearTimeout(timer)
-  }, [currentAsset, playbackExpiresAt, loadPlaybackUrl])
-
-  const handleBuy = () => {
-    if (!courseId) return
-    Taro.navigateTo({ url: `/${ROUTES.COURSE_DETAIL}?id=${courseId}` })
-  }
-
-  const handleVideoReady = () => {
-    if (resumeTimeRef.current <= 0) return
-    const video = Taro.createVideoContext(VIDEO_ID)
-    video.seek(resumeTimeRef.current)
-    if (resumePlayingRef.current) {
-      setTimeout(() => video.play(), 100)
-    }
-    resumeTimeRef.current = 0
-    resumePlayingRef.current = false
-  }
-
-  const handleOpenDocument = async () => {
-    if (!currentAsset || !playbackUrl || openingDocument) return
-    setOpeningDocument(true)
-    Taro.showLoading({ title: '正在打开...', mask: true })
-    try {
-      let filePath = playbackUrl
-      if (!playbackIsLocal) {
-        const result = await Taro.downloadFile({ url: playbackUrl })
-        if (result.statusCode < 200 || result.statusCode >= 300) {
-          throw new Error('文件下载失败')
-        }
-        filePath = result.tempFilePath
-      }
-      await Taro.openDocument({
-        filePath,
-        showMenu: true,
-      })
-    } catch (err) {
-      Taro.showToast({ title: '暂时无法打开该资料', icon: 'none' })
-    } finally {
-      Taro.hideLoading()
-      setOpeningDocument(false)
-    }
+    await persistProgress()
+    if (renewTimerRef.current) clearTimeout(renewTimerRef.current)
+    setCurrentChapter(chapter)
+    await loadPlayback(chapter)
   }
 
   if (loading) {
@@ -209,35 +138,35 @@ export default function CourseContentPage() {
       <AuthGuard>
         <View className={styles.page}>
           <PageHeader title={STRINGS.COURSE_CONTENT_TITLE} shouldShowBack />
-          <View className={styles.empty}>
-            <Text>加载中...</Text>
-          </View>
+          <View className={styles.empty}><Text>加载中...</Text></View>
         </View>
       </AuthGuard>
     )
   }
 
-  if (error || !content) {
+  if (error || !course) {
     return (
       <AuthGuard>
         <View className={styles.page}>
           <PageHeader title={STRINGS.COURSE_CONTENT_TITLE} shouldShowBack />
-          <View className={styles.empty}>
-            <Text>{error || STRINGS.COURSE_NOT_FOUND}</Text>
-          </View>
+          <View className={styles.empty}><Text>{error || STRINGS.COURSE_NOT_FOUND}</Text></View>
         </View>
       </AuthGuard>
     )
   }
 
-  if (accessLost || (!content.learning_access && content.assets.length === 0)) {
+  if (chapters.length === 0 || !currentChapter) {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title={STRINGS.COURSE_CONTENT_TITLE} shouldShowBack />
+          <PageHeader title={course.title} shouldShowBack />
           <View className={styles.empty}>
             <Text className={styles.lockText}>{STRINGS.COURSE_CONTENT_LOCKED}</Text>
-            <Button variant='gradient' size='md' onClick={handleBuy}>
+            <Button
+              variant='gradient'
+              size='md'
+              onClick={() => Taro.navigateTo({ url: `/${ROUTES.COURSE_DETAIL}?id=${course.id}` })}
+            >
               {STRINGS.COURSE_BUY_BTN}
             </Button>
           </View>
@@ -246,18 +175,14 @@ export default function CourseContentPage() {
     )
   }
 
-  const currentKind = currentAsset ? getAssetKind(currentAsset) : null
-
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={content.title || STRINGS.COURSE_CONTENT_TITLE} shouldShowBack />
+        <PageHeader title={course.title} shouldShowBack />
         <View className={styles.viewerWrap}>
-          {assetLoading ? (
-            <View className={styles.viewerPlaceholder}>
-              <Text>资源加载中...</Text>
-            </View>
-          ) : currentAsset && playbackUrl && currentKind === 'video' ? (
+          {playerLoading || !playbackUrl ? (
+            <View className={styles.viewerPlaceholder}><Text>视频加载中...</Text></View>
+          ) : (
             <Video
               key={playbackUrl}
               id={VIDEO_ID}
@@ -266,64 +191,39 @@ export default function CourseContentPage() {
               controls
               autoplay={false}
               objectFit='contain'
-              onPlay={() => { wasPlayingRef.current = true }}
-              onPause={() => { wasPlayingRef.current = false }}
-              onTimeUpdate={(event) => { currentTimeRef.current = event.detail.currentTime }}
-              onLoadedMetaData={handleVideoReady}
+              initialTime={0}
+              onTimeUpdate={event => { videoTimeRef.current = event.detail.currentTime }}
+              onPause={() => { void persistProgress() }}
+              onEnded={() => { void persistProgress(true) }}
+              onError={() => Taro.showToast({ title: '当前视频格式暂不支持播放', icon: 'none' })}
             />
-          ) : currentAsset && playbackUrl && currentKind === 'audio' ? (
-            <View className={styles.audioWrap}>
-              <Icon name='headphones' size={48} color='#1677FF' />
-              <Audio
-                key={playbackUrl}
-                className={styles.audio}
-                src={playbackUrl}
-                controls
-                name={currentAsset.title}
-                author={content.title}
-                onPlay={() => { wasPlayingRef.current = true }}
-                onPause={() => { wasPlayingRef.current = false }}
-                onTimeUpdate={(event) => { currentTimeRef.current = event.detail.currentTime }}
-              />
-            </View>
-          ) : currentAsset && playbackUrl && currentKind === 'image' ? (
-            <Image className={styles.previewImage} src={playbackUrl} mode='aspectFit' />
-          ) : currentAsset && playbackUrl ? (
-            <View className={styles.documentWrap}>
-              <Icon name='file-text' size={48} color='#1677FF' />
-              <Text className={styles.documentTitle}>{currentAsset.title}</Text>
-              <Button variant='gradient' size='md' loading={openingDocument} onClick={handleOpenDocument}>
-                打开资料
-              </Button>
-            </View>
-          ) : (
-            <View className={styles.viewerPlaceholder}>
-              <Text>{currentAsset ? '课程资源暂不可用' : '暂无课程资源'}</Text>
-            </View>
           )}
         </View>
-
         <ScrollView className={styles.body} scrollY>
-          {!content.learning_access && content.assets.length > 0 && (
+          {!course.has_access && course.price > 0 && (
             <View className={styles.previewNotice}>
-              <Text>当前展示课程试看资源</Text>
+              <Text>前 {course.preview_chapter_count} 集可试看，购买后解锁全部课程</Text>
             </View>
           )}
           <Text className={styles.sectionTitle}>{STRINGS.COURSE_CONTENT_CHAPTERS}</Text>
-          {content.assets.map((asset, index) => (
+          {chapters.map((chapter, index) => (
             <View
-              key={asset.id}
-              className={`${styles.assetItem} ${
-                currentAsset?.id === asset.id ? styles.assetActive : ''
-              }`}
-              onClick={() => setCurrentAsset(asset)}
+              key={chapter.id}
+              className={`${styles.assetItem} ${currentChapter?.id === chapter.id ? styles.assetActive : ''}`}
+              onClick={() => { void switchChapter(chapter) }}
             >
               <View className={styles.assetIndex}>{index + 1}</View>
-              <Icon name={getAssetIcon(asset)} size={20} color={currentAsset?.id === asset.id ? '#1677FF' : '#666'} />
-              <Text className={styles.assetTitle}>{asset.title}</Text>
-              {asset.is_preview && <Text className={styles.previewTag}>试看</Text>}
+              <Icon name='play-circle' size={20} color={currentChapter?.id === chapter.id ? '#1677FF' : '#666'} />
+              <Text className={styles.assetTitle}>{chapter.title}</Text>
+              <Text className={styles.previewTag}>{formatDuration(chapter.duration)}</Text>
+              {!chapter.can_play && <Text className={styles.lockText}>锁定</Text>}
+              {chapter.is_preview && chapter.can_play && <Text className={styles.previewTag}>试看</Text>}
             </View>
           ))}
+          <View style={{ height: '24rpx' }} />
+          <Text style={{ fontSize: '22rpx', color: '#999' }}>
+            播放地址有效期至 {new Date(expiresAt * 1000).toLocaleTimeString()}，到期会自动续期
+          </Text>
         </ScrollView>
       </View>
     </AuthGuard>

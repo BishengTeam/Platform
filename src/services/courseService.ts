@@ -1,89 +1,72 @@
 /**
- * 课程服务 — 对齐 Backend /api/courses 端点
- *
- * 2026-06-16 修正：
- *   - getCourseById 返回 CourseDetail（对齐后端 CourseDetailResponse）
- *   - getCourseCategories 适配后端 string[] 响应
+ * 课程服务 — 对齐 Backend /api/courses 新契约。
  */
-import Taro from '@tarojs/taro'
-import { courseList, courseCategories, myCourses } from '@/constants/mock'
-import { get, getToken, post, resolveUrl } from '@/utils/request'
-import type { CourseBrief, CourseDetail, CoursePurchaseResponse, CourseContent, CourseAssetPlayback } from '@/types'
+import { get, post, resolveUrl } from '@/utils/request'
+import type {
+  CourseBrief,
+  CourseChapterPlayback,
+  CourseChapters,
+  CourseDetail,
+  CourseChapterProgress,
+  CoursePurchaseResponse,
+} from '@/types'
 
-/** 全局开关：true=mock，false=真实API */
-const USE_MOCK = false
-
-export async function getCourseList() {
-  if (USE_MOCK) return courseList
-  const res = await get<{ items?: CourseBrief[] }>(`/api/courses`)
-  const data = res.data
-  return data?.items || data || []
+export async function getCourseList(): Promise<CourseBrief[]> {
+  const res = await get<{ items?: CourseBrief[] }>('/api/courses')
+  return res.data?.items ?? []
 }
 
-export async function getCourseListExpanded() {
-  if (USE_MOCK) return courseList
-  const res = await get<{ items?: CourseBrief[] }>(`/api/courses`)
-  return res.data?.items || res.data || []
-}
+export const getCourseListExpanded = getCourseList
 
-/** GET /api/courses/categories — 后端返回 string[] */
 export async function getCourseCategories(): Promise<string[]> {
-  if (USE_MOCK) return courseCategories.map((c: { label: string }) => c.label)
-  const res = await get<string[]>(`/api/courses/categories`)
-  const raw: string[] = Array.isArray(res.data) ? res.data : []
-  return raw
+  const res = await get<string[]>('/api/courses/categories')
+  return Array.isArray(res.data) ? res.data : []
 }
 
-/** 课程详情 mock 开关 — 配合 zoneService 的 USE_MOCK_COURSE_LIST 使用 */
-const USE_MOCK_DETAIL = false
-
-/** GET /api/courses/{id} — 后端返回 CourseDetailResponse */
 export async function getCourseById(id: number): Promise<CourseDetail | null> {
-  console.log('[getCourseById] called with id:', id, 'USE_MOCK_DETAIL:', USE_MOCK_DETAIL, 'courseList.length:', courseList.length)
-  if (USE_MOCK_DETAIL) {
-    // getCourseList mock 用 index+1 作为 ID，这里按下标取
-    console.log('[getCourseById] mock branch, id:', id)
-    if (id < 1 || id > courseList.length) { console.log('[getCourseById] id out of range, returning null'); return null }
-    const c = courseList[id - 1]
-    return {
-      id,
-      title: c.title,
-      category: c.category,
-      description: c.description,
-      cover_url: c.cover || null,
-      video_url: null,
-      price: c.price,
-      batches: c.sessions?.length
-        ? Object.fromEntries(
-            c.sessions.map((schedule) => [
-              schedule.id,
-              {
-                class_date: schedule.startDate,
-                start_time: '09:00',
-                end_time: '12:00',
-                location: null,
-              },
-            ]),
-          )
-        : null,
-      teacher_name: c.instructor || null,
-      teacher_contact: null,
-      has_access: false,
-      enrollment_id: null,
-      chapters: [],
-      free_preview_seconds: null,
-      included_quiz_libraries: [],
-    }
-  }
   const res = await get<CourseDetail>(`/api/courses/${id}`)
   return res.data ?? null
 }
 
-/** POST /api/courses/{course_id}/purchase — 课程购买/报名 */
-export async function purchaseCourse(courseId: number): Promise<CoursePurchaseResponse> {
-  if (USE_MOCK) {
-    return { learning_access: true, payment_required: false, order_id: null }
+export async function getCourseChapters(courseId: number): Promise<CourseChapters | null> {
+  const res = await get<CourseChapters>(`/api/courses/${courseId}/chapters`)
+  return res.data ?? null
+}
+
+export async function getChapterPlaybackUrl(
+  courseId: number,
+  chapterId: number,
+): Promise<CourseChapterPlayback> {
+  const res = await post<CourseChapterPlayback>(
+    `/api/courses/${courseId}/chapters/${chapterId}/playback-url`,
+    undefined,
+    false,
+  )
+  if (res.code !== 0 || !res.data) {
+    throw new Error(res.message || '课程播放地址获取失败')
   }
+  return { ...res.data, url: resolveUrl(res.data.url) }
+}
+
+export async function getCourseProgress(courseId: number): Promise<CourseChapterProgress | null> {
+  const res = await get<CourseChapterProgress>(`/api/courses/${courseId}/progress`)
+  return res.data ?? null
+}
+
+export async function saveCourseProgress(
+  courseId: number,
+  chapterId: number,
+  lastPositionSeconds: number,
+  isCompleted = false,
+): Promise<void> {
+  await post(`/api/courses/${courseId}/progress`, {
+    chapter_id: chapterId,
+    last_position_seconds: Math.max(0, Math.floor(lastPositionSeconds)),
+    is_completed: isCompleted,
+  })
+}
+
+export async function purchaseCourse(courseId: number): Promise<CoursePurchaseResponse> {
   const res = await post<CoursePurchaseResponse>(`/api/courses/${courseId}/purchase`)
   if (res.code !== 0 || !res.data) {
     throw new Error(res.message || '课程购买请求失败')
@@ -91,86 +74,20 @@ export async function purchaseCourse(courseId: number): Promise<CoursePurchaseRe
   return res.data
 }
 
-/** GET /api/courses/{course_id}/content — 课程内容（学习页） */
-export async function getCourseContent(courseId: number): Promise<CourseContent | null> {
-  if (USE_MOCK) {
-    const detail = await getCourseById(courseId)
-    return detail
-      ? {
-          course_id: detail.id,
-          title: detail.title,
-          learning_access: detail.has_access,
-          assets: detail.chapters.map((chapter) => ({
-            id: chapter.id,
-            course_id: detail.id,
-            title: chapter.title,
-            asset_type: 'video',
-            sort_order: chapter.sort_order,
-            is_preview: false,
-            content_url: chapter.video_url || '',
-          })),
-        }
-      : null
-  }
-  const res = await get<CourseContent>(`/api/courses/${courseId}/content`)
-  return res.data ?? null
-}
-
-/** POST /api/course-assets/{asset_id}/playback-url — 获取两小时短期播放地址 */
-export async function getCourseAssetPlaybackUrl(assetId: number): Promise<CourseAssetPlayback> {
-  if (USE_MOCK) {
-    return { asset_id: assetId, url: '', expires_at: Math.floor(Date.now() / 1000) + 7200 }
-  }
-  const res = await post<CourseAssetPlayback>(
-    `/api/course-assets/${assetId}/playback-url`,
-    undefined,
-    false,
-  )
-  if (res.code !== 0 || !res.data) {
-    throw new Error(res.message || '课程资源地址获取失败')
-  }
-  return {
-    ...res.data,
-    url: resolveUrl(res.data.url),
-  }
-}
-
-/**
- * 兼容尚未部署签名播放接口的旧后端。
- * 旧接口仍要求 Authorization，但 Taro Video 不能附加自定义请求头，
- * 因此先下载到临时文件，再将本地文件路径交给播放器。
- */
-export async function downloadCourseAssetContent(assetId: number): Promise<string> {
-  const token = getToken()
-  const result = await Taro.downloadFile({
-    url: resolveUrl(`/api/course-assets/${assetId}/content`),
-    header: token ? { Authorization: `Bearer ${token}` } : undefined,
-  })
-  const statusCode = result.statusCode ?? 0
-  if (statusCode < 200 || statusCode >= 300 || !result.tempFilePath) {
-    throw new Error(`课程资源下载失败 (${statusCode || 'unknown'})`)
-  }
-  return result.tempFilePath
-}
-
 const POLL_INTERVAL_MS = 2000
 const POLL_MAX_ATTEMPTS = 30
 
-/** 轮询课程详情，直到 has_access 变为 true */
 export async function pollCourseAccess(courseId: number): Promise<boolean> {
-  for (let attempt = 1; attempt <= POLL_MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 1; attempt <= POLL_MAX_ATTEMPTS; attempt += 1) {
     const course = await getCourseById(courseId)
-    if (course?.has_access) {
-      return true
-    }
+    if (course?.has_access) return true
     if (attempt < POLL_MAX_ATTEMPTS) {
-      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+      await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
     }
   }
   return false
 }
 
-/** 后端课程报名响应 DTO */
 interface CourseEnrollmentItem {
   id: number
   course?: {
@@ -198,13 +115,10 @@ function mapEnrollmentStatus(status?: string): 'active' | 'expired' | 'pending' 
   }
 }
 
-/** GET /api/courses/my — 我的课程，适配后端 CourseEnrollmentResponse → MyCourse */
 export async function getMyCourses() {
-  if (USE_MOCK) return myCourses
-  const res = await get<{ items?: CourseEnrollmentItem[] }>(`/api/courses/my`)
-  const data = res.data
-  const items: CourseEnrollmentItem[] = data?.items || (Array.isArray(data) ? data : [])
-  return items.map((item: CourseEnrollmentItem) => ({
+  const res = await get<{ items?: CourseEnrollmentItem[] }>('/api/courses/my')
+  const items = res.data?.items ?? []
+  return items.map(item => ({
     id: String(item.id),
     title: item.course?.title || '',
     cover: item.course?.cover_url || '',

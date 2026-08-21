@@ -48,10 +48,12 @@ export interface CourseItem {
 /** 课程章节 */
 export interface CourseChapter {
   id: number
+  course_id?: number
   title: string
-  video_url: string | null
-  duration: number | null
+  duration: number
   sort_order: number
+  is_preview: boolean
+  can_play: boolean
 }
 
 /** 课程购买/报名接口响应 */
@@ -62,29 +64,22 @@ export interface CoursePurchaseResponse {
 }
 
 /** 私有课程资源 */
-export interface CourseAsset {
-  id: number
-  course_id: number
-  title: string
-  asset_type: string
-  sort_order: number
-  is_preview: boolean
-  content_url: string
+export interface CourseChapters {
+  preview_chapter_count: number
+  chapters: CourseChapter[]
 }
 
-/** 课程内容（学习页），对齐 Backend CourseContentResponse */
-export interface CourseContent {
-  course_id: number
-  title: string
-  learning_access: boolean
-  assets: CourseAsset[]
-}
-
-/** 私有资源短期播放地址 */
-export interface CourseAssetPlayback {
-  asset_id: number
+/** 章节私有播放地址 */
+export interface CourseChapterPlayback {
+  chapter_id: number
   url: string
   expires_at: number
+}
+
+export interface CourseChapterProgress {
+  last_chapter_id: number | null
+  last_position_seconds: number
+  completed_chapter_ids: number[]
 }
 
 /** 课程的一次具体上课安排 */
@@ -111,21 +106,19 @@ export interface CourseDetail {
   title: string
   category: string
   description: string | null
-  cover_url: string | null
-  video_url: string | null
+  cover_url: string
   price: number
-  /** 上课安排，键为内部 ID */
-  batches: Record<string, CourseSchedule> | null
+  price_yuan: string
   teacher_name: string | null
-  teacher_contact: string | null
+  status: 'draft' | 'published' | 'offline' | 'archived'
   /** 当前用户是否有学习权限 */
   has_access: boolean
   /** 报名记录 ID（已报名时返回） */
   enrollment_id: number | null
   /** 章节列表 */
   chapters: CourseChapter[]
-  /** 试看时长（秒） */
-  free_preview_seconds: number | null
+  preview_chapter_count: number
+  chapter_count: number
   /** 购买课程后赠送的题库；展示资料始终读取当前绑定状态 */
   included_quiz_libraries: CourseQuizLibrarySummary[]
 }

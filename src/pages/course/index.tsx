@@ -48,8 +48,9 @@ export default function CourseIndexPage() {
           </View>
           <View className={styles.cardList}>
             {filtered.map(course => (
-              <ZoneCard
-                key={course.id}
+            <ZoneCard
+              key={course.id}
+              coverUrl={course.cover_url}
                 title={course.title}
                 subtitle={[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ') || undefined}
                 tags={course.category ? [formatCategory(course.category)] : []}

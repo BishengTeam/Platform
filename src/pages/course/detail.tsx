@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
@@ -166,8 +166,6 @@ export default function CourseDetailPage() {
       ? STRINGS.COURSE_BUY_BTN
       : STRINGS.COURSE_ENROLL_BTN
 
-  const scheduleEntries = course.batches ? Object.entries(course.batches) : []
-
   return (
     <AuthGuard>
       <View className={styles.page}>
@@ -175,7 +173,7 @@ export default function CourseDetailPage() {
         <ScrollView className={styles.body} scrollY>
           {/* 封面区域 */}
           <View className={styles.coverPlaceholder}>
-            <Text className={styles.coverText}>{course.title}</Text>
+            <Image className={styles.coverImage} src={course.cover_url} mode='aspectFill' />
           </View>
 
           {/* 基本信息卡片 */}
@@ -201,27 +199,19 @@ export default function CourseDetailPage() {
             </View>
           </View>
 
-          {/* 上课安排 */}
-          {scheduleEntries.length > 0 && (
-            <View className={styles.section}>
-              <Text className={styles.sectionTitle}>{STRINGS.COURSE_SCHEDULE}</Text>
-              <View className={styles.sessionList}>
-                {scheduleEntries.map(([id, schedule]) => (
-                  <View key={id} className={styles.sessionItem}>
-                    <View className={styles.sessionInfo}>
-                      <Text className={styles.sessionLabel}>{schedule.class_date}</Text>
-                      <Text className={styles.sessionDate}>
-                        {schedule.start_time} - {schedule.end_time}
-                      </Text>
-                      {schedule.location && (
-                        <Text className={styles.sessionLocation}>{schedule.location}</Text>
-                      )}
-                    </View>
-                  </View>
-                ))}
+          <View className={styles.section}>
+            <Text className={styles.sectionTitle}>课程章节</Text>
+            <View className={styles.sessionList}>
+              <View className={styles.sessionItem}>
+                <View className={styles.sessionInfo}>
+                  <Text className={styles.sessionLabel}>共 {course.chapter_count} 集</Text>
+                  <Text className={styles.sessionDate}>
+                    {course.price === 0 ? '免费课程全部可学' : `前 ${course.preview_chapter_count} 集可试看`}
+                  </Text>
+                </View>
               </View>
             </View>
-          )}
+          </View>
 
           {/* 课程描述 */}
           {course.description && (
@@ -247,14 +237,6 @@ export default function CourseDetailPage() {
                   </View>
                 ))}
               </View>
-            </View>
-          )}
-
-          {/* 讲师联系方式 */}
-          {course.teacher_contact && (
-            <View className={styles.section}>
-              <Text className={styles.sectionTitle}>联系方式</Text>
-              <Text className={styles.descText}>{course.teacher_contact}</Text>
             </View>
           )}
 
