@@ -23,6 +23,7 @@ import {
   setStoredPracticeSessionId,
   shanghaiDate,
 } from '../src/utils/quizCore.ts'
+import { shuffledQuizOptions } from '../src/utils/quizView.ts'
 
 function memoryStorage() {
   const data = new Map()
@@ -91,6 +92,22 @@ test('activity IDs are validated and conditionally cleared', () => {
   assert.equal(getStoredPracticeSessionId(storage), null)
   assert.equal(getStoredExamId(storage), null)
   assert.throws(() => setStoredExamId(storage, 0), /正整数/)
+})
+
+test('quiz options shuffle deterministically while preserving original labels', () => {
+  const options = { A: 'Alpha', B: 'Beta', C: 'Gamma', D: 'Delta' }
+  const first = shuffledQuizOptions(options, 'session-1:question-7:1')
+  const second = shuffledQuizOptions(options, 'session-1:question-7:1')
+  const other = shuffledQuizOptions(options, 'session-2:question-7:1')
+
+  assert.deepEqual(second, first)
+  assert.deepEqual([...first].sort((left, right) => left.label.localeCompare(right.label)), [
+    { label: 'A', text: 'Alpha' },
+    { label: 'B', text: 'Beta' },
+    { label: 'C', text: 'Gamma' },
+    { label: 'D', text: 'Delta' },
+  ])
+  assert.notDeepEqual(other.map(item => item.label), first.map(item => item.label))
 })
 
 test('pending exam abandonment survives unload and clears conditionally', () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ScrollView, Text, View } from '@tarojs/components'
+import { Image, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import type { PageData, QuizCollectionItem } from '@/contracts/quiz'
 import { listQuizCollections, removeQuizCollection } from '@/services/dataService'
-import { quizOptions, quizTypeLabel } from '@/utils/quizView'
+import { quizImageUrls, quizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './collections.module.scss'
 
 const PAGE_SIZE = 20
@@ -62,6 +62,11 @@ export default function QuizCollectionsPage() {
                 {item.question_status !== 'published' && <Text className={styles.disabled}>{item.question_status === 'deleted' ? '题目已删除' : '题目已停用'}</Text>}
               </View>
               <Text className={styles.stem}>{item.question.question_text}</Text>
+              {quizImageUrls(item.question.image_urls).length > 0 && (
+                <View className={styles.questionImages}>
+                  {quizImageUrls(item.question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
+                </View>
+              )}
               <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
               <View className={styles.actions}><Button size='sm' variant='secondary' disabled={busyQuestions.has(item.question_id)} loading={busyQuestions.has(item.question_id)} onClick={() => void remove(item.question_id)}>取消收藏</Button></View>
             </View>

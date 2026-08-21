@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ScrollView, Text, View } from '@tarojs/components'
+import { Image, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import type { PageData, QuizWrongBookItem } from '@/contracts/quiz'
 import { listWrongBook } from '@/services/dataService'
-import { quizOptions, quizTypeLabel } from '@/utils/quizView'
+import { quizImageUrls, quizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './wrong-book.module.scss'
 
 const PAGE_SIZE = 20
@@ -47,6 +47,11 @@ export default function WrongBookPage() {
                 <Text className={styles.wrongDate}>{item.latest_wrong_at.slice(0, 10)}</Text>
               </View>
               <Text className={styles.stem}>{item.question.question_text}</Text>
+              {quizImageUrls(item.question.image_urls).length > 0 && (
+                <View className={styles.questionImages}>
+                  {quizImageUrls(item.question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
+                </View>
+              )}
               <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label} className={styles.optionText}>{option.label}. {option.text}</Text>)}</View>
               {!item.usable_for_practice && <Text className={styles.disabled}>题目已停用，可查看历史内容，但不会进入新的错题专项</Text>}
             </View>

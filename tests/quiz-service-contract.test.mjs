@@ -4,6 +4,8 @@ import test from 'node:test'
 
 const SERVICE_FILE = new URL('../src/services/quizService.ts', import.meta.url)
 const MANIFEST_FILE = new URL('../src/contracts/quiz-contract.json', import.meta.url)
+const ROUTES_FILE = new URL('../src/constants/routes.ts', import.meta.url)
+const APP_CONFIG_FILE = new URL('../src/app.config.ts', import.meta.url)
 
 const METHOD_BY_HELPER = {
   del: 'DELETE',
@@ -51,4 +53,13 @@ test('stats request reuses the frozen route with an optional exact scope', async
   const source = await readFile(SERVICE_FILE, 'utf8')
   assert.match(source, /getQuizStats\(input\?: \{[\s\S]*scope_type\?: QuizPracticeScopeType[\s\S]*scope_id\?: number/)
   assert.match(source, /get<unknown>\('\/api\/quiz\/stats', input \? queryData\(input\) : undefined\)/)
+})
+
+test('wrong-book route is declared and included in the quiz subpackage', async () => {
+  const [routesSource, appConfigSource] = await Promise.all([
+    readFile(ROUTES_FILE, 'utf8'),
+    readFile(APP_CONFIG_FILE, 'utf8'),
+  ])
+  assert.match(routesSource, /QUIZ_WRONG_BOOK:\s*'pages\/quiz\/wrong-book'/)
+  assert.match(appConfigSource, /root:\s*'pages\/quiz'[\s\S]*pages:\s*\[[^\]]*'wrong-book'/)
 })

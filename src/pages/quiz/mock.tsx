@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ScrollView, Text, View } from '@tarojs/components'
+import { Image, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useLoad, useUnload } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -30,7 +30,7 @@ import {
   remainingSeconds,
   serverClockOffset,
 } from '@/utils/quizRuntime'
-import { answerIncludes, answerText, isMultipleChoice, quizOptions, quizTypeLabel } from '@/utils/quizView'
+import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, shuffledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './mock.module.scss'
 
 const QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -515,7 +515,12 @@ export default function QuizMockPage() {
             {exam.questions.map((question, index) => (
               <View key={question.exam_question_id} className={styles.resultQuestion}>
                 <Text className={question.is_correct ? styles.correct : styles.wrong}>{index + 1}. {question.question_text}</Text>
-                <View className={styles.resultOptions}>{quizOptions(question.options).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
+                {quizImageUrls(question.image_urls).length > 0 && (
+                  <View className={styles.questionImages}>
+                    {quizImageUrls(question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
+                  </View>
+                )}
+                <View className={styles.resultOptions}>{shuffledQuizOptions(question.options, `${exam.id}:${question.id}:${question.position}`).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
                 <Text className={styles.answerLine}>你的答案：{answerText(question.user_answer)}　正确答案：{answerText(question.correct_answer)}</Text>
                 <Text className={styles.explanation}>解析：{question.explanation}</Text>
               </View>
@@ -529,7 +534,8 @@ export default function QuizMockPage() {
 
   const inProgress = exam as QuizExamInProgress
   const currentQuestion = inProgress.questions[currentIndex]
-  const options = quizOptions(currentQuestion?.options ?? {})
+  const options = currentQuestion ? shuffledQuizOptions(currentQuestion.options, `${inProgress.id}:${currentQuestion.id}:${currentQuestion.position}`) : []
+  const currentImageUrls = quizImageUrls(currentQuestion?.image_urls)
   const answeredCount = inProgress.questions.filter(question => question.user_answer !== null).length
   if (!currentQuestion) return <AuthGuard><View className={styles.page}><PageHeader title='模拟考试' shouldShowBack /><EmptyState title='考试中没有题目' /></View></AuthGuard>
 
@@ -546,6 +552,11 @@ export default function QuizMockPage() {
             <View className={styles.questionHeader}><Text className={styles.questionIndex}>{currentIndex + 1}. {quizTypeLabel(currentQuestion.question_type)}</Text><Text className={styles.saveState}>{savingQuestionId === currentQuestion.exam_question_id ? '保存中…' : currentQuestion.answer_lock_version ? '已保存' : '未作答'}</Text></View>
             <Text className={styles.pathText}>{currentQuestion.category_path.map(item => item.name).join(' / ')}</Text>
             <Text className={styles.stem}>{currentQuestion.question_text}</Text>
+            {currentImageUrls.length > 0 && (
+              <View className={styles.questionImages}>
+                {currentImageUrls.map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
+              </View>
+            )}
             <View className={styles.options}>{options.map(option => {
               const selected = answerIncludes(currentQuestion.user_answer, option.label)
               return <View key={option.label} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => selectAnswer(currentQuestion, option.label)}><View className={`${styles.optionLabel} ${selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View><Text className={styles.optionText}>{option.text}</Text></View>

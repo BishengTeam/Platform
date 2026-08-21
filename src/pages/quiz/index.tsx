@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { getQuizCheckinStatus, getQuizLibrary, getQuizStats, listQuizLibraries } from '@/services/dataService'
 import styles from './index.module.scss'
 
-interface StatCard { label: string; value: string; color: string }
+interface StatCard { label: string; value: string; color: string; onClick?: () => void }
 
 const COLORS = ['#1677FF', '#52C41A', '#722ED1', '#FF4D4F', '#FA8C16', '#13C2C2']
 
@@ -92,13 +92,18 @@ export default function QuizIndexPage() {
   const practiceUrl = (scopeType: QuizPracticeScopeType, scopeId: number) =>
     `/${ROUTES.QUIZ_PRACTICE}?scopeType=${scopeType}&scopeId=${scopeId}`
 
+  const openWrongBook = () => requireLogin(() => {
+    Taro.navigateTo({ url: `/${ROUTES.QUIZ_WRONG_BOOK}` })
+      .catch(() => Taro.showToast({ title: '错题本入口打开失败，请稍后重试', icon: 'none' }))
+  })
+
   const statCards: StatCard[] = stats ? [
-    { label: '练习作答', value: String(stats.practice.total_attempts), color: COLORS[0] },
-    { label: '首答正确率', value: `${stats.practice.accuracy}%`, color: COLORS[1] },
-    { label: '已答题目', value: String(stats.practice.answered_questions), color: COLORS[2] },
-    { label: '当前错题', value: String(stats.practice.active_wrong_count), color: COLORS[3] },
-    { label: STRINGS.QUIZ_CHECKIN_STREAK, value: `${stats.practice.consecutive_days}天`, color: COLORS[4] },
-    { label: STRINGS.QUIZ_STATS_TODAY, value: String(stats.practice.today_questions), color: COLORS[5] },
+    { label: '已练', value: String(stats.practice.total_attempts), color: COLORS[0] },
+    { label: '正确率', value: `${stats.practice.accuracy}%`, color: COLORS[1] },
+    { label: '已答', value: String(stats.practice.answered_questions), color: COLORS[2] },
+    { label: '错题', value: String(stats.practice.active_wrong_count), color: COLORS[3], onClick: openWrongBook },
+    { label: '连续', value: `${stats.practice.consecutive_days}天`, color: COLORS[4] },
+    { label: '今日', value: String(stats.practice.today_questions), color: COLORS[5] },
   ] : []
 
   return (
@@ -113,7 +118,7 @@ export default function QuizIndexPage() {
           <View className={styles.statsPanel}>
             <View className={styles.statsGrid}>
               {statCards.map(card => (
-                <View key={card.label} className={styles.statCard}>
+                <View key={card.label} className={`${styles.statCard} ${card.onClick ? styles.statCardClickable : ''}`} onClick={card.onClick}>
                   <Text className={styles.statValue} style={{ color: card.color }}>{card.value}</Text>
                   <Text className={styles.statLabel}>{card.label}</Text>
                 </View>

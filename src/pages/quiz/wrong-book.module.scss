@@ -55,6 +55,20 @@
   display: block;
 }
 
+.questionImages {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.questionImage {
+  width: 100%;
+  max-width: 100%;
+  border-radius: $radius-sm;
+  background: $color-bg-secondary;
+}
+
 .options {
   display: flex;
   flex-direction: column;

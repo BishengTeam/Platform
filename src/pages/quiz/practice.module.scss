@@ -125,6 +125,20 @@
   display: block;
 }
 
+.questionImages {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin: 0 0 $spacing-lg;
+}
+
+.questionImage {
+  width: 100%;
+  max-width: 100%;
+  border-radius: $radius-sm;
+  background: $color-bg-secondary;
+}
+
 .options {
   display: flex;
   flex-direction: column;

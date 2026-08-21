@@ -6,6 +6,43 @@ export function quizOptions(options: Record<string, string>): Array<{ label: str
     .map(([label, text]) => ({ label, text }))
 }
 
+function hashSeed(seed: string): number {
+  let hash = 2166136261
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
+}
+
+function nextRandom(state: number): [number, number] {
+  let next = state + 0x6D2B79F5
+  next = Math.imul(next ^ (next >>> 15), next | 1)
+  next ^= next + Math.imul(next ^ (next >>> 7), next | 61)
+  return [next >>> 0, ((next ^ (next >>> 14)) >>> 0) / 4294967296]
+}
+
+export function shuffledQuizOptions(
+  options: Record<string, string>,
+  seed: string,
+): Array<{ label: string; text: string }> {
+  const items = quizOptions(options)
+  let state = hashSeed(seed)
+  for (let index = items.length - 1; index > 0; index -= 1) {
+    const result = nextRandom(state)
+    state = result[0]
+    const swapIndex = Math.floor(result[1] * (index + 1))
+    const current = items[index]
+    items[index] = items[swapIndex]
+    items[swapIndex] = current
+  }
+  return items
+}
+
+export function quizImageUrls(imageUrls: string[] | null | undefined): string[] {
+  return Array.isArray(imageUrls) ? imageUrls.filter(url => typeof url === 'string' && url.trim() !== '') : []
+}
+
 export function quizTypeLabel(type: QuizQuestionType): string {
   if (type === 'multiple_choice') return '多选题'
   if (type === 'judge') return '判断题'

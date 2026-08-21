@@ -84,6 +84,7 @@ export interface QuizPublicQuestion {
   question_type: QuizQuestionType
   question_text: string
   options: Record<string, string>
+  image_urls: string[]
 }
 
 export interface QuizCategoryPathItem {
@@ -449,6 +450,10 @@ function optionsAt(value: unknown, path: string): Record<string, string> {
   return options
 }
 
+function imageUrlsAt(value: unknown, path: string): string[] {
+  return arrayOf(value, path, stringAt)
+}
+
 function questionTypeAt(value: unknown, path: string): QuizQuestionType {
   return literalAt(value, path, ['single_choice', 'multiple_choice', 'judge'] as const)
 }
@@ -566,7 +571,7 @@ export function parseQuizCategories(value: unknown): QuizCategoryNode[] {
 
 export function parseQuizQuestion(value: unknown, path = 'data'): QuizPublicQuestion {
   const object = objectAt(value, path)
-  const required = ['id', 'category_id', 'question_type', 'question_text', 'options']
+  const required = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls']
   const allowed = new Set([...required, 'library_id', 'knowledge_point_id', 'question_revision_id'])
   for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of required) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
@@ -579,6 +584,7 @@ export function parseQuizQuestion(value: unknown, path = 'data'): QuizPublicQues
     question_type: questionTypeAt(object.question_type, `${path}.question_type`),
     question_text: stringAt(object.question_text, `${path}.question_text`),
     options: optionsAt(object.options, `${path}.options`),
+    image_urls: imageUrlsAt(object.image_urls, `${path}.image_urls`),
   }
 }
 
@@ -609,14 +615,14 @@ export function parsePracticeAttempt(value: unknown, path = 'data'): QuizPractic
 
 function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuestionState {
   const object = objectAt(value, path)
-  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'session_question_id', 'position', 'category_path', 'answered', 'user_answer', 'answer_lock_version', 'attempt_count', 'latest_result']
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'session_question_id', 'position', 'category_path', 'answered', 'user_answer', 'answer_lock_version', 'attempt_count', 'latest_result']
   const optionalResultKeys = ['correct_answer', 'explanation', 'is_correct']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
   const allowed = new Set([...baseKeys, ...optionalResultKeys, ...optionalKeys])
   for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     session_question_id: integerAt(object.session_question_id, `${path}.session_question_id`),
     position: integerAt(object.position, `${path}.position`),
     category_path: categoryPathAt(object.category_path, `${path}.category_path`),
@@ -847,12 +853,12 @@ function parseExamBase(value: JsonObject, path: string): QuizExamBase {
 
 function parseExamQuestionState(value: unknown, path: string): QuizExamQuestionState {
   const object = objectAt(value, path)
-  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'category_path', 'user_answer', 'answer_lock_version']
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'exam_question_id', 'position', 'category_path', 'user_answer', 'answer_lock_version']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
   for (const key of Object.keys(object)) if (![...baseKeys, ...optionalKeys].includes(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     exam_question_id: integerAt(object.exam_question_id, `${path}.exam_question_id`),
     position: integerAt(object.position, `${path}.position`),
     category_path: categoryPathAt(object.category_path, `${path}.category_path`),
@@ -863,12 +869,12 @@ function parseExamQuestionState(value: unknown, path: string): QuizExamQuestionS
 
 function parseExamAbandonedQuestion(value: unknown, path: string): QuizExamAbandonedQuestion {
   const object = objectAt(value, path)
-  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'answered']
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'exam_question_id', 'position', 'answered']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
   for (const key of Object.keys(object)) if (![...baseKeys, ...optionalKeys].includes(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     exam_question_id: integerAt(object.exam_question_id, `${path}.exam_question_id`),
     position: integerAt(object.position, `${path}.position`),
     answered: booleanAt(object.answered, `${path}.answered`),
@@ -877,12 +883,12 @@ function parseExamAbandonedQuestion(value: unknown, path: string): QuizExamAband
 
 function parseExamQuestionResult(value: unknown, path: string): QuizExamQuestionResult {
   const object = objectAt(value, path)
-  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'exam_question_id', 'position', 'user_answer', 'correct_answer', 'explanation', 'is_correct']
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'exam_question_id', 'position', 'user_answer', 'correct_answer', 'explanation', 'is_correct']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
   for (const key of Object.keys(object)) if (![...baseKeys, ...optionalKeys].includes(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     exam_question_id: integerAt(object.exam_question_id, `${path}.exam_question_id`),
     position: integerAt(object.position, `${path}.position`),
     user_answer: nullable(object.user_answer, `${path}.user_answer`, answerAt),

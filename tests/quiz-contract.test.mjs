@@ -23,6 +23,7 @@ const v2Question = {
   question_type: 'judge',
   question_text: 'TCP 是面向连接的协议。',
   options: { A: '正确', B: '错误' },
+  image_urls: ['https://cdn.example.com/tcp.png'],
   session_question_id: 501,
   position: 1,
   category_path: [
@@ -137,6 +138,7 @@ test('V2 full-question session strictly parses pause and terminal states', () =>
   assert.equal(active.actual_count, 120)
   assert.equal(active.questions.length, 1)
   assert.equal(active.questions[0].question_revision_id, 401)
+  assert.deepEqual(active.questions[0].image_urls, ['https://cdn.example.com/tcp.png'])
 
   const paused = parsePracticeSession(v2Session({
     status: 'paused',
@@ -224,7 +226,7 @@ test('practice parser rejects answer leakage outside a submitted result', () => 
     completed_at: null,
     abandoned_at: null,
     lock_version: 1,
-    questions: [{ id: 3, category_id: 2, question_type: 'single_choice', question_text: '题干', options: { A: '甲', B: '乙', C: '丙' }, session_question_id: 4, position: 1, category_path: [{ id: 2, name: '分类' }], answered: false, user_answer: null, answer_lock_version: 0, correct_answer: null, explanation: null, is_correct: null, attempt_count: 0, latest_result: null }],
+    questions: [{ id: 3, category_id: 2, question_type: 'single_choice', question_text: '题干', options: { A: '甲', B: '乙', C: '丙' }, image_urls: [], session_question_id: 4, position: 1, category_path: [{ id: 2, name: '分类' }], answered: false, user_answer: null, answer_lock_version: 0, correct_answer: null, explanation: null, is_correct: null, attempt_count: 0, latest_result: null }],
   }
   assert.equal(parsePracticeSession(session).questions[0].latest_result, null)
   for (const key of ['correct_answer', 'explanation', 'is_correct']) {
@@ -240,7 +242,7 @@ test('practice parser rejects answer leakage outside a submitted result', () => 
 
 test('wrong-book parser permits status markers but rejects answers and explanations', () => {
   const page = {
-    items: [{ id: 1, question_id: 2, status: 'active', question: { id: 2, category_id: 3, question_type: 'judge', question_text: '题干', options: { A: '正确', B: '错误' } }, question_status: 'disabled', usable_for_practice: false, first_wrong_at: '2026-08-12T00:00:00Z', latest_wrong_at: '2026-08-12T00:01:00Z' }],
+    items: [{ id: 1, question_id: 2, status: 'active', question: { id: 2, category_id: 3, question_type: 'judge', question_text: '题干', options: { A: '正确', B: '错误' }, image_urls: [] }, question_status: 'disabled', usable_for_practice: false, first_wrong_at: '2026-08-12T00:00:00Z', latest_wrong_at: '2026-08-12T00:01:00Z' }],
     total: 1,
     page: 1,
     page_size: 20,

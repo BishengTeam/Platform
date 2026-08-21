@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ScrollView, Text, View } from '@tarojs/components'
+import { Image, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -32,7 +32,7 @@ import {
   getCachedPracticeSessionId,
 } from '@/utils/quizRuntime'
 import { ApiError } from '@/utils/request'
-import { answerIncludes, answerText, isMultipleChoice, quizOptions, quizTypeLabel } from '@/utils/quizView'
+import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, shuffledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './practice.module.scss'
 
 const LEGACY_QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -391,7 +391,10 @@ export default function QuizPracticePage() {
   const answeredCount = session?.questions.filter(question => question.user_answer !== null).length ?? 0
   const correctCount = session?.questions.filter(question => question.is_correct === true).length ?? 0
   const wrongCount = session?.questions.filter(question => question.is_correct === false).length ?? 0
-  const optionItems = useMemo(() => currentQuestion ? quizOptions(currentQuestion.options) : [], [currentQuestion])
+  const optionItems = useMemo(() => currentQuestion && session
+    ? shuffledQuizOptions(currentQuestion.options, `${session.id}:${currentQuestion.id}:${currentQuestion.position}`)
+    : [], [currentQuestion, session?.id])
+  const currentImageUrls = quizImageUrls(currentQuestion?.image_urls)
 
   if (loading) {
     return <AuthGuard><View className={styles.page}><PageHeader title='练习' shouldShowBack /><View className={styles.resultBody}><Text>正在检查练习范围…</Text></View></View></AuthGuard>
@@ -458,6 +461,11 @@ export default function QuizPracticePage() {
                       {question.position}. {question.is_correct === true ? '回答正确' : question.is_correct === false ? '回答错误' : '未作答'}
                     </Text>
                     <Text className={styles.resultStem}>{question.question_text}</Text>
+                    {quizImageUrls(question.image_urls).length > 0 && (
+                      <View className={styles.questionImages}>
+                        {quizImageUrls(question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
+                      </View>
+                    )}
                     <Text className={styles.resultAnswer}>你的答案：{answerText(question.user_answer)}　正确答案：{answerText(question.correct_answer)}</Text>
                     {question.explanation && <Text className={styles.resultExplanation}>解析：{question.explanation}</Text>}
                   </View>
@@ -493,6 +501,11 @@ export default function QuizPracticePage() {
             </View>
             <Text className={styles.pathText}>{currentQuestion.category_path.map(item => item.name).join(' / ')}</Text>
             <Text className={styles.stem}>{currentQuestion.question_text}</Text>
+            {currentImageUrls.length > 0 && (
+              <View className={styles.questionImages}>
+                {currentImageUrls.map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
+              </View>
+            )}
             <View className={styles.options}>
               {optionItems.map(option => {
                 const selected = answerIncludes(selectedAnswer, option.label)
