@@ -32,7 +32,6 @@ export default function DeactivatePage() {
 
   const handleConfirmDeactivate = async () => {
     if (deleting) return
-    void Taro.vibrateShort({ type: 'medium' }).catch(() => {})
     setDeleting(true)
     try {
       await deleteAccount()

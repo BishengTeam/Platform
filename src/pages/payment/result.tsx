@@ -17,14 +17,10 @@ export default function ResultPage() {
   const [orderDetail, setOrderDetail] = useState<import('@/types/orders').OrderDetail | null>(null)
 
   useLoad((options) => {
-    const nextStatus = (options.status as string) || 'success'
-    setStatus(nextStatus)
+    setStatus((options.status as string) || 'success')
     setOrderId((options.order_id as string) || '')
     setCertName(options.cert_name ? decodeURIComponent(options.cert_name as string) : '')
     setPrice((options.price as string) || '')
-    if (nextStatus === 'success') {
-      void Taro.vibrateShort({ type: 'light' }).catch(() => {})
-    }
   })
 
   useEffect(() => {

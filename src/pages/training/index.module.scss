@@ -27,7 +27,7 @@
 }
 
 .tagSm {
-  --nutui-tag-font-size: calc(26px * var(--app-font-scale)) !important;
+  --nutui-tag-font-size: 26px !important;
 }
 
 // ---- Course Cards ----
@@ -188,7 +188,7 @@
 }
 
 .quizSelectorArrow {
-  font-size: calc(28px * var(--app-font-scale));
+  font-size: 28px;
   color: $color-text-tertiary;
 }
 
@@ -262,7 +262,7 @@
 }
 
 .quizBottomIcon {
-  font-size: calc(36px * var(--app-font-scale));
+  font-size: 36px;
 }
 
 .quizBottomLabel {

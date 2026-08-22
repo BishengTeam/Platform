@@ -15,4 +15,15 @@
   z-index: 25;
   touch-action: none;
   will-change: transform;
+  transition: transform $motion-duration-state $motion-ease-out;
+}
+
+.dragging {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
 }

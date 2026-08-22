@@ -39,13 +39,13 @@
 }
 
 .value {
-  font-size: calc(28px * var(--app-font-scale));
+  font-size: 28px;
   font-weight: 500;
   color: $color-text;
 }
 
 .placeholder {
-  font-size: calc(28px * var(--app-font-scale));
+  font-size: 28px;
   color: #b0b8c1;
 }
 

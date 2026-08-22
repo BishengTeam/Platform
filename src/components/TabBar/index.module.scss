@@ -6,13 +6,10 @@
   left: 0 !important;
   right: 0 !important;
   z-index: 100;
-  --nutui-color-surface-2: rgba(255, 255, 255, 0.86);
-  --nutui-tabbar-border-top: 1px solid rgba(255, 255, 255, 0.55);
-  --nutui-tabbar-height: calc(128px + #{$safe-bottom});
+  --nutui-tabbar-border-top: 1px solid #eeeeee;
+  --nutui-tabbar-height: 128px;
   --nutui-tabbar-text-margin-top: 4px;
-  --nutui-tabbar-text-font-size: calc(18px * var(--app-font-scale));
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+  --nutui-tabbar-text-font-size: 18px;
 
   :global(.nut-tabbar-item) {
     padding: 0;
@@ -20,21 +17,6 @@
 
   :global(.nut-safe-area-position-bottom) {
     display: none;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .bar {
-    --nutui-color-surface-2: rgba(255, 255, 255, 0.98);
-    backdrop-filter: none;
-  }
-}
-
-@media (prefers-contrast: more) {
-  .bar {
-    --nutui-color-surface-2: #ffffff;
-    --nutui-tabbar-border-top: 1px solid #6B7280;
-    backdrop-filter: none;
   }
 }
 

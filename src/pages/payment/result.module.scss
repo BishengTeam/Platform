@@ -38,7 +38,7 @@
 }
 
 .iconText {
-  font-size: calc(72px * var(--app-font-scale));
+  font-size: 72px;
   color: #ffffff;
   font-weight: 700;
   line-height: 1;
@@ -46,21 +46,19 @@
 
 // ---- Title & Description ----
 .title {
-  font-size: calc(56px * var(--app-font-scale));
+  font-size: 56px;
   font-weight: 600;
   color: #333333;
   margin-bottom: $spacing-sm;
-  line-height: $leading-display;
-  letter-spacing: $tracking-display;
 }
 
 .desc {
-  font-size: calc(30px * var(--app-font-scale));
+  font-size: 36px;
   font-weight: 400;
   color: #666666;
   margin-bottom: 48px;
   text-align: center;
-  line-height: $leading-body;
+  line-height: 1.6;
 }
 
 // ---- Order Detail Card ----
@@ -84,27 +82,26 @@
 }
 
 .cardLabel {
-  font-size: calc(24px * var(--app-font-scale));
-  color: #595959;
+  font-size: 26px;
+  color: #999999;
   flex-shrink: 0;
-  font-weight: 500;
 }
 
 .cardValueSm {
-  font-size: calc(24px * var(--app-font-scale));
-  color: #595959;
+  font-size: 26px;
+  color: #999999;
 }
 
 .cardValue {
-  font-size: calc(24px * var(--app-font-scale));
+  font-size: 26px;
   color: #333333;
   text-align: right;
 }
 
 .cardValuePrice {
-  font-size: calc(24px * var(--app-font-scale));
+  font-size: 26px;
   color: $color-text;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 // ---- Action Buttons ----

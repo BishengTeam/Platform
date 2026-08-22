@@ -28,8 +28,8 @@ export function Icon({ name, size = 28, color = '#999', className = '' }: IconPr
       src={src}
       mode='aspectFit'
       style={{
-        width: `calc(${size}px * var(--app-font-scale))`,
-        height: `calc(${size}px * var(--app-font-scale))`,
+        width: `${size}px`,
+        height: `${size}px`,
       }}
     />
   )

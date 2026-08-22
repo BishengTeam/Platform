@@ -44,14 +44,14 @@
 }
 
 .headerNickname {
-  font-size: calc(36px * var(--app-font-scale));
+  font-size: 36px;
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
 }
 
 .headerMeta {
-  font-size: calc(24px * var(--app-font-scale));
+  font-size: 24px;
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -61,7 +61,7 @@
 }
 
 .openidText {
-  font-size: calc(20px * var(--app-font-scale));
+  font-size: 20px;
   color: rgba(255, 255, 255, 0.55);
   background: rgba(255, 255, 255, 0.12);
   padding: 6px 14px;
@@ -86,7 +86,7 @@
   padding: 8px 24px;
   border-radius: 20px;
   border: 2px solid;
-  font-size: calc(24px * var(--app-font-scale));
+  font-size: 24px;
   font-weight: 600;
 
   &.badgeOrange {
@@ -107,7 +107,7 @@
 }
 
 .rejectReason {
-  font-size: calc(24px * var(--app-font-scale));
+  font-size: 24px;
   color: #ff4d4f;
   text-align: center;
 }
@@ -122,7 +122,7 @@
 }
 
 .cardTitle {
-  font-size: calc(28px * var(--app-font-scale));
+  font-size: 28px;
   font-weight: 600;
   color: $color-text;
 }
@@ -136,7 +136,7 @@
 }
 
 .capsuleBadge {
-  font-size: calc(22px * var(--app-font-scale));
+  font-size: 22px;
   font-weight: 500;
   padding: 2px 14px;
   border-radius: 20px;
@@ -162,12 +162,12 @@
 }
 
 .fieldLabel {
-  font-size: calc(26px * var(--app-font-scale));
+  font-size: 26px;
   color: $color-text-tertiary;
 }
 
 .fieldValue {
-  font-size: calc(26px * var(--app-font-scale));
+  font-size: 26px;
   color: $color-text;
 }
 

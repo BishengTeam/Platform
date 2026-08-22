@@ -20,7 +20,7 @@ export function QuizBottomNav({ items, onItemClick, iconSize = 24 }: QuizBottomN
               <Icon name={item.icon} size={iconSize} color={item.color || '#1677FF'} />
             </View>
           ) : (
-            <Text className={styles.quizBottomIcon} style={{ fontSize: `calc(${iconSize}px * var(--app-font-scale))` }}>{item.icon}</Text>
+            <Text className={styles.quizBottomIcon} style={{ fontSize: `${iconSize}px` }}>{item.icon}</Text>
           )}
           <Text className={styles.quizBottomLabel}>{item.label}</Text>
         </View>
