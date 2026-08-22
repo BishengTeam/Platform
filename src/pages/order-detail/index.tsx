@@ -15,8 +15,12 @@ export default function OrderDetailPage() {
 
   useLoad((options) => {
     try {
-      const idStr = (options.order_id as string) || (options.id as string) || '1'
+      const idStr = (options.order_id as string) || (options.id as string) || ''
       const id = Number(idStr)
+      if (!idStr || !Number.isFinite(id)) {
+        setLoading(false)
+        return
+      }
       getOrderDetail(id).then(data => { setDetail(data); setLoading(false) }).catch(e => {
         setLoading(false)
       })
@@ -72,8 +76,8 @@ export default function OrderDetailPage() {
               <View className={styles.metaRow}>
                 <Text className={styles.metaLabel}>{STRINGS.ORDER_DETAIL_ORDER_ID}</Text>
                 <View className={styles.metaValueWrap}>
-                  <Text className={styles.metaValue}>{detail.orderId}</Text>
-                  <View className={styles.copyBtn} onClick={() => handleCopy(detail.orderId)}>
+                  <Text className={styles.metaValue}>{detail.outTradeNo || detail.orderId}</Text>
+                  <View className={styles.copyBtn} onClick={() => handleCopy(detail.outTradeNo || detail.orderId)}>
                     <Text className={styles.copyBtnText}>{STRINGS.ORDER_DETAIL_COPY}</Text>
                   </View>
                 </View>

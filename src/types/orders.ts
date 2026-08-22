@@ -3,7 +3,7 @@ export interface Order {
   id: string
   title: string
   description: string
-  status: 'pending' | 'enrolled' | 'cancelled'
+  status: 'pending' | 'paid' | 'completed' | 'refunded' | 'closed'
   date: string
   amount: string
 }
@@ -13,8 +13,8 @@ export interface OrderBackendItem {
   id: number
   order_kind: string
   product_type: string
-  candidate_name: string
-  candidate_phone: string
+  candidate_name: string | null
+  candidate_phone: string | null
   candidate_idcard: string | null
   price: number
   status: 'pending' | 'paid' | 'completed' | 'refunded' | 'closed'
@@ -32,6 +32,7 @@ export interface OrderBackendItem {
 
 export interface OrderDetail {
   orderId: string
+  outTradeNo: string
   courseCover: string
   courseTitle: string
   courseSubtitle: string

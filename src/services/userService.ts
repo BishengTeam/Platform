@@ -31,6 +31,7 @@ import { get, post, put, del, getToken } from '@/utils/request'
 import { getIdentityStatus } from './authService'
 
 import { getCertificationList } from './zoneService'
+import { toOrder, toOrderDetail } from './orderMapper'
 
 const USE_MOCK = false
 
@@ -86,48 +87,6 @@ export async function getRegistrationTagFilters() {
   return res.data
 }
 
-// ---- 订单数据映射 ----
-
-/** 后端状态 → 前端展示状态 */
-function mapBackendStatus(status: string): Order['status'] {
-  switch (status) {
-    case 'pending':
-      return 'pending'
-    case 'paid':
-    case 'completed':
-      return 'enrolled'
-    case 'refunded':
-    case 'closed':
-      return 'cancelled'
-    default:
-      return 'pending'
-  }
-}
-
-/** 手机号脱敏：前3后4，中间星号 */
-function maskPhone(phone: string): string {
-  if (!phone || phone.length < 7) return phone || ''
-  return phone.slice(0, 3) + '****' + phone.slice(-4)
-}
-
-/** 后端订单对象 → 前端 Order 展示对象 */
-function toOrder(item: OrderBackendItem): Order {
-  const date = item.created_at
-    ? item.created_at.slice(0, 10)
-    : ''
-  const amount = item.price != null
-    ? `¥${(item.price / 100).toFixed(2)}`
-    : '免费'
-  return {
-    id: String(item.id),
-    title: item.candidate_name || item.product_type,
-    description: `${item.product_type}（${maskPhone(item.candidate_phone)}）`,
-    status: mapBackendStatus(item.status),
-    date,
-    amount,
-  }
-}
-
 // ---- 用户 ----
 
 export async function getOrders() {
@@ -136,20 +95,6 @@ export async function getOrders() {
   const data = res.data
   const items: OrderBackendItem[] = data?.items ?? []
   return items.map(toOrder)
-}
-
-/** 后端订单对象 → 前端 OrderDetail 展示对象 */
-function toOrderDetail(item: OrderBackendItem): OrderDetail {
-  return {
-    orderId: String(item.id),
-    courseCover: '',
-    courseTitle: item.candidate_name || item.product_type || '',
-    courseSubtitle: item.product_type ? `${item.product_type} · 报名` : '',
-    amountPaid: item.price != null ? (item.price / 100).toFixed(2) : '0.00',
-    paymentMethod: '微信支付',
-    paymentTime: item.paid_at || '',
-    orderTime: item.created_at || '',
-  }
 }
 
 export async function getOrderDetail(id: number) {

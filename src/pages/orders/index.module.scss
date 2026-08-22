@@ -58,7 +58,6 @@
   position: absolute;
   bottom: $spacing-sm;
   left: $spacing-sm;
-  width: calc((100% - #{$spacing-sm * 2}) / 4);
   height: 3px;
   background: $color-primary;
   border-radius: 2px;

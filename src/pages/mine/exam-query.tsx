@@ -33,7 +33,7 @@ export default function ExamQueryPage() {
                       <Text className={styles.metaText}>{exam.examCode}</Text>
                       <Text className={styles.metaText}>{exam.date}</Text>
                     </View>
-                    <Text className={`${styles.examStatus} ${exam.status === STRINGS.ORDERS_STATUS_ENROLLED ? styles.statusActive : ''}`}>
+                    <Text className={`${styles.examStatus} ${exam.status === STRINGS.MINE_EXAM_QUERY_STATUS_REGISTERED ? styles.statusActive : ''}`}>
                       {exam.status}
                     </Text>
                   </View>

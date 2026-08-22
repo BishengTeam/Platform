@@ -3,8 +3,8 @@ import { STRINGS } from '@/constants/strings'
 
 export const orderItems: OrderItem[] = [
   { icon: 'file-text', label: STRINGS.ORDERS_STATUS_PENDING, badge: 0 },
-  { icon: 'map-pin', label: STRINGS.ORDERS_STATUS_ENROLLED, badge: 0 },
-  { icon: 'bell', label: STRINGS.ORDERS_STATUS_CANCELLED, badge: 0 },
+  { icon: 'map-pin', label: STRINGS.ORDERS_STATUS_COMPLETED, badge: 0 },
+  { icon: 'bell', label: STRINGS.ORDERS_STATUS_CLOSED, badge: 0 },
 ]
 
 export const profileFunctions: ProfileFunction[] = []

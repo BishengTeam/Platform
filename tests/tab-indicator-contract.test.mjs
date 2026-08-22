@@ -20,9 +20,9 @@ test('orders page keeps one transform-driven tab indicator mounted', async () =>
 
   assert.match(source, /className=\{styles\.tabIndicator\}/)
   assert.match(source, /transform: `translateX\(\$\{activeIndex \* 100\}%\)`/)
+  assert.match(source, /width: `calc\(\(100% - 32px\) \/ \$\{TAG_KEYS\.length\}\)`/)
   assert.doesNotMatch(source, /\{isActive && <View className=\{styles\.tabIndicator\}/)
   assert.match(styles, /left: \$spacing-sm;/)
-  assert.match(styles, /width: calc\(\(100% - #\{\$spacing-sm \* 2\}\) \/ 4\)/)
   assert.match(styles, /\.tabIndicator\s*\{[\s\S]*?transition: transform \$motion-duration-press \$motion-ease-out/)
   assert.match(styles, /\.tabIndicator\s*\{[\s\S]*?transition: none/)
 })
