@@ -44,6 +44,7 @@ export default function OrdersPage() {
   const filteredOrders = activeTag === STRINGS.ORDERS_TAG_ALL
     ? orders
     : orders.filter(o => o.status === STATUS_DISPLAY_MAP[activeTag])
+  const activeIndex = Math.max((TAG_KEYS as string[]).indexOf(activeTag), 0)
 
   return (
     <AuthGuard>
@@ -61,11 +62,16 @@ export default function OrdersPage() {
                 >
                   <View className={styles.tabInner}>
                     <Text className={styles.tabText}>{tag}</Text>
-                    {isActive && <View className={styles.tabIndicator} />}
                   </View>
                 </View>
               )
             })}
+            <View
+              className={styles.tabIndicator}
+              style={{
+                transform: `translateX(${activeIndex * 100}%)`,
+              }}
+            />
           </View>
 
           <View className={styles.list}>

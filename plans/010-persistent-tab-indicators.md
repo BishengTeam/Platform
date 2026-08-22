@@ -1,6 +1,6 @@
 # 010 — Use persistent sliding tab indicators
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: d49af23
 - **Severity**: MEDIUM
 - **Category**: Spatial consistency

@@ -20,6 +20,7 @@
   display: flex;
   width: 100%;
   padding: 0 $spacing-sm;
+  position: relative;
 }
 
 .tab {
@@ -54,11 +55,14 @@
 }
 
 .tabIndicator {
-  width: 100%;
+  position: absolute;
+  bottom: $spacing-sm;
+  left: $spacing-sm;
+  width: calc((100% - #{$spacing-sm * 2}) / 4);
   height: 3px;
   background: $color-primary;
   border-radius: 2px;
-  margin-top: 6px;
+  transition: transform $motion-duration-press $motion-ease-out;
 }
 
 .list {
@@ -169,5 +173,9 @@
   .tab:active,
   .card:active {
     transform: none;
+  }
+
+  .tabIndicator {
+    transition: none;
   }
 }

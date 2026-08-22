@@ -13,7 +13,7 @@ Status legend: `TODO`, `IN REVIEW`, `DONE`, `RETIRED`.
 | [007](007-reduce-paint-transitions.md) | Reduce paint-heavy transitions | MEDIUM | DONE | Complete |
 | [008](008-create-motion-tokens.md) | Create shared motion tokens | MEDIUM | DONE | Complete |
 | [009](009-shorten-empty-state-entrance.md) | Shorten empty-state entrance | LOW | DONE | Complete |
-| [010](010-persistent-tab-indicators.md) | Use persistent sliding tab indicators | MEDIUM | TODO | Selected from opportunity scan |
+| [010](010-persistent-tab-indicators.md) | Use persistent sliding tab indicators | MEDIUM | DONE | Complete |
 
 ## Recommended execution order
 
