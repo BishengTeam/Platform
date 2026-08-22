@@ -91,6 +91,7 @@ export async function pollCourseAccess(courseId: number): Promise<boolean> {
 interface CourseEnrollmentItem {
   id: number
   course?: {
+    id?: number
     title?: string
     cover_url?: string
     teacher_name?: string
@@ -119,7 +120,7 @@ export async function getMyCourses() {
   const res = await get<{ items?: CourseEnrollmentItem[] }>('/api/courses/my')
   const items = res.data?.items ?? []
   return items.map(item => ({
-    id: String(item.id),
+    id: String(item.course?.id ?? item.id),
     title: item.course?.title || '',
     cover: item.course?.cover_url || '',
     progress: 0,

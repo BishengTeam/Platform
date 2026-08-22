@@ -17,3 +17,9 @@ test('course DTO hides storage keys and exposes preview semantics', async () => 
   assert.doesNotMatch(source, /video_storage_key/)
   assert.doesNotMatch(source, /video_url/)
 })
+
+test('my courses navigates with the course id instead of enrollment id', async () => {
+  const source = await readFile('src/services/courseService.ts', 'utf8')
+  assert.match(source, /course\?: \{\s*\n\s*id\?: number/)
+  assert.match(source, /id: String\(item\.course\?\.id \?\? item\.id\)/)
+})
