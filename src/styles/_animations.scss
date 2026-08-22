@@ -40,19 +40,19 @@
 }
 
 .fade-in-up {
-  animation: fadeInUp 0.3s ease-out both;
+  animation: fadeInUp $motion-duration-entrance $motion-ease-out both;
 }
 
 .fade-in-up-sm {
-  animation: fadeInUpSmall 0.3s ease-out both;
+  animation: fadeInUpSmall $motion-duration-entrance $motion-ease-out both;
 }
 
 .fade-in {
-  animation: fadeIn 0.3s ease-out both;
+  animation: fadeIn $motion-duration-entrance $motion-ease-out both;
 }
 
 .shake {
-  animation: shake 0.5s ease-in-out;
+  animation: shake 300ms $motion-ease-in-out;
 }
 
 .bounce-dot {
@@ -64,3 +64,19 @@
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
 .delay-4 { animation-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-up,
+  .fade-in-up-sm,
+  .fade-in {
+    animation: fadeIn $motion-duration-state ease-out both;
+  }
+
+  .shake {
+    animation: fadeIn $motion-duration-state ease-out both;
+  }
+
+  .bounce-dot {
+    animation: none;
+  }
+}

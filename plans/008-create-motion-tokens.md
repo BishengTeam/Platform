@@ -1,6 +1,6 @@
 # 008 — Create shared motion tokens
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 9a3bc2a
 - **Severity**: MEDIUM
 - **Category**: Cohesion & tokens

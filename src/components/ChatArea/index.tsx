@@ -20,7 +20,7 @@ export function ChatArea({ messages, isTyping, onCardTap }: ChatAreaProps) {
         <View
           key={msg.id}
           className={`${styles.chatBubble} ${msg.type === 'user' ? styles.userBubble : styles.aiBubble} fade-in-up-sm`}
-          style={{ animationDelay: `${i * 0.05}s` }}
+          style={{ animationDelay: `${Math.min(i * 0.03, 0.08)}s` }}
         >
           {msg.type === 'ai' && (
             <Avatar

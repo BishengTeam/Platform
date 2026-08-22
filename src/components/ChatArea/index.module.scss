@@ -293,6 +293,12 @@
   &:nth-child(3) { animation-delay: 0.3s; opacity: 0.8; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .typingDot {
+    animation: none;
+  }
+}
+
 
 @include respond-to(xs) {
   .bubbleContent {

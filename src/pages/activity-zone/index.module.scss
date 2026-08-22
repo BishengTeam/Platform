@@ -21,7 +21,6 @@
   font-size: $font-base;
   color: $color-text-secondary;
   background: $color-white;
-  transition: all 0.2s;
 }
 
 .mainTabActive {
@@ -41,7 +40,9 @@
   background: #13C2C2;
   font-weight: 600;
   border: 1px solid rgba(19, 194, 194, 0.3);
-  transition: all 0.2s;
+  transition:
+    opacity $motion-duration-press $motion-ease-out,
+    transform $motion-duration-press $motion-ease-out;
 
   &:active {
     opacity: 0.8;
@@ -76,4 +77,14 @@
   flex-direction: column;
   gap: $spacing-sm;
   margin-top: $spacing-sm;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action {
+    transition-property: opacity;
+  }
+
+  .action:active {
+    transform: none;
+  }
 }

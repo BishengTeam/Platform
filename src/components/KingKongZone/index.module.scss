@@ -18,7 +18,7 @@
   gap: $spacing-sm;
   border-radius: $radius-lg;
   padding: $spacing-md;
-  transition: transform 0.15s;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.96);
@@ -33,7 +33,7 @@
   gap: $spacing-xs;
   border-radius: $radius-lg;
   padding: $spacing-md;
-  transition: transform 0.15s;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.96);
@@ -52,4 +52,16 @@
   font-weight: 500;
   color: $color-text;
   text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .itemCard,
+  .itemTab {
+    transition-property: background-color;
+  }
+
+  .itemCard:active,
+  .itemTab:active {
+    transform: none;
+  }
 }

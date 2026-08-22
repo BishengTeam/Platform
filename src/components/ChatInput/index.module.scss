@@ -29,7 +29,7 @@
   border-radius: $radius-full;
   margin-right: $spacing-xs;
   border: 1PX solid rgba(22, 119, 255, 0.1);
-  transition: background 0.15s, transform 0.15s;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &::before {
     content: '';
@@ -55,7 +55,6 @@
   padding: $spacing-sm $spacing-lg;
   border: 2PX solid transparent;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .field {
@@ -75,10 +74,25 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(22, 119, 255, 0.3);
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
-    transform: scale(0.92);
+    transform: scale(0.97);
     box-shadow: 0 1px 4px rgba(22, 119, 255, 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quickTag {
+    transition-property: background-color;
+  }
+
+  .sendBtn {
+    transition-property: opacity, background-color;
+  }
+
+  .quickTag:active,
+  .sendBtn:active {
+    transform: none;
   }
 }

@@ -4,15 +4,15 @@ Status legend: `TODO`, `IN REVIEW`, `DONE`, `RETIRED`.
 
 | Plan | Title | Severity | Status | Order / dependency |
 |---|---|---:|---|---|
-| [001](001-floating-service-transform-drag.md) | Move floating service drag to transforms | HIGH | TODO | Execute first |
-| [002](002-cap-chat-message-stagger.md) | Cap chat message entrance stagger | HIGH | TODO | Independent |
-| [003](003-fix-active-release-transitions.md) | Fix press release snap | HIGH | TODO | Before 005/008 |
-| [004](004-add-reduced-motion.md) | Add reduced motion support | MEDIUM | TODO | After 001 and 003 |
-| [005](005-replace-transition-all.md) | Replace transition: all | MEDIUM | TODO | After 003 |
-| [006](006-unify-press-scale.md) | Unify exaggerated press scales | MEDIUM | TODO | With 003 |
-| [007](007-reduce-paint-transitions.md) | Reduce paint-heavy transitions | MEDIUM | TODO | With 005 |
-| [008](008-create-motion-tokens.md) | Create shared motion tokens | MEDIUM | TODO | After 003–007 |
-| [009](009-shorten-empty-state-entrance.md) | Shorten empty-state entrance | LOW | TODO | After 008 |
+| [001](001-floating-service-transform-drag.md) | Move floating service drag to transforms | HIGH | DONE | Complete |
+| [002](002-cap-chat-message-stagger.md) | Cap chat message entrance stagger | HIGH | DONE | Complete |
+| [003](003-fix-active-release-transitions.md) | Fix press release snap | HIGH | DONE | Complete |
+| [004](004-add-reduced-motion.md) | Add reduced motion support | MEDIUM | DONE | Complete |
+| [005](005-replace-transition-all.md) | Replace transition: all | MEDIUM | DONE | Complete |
+| [006](006-unify-press-scale.md) | Unify exaggerated press scales | MEDIUM | DONE | Complete |
+| [007](007-reduce-paint-transitions.md) | Reduce paint-heavy transitions | MEDIUM | DONE | Complete |
+| [008](008-create-motion-tokens.md) | Create shared motion tokens | MEDIUM | DONE | Complete |
+| [009](009-shorten-empty-state-entrance.md) | Shorten empty-state entrance | LOW | DONE | Complete |
 
 ## Recommended execution order
 

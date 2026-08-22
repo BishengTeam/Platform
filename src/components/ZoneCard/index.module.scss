@@ -6,7 +6,9 @@
   padding: $spacing-md;
   background: $color-white;
   box-shadow: $shadow-sm;
-  transition: all 0.15s ease-out;
+  transition:
+    transform $motion-duration-press $motion-ease-out,
+    opacity $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.98);
@@ -107,4 +109,14 @@
   padding: 0 $spacing-md;
   font-size: $font-sm;
   border-radius: $radius-full;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition-property: opacity, background-color;
+  }
+
+  .card:active {
+    transform: none;
+  }
 }

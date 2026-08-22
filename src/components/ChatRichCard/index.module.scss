@@ -6,11 +6,13 @@
   border-radius: $radius-lg;
   padding: $spacing-md;
   box-shadow: $shadow-xs;
+  transition:
+    transform $motion-duration-press $motion-ease-out,
+    opacity $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.98);
     opacity: 0.95;
-    transition: all 0.1s;
   }
 }
 
@@ -65,4 +67,14 @@
 .actionText {
   font-size: $font-xs;
   color: $color-primary;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition-property: opacity, background-color;
+  }
+
+  .card:active {
+    transform: none;
+  }
 }

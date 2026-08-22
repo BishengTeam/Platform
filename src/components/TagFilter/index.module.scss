@@ -16,7 +16,6 @@
   padding: 12px $spacing-lg !important;
   border-radius: $radius-full !important;
   flex-shrink: 0;
-  transition: all 0.2s;
 }
 
 
@@ -28,7 +27,7 @@
 .underlineTab {
   padding: $spacing-xs $spacing-md;
   position: relative;
-  transition: all 0.15s ease-out;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.96);
@@ -54,4 +53,18 @@
   height: 3px;
   background: $color-primary;
   border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tag {
+    transition-property: background-color, color;
+  }
+
+  .underlineTab {
+    transition-property: opacity, background-color;
+  }
+
+  .underlineTab:active {
+    transform: none;
+  }
 }

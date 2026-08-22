@@ -128,3 +128,10 @@ $color-wechat-green: #07C160;
 $anim-offset-sm: 10px;
 $anim-offset-md: 16px;
 $anim-offset-lg: 20px;
+
+// Motion
+$motion-duration-press: 160ms;
+$motion-duration-state: 200ms;
+$motion-duration-entrance: 250ms;
+$motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+$motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);

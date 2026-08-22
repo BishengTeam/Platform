@@ -34,10 +34,22 @@
 .backBtn {
   padding: $spacing-2xs;
   margin-left: -$spacing-2xs;
-  transition: all 0.15s ease-out;
+  transition:
+    transform $motion-duration-press $motion-ease-out,
+    opacity $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.98);
     opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backBtn {
+    transition-property: opacity;
+  }
+
+  .backBtn:active {
+    transform: none;
   }
 }

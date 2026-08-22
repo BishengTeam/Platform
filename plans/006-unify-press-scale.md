@@ -1,6 +1,6 @@
 # 006 — Unify exaggerated press scales
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 9a3bc2a
 - **Severity**: MEDIUM
 - **Category**: Physicality

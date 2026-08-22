@@ -1,6 +1,6 @@
 # 005 — Replace transition: all
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 9a3bc2a
 - **Severity**: MEDIUM
 - **Category**: Performance
@@ -77,3 +77,7 @@ transition:
 - **Mechanical**: `rg "transition:\\s*all" src --glob '*.scss'` exits with no matches; `npm run typecheck && npm test && npm run build:weapp`.
 - **Feel check**: tabs, cards, filters, and back buttons still animate their visible state without unintended text/layout side effects.
 - **Done when**: every transition names explicit properties.
+
+## Completion note
+
+High-frequency background, border, and text-color state changes were made instant during review. This is stricter than the original target and follows the remedial preference to remove unnecessary paint transitions; retained transitions animate only `transform` and `opacity`.

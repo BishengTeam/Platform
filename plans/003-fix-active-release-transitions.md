@@ -1,6 +1,6 @@
 # 003 — Fix press release snap
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 9a3bc2a
 - **Severity**: HIGH
 - **Category**: Physicality & origin

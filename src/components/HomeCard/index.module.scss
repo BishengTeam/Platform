@@ -18,7 +18,7 @@
   border-radius: $radius-lg;
   overflow: hidden;
   box-shadow: $shadow-xs;
-  transition: transform 0.15s;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.97);
@@ -85,4 +85,14 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition-property: opacity, background-color;
+  }
+
+  .card:active {
+    transform: none;
+  }
 }

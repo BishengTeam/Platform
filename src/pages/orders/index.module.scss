@@ -28,7 +28,7 @@
   justify-content: center;
   align-items: center;
   padding: $spacing-sm 0;
-  transition: all 0.15s ease-out;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.96);
@@ -72,11 +72,13 @@
   border-radius: $radius-xl;
   padding: $spacing-md;
   box-shadow: $shadow-sm;
+  transition:
+    transform $motion-duration-press $motion-ease-out,
+    opacity $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.98);
     opacity: 0.9;
-    transition: all 0.15s ease-out;
   }
 }
 
@@ -156,4 +158,16 @@
 .badgeText {
   font-size: $font-xs;
   font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab,
+  .card {
+    transition-property: opacity;
+  }
+
+  .tab:active,
+  .card:active {
+    transform: none;
+  }
 }

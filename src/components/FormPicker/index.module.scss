@@ -27,7 +27,6 @@
   padding: 0 $spacing-sm;
   box-sizing: border-box;
   border: 2px solid #e8ecf1;
-  transition: border-color 0.2s, box-shadow 0.2s;
 
   &:active {
     border-color: $color-primary;

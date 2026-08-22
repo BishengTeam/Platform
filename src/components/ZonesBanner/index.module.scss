@@ -44,7 +44,7 @@
   padding: 6px $spacing-lg;
   border-radius: $radius-full;
   display: inline-flex;
-  transition: all 0.1s;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &::before {
     content: '';
@@ -65,4 +65,14 @@
   right: -$spacing-lg;
   bottom: -$spacing-lg;
   transform: rotate(12deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition-property: opacity, background-color;
+  }
+
+  .btn:active {
+    transform: none;
+  }
 }

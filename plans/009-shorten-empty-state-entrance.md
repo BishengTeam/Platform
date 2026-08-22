@@ -1,6 +1,6 @@
 # 009 — Shorten empty-state entrance
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 9a3bc2a
 - **Severity**: LOW
 - **Category**: Easing & duration

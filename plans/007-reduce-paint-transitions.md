@@ -1,6 +1,6 @@
 # 007 — Reduce paint-heavy transitions
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 9a3bc2a
 - **Severity**: MEDIUM
 - **Category**: Performance
@@ -60,3 +60,7 @@ If plan 008 tokens exist, use `$motion-duration-state`, `$motion-duration-press`
 - **Mechanical**: `npm run typecheck && npm test && npm run build:weapp`.
 - **Feel check**: focus/press remains clear; no visible shadow tween hesitation; repeated input focus is immediate.
 - **Done when**: these three files do not transition `box-shadow`.
+
+## Completion note
+
+The implementation also removed background/border transitions from high-frequency inputs and tabs so all retained transitions use composited `transform`/`opacity` properties.

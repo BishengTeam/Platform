@@ -20,6 +20,7 @@ export function FloatingService({ onPress }: FloatingServiceProps) {
   const { width: windowWidth, height: windowHeight } = useWindowSize()
   const [side, setSide] = useState<'left' | 'right'>('right')
   const [y, setY] = useState(300)
+  const [isDragging, setIsDragging] = useState(false)
   const startRef = useRef({ y: 0, moved: 0, lastTouchX: 0 })
   const dragY = useRef(y)
 
@@ -32,6 +33,7 @@ export function FloatingService({ onPress }: FloatingServiceProps) {
     const touch = e.touches[0]
     startRef.current = { y: touch.clientY - y, moved: 0, lastTouchX: touch.clientX }
     dragY.current = y
+    setIsDragging(true)
   }, [y])
 
   const handleTouchMove = useCallback((e: any) => {
@@ -48,19 +50,20 @@ export function FloatingService({ onPress }: FloatingServiceProps) {
 
   const handleTouchEnd = useCallback(() => {
     if (startRef.current.moved < DRAG_THRESHOLD) {
+      setIsDragging(false)
       onPress?.()
       return
     }
     const midX = windowWidth / 2
     setSide(startRef.current.lastTouchX < midX ? 'left' : 'right')
+    setIsDragging(false)
   }, [windowWidth, onPress])
 
   return (
     <View
-      className={styles.btn}
+      className={`${styles.btn} ${isDragging ? styles.dragging : ''}`}
       style={{
-        left: `${x}px`,
-        top: `${y}px`,
+        transform: `translate3d(${x}px, ${y}px, 0)`,
       }}
       catchMove
       onTouchStart={handleTouchStart}

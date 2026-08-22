@@ -58,10 +58,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease-out;
+  transition:
+    transform $motion-duration-press $motion-ease-out,
+    opacity $motion-duration-press $motion-ease-out;
 
   &:active {
-    transform: scale(0.92);
+    transform: scale(0.97);
     opacity: 0.85;
   }
 }
@@ -163,4 +165,14 @@
   box-shadow:
     0 -1px 3px rgba(0, 0, 0, 0.04),
     0 -4px 12px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backBtn {
+    transition-property: opacity;
+  }
+
+  .backBtn:active {
+    transform: none;
+  }
 }

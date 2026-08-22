@@ -31,7 +31,7 @@
   align-items: center;
   justify-content: space-between;
   box-shadow: $shadow-sm;
-  transition: transform 0.15s;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.98);
@@ -86,3 +86,12 @@
   padding: 0 $spacing-md $spacing-lg;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .aiCard {
+    transition-property: opacity, background-color;
+  }
+
+  .aiCard:active {
+    transform: none;
+  }
+}

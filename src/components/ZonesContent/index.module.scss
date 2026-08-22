@@ -33,10 +33,10 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.95);
-    transition: transform 0.1s;
   }
 }
 
@@ -60,5 +60,15 @@
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gridItem {
+    transition-property: background-color;
+  }
+
+  .gridItem:active {
+    transform: none;
   }
 }

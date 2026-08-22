@@ -41,7 +41,7 @@
   background: $color-white;
   border-radius: $radius-lg;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-  transition: all 0.15s ease-out;
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.98);
@@ -111,4 +111,14 @@
 .loadingText {
   font-size: $font-sm;
   color: $color-text-tertiary;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .categoryCard {
+    transition-property: background-color;
+  }
+
+  .categoryCard:active {
+    transform: none;
+  }
 }

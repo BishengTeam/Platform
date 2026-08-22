@@ -1,6 +1,6 @@
 # 002 — Cap chat message entrance stagger
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 9a3bc2a
 - **Severity**: HIGH
 - **Category**: Interruptibility

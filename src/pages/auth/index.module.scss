@@ -77,10 +77,10 @@
   justify-content: center;
   gap: $spacing-xs;
   box-shadow: 0 4px 12px rgba($color-success, 0.2);
+  transition: transform $motion-duration-press $motion-ease-out;
 
   &:active {
     transform: scale(0.95);
-    transition: transform 0.1s;
   }
 }
 
@@ -91,4 +91,14 @@
 
 .link {
   color: $color-primary;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wechatBtn {
+    transition-property: opacity, background-color;
+  }
+
+  .wechatBtn:active {
+    transform: none;
+  }
 }
