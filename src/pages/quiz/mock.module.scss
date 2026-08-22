@@ -312,7 +312,7 @@
 }
 
 .resultEmoji {
-  font-size: 48px;
+  font-size: calc(48px * var(--app-font-scale));
   display: block;
   margin-bottom: $spacing-md;
 }

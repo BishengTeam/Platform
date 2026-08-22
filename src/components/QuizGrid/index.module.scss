@@ -20,7 +20,7 @@
 }
 
 .quizGridIcon {
-  font-size: 32px;
+  font-size: calc(32px * var(--app-font-scale));
 }
 
 .quizGridLabel {

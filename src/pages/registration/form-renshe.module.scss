@@ -2,5 +2,5 @@
 
 .errorText {
   color: #FF4D4F;
-  font-size: 12px;
+  font-size: calc(12px * var(--app-font-scale));
 }

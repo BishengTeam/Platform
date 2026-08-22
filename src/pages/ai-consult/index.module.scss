@@ -53,8 +53,8 @@
 }
 
 .backBtn {
-  width: 40px;
-  height: 40px;
+  width: $touch-min;
+  height: $touch-min;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,7 +77,7 @@
 }
 
 .headerRight {
-  width: 40px;
+  width: $touch-min;
 }
 
 .headerInfo {

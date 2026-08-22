@@ -221,7 +221,7 @@ export default function CourseContentPage() {
             </View>
           ))}
           <View style={{ height: '24rpx' }} />
-          <Text style={{ fontSize: '22rpx', color: '#999' }}>
+          <Text style={{ fontSize: 'calc(22rpx * var(--app-font-scale))', color: '#999' }}>
             播放地址有效期至 {new Date(expiresAt * 1000).toLocaleTimeString()}，到期会自动续期
           </Text>
         </ScrollView>

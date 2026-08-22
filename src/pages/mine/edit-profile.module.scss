@@ -43,14 +43,14 @@
 }
 
 .headerNickname {
-  font-size: 36px;
+  font-size: calc(36px * var(--app-font-scale));
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
 }
 
 .headerMeta {
-  font-size: 24px;
+  font-size: calc(24px * var(--app-font-scale));
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -67,7 +67,7 @@
 }
 
 .quotaText {
-  font-size: 24px;
+  font-size: calc(24px * var(--app-font-scale));
   color: #0050b3;
 }
 
@@ -83,12 +83,12 @@
 }
 
 .identityStatusLabel {
-  font-size: 26px;
+  font-size: calc(26px * var(--app-font-scale));
   color: $color-text;
 }
 
 .identityStatusValue {
-  font-size: 26px;
+  font-size: calc(26px * var(--app-font-scale));
   color: $color-text-tertiary;
 }
 
@@ -107,7 +107,7 @@
 
 // ---- 段落标题 ----
 .sectionTitle {
-  font-size: 28px;
+  font-size: calc(28px * var(--app-font-scale));
   font-weight: 600;
   color: $color-text;
 }
@@ -120,7 +120,7 @@
 }
 
 .statusBadge {
-  font-size: 24px;
+  font-size: calc(24px * var(--app-font-scale));
   font-weight: 500;
   padding: 2px 14px;
   border-radius: 20px;
@@ -135,7 +135,7 @@
 
 // ---- 子标题 ----
 .subTitle {
-  font-size: 24px;
+  font-size: calc(24px * var(--app-font-scale));
   color: $color-text-tertiary;
   margin-top: 8px;
 }
@@ -160,7 +160,7 @@
 }
 
 .fieldLabel {
-  font-size: 26px;
+  font-size: calc(26px * var(--app-font-scale));
   color: $color-text;
 }
 
@@ -173,7 +173,7 @@
   padding: 8px 24px;
   border-radius: 8px;
   border: 2px solid #d9d9d9;
-  font-size: 24px;
+  font-size: calc(24px * var(--app-font-scale));
   color: $color-text-tertiary;
 }
 
@@ -192,7 +192,7 @@
 }
 
 .derivedText {
-  font-size: 24px;
+  font-size: calc(24px * var(--app-font-scale));
   color: $color-text-tertiary;
 }
 
@@ -218,7 +218,7 @@
   justify-content: center;
   height: 84px;
   border-radius: 12px;
-  font-size: 28px;
+  font-size: calc(28px * var(--app-font-scale));
   font-weight: 500;
   color: #52c41a;
   background: #f0fff4;

@@ -31,7 +31,7 @@
 }
 
 .balanceValue {
-  font-size: 48px;
+  font-size: calc(48px * var(--app-font-scale));
   font-weight: 700;
   color: $color-white;
 }

@@ -23,12 +23,13 @@
 }
 
 .title {
-  font-size: 40px;
+  font-size: calc(40px * var(--app-font-scale));
   font-weight: 700;
   color: $color-text;
   display: block;
   margin-bottom: $spacing-sm;
-  letter-spacing: 1px;
+  line-height: $leading-title;
+  letter-spacing: $tracking-title;
 
   &::after {
     content: '';

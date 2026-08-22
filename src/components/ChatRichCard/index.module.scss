@@ -51,7 +51,7 @@
 }
 
 .metaItem {
-  font-size: 20px;
+  font-size: calc(20px * var(--app-font-scale));
   color: $color-text-tertiary;
   background: $color-bg-secondary;
   padding: 4px 12px;

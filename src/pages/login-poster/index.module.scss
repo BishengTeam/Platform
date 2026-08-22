@@ -47,7 +47,7 @@
 }
 
 .posterIcon {
-  font-size: 80px;
+  font-size: calc(80px * var(--app-font-scale));
 }
 
 .posterTag {

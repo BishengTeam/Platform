@@ -87,7 +87,7 @@
 }
 
 .quizGridIcon {
-  font-size: 32px;
+  font-size: calc(32px * var(--app-font-scale));
 }
 
 .quizGridLabel {
@@ -143,7 +143,7 @@
 }
 
 .quizBottomIcon {
-  font-size: 24px;
+  font-size: calc(24px * var(--app-font-scale));
 }
 
 .quizBottomLabel {

@@ -4,13 +4,13 @@
 }
 
 .fallbackTitle {
-  font-size: 16px;
+  font-size: calc(16px * var(--app-font-scale));
   color: #999;
   display: block;
   margin-bottom: 16px;
 }
 
 .fallbackDesc {
-  font-size: 14px;
+  font-size: calc(14px * var(--app-font-scale));
   color: #BFBFBF;
 }

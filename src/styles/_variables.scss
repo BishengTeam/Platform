@@ -50,22 +50,30 @@ $radius-lg: 24px;
 $radius-xl: 32px;
 $radius-full: 9999px;
 
-// Font sizes (doubled from 375px source)
-$font-2xs: 12px;
-$font-xs: 20px;
-$font-sm: 24px;
-$font-base: 28px;
-$font-lg: 32px;
-$font-xl: 36px;
-$font-2xl: 40px;
-$font-3xl: 48px;
+// Font sizes (doubled from 375px source; scale with the user's text setting)
+$font-2xs: calc(12px * var(--app-font-scale));
+$font-xs: calc(20px * var(--app-font-scale));
+$font-sm: calc(24px * var(--app-font-scale));
+$font-base: calc(28px * var(--app-font-scale));
+$font-lg: calc(32px * var(--app-font-scale));
+$font-xl: calc(36px * var(--app-font-scale));
+$font-2xl: calc(40px * var(--app-font-scale));
+$font-3xl: calc(48px * var(--app-font-scale));
+
+// Optical typography
+$leading-display: 1.05;
+$leading-title: 1.15;
+$leading-body: 1.5;
+$tracking-display: -0.02em;
+$tracking-title: -0.01em;
+$tracking-caption: 0.01em;
 
 // Component sizes (doubled from 375px source)
 $header-height: 176px;
 $header-height-profile: 240px;
 $tab-bar-height: 48px;
 $nav-title-height: 88px;
-$button-height: 100px;
+$button-height: calc(100px * var(--app-font-scale));
 $swiper-height: 320px;
 $banner-height: 240px;
 $grid-item-height: 160px;
@@ -83,7 +91,7 @@ $icon-md: 64px;
 $icon-lg: 80px;
 
 // Touch target
-$touch-min: 44px;
+$touch-min: 88px;
 
 // Shadows
 $shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.06);

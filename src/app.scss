@@ -8,6 +8,13 @@
 }
 
 :root {
+  --app-font-scale: 1;
+  --leading-display: 1.05;
+  --leading-title: 1.15;
+  --leading-body: 1.5;
+  --tracking-display: -0.02em;
+  --tracking-title: -0.01em;
+  --tracking-caption: 0.01em;
   --gradient-blue: linear-gradient(to right, #1677FF, #4096FF);
   --gradient-green: linear-gradient(to right, #52C41A, #73D13D);
   --gradient-orange: linear-gradient(to right, #FA8C16, #FFC53D);
@@ -43,6 +50,13 @@
   --nutui-border-radius: 24px;
 }
 
+.app-shell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  --app-font-scale: 1;
+}
+
 page {
   display: flex;
   flex-direction: column;
@@ -53,6 +67,6 @@ page {
   font-family: PingFang SC, system-ui, -apple-system, sans-serif;
   background-color: #F0F5FF;
   color: #333333;
-  font-size: 28px;
-  line-height: 1.5;
+  font-size: calc(28px * var(--app-font-scale));
+  line-height: var(--leading-body);
 }
