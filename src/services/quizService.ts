@@ -220,6 +220,7 @@ export async function createQuizExam(input: {
   category_id?: number
   scope_type?: QuizPracticeScopeType
   scope_id?: number
+  scopes?: Array<{ scope_type: QuizPracticeScopeType; scope_id: number }>
 }): Promise<QuizExamDetail> {
   const response = await post<unknown>('/api/quiz/exams', queryData(input))
   return parseExamDetail(response.data)

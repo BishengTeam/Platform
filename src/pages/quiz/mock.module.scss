@@ -23,6 +23,8 @@
 .setupTitle { color: $color-text; font-size: $font-xl; font-weight: 700; }
 .setupHint { color: $color-text-tertiary; font-size: $font-sm; line-height: 1.5; }
 .selector { display: flex; justify-content: space-between; padding: $spacing-md; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
+.pickerFooter { padding: $spacing-md $spacing-lg calc(#{$spacing-md} + #{$safe-bottom}); border-top: $border-thin solid $color-border; background: $color-white; }
+.pickerFooterText { color: $color-primary; font-size: $font-sm; font-weight: 600; }
 .countGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: $spacing-sm; }
 .countItem { padding: $spacing-lg; text-align: center; background: $color-white; border: 1px solid $color-border; border-radius: $radius-md; }
 .countItemActive { color: $color-primary; background: $color-blue-tint; border-color: $color-primary; font-weight: 700; }

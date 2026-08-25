@@ -499,7 +499,7 @@ export const STRINGS = {
   QUIZ_CHECKIN_DAYS: '天',
   QUIZ_CHECKIN_BTN: '去打卡',
   QUIZ_SECTION_PRACTICE: '章节练习',
-  QUIZ_MOCK_EXAM: '模拟考试',
+  QUIZ_MOCK_EXAM: '智能组卷',
   QUIZ_CHALLENGE: '刷题挑战',
   QUIZ_ASSESSMENT: '能力测评',
   QUIZ_START_PRACTICE: '开始练习',

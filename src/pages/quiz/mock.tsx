@@ -49,6 +49,8 @@ interface ExamScope {
 
 interface ExamScopePickerNode extends ExamScope {
   question_count: number
+  libraryId: number
+  pointIds: number[]
   children: ExamScopePickerNode[]
 }
 
@@ -60,10 +62,50 @@ function isNotFound(error: unknown): boolean {
   return error instanceof ApiError && (error.statusCode === 404 || error.code === 40300)
 }
 
+function buildScopeTree(details: QuizLibraryCatalogDetail[]): ExamScopePickerNode[] {
+  return details.map(detail => ({
+    type: 'library' as const,
+    id: detail.id,
+    name: detail.name,
+    questionCount: detail.question_count,
+    question_count: detail.question_count,
+    libraryId: detail.id,
+    pointIds: detail.modules.flatMap(module => module.knowledge_points.map(point => point.id)),
+    children: detail.modules.map(module => ({
+      type: 'module' as const,
+      id: module.id,
+      name: module.name,
+      questionCount: module.question_count,
+      question_count: module.question_count,
+      libraryId: detail.id,
+      pointIds: module.knowledge_points.map(point => point.id),
+      children: module.knowledge_points.map(point => ({
+        type: 'knowledge_point' as const,
+        id: point.id,
+        name: point.name,
+        questionCount: point.question_count,
+        question_count: point.question_count,
+        libraryId: detail.id,
+        pointIds: [point.id],
+        children: [],
+      })),
+    })),
+  }))
+}
+
+function findScopeNode(nodes: ExamScopePickerNode[], type: QuizPracticeScopeType, id: number): ExamScopePickerNode | null {
+  for (const node of nodes) {
+    if (node.type === type && node.id === id) return node
+    const child = findScopeNode(node.children, type, id)
+    if (child) return child
+  }
+  return null
+}
+
 export default function QuizMockPage() {
   const [exam, setExam] = useState<QuizExamDetail | null>(null)
   const [libraryDetails, setLibraryDetails] = useState<QuizLibraryCatalogDetail[]>([])
-  const [scope, setScope] = useState<ExamScope | null>(null)
+  const [selectedNodes, setSelectedNodes] = useState<ExamScopePickerNode[]>([])
   const [scopePickerVisible, setScopePickerVisible] = useState(false)
   const [questionCount, setQuestionCount] = useState<number>(20)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -137,23 +179,12 @@ export default function QuizMockPage() {
         const items = await listQuizLibraries()
         const details = await Promise.all(items.map(item => getQuizLibrary(item.id)))
         setLibraryDetails(details)
-        const first = details[0]
-        if (first) {
-          if (explicitScopeType && Number.isInteger(explicitScopeId) && explicitScopeId > 0) {
-            const explicitName = explicitScopeType === 'library'
-              ? details.find(item => item.id === explicitScopeId)?.name
-              : explicitScopeType === 'module'
-                ? details.flatMap(item => item.modules).find(item => item.id === explicitScopeId)?.name
-                : details.flatMap(item => item.modules).flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.name
-            const explicitCount = explicitScopeType === 'library'
-              ? details.find(item => item.id === explicitScopeId)?.question_count
-              : explicitScopeType === 'module'
-                ? details.flatMap(item => item.modules).find(item => item.id === explicitScopeId)?.question_count
-                : details.flatMap(item => item.modules).flatMap(item => item.knowledge_points).find(item => item.id === explicitScopeId)?.question_count
-            setScope({ type: explicitScopeType, id: explicitScopeId, name: explicitName ?? '已选范围', questionCount: explicitCount ?? 0 })
-          } else {
-            setScope({ type: 'library', id: first.id, name: first.name, questionCount: first.question_count })
-          }
+        const tree = buildScopeTree(details)
+        if (explicitScopeType && Number.isInteger(explicitScopeId) && explicitScopeId > 0) {
+          const explicitNode = findScopeNode(tree, explicitScopeType, explicitScopeId)
+          setSelectedNodes(explicitNode ? [explicitNode] : [])
+        } else if (tree[0]) {
+          setSelectedNodes([tree[0]])
         }
         if (!await retryPendingAbandon()) return
         const cachedExamId = getCachedExamId()
@@ -223,12 +254,15 @@ export default function QuizMockPage() {
   })
 
   const create = async () => {
-    if (!scope || creating) return
+    if (selectedNodes.length === 0 || creating) return
     setCreating(true)
     setLoadError('')
     try {
       if (!await retryPendingAbandon()) return
-      const created = await createQuizExam({ scope_type: scope.type, scope_id: scope.id, question_count: questionCount })
+      const created = await createQuizExam({
+        scopes: selectedNodes.map(node => ({ scope_type: node.type, scope_id: node.id })),
+        question_count: questionCount,
+      })
       applyExam(created)
     } catch (error) {
       setLoadError(messageOf(error))
@@ -238,43 +272,50 @@ export default function QuizMockPage() {
   }
 
   const scopeTree = useMemo<ExamScopePickerNode[]>(() => {
-    return libraryDetails.map(detail => ({
-      type: 'library' as const,
-      id: detail.id,
-      name: detail.name,
-      questionCount: detail.question_count,
-      question_count: detail.question_count,
-      children: detail.modules.map(module => ({
-        type: 'module',
-        id: module.id,
-        name: module.name,
-        questionCount: module.question_count,
-        question_count: module.question_count,
-        children: module.knowledge_points.map(point => ({
-          type: 'knowledge_point',
-          id: point.id,
-          name: point.name,
-          questionCount: point.question_count,
-          question_count: point.question_count,
-          children: [],
-        })),
-      })),
-    }))
+    return buildScopeTree(libraryDetails)
   }, [libraryDetails])
+
+  const pointQuestionCounts = useMemo(() => {
+    const counts = new Map<number, number>()
+    for (const detail of libraryDetails) {
+      for (const module of detail.modules) {
+        for (const point of module.knowledge_points) counts.set(point.id, point.question_count)
+      }
+    }
+    return counts
+  }, [libraryDetails])
+
+  const selectedLibraryId = selectedNodes[0]?.libraryId ?? null
+  const unionQuestionCount = useMemo(() => {
+    const pointIds = new Set<number>()
+    for (const node of selectedNodes) {
+      for (const pointId of node.pointIds) pointIds.add(pointId)
+    }
+    let total = 0
+    for (const pointId of pointIds) total += pointQuestionCounts.get(pointId) ?? 0
+    return total
+  }, [selectedNodes, pointQuestionCounts])
+
+  const selectedKeys = useMemo(
+    () => new Set(selectedNodes.map(node => `${node.type}:${node.id}`)),
+    [selectedNodes],
+  )
 
   const chooseScope = () => {
     if (libraryDetails.length === 0) return
     setScopePickerVisible(true)
   }
 
-  const selectScope = (selected: ExamScopePickerNode) => {
-    setScope({
-      type: selected.type,
-      id: selected.id,
-      name: selected.name,
-      questionCount: selected.questionCount,
-    })
-    setScopePickerVisible(false)
+  const toggleScopeNode = (node: ExamScopePickerNode) => {
+    const key = `${node.type}:${node.id}`
+    const exists = selectedKeys.has(key)
+    if (!exists && selectedLibraryId !== null && selectedLibraryId !== node.libraryId) {
+      Taro.showToast({ title: '智能组卷仅支持同一题库内的范围', icon: 'none', duration: 2000 })
+      return
+    }
+    setSelectedNodes(previous => exists
+      ? previous.filter(item => `${item.type}:${item.id}` !== key)
+      : [...previous, node])
   }
 
   const selectAnswer = async (question: QuizExamQuestionState, label: string) => {
@@ -419,15 +460,15 @@ export default function QuizMockPage() {
     }
   }
 
-  const availableCounts = QUESTION_COUNTS.filter(count => count <= (scope?.questionCount ?? 0))
+  const availableCounts = QUESTION_COUNTS.filter(count => count <= unionQuestionCount)
 
   useEffect(() => {
-    const max = scope?.questionCount ?? 0
+    const max = unionQuestionCount
     if (max > 0 && questionCount > max) {
       const fallback = QUESTION_COUNTS.filter(count => count <= max).pop()
       if (fallback) setQuestionCount(fallback)
     }
-  }, [scope?.id, scope?.questionCount, questionCount])
+  }, [selectedNodes, unionQuestionCount, questionCount])
   if (loading) return <AuthGuard><View className={styles.page}><PageHeader title='模拟考试' shouldShowBack /><View className={styles.emptyBody}><Text>正在恢复考试…</Text></View></View></AuthGuard>
 
   if (terminalAction) {
@@ -470,27 +511,35 @@ export default function QuizMockPage() {
         <View className={styles.page}>
           <PageHeader title='模拟考试' shouldShowBack />
           <View className={styles.setupBody}>
-            <Text className={styles.setupTitle}>创建 60 分钟模拟考试</Text>
-            <Text className={styles.setupHint}>同一时间只能有一场进行中考试；题目顺序由服务端随机固定。</Text>
-            <View className={styles.selector} onClick={chooseScope}><Text>{scope ? `${scope.name}（可用 ${scope.questionCount} 题）` : '请选择题库、模块或知识点'}</Text><Text>›</Text></View>
+            <Text className={styles.setupTitle}>智能组卷 · 60 分钟模拟考试</Text>
+            <Text className={styles.setupHint}>勾选一个或多个章节混合随机抽题；同一时间只能有一场进行中考试，题目顺序由服务端随机固定。</Text>
+            <View className={styles.selector} onClick={chooseScope}><Text>{selectedNodes.length > 0 ? `已选 ${selectedNodes.length} 个范围 · 可用 ${unionQuestionCount} 题` : '请选择题库、模块或知识点（可多选）'}</Text><Text>›</Text></View>
             {availableCounts.length > 0 ? (
               <View className={styles.countGrid}>{availableCounts.map(count => <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}><Text>{count} 题</Text></View>)}</View>
             ) : (
-              <Text className={styles.errorText}>{scope ? '该范围题目不足 10 题，无法创建模拟考试' : '请先选择考试范围'}</Text>
+              <Text className={styles.errorText}>{selectedNodes.length > 0 ? '所选范围题目不足 10 题，无法创建模拟考试' : '请先选择考试范围'}</Text>
             )}
             {loadError && <Text className={styles.errorText}>{loadError}</Text>}
-            <Button variant='gradient' size='lg' loading={creating} disabled={!scope || availableCounts.length === 0 || creating} onClick={create}>{creating ? '创建中…' : '开始考试'}</Button>
+            <Button variant='gradient' size='lg' loading={creating} disabled={selectedNodes.length === 0 || availableCounts.length === 0 || creating} onClick={create}>{creating ? '创建中…' : '开始考试'}</Button>
             <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: '/pages/quiz/exam-history' })}>查看考试历史</Button>
           </View>
         </View>
         <QuizCategoryPicker
           visible={scopePickerVisible}
           tree={scopeTree}
-          selectedId={scope?.id ?? null}
-          selectedType={scope?.type ?? null}
-          onSelect={selectScope}
+          selectedId={null}
+          selectedType={null}
+          onSelect={() => undefined}
           onClose={() => setScopePickerVisible(false)}
-          title='选择考试范围'
+          title='选择组卷范围（可多选）'
+          multiple
+          selectedKeys={selectedKeys}
+          onToggle={toggleScopeNode}
+          footer={(
+            <View className={styles.pickerFooter}>
+              <Text className={styles.pickerFooterText}>已选 {selectedNodes.length} 个范围 · 共 {unionQuestionCount} 题{selectedLibraryId !== null ? ' · 限同一题库' : ''}</Text>
+            </View>
+          )}
         />
       </AuthGuard>
     )
