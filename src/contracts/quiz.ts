@@ -62,6 +62,29 @@ export interface QuizLibraryCatalogDetail extends QuizLibraryCatalogItem {
   modules: QuizModuleCatalogItem[]
 }
 
+export interface QuizKnowledgePointProgress {
+  knowledge_point_id: number
+  question_count: number
+  answered_questions: number
+  accuracy: number
+}
+
+export interface QuizModuleProgress {
+  module_id: number
+  question_count: number
+  answered_questions: number
+  accuracy: number
+  knowledge_points: QuizKnowledgePointProgress[]
+}
+
+export interface QuizLibraryProgress {
+  library_id: number
+  question_count: number
+  answered_questions: number
+  accuracy: number
+  modules: QuizModuleProgress[]
+}
+
 export interface QuizPracticeScopePreview {
   library_id: number
   scope_type: QuizPracticeScopeType
@@ -529,6 +552,47 @@ export function parseQuizLibraries(value: unknown): QuizLibraryCatalogItem[] {
 
 export function parseQuizLibrary(value: unknown): QuizLibraryCatalogDetail {
   return parseLibraryBase(value, 'data', true) as QuizLibraryCatalogDetail
+}
+
+function parseKnowledgePointProgress(value: unknown, path: string): QuizKnowledgePointProgress {
+  const object = exactObject(value, path, ['knowledge_point_id', 'question_count', 'answered_questions', 'accuracy'])
+  const questionCount = integerAt(object.question_count, `${path}.question_count`)
+  const answeredQuestions = integerAt(object.answered_questions, `${path}.answered_questions`)
+  if (answeredQuestions > questionCount) throw new QuizContractError(`${path}.answered_questions`, '不能超过总题数')
+  return {
+    knowledge_point_id: integerAt(object.knowledge_point_id, `${path}.knowledge_point_id`),
+    question_count: questionCount,
+    answered_questions: answeredQuestions,
+    accuracy: decimalAt(object.accuracy, `${path}.accuracy`),
+  }
+}
+
+function parseModuleProgress(value: unknown, path: string): QuizModuleProgress {
+  const object = exactObject(value, path, ['module_id', 'question_count', 'answered_questions', 'accuracy', 'knowledge_points'])
+  const questionCount = integerAt(object.question_count, `${path}.question_count`)
+  const answeredQuestions = integerAt(object.answered_questions, `${path}.answered_questions`)
+  if (answeredQuestions > questionCount) throw new QuizContractError(`${path}.answered_questions`, '不能超过总题数')
+  return {
+    module_id: integerAt(object.module_id, `${path}.module_id`),
+    question_count: questionCount,
+    answered_questions: answeredQuestions,
+    accuracy: decimalAt(object.accuracy, `${path}.accuracy`),
+    knowledge_points: arrayOf(object.knowledge_points, `${path}.knowledge_points`, parseKnowledgePointProgress),
+  }
+}
+
+export function parseLibraryProgress(value: unknown): QuizLibraryProgress {
+  const object = exactObject(value, 'data', ['library_id', 'question_count', 'answered_questions', 'accuracy', 'modules'])
+  const questionCount = integerAt(object.question_count, 'data.question_count')
+  const answeredQuestions = integerAt(object.answered_questions, 'data.answered_questions')
+  if (answeredQuestions > questionCount) throw new QuizContractError('data.answered_questions', '不能超过总题数')
+  return {
+    library_id: integerAt(object.library_id, 'data.library_id'),
+    question_count: questionCount,
+    answered_questions: answeredQuestions,
+    accuracy: decimalAt(object.accuracy, 'data.accuracy'),
+    modules: arrayOf(object.modules, 'data.modules', parseModuleProgress),
+  }
 }
 
 export function parsePracticeScopePreview(value: unknown): QuizPracticeScopePreview {

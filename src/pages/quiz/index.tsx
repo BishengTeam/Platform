@@ -9,9 +9,9 @@ import { QUIZ_BOTTOM, QUIZ_GRID } from '@/constants/quiz'
 import type { QuizBottomItem } from '@/constants/quiz'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
-import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
+import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizLibraryProgress, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import { useAuth } from '@/hooks/useAuth'
-import { getQuizCheckinStatus, getQuizLibrary, getQuizStats, listQuizLibraries } from '@/services/dataService'
+import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries } from '@/services/dataService'
 import styles from './index.module.scss'
 
 interface StatCard { label: string; value: string; color: string; onClick?: () => void }
@@ -22,6 +22,7 @@ export default function QuizIndexPage() {
   const { isChecked, isLoggedIn } = useAuth()
   const [libraries, setLibraries] = useState<QuizLibraryCatalogItem[]>([])
   const [expanded, setExpanded] = useState<Record<number, QuizLibraryCatalogDetail>>({})
+  const [progress, setProgress] = useState<Record<number, QuizLibraryProgress>>({})
   const [stats, setStats] = useState<QuizStats | null>(null)
   const [streakDays, setStreakDays] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -42,6 +43,19 @@ export default function QuizIndexPage() {
       .catch(() => undefined)
   }, [isChecked, isLoggedIn])
 
+  const loadProgress = useCallback((libraryIds: number[]) => {
+    if (!isChecked || !isLoggedIn || libraryIds.length === 0) return
+    for (const libraryId of libraryIds) {
+      getQuizLibraryProgress(libraryId)
+        .then(result => setProgress(previous => ({ ...previous, [libraryId]: result })))
+        .catch(() => undefined)
+    }
+  }, [isChecked, isLoggedIn])
+
+  useEffect(() => {
+    loadProgress(Object.keys(expanded).map(Number))
+  }, [expanded, loadProgress])
+
   useDidShow(() => {
     setLoading(true)
     setCatalogError(false)
@@ -50,6 +64,7 @@ export default function QuizIndexPage() {
       .catch(() => setCatalogError(true))
       .finally(() => setLoading(false))
     loadPersonal()
+    loadProgress(Object.keys(expanded).map(Number))
   })
 
   // Authentication restoration can finish after the first page-show event.
@@ -97,6 +112,9 @@ export default function QuizIndexPage() {
       .catch(() => Taro.showToast({ title: '错题本入口打开失败，请稍后重试', icon: 'none' }))
   })
 
+  const progressLabel = (item: { question_count: number; answered_questions: number; accuracy: number }) =>
+    `已做 ${item.answered_questions}/${item.question_count} · 正确率 ${item.answered_questions > 0 ? `${item.accuracy}%` : '—'}`
+
   const statCards: StatCard[] = stats ? [
     { label: '已练', value: String(stats.practice.total_attempts), color: COLORS[0] },
     { label: '正确率', value: `${stats.practice.accuracy}%`, color: COLORS[1] },
@@ -134,6 +152,7 @@ export default function QuizIndexPage() {
         <View className={styles.libraryList}>
           {libraries.map(library => {
             const detail = expanded[library.id]
+            const libraryProgress = progress[library.id]
             return (
               <View key={library.id} className={styles.libraryCard}>
                 <View className={styles.libraryHeader} onClick={() => void toggleLibrary(library.id)}>
@@ -148,20 +167,37 @@ export default function QuizIndexPage() {
                 {detail && (
                   <View className={styles.catalogTree}>
                     <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('library', library.id) }))}>
-                      <Text className={styles.scopeName}>练习整库全部 {detail.question_count} 题</Text><Text className={styles.scopeAction}>开始</Text>
+                      <View className={styles.scopeMain}>
+                        <Text className={styles.scopeName}>练习整库全部 {detail.question_count} 题</Text>
+                        {libraryProgress && <Text className={styles.scopeMeta}>{progressLabel(libraryProgress)}</Text>}
+                      </View>
+                      <Text className={styles.scopeAction}>开始</Text>
                     </View>
-                    {detail.modules.map(module => (
+                    {detail.modules.map(module => {
+                      const moduleProgress = libraryProgress?.modules.find(item => item.module_id === module.id)
+                      return (
                       <View key={module.id} className={styles.moduleBlock}>
                         <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('module', module.id) }))}>
-                          <Text className={styles.moduleName}>{module.name} · {module.question_count} 题</Text><Text className={styles.scopeAction}>练习模块</Text>
-                        </View>
-                        {module.knowledge_points.map(point => (
-                          <View key={point.id} className={styles.pointRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('knowledge_point', point.id) }))}>
-                            <Text>{point.name}</Text><Text className={styles.scopeAction}>{point.question_count} 题 ›</Text>
+                          <View className={styles.scopeMain}>
+                            <Text className={styles.moduleName}>{module.name} · {module.question_count} 题</Text>
+                            {moduleProgress && <Text className={styles.scopeMeta}>{progressLabel(moduleProgress)}</Text>}
                           </View>
-                        ))}
+                          <Text className={styles.scopeAction}>练习模块</Text>
+                        </View>
+                        {module.knowledge_points.map(point => {
+                          const pointProgress = moduleProgress?.knowledge_points.find(item => item.knowledge_point_id === point.id)
+                          return (
+                            <View key={point.id} className={styles.pointRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('knowledge_point', point.id) }))}>
+                              <View className={styles.scopeMain}>
+                                <Text>{point.name}</Text>
+                                {pointProgress && <Text className={styles.scopeMeta}>{progressLabel(pointProgress)}</Text>}
+                              </View>
+                              <Text className={styles.scopeAction}>{point.question_count} 题 ›</Text>
+                            </View>
+                          )
+                        })}
                       </View>
-                    ))}
+                    )})}
                   </View>
                 )}
               </View>

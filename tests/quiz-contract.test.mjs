@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   QuizContractError,
   parseExamDetail,
+  parseLibraryProgress,
   parsePracticeScopePreview,
   parsePracticeAnswerSaved,
   parsePracticeSession,
@@ -113,6 +114,56 @@ test('V2 library catalog and fixed hierarchy reject contract drift', () => {
   })
   assert.equal(detail.modules[0].knowledge_points[0].question_count, 120)
   assert.throws(() => parseQuizLibraries([{ ...summary, entitlement_id: 9 }]), QuizContractError)
+})
+
+test('library progress parser keeps per-node first-attempt statistics', () => {
+  const progress = parseLibraryProgress({
+    library_id: 11,
+    question_count: 160,
+    answered_questions: 40,
+    accuracy: '75.0',
+    modules: [
+      {
+        module_id: 21,
+        question_count: 120,
+        answered_questions: 40,
+        accuracy: '75.0',
+        knowledge_points: [
+          {
+            knowledge_point_id: 31,
+            question_count: 60,
+            answered_questions: 30,
+            accuracy: '80.0',
+          },
+          {
+            knowledge_point_id: 32,
+            question_count: 60,
+            answered_questions: 0,
+            accuracy: '0.0',
+          },
+        ],
+      },
+    ],
+  })
+  assert.equal(progress.library_id, 11)
+  assert.equal(progress.question_count, 160)
+  assert.equal(progress.answered_questions, 40)
+  assert.equal(progress.accuracy, 75)
+  assert.equal(progress.modules[0].knowledge_points[1].accuracy, 0)
+  assert.throws(() => parseLibraryProgress({
+    library_id: 11,
+    question_count: 10,
+    answered_questions: 11,
+    accuracy: '100.0',
+    modules: [],
+  }), QuizContractError)
+  assert.throws(() => parseLibraryProgress({
+    library_id: 11,
+    question_count: 10,
+    answered_questions: 5,
+    accuracy: '100.0',
+    modules: [{ module_id: 21, extra: true }],
+  }), QuizContractError)
 })
 
 test('V2 scope preview preserves unfinished-session and large-scope semantics', () => {

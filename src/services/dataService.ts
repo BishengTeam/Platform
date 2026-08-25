@@ -14,6 +14,7 @@
 // Quiz
 export {
   listQuizCategories, listQuizQuestions, listQuizLibraries, getQuizLibrary,
+  getQuizLibraryProgress,
   previewPracticeScope, skipPracticeQuestion,
   createPracticeSession, getCurrentPracticeSession, getPracticeSession,
   submitPracticeAttempt, savePracticeAnswer, submitPracticeSession,

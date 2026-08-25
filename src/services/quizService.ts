@@ -10,6 +10,7 @@ import {
   parseExamAnswerSaved,
   parseExamDetail,
   parseExamListPage,
+  parseLibraryProgress,
   parseNullableExam,
   parseNullablePracticeSession,
   parsePracticeAbandon,
@@ -49,6 +50,7 @@ import type {
   QuizPracticeSession,
   QuizLibraryCatalogDetail,
   QuizLibraryCatalogItem,
+  QuizLibraryProgress,
   QuizPublicQuestion,
   QuizQuestionType,
   QuizStats,
@@ -94,6 +96,11 @@ export async function listQuizLibraries(): Promise<QuizLibraryCatalogItem[]> {
 export async function getQuizLibrary(libraryId: number): Promise<QuizLibraryCatalogDetail> {
   const response = await get<unknown>(`/api/quiz/libraries/${libraryId}`)
   return parseQuizLibrary(response.data)
+}
+
+export async function getQuizLibraryProgress(libraryId: number): Promise<QuizLibraryProgress> {
+  const response = await get<unknown>(`/api/quiz/libraries/${libraryId}/progress`)
+  return parseLibraryProgress(response.data)
 }
 
 export async function previewPracticeScope(input: {

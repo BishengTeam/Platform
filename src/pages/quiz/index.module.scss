@@ -45,6 +45,8 @@
 .scopeRow, .pointRow { display: flex; align-items: center; justify-content: space-between; gap: $spacing-sm; padding: $spacing-md $spacing-sm; border-bottom: $border-thin solid $color-border; }
 .scopeName, .moduleName { color: $color-text; font-weight: 600; }
 .pointRow { padding-left: $spacing-lg; color: $color-text-secondary; font-size: $font-sm; }
+.scopeMain { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.scopeMeta { color: $color-text-tertiary; font-size: $font-2xs; font-weight: 400; }
 
 .checkinBar {
   display: flex;
