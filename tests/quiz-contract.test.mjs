@@ -240,6 +240,56 @@ test('practice parser rejects answer leakage outside a submitted result', () => 
   assert.throws(() => parsePracticeSession(session), QuizContractError)
 })
 
+test('practice parser keeps immediate grading result while session is in progress', () => {
+  const session = {
+    id: 1,
+    mode: 'full',
+    category_id: null,
+    requested_count: 10,
+    actual_count: 2,
+    status: 'in_progress',
+    started_at: '2026-08-25T00:00:00Z',
+    completed_at: null,
+    abandoned_at: null,
+    lock_version: 1,
+    questions: [
+      {
+        id: 3,
+        category_id: 2,
+        question_type: 'single_choice',
+        question_text: '题干',
+        options: { A: '甲', B: '乙', C: '丙' },
+        image_urls: [],
+        session_question_id: 4,
+        position: 1,
+        category_path: [{ id: 2, name: '分类' }],
+        answered: true,
+        user_answer: 'B',
+        answer_lock_version: 0,
+        attempt_count: 1,
+        latest_result: {
+          attempt_id: 9001,
+          attempt_no: 1,
+          user_answer: 'B',
+          is_correct: false,
+          correct_answer: 'A',
+          explanation: '解析内容',
+          submitted_at: '2026-08-25T00:01:00Z',
+        },
+      },
+      { ...v2Question, position: 2 },
+    ],
+  }
+  const parsed = parsePracticeSession(session)
+  assert.equal(parsed.status, 'in_progress')
+  assert.equal(parsed.questions[0].correct_answer, null)
+  assert.equal(parsed.questions[0].is_correct, null)
+  assert.equal(parsed.questions[0].latest_result?.is_correct, false)
+  assert.equal(parsed.questions[0].latest_result?.correct_answer, 'A')
+  assert.equal(parsed.questions[0].latest_result?.explanation, '解析内容')
+  assert.equal(parsed.questions[1].latest_result, null)
+})
+
 test('wrong-book parser permits status markers but rejects answers and explanations', () => {
   const page = {
     items: [{ id: 1, question_id: 2, status: 'active', question: { id: 2, category_id: 3, question_type: 'judge', question_text: '题干', options: { A: '正确', B: '错误' }, image_urls: [] }, question_status: 'disabled', usable_for_practice: false, first_wrong_at: '2026-08-12T00:00:00Z', latest_wrong_at: '2026-08-12T00:01:00Z' }],

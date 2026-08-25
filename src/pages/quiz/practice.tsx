@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
@@ -9,6 +9,7 @@ import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import type {
   QuizAnswer,
+  QuizPracticeAttemptResult,
   QuizPracticeMode,
   QuizPracticeQuestionState,
   QuizPracticeScopePreview,
@@ -23,13 +24,15 @@ import {
   listQuizCollections,
   previewPracticeScope,
   removeQuizCollection,
-  savePracticeAnswer,
+  submitPracticeAttempt,
   submitPracticeSession,
 } from '@/services/dataService'
 import {
   cachePracticeSessionId,
+  clearAttemptKey,
   clearCachedPracticeSessionId,
   getCachedPracticeSessionId,
+  getOrCreateAttemptKey,
 } from '@/utils/quizRuntime'
 import { ApiError } from '@/utils/request'
 import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, shuffledQuizOptions, quizTypeLabel } from '@/utils/quizView'
@@ -64,18 +67,18 @@ function terminalLabel(status: QuizPracticeSession['status']): string {
   return '本轮练习已放弃'
 }
 
-function withAnswer(
+function withAttempt(
   session: QuizPracticeSession,
   sessionQuestionId: number,
-  userAnswer: QuizAnswer | null,
-  answerLockVersion?: number,
+  result: QuizPracticeAttemptResult,
 ): QuizPracticeSession {
   const questions = session.questions.map(question => question.session_question_id === sessionQuestionId
     ? {
       ...question,
-      answered: userAnswer !== null,
-      user_answer: userAnswer,
-      answer_lock_version: answerLockVersion ?? question.answer_lock_version,
+      answered: true,
+      user_answer: result.user_answer,
+      latest_result: result,
+      attempt_count: question.attempt_count + 1,
     }
     : question)
   const answeredCount = questions.filter(question => question.user_answer !== null).length
@@ -99,7 +102,8 @@ export default function QuizPracticePage() {
   const [collectionIds, setCollectionIds] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
-  const [savingQuestionId, setSavingQuestionId] = useState<number | null>(null)
+  const [submitting, setSubmitting] = useState<{ sessionQuestionId: number; answer: QuizAnswer } | null>(null)
+  const [multiDraft, setMultiDraft] = useState<string[]>([])
   const [actionBusy, setActionBusy] = useState(false)
   const [collectionBusy, setCollectionBusy] = useState(false)
   const [loadError, setLoadError] = useState('')
@@ -270,50 +274,65 @@ export default function QuizPracticePage() {
   const currentQuestion = session?.questions.find(question => question.session_question_id === currentSessionQuestionId)
     ?? session?.questions.find(question => question.position === session.current_position)
     ?? session?.questions[0]
-  const selectedAnswer = currentQuestion?.user_answer ?? null
 
-  const chooseOption = async (question: QuizPracticeQuestionState, label: string) => {
-    if (!session || session.status !== 'in_progress' || savingQuestionId !== null || actionBusy) return
-    const previous = question.user_answer
-    let next: QuizAnswer
-    if (isMultipleChoice(question.question_type)) {
-      const values = Array.isArray(previous) ? previous : []
-      next = values.includes(label) ? values.filter(value => value !== label) : [...values, label].sort()
-      if (next.length === 0) {
-        Taro.showToast({ title: '多选题至少选择一个选项', icon: 'none' })
-        return
-      }
-    } else {
-      if (previous === label) return
-      next = label
-    }
+  const currentResult = currentQuestion?.latest_result ?? null
+  const isSettled = currentResult !== null
+  const submittingThis = submitting !== null && submitting.sessionQuestionId === currentQuestion?.session_question_id
+  const selectedAnswer: QuizAnswer | null = isSettled
+    ? currentResult.user_answer
+    : currentQuestion && isMultipleChoice(currentQuestion.question_type)
+      ? (multiDraft.length > 0 ? [...multiDraft] : null)
+      : (submittingThis && submitting ? submitting.answer : currentQuestion?.user_answer ?? null)
 
-    setSession(withAnswer(session, question.session_question_id, next))
-    setSavingQuestionId(question.session_question_id)
+  useEffect(() => {
+    const saved = currentQuestion?.user_answer
+    setMultiDraft(Array.isArray(saved) ? [...saved] : [])
+  }, [currentQuestion?.session_question_id, currentQuestion?.user_answer])
+
+  const submitAttempt = async (question: QuizPracticeQuestionState, answer: QuizAnswer) => {
+    if (!session || session.status !== 'in_progress' || submitting !== null || actionBusy) return
+    if (question.latest_result !== null) return
+    setSubmitting({ sessionQuestionId: question.session_question_id, answer })
     try {
-      const saved = await savePracticeAnswer(session.id, question.session_question_id, {
-        user_answer: next,
-        lock_version: question.answer_lock_version,
+      const result = await submitPracticeAttempt(session.id, {
+        session_question_id: question.session_question_id,
+        idempotency_key: getOrCreateAttemptKey(session.id, question.session_question_id, answer),
+        user_answer: answer,
       })
+      clearAttemptKey(session.id, question.session_question_id)
       setSession(current => current
-        ? withAnswer(current, saved.session_question_id, saved.user_answer, saved.lock_version)
+        ? withAttempt(current, question.session_question_id, result)
         : current)
+      const allAttempted = session.questions.every(item => item.session_question_id === question.session_question_id || item.latest_result !== null)
+      if (allAttempted) {
+        try { applySession(await getPracticeSession(session.id)) } catch { /* 结果页加载失败时保留本地判分展示 */ }
+      }
     } catch (error) {
       if (error instanceof ApiError && (error.statusCode === 409 || error.code === 40201)) {
         try {
           applySession(await getPracticeSession(session.id), question.session_question_id)
-          Taro.showToast({ title: '答案版本已变化，已加载服务端最新状态', icon: 'none', duration: 2500 })
+          Taro.showToast({ title: '已加载服务端最新判分结果', icon: 'none', duration: 2500 })
         } catch {
-          setSession(current => current ? withAnswer(current, question.session_question_id, previous) : current)
-          Taro.showToast({ title: '答案版本冲突且刷新失败，请重新进入练习', icon: 'none', duration: 3000 })
+          Taro.showToast({ title: '判分状态同步失败，请重新进入练习', icon: 'none', duration: 3000 })
         }
       } else {
-        setSession(current => current ? withAnswer(current, question.session_question_id, previous) : current)
-        Taro.showToast({ title: `答案保存失败：${errorMessage(error)}`, icon: 'none', duration: 2500 })
+        Taro.showToast({ title: `提交失败：${errorMessage(error)}`, icon: 'none', duration: 2500 })
       }
     } finally {
-      setSavingQuestionId(null)
+      setSubmitting(null)
     }
+  }
+
+  const handleOptionClick = (question: QuizPracticeQuestionState, label: string) => {
+    if (!session || session.status !== 'in_progress' || submitting !== null || actionBusy) return
+    if (question.latest_result !== null) return
+    if (isMultipleChoice(question.question_type)) {
+      setMultiDraft(previous => previous.includes(label)
+        ? previous.filter(value => value !== label)
+        : [...previous, label].sort())
+      return
+    }
+    void submitAttempt(question, label)
   }
 
   const refreshSession = async () => {
@@ -325,7 +344,7 @@ export default function QuizPracticePage() {
   }
 
   const submit = () => {
-    if (!session || session.status !== 'in_progress' || actionBusy || savingQuestionId !== null) return
+    if (!session || session.status !== 'in_progress' || actionBusy || submitting !== null) return
     setDrawerVisible(false)
     const unanswered = session.questions.filter(question => question.user_answer === null).length
     Taro.showModal({
@@ -497,7 +516,7 @@ export default function QuizPracticePage() {
           <View className={styles.questionCard}>
             <View className={styles.questionHeader}>
               <Text className={styles.questionType}>{quizTypeLabel(currentQuestion.question_type)}</Text>
-              <Text className={styles.saveState}>{savingQuestionId === currentQuestion.session_question_id ? '保存中…' : currentQuestion.answer_lock_version > 0 ? '已保存' : '未作答'}</Text>
+              <Text className={styles.saveState}>{submittingThis ? '判分中…' : isSettled ? '已作答' : '未作答'}</Text>
             </View>
             <Text className={styles.pathText}>{currentQuestion.category_path.map(item => item.name).join(' / ')}</Text>
             <Text className={styles.stem}>{currentQuestion.question_text}</Text>
@@ -508,16 +527,37 @@ export default function QuizPracticePage() {
             )}
             <View className={styles.options}>
               {optionItems.map(option => {
-                const selected = answerIncludes(selectedAnswer, option.label)
+                const selected = !isSettled && answerIncludes(selectedAnswer, option.label)
+                const correctOption = isSettled && answerIncludes(currentResult.correct_answer, option.label)
+                const wrongOption = isSettled && !correctOption && answerIncludes(currentResult.user_answer, option.label)
                 return (
-                  <View key={option.label} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => chooseOption(currentQuestion, option.label)}>
-                    <View className={`${styles.optionLabel} ${selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
+                  <View
+                    key={option.label}
+                    className={`${styles.option} ${correctOption ? styles.optionCorrect : wrongOption ? styles.optionWrong : selected ? styles.optionSelected : ''}`}
+                    onClick={() => handleOptionClick(currentQuestion, option.label)}
+                  >
+                    <View className={`${styles.optionLabel} ${correctOption ? styles.optionLabelCorrect : wrongOption ? styles.optionLabelWrong : selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
                     <Text className={styles.optionText}>{option.text}</Text>
                   </View>
                 )
               })}
             </View>
-            <Text className={styles.noResultHint}>练习进行中不展示答案、正误或解析；选择变化会自动保存，交卷后统一判分。</Text>
+            {isSettled ? (
+              <View className={`${styles.feedback} ${currentResult.is_correct ? styles.feedbackCorrect : styles.feedbackWrong}`}>
+                <Text className={styles.feedbackText}>{currentResult.is_correct ? '回答正确' : '回答错误'}</Text>
+                <Text className={styles.explanation}>你的答案：{answerText(currentResult.user_answer)}　正确答案：{answerText(currentResult.correct_answer)}</Text>
+                {currentResult.explanation && <Text className={styles.explanation}>解析：{currentResult.explanation}</Text>}
+              </View>
+            ) : (
+              <>
+                {isMultipleChoice(currentQuestion.question_type) && (
+                  <View className={styles.answerButton}>
+                    <Button variant='gradient' size='lg' disabled={multiDraft.length === 0} loading={submittingThis} onClick={() => void submitAttempt(currentQuestion, [...multiDraft])}>确认答案</Button>
+                  </View>
+                )}
+                <Text className={styles.noResultHint}>{isMultipleChoice(currentQuestion.question_type) ? '选择选项后点「确认答案」提交判分；答案提交后不可修改。' : '点击选项立即判分并展示解析；答案提交后不可修改。'}</Text>
+              </>
+            )}
           </View>
 
           <View className={styles.navRow}>
@@ -530,7 +570,7 @@ export default function QuizPracticePage() {
                 const next = session.questions.find(item => item.position > currentQuestion.position)
                 if (next) setCurrentSessionQuestionId(next.session_question_id)
               }}>下一题</Button>
-              : <Button variant='gradient' loading={actionBusy} disabled={savingQuestionId !== null} onClick={submit}>交卷</Button>}
+              : <Button variant='gradient' loading={actionBusy} disabled={submitting !== null} onClick={submit}>交卷</Button>}
           </View>
         </ScrollView>
         <View className={styles.bottomBar}>
@@ -554,7 +594,12 @@ export default function QuizPracticePage() {
               <View className={styles.drawerGrid}>
                 {session.questions.map((question) => {
                   const isCurrent = question.session_question_id === currentQuestion.session_question_id
-                  const dotClass = `${styles.drawerDot}${question.user_answer !== null ? ` ${styles.drawerDotAnswered}` : ''}${isCurrent ? ` ${styles.drawerDotCurrent}` : ''}`
+                  const answeredClass = question.latest_result?.is_correct === true
+                    ? styles.drawerDotCorrect
+                    : question.latest_result?.is_correct === false
+                      ? styles.drawerDotWrong
+                      : styles.drawerDotAnswered
+                  const dotClass = `${styles.drawerDot}${question.user_answer !== null ? ` ${answeredClass}` : ''}${isCurrent ? ` ${styles.drawerDotCurrent}` : ''}`
                   return (
                     <View key={question.session_question_id} className={dotClass} onClick={() => { setCurrentSessionQuestionId(question.session_question_id); setDrawerVisible(false) }}>
                       <Text>{question.position}</Text>

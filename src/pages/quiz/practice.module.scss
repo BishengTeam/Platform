@@ -160,6 +160,16 @@
   background: $color-blue-tint;
 }
 
+.optionCorrect {
+  border-color: $color-success;
+  background: #F6FFED;
+}
+
+.optionWrong {
+  border-color: $color-price;
+  background: #FFF2F0;
+}
+
 .optionLabel {
   width: 32px;
   height: 32px;
@@ -176,6 +186,16 @@
 
 .optionLabelActive {
   background: $color-primary;
+  color: $color-white;
+}
+
+.optionLabelCorrect {
+  background: $color-success;
+  color: $color-white;
+}
+
+.optionLabelWrong {
+  background: $color-price;
   color: $color-white;
 }
 

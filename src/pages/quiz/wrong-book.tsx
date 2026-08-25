@@ -33,7 +33,7 @@ export default function WrongBookPage() {
       <View className={styles.page}>
         <PageHeader title='错题本' shouldShowBack />
         <View className={styles.notice}>
-          <Text>错题完全由系统维护；同一会话重答正确不会清除，后续练习会话首次答对后自动移出。列表只展示题干和选项，进入错题专项并提交后才展示答案与解析。</Text>
+          <Text>错题完全由系统维护；后续练习会话首次答对后自动移出。列表只展示题干和选项，进入错题专项作答后立即展示答案与解析。</Text>
           <Button size='sm' variant='gradient' disabled={(page?.total ?? 0) === 0} onClick={() => Taro.navigateTo({ url: '/pages/quiz/practice?mode=wrong' })}>最近 20 题专项</Button>
         </View>
         <ScrollView className={styles.body} scrollY>
