@@ -182,7 +182,18 @@ export default function QuizIndexPage() {
                             <Text className={styles.moduleName}>{module.name} · {module.question_count} 题</Text>
                             {moduleProgress && <Text className={styles.scopeMeta}>{progressLabel(moduleProgress)}</Text>}
                           </View>
-                          <Text className={styles.scopeAction}>练习模块</Text>
+                          <View className={styles.scopeActions}>
+                            <Text className={styles.scopeAction}>练习模块</Text>
+                            <Text
+                              className={styles.scopeAction}
+                              onClick={e => {
+                                e.stopPropagation()
+                                requireLogin(() => Taro.navigateTo({
+                                  url: `/${ROUTES.QUIZ_QUESTION_SELECT}?scopeType=module&scopeId=${module.id}`,
+                                }))
+                              }}
+                            >选题</Text>
+                          </View>
                         </View>
                         {module.knowledge_points.map(point => {
                           const pointProgress = moduleProgress?.knowledge_points.find(item => item.knowledge_point_id === point.id)
@@ -192,7 +203,18 @@ export default function QuizIndexPage() {
                                 <Text>{point.name}</Text>
                                 {pointProgress && <Text className={styles.scopeMeta}>{progressLabel(pointProgress)}</Text>}
                               </View>
-                              <Text className={styles.scopeAction}>{point.question_count} 题 ›</Text>
+                              <View className={styles.scopeActions}>
+                                <Text className={styles.scopeAction}>{point.question_count} 题</Text>
+                                <Text
+                                  className={styles.scopeAction}
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    requireLogin(() => Taro.navigateTo({
+                                      url: `/${ROUTES.QUIZ_QUESTION_SELECT}?scopeType=knowledge_point&scopeId=${point.id}`,
+                                    }))
+                                  }}
+                                >选题 ›</Text>
+                              </View>
                             </View>
                           )
                         })}

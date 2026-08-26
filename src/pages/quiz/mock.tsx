@@ -513,6 +513,7 @@ export default function QuizMockPage() {
           <View className={styles.setupBody}>
             <Text className={styles.setupTitle}>智能组卷 · 60 分钟模拟考试</Text>
             <Text className={styles.setupHint}>勾选一个或多个章节混合随机抽题；同一时间只能有一场进行中考试，题目顺序由服务端随机固定。</Text>
+            <Text className={styles.manualLink} onClick={() => Taro.navigateTo({ url: '/pages/quiz/question-select' })}>想自己挑题？手动选题组卷 ›</Text>
             <View className={styles.selector} onClick={chooseScope}><Text>{selectedNodes.length > 0 ? `已选 ${selectedNodes.length} 个范围 · 可用 ${unionQuestionCount} 题` : '请选择题库、模块或知识点（可多选）'}</Text><Text>›</Text></View>
             {availableCounts.length > 0 ? (
               <View className={styles.countGrid}>{availableCounts.map(count => <View key={count} className={`${styles.countItem} ${questionCount === count ? styles.countItemActive : ''}`} onClick={() => setQuestionCount(count)}><Text>{count} 题</Text></View>)}</View>

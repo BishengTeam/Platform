@@ -226,6 +226,22 @@ export async function createQuizExam(input: {
   return parseExamDetail(response.data)
 }
 
+export async function createManualQuizExam(input: { question_ids: number[] }): Promise<QuizExamDetail> {
+  const response = await post<unknown>('/api/quiz/exams/manual', queryData(input))
+  return parseExamDetail(response.data)
+}
+
+export async function listQuizLibraryQuestions(libraryId: number, input: {
+  scope_type?: QuizPracticeScopeType
+  scope_id?: number
+  question_type?: QuizQuestionType
+  page?: number
+  page_size?: number
+} = {}): Promise<PageData<QuizPublicQuestion>> {
+  const response = await get<unknown>(`/api/quiz/libraries/${libraryId}/questions`, queryData(input))
+  return parseQuizQuestionPage(response.data)
+}
+
 export async function getCurrentQuizExam(): Promise<QuizExamDetail | null> {
   const response = await get<unknown>('/api/quiz/exams/current')
   return parseNullableExam(response.data)

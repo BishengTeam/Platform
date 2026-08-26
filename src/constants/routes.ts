@@ -35,6 +35,7 @@ export const ROUTES = {
   QUIZ_HISTORY: 'pages/quiz/history',
   QUIZ_STATS: 'pages/quiz/stats',
   QUIZ_EXAM_HISTORY: 'pages/quiz/exam-history',
+  QUIZ_QUESTION_SELECT: 'pages/quiz/question-select',
   MINE_COURSES: 'pages/mine/courses',
   MINE_PROFILE: 'pages/mine/profile',
   MINE_PERSONAL_INFO: 'pages/mine/personal-info',

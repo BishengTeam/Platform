@@ -25,7 +25,7 @@ function normalizeTemplatePath(path) {
     .replaceAll('${examQuestionId}', '{exam_question_id}')
 }
 
-test('quiz service implements exactly the frozen 29 user operations', async () => {
+test('quiz service implements exactly the frozen 31 user operations', async () => {
   const [source, manifestText] = await Promise.all([
     readFile(SERVICE_FILE, 'utf8'),
     readFile(MANIFEST_FILE, 'utf8'),
@@ -45,7 +45,7 @@ test('quiz service implements exactly the frozen 29 user operations', async () =
   }
   actual.sort()
 
-  assert.equal(expected.length, 29)
+  assert.equal(expected.length, 31)
   assert.deepEqual(actual, expected)
 })
 
@@ -62,4 +62,13 @@ test('wrong-book route is declared and included in the quiz subpackage', async (
   ])
   assert.match(routesSource, /QUIZ_WRONG_BOOK:\s*'pages\/quiz\/wrong-book'/)
   assert.match(appConfigSource, /root:\s*'pages\/quiz'[\s\S]*pages:\s*\[[^\]]*'wrong-book'/)
+})
+
+test('question-select route is declared and included in the quiz subpackage', async () => {
+  const [routesSource, appConfigSource] = await Promise.all([
+    readFile(ROUTES_FILE, 'utf8'),
+    readFile(APP_CONFIG_FILE, 'utf8'),
+  ])
+  assert.match(routesSource, /QUIZ_QUESTION_SELECT:\s*'pages\/quiz\/question-select'/)
+  assert.match(appConfigSource, /root:\s*'pages\/quiz'[\s\S]*pages:\s*\[[^\]]*'question-select'/)
 })

@@ -1,0 +1,167 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  margin: $spacing-md $spacing-lg 0;
+  padding: $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.selectorText { color: $color-text; font-weight: 600; font-size: $font-base; flex: 1; min-width: 0; }
+.selectorArrow { color: $color-primary; font-size: $font-sm; flex-shrink: 0; }
+
+.filters {
+  display: flex;
+  gap: $spacing-sm;
+  margin: $spacing-md $spacing-lg 0;
+}
+
+.filterChip {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-full;
+  background: $color-white;
+  border: 1px solid $color-border;
+  color: $color-text-secondary;
+  font-size: $font-sm;
+}
+
+.filterChipActive {
+  background: $color-blue-tint;
+  border-color: $color-primary;
+  color: $color-primary;
+  font-weight: 600;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-md 0;
+}
+
+.state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
+
+.card {
+  margin: 0 $spacing-lg $spacing-md;
+  padding: $spacing-md;
+  background: $color-white;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+}
+
+.cardSelected { border-color: $color-primary; }
+
+.cardHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: $spacing-sm; }
+
+.typeTag {
+  color: $color-primary;
+  background: $color-blue-tint;
+  padding: 2px $spacing-sm;
+  border-radius: $radius-sm;
+  font-size: $font-xs;
+}
+
+.checkbox {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkboxActive { background: $color-primary; border-color: $color-primary; }
+.checkboxText { color: $color-white; font-size: $font-base; font-weight: 700; }
+
+.stem { display: block; color: $color-text; font-weight: 600; line-height: 1.6; }
+
+.questionImages { display: flex; flex-direction: column; gap: $spacing-sm; margin-top: $spacing-sm; }
+.questionImage { width: 100%; border-radius: $radius-sm; background: $color-bg-secondary; }
+
+.options { display: flex; flex-direction: column; gap: 4px; margin-top: $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
+.optionBlock { display: flex; flex-direction: column; gap: $spacing-xs; }
+.optionImage { width: 60%; max-width: 320px; border-radius: $radius-sm; background: $color-bg-secondary; }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  margin: 0 $spacing-lg $spacing-lg;
+  padding-bottom: $spacing-lg;
+}
+
+.bottomBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  padding-bottom: calc(#{$spacing-sm} + #{$safe-bottom});
+  background: $color-white;
+  border-top: $border-thin solid $color-border;
+  box-shadow: $shadow-bottom;
+}
+
+.basketInfo { display: flex; align-items: baseline; gap: $spacing-xs; }
+.basketCount { font-size: $font-xl; font-weight: 700; color: $color-primary; }
+.basketLabel { color: $color-text-tertiary; font-size: $font-xs; }
+.basketActions { display: flex; align-items: center; gap: $spacing-md; }
+.clearLink { color: $color-price; font-size: $font-sm; }
+
+.basketOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+}
+
+.basketPanel {
+  width: 100%;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: $color-white;
+  border-radius: $radius-lg $radius-lg 0 0;
+}
+
+.basketHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: $border-thin solid $color-border;
+}
+
+.basketTitle { font-size: $font-lg; font-weight: 700; }
+.basketClose { color: $color-text-tertiary; padding: $spacing-xs $spacing-sm; }
+.basketList { flex: 1; overflow: hidden; padding: $spacing-md $spacing-lg; }
+
+.basketItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
+  border-bottom: $border-thin solid $color-border;
+}
+
+.basketItemText { flex: 1; min-width: 0; color: $color-text; font-size: $font-sm; }
+.basketRemove { color: $color-price; font-size: $font-sm; flex-shrink: 0; }
+.basketEmpty { display: block; text-align: center; color: $color-text-tertiary; padding: $spacing-xl 0; }
