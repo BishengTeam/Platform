@@ -29,6 +29,20 @@
   margin: $spacing-md $spacing-lg 0;
 }
 
+.selectAllRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin: $spacing-sm $spacing-lg 0;
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.selectAllText { color: $color-text; font-size: $font-sm; font-weight: 600; flex: 1; }
+.selectAllMeta { color: $color-primary; font-size: $font-xs; }
+
 .filterChip {
   padding: $spacing-xs $spacing-md;
   border-radius: $radius-full;

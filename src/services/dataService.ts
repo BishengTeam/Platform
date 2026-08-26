@@ -20,6 +20,7 @@ export {
   submitPracticeAttempt, savePracticeAnswer, submitPracticeSession,
   abandonPracticeSession, listPracticeHistory,
   listWrongBook, listQuizCollections, addQuizCollection, removeQuizCollection,
+  clearWrongBookItem,
   getQuizCheckinStatus, getQuizCheckinCalendar, getQuizStats,
   createQuizExam, getCurrentQuizExam, listQuizExams, getQuizExam,
   createManualQuizExam, listQuizLibraryQuestions,

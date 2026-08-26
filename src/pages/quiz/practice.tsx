@@ -19,6 +19,7 @@ import type {
 import {
   addQuizCollection,
   createPracticeSession,
+  clearWrongBookItem,
   getCurrentPracticeSession,
   getPracticeSession,
   listQuizCollections,
@@ -591,12 +592,12 @@ export default function QuizPracticePage() {
               if (previous) setCurrentSessionQuestionId(previous.session_question_id)
             }}
           >
-            <Icon name='left' size={22} color={!session.questions.some(item => item.position < currentQuestion.position) ? '#C0C4CC' : '#666666'} />
+            <Icon name='quiz-prev' size={22} color={!session.questions.some(item => item.position < currentQuestion.position) ? '#C0C4CC' : '#666666'} />
             <Text className={styles.navItemText}>上一题</Text>
           </View>
 
           <View className={styles.navItem} onClick={() => setDrawerVisible(true)}>
-            <Icon name='app' size={22} color='#666666' />
+            <Icon name='quiz-answer-card' size={22} color='#333333' />
             <Text className={styles.navItemText}>答题卡</Text>
           </View>
 
@@ -604,6 +605,33 @@ export default function QuizPracticePage() {
             <Icon name={collectionIds.has(currentQuestion.id) ? 'star-filled' : 'star'} size={22} color={collectionIds.has(currentQuestion.id) ? '#FFB800' : '#999999'} />
             <Text className={styles.navItemText}>{collectionIds.has(currentQuestion.id) ? '已收藏' : '收藏'}</Text>
           </View>
+
+          {(session.mode === 'wrong' || session.mode === 'wrong_only' || requestedMode === 'wrong' || requestedMode === 'wrong_only') && (
+            <View
+              className={styles.navItem}
+              onClick={() => {
+                Taro.showModal({
+                  title: '移出错题本',
+                  content: '将这道题从错题本中移出？移出后不会再出现在错题专项练习中。',
+                  confirmText: '移出',
+                  cancelText: '取消',
+                  success: async result => {
+                    if (!result.confirm) return
+                    try {
+                      const { cleared } = await clearWrongBookItem(currentQuestion.id)
+                      Taro.showToast({ title: cleared ? '已移出错题本' : '该题不在错题本中', icon: 'none', duration: 1500 })
+                      await refreshSession()
+                    } catch (err) {
+                      Taro.showToast({ title: err instanceof Error && err.message !== 'UNAUTHORIZED' ? err.message : '移出失败，请重试', icon: 'none', duration: 2500 })
+                    }
+                  },
+                })
+              }}
+            >
+              <Icon name='quiz-remove' size={22} color='#F56C6C' />
+              <Text className={styles.navItemText}>移出</Text>
+            </View>
+          )}
 
           <View
             className={styles.navItem}
@@ -616,7 +644,7 @@ export default function QuizPracticePage() {
               }
             }}
           >
-            <Icon name='right' size={22} color='#1677FF' />
+            <Icon name='quiz-next' size={22} color='#1677FF' />
             <Text className={`${styles.navItemText} ${styles.navItemTextActive}`}>
               {session.questions.some(item => item.position > currentQuestion.position) ? '下一题' : '交卷'}
             </Text>

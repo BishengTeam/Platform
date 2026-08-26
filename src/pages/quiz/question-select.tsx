@@ -154,6 +154,27 @@ export default function QuizQuestionSelectPage() {
     persistBasket([...basket, { id: question.id, text: question.question_text }])
   }
 
+  const currentPageAllSelected = page !== null && page.items.length > 0
+    && page.items.every(question => selectedIds.has(question.id))
+
+  const toggleSelectAllOnPage = () => {
+    if (!page || page.items.length === 0) return
+    if (currentPageAllSelected) {
+      const pageIds = new Set(page.items.map(question => question.id))
+      persistBasket(basket.filter(item => !pageIds.has(item.id)))
+    } else {
+      const newItems = page.items
+        .filter(question => !selectedIds.has(question.id))
+        .map(question => ({ id: question.id, text: question.question_text }))
+      const combined = [...basket, ...newItems]
+      if (combined.length > MAX_COUNT) {
+        Taro.showToast({ title: `最多选择 ${MAX_COUNT} 题`, icon: 'none' })
+        return
+      }
+      persistBasket(combined)
+    }
+  }
+
   const selectScope = (node: ScopeNode) => {
     setScope(node)
     setPickerVisible(false)
@@ -217,6 +238,17 @@ export default function QuizQuestionSelectPage() {
             </View>
           ))}
         </View>
+        {page && page.items.length > 0 && (
+          <View className={styles.selectAllRow} onClick={toggleSelectAllOnPage}>
+            <View className={`${styles.checkbox} ${currentPageAllSelected ? styles.checkboxActive : ''}`}>
+              <Text className={styles.checkboxText}>{currentPageAllSelected ? '✓' : ''}</Text>
+            </View>
+            <Text className={styles.selectAllText}>
+              {currentPageAllSelected ? '取消本页全选' : `全选本页（${page.items.length} 题）`}
+            </Text>
+            <Text className={styles.selectAllMeta}>已选 {basket.length} 题</Text>
+          </View>
+        )}
         <ScrollView className={styles.body} scrollY>
           {loading && <Text className={styles.state}>正在加载题目…</Text>}
           {!loading && error && <EmptyState title={error} />}

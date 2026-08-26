@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
+import { Icon } from '@/components/Icon'
 import Taro, { useLoad, useUnload } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -60,6 +61,10 @@ function messageOf(error: unknown): string {
 
 function isNotFound(error: unknown): boolean {
   return error instanceof ApiError && (error.statusCode === 404 || error.code === 40300)
+}
+
+function isConflict(error: unknown): boolean {
+  return error instanceof ApiError && (error.statusCode === 409 || error.code === 40201)
 }
 
 function buildScopeTree(details: QuizLibraryCatalogDetail[]): ExamScopePickerNode[] {
@@ -160,7 +165,10 @@ export default function QuizMockPage() {
       clearCachedExamId(pendingId)
       return true
     } catch (error) {
-      if (isNotFound(error)) {
+      // 404 means the exam no longer exists for this user. 409 means the
+      // server has already settled it (completed/timed out), so abandonment
+      // cannot succeed and must not be retried on every page entry.
+      if (isNotFound(error) || isConflict(error)) {
         clearPendingExamAbandonId(pendingId)
         clearCachedExamId(pendingId)
         return true
@@ -250,7 +258,9 @@ export default function QuizMockPage() {
     clearCachedExamId(examId)
     void abandonQuizExam(examId)
       .then(() => clearPendingExamAbandonId(examId))
-      .catch(() => undefined)
+      .catch(error => {
+        if (isNotFound(error) || isConflict(error)) clearPendingExamAbandonId(examId)
+      })
   })
 
   const create = async () => {
@@ -643,16 +653,37 @@ export default function QuizMockPage() {
             })}</View>
             <Text className={styles.noResultHint}>考试进行中不展示答案、正误或解析；选择变化会自动保存。</Text>
           </View>
-          <View className={styles.navRow}><Button variant='secondary' disabled={currentIndex === 0} onClick={() => setCurrentIndex(index => Math.max(0, index - 1))}>上一题</Button>{currentIndex < inProgress.question_count - 1 ? <Button onClick={() => setCurrentIndex(index => Math.min(inProgress.question_count - 1, index + 1))}>下一题</Button> : <Button variant='gradient' loading={actionBusy} disabled={savingQuestionId !== null || remaining <= 0} onClick={submit}>交卷</Button>}</View>
         </ScrollView>
         <View className={styles.bottomBar}>
-          <View className={styles.barStat}>
-            <Text className={styles.barStatLabel}>未答</Text>
-            <Text className={styles.barStatNum}>{inProgress.question_count - answeredCount}</Text>
+          <View
+            className={`${styles.navItem} ${currentIndex === 0 ? styles.navItemDisabled : ''}`}
+            onClick={() => { if (currentIndex > 0) setCurrentIndex(index => Math.max(0, index - 1)) }}
+          >
+            <Icon name='quiz-prev' size={22} color={currentIndex === 0 ? '#C0C4CC' : '#666666'} />
+            <Text className={styles.navItemText}>上一题</Text>
           </View>
-          <View className={styles.barDone} onClick={() => setDrawerVisible(true)}>
-            <Text className={styles.barDoneCount}>{answeredCount}/{inProgress.question_count}</Text>
-            <Text className={styles.barDoneLabel}>已做题</Text>
+
+          <View className={styles.navItem} onClick={() => setDrawerVisible(true)}>
+            <Icon name='quiz-answer-card' size={22} color='#333333' />
+            <Text className={styles.navItemText}>答题卡</Text>
+          </View>
+
+          <View className={styles.navItem} onClick={abandon}>
+            <Icon name='quiz-abandon' size={22} color='#606266' />
+            <Text className={styles.navItemText}>放弃</Text>
+          </View>
+
+          <View
+            className={styles.navItem}
+            onClick={() => {
+              if (currentIndex < inProgress.question_count - 1) setCurrentIndex(index => Math.min(inProgress.question_count - 1, index + 1))
+              else submit()
+            }}
+          >
+            <Icon name='quiz-next' size={22} color='#1677FF' />
+            <Text className={`${styles.navItemText} ${styles.navItemTextActive}`}>
+              {currentIndex < inProgress.question_count - 1 ? '下一题' : '交卷'}
+            </Text>
           </View>
         </View>
         <Popup visible={drawerVisible} position='bottom' round closeOnOverlayClick onClose={() => setDrawerVisible(false)}>

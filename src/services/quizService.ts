@@ -182,6 +182,11 @@ export async function listWrongBook(query: PageQuery = {}): Promise<PageData<Qui
   return parseWrongBookPage(response.data)
 }
 
+export async function clearWrongBookItem(questionId: number): Promise<{ cleared: boolean }> {
+  const response = await del<unknown>(`${QUIZ_API}/wrong-book/${questionId}`)
+  return { cleared: Boolean((response.data as { cleared?: boolean })?.cleared) }
+}
+
 export async function listQuizCollections(query: PageQuery = {}): Promise<PageData<QuizCollectionItem>> {
   const response = await get<unknown>('/api/quiz/collections', queryData(query))
   return parseCollectionPage(response.data)
