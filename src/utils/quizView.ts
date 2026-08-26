@@ -39,6 +39,19 @@ export function shuffledQuizOptions(
   return items
 }
 
+const DISPLAY_KEYS = ['A', 'B', 'C', 'D'] as const
+
+export function relabeledQuizOptions(
+  options: Record<string, string>,
+  seed: string,
+): Array<{ label: string; originalLabel: string; text: string }> {
+  return shuffledQuizOptions(options, seed).map((option, index) => ({
+    label: DISPLAY_KEYS[index] ?? option.label,
+    originalLabel: option.label,
+    text: option.text,
+  }))
+}
+
 export function quizImageUrls(imageUrls: string[] | null | undefined): string[] {
   return Array.isArray(imageUrls) ? imageUrls.filter(url => typeof url === 'string' && url.trim() !== '') : []
 }

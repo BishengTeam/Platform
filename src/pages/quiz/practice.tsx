@@ -35,7 +35,7 @@ import {
   getOrCreateAttemptKey,
 } from '@/utils/quizRuntime'
 import { ApiError } from '@/utils/request'
-import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, shuffledQuizOptions, quizTypeLabel } from '@/utils/quizView'
+import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './practice.module.scss'
 
 const LEGACY_QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -411,14 +411,14 @@ export default function QuizPracticePage() {
   const correctCount = session?.questions.filter(question => question.is_correct === true).length ?? 0
   const wrongCount = session?.questions.filter(question => question.is_correct === false).length ?? 0
   const optionItems = useMemo(() => currentQuestion && session
-    ? shuffledQuizOptions(currentQuestion.options, `${session.id}:${currentQuestion.id}:${currentQuestion.position}`)
+    ? relabeledQuizOptions(currentQuestion.options, `${session.id}:${currentQuestion.id}:${currentQuestion.position}`)
     : [], [currentQuestion, session?.id])
   const currentImageUrls = quizImageUrls(currentQuestion?.image_urls)
   const previewQuestionImages = (current: string) => {
     const urls = [
       ...currentImageUrls,
       ...optionItems.flatMap(option => {
-        const url = currentQuestion?.option_image_urls?.[option.label]
+        const url = currentQuestion?.option_image_urls?.[option.originalLabel]
         return url ? [url] : []
       }),
     ]
@@ -537,24 +537,24 @@ export default function QuizPracticePage() {
             )}
             <View className={styles.options}>
               {optionItems.map(option => {
-                const selected = !isSettled && answerIncludes(selectedAnswer, option.label)
-                const correctOption = isSettled && answerIncludes(currentResult.correct_answer, option.label)
-                const wrongOption = isSettled && !correctOption && answerIncludes(currentResult.user_answer, option.label)
+                const selected = !isSettled && answerIncludes(selectedAnswer, option.originalLabel)
+                const correctOption = isSettled && answerIncludes(currentResult.correct_answer, option.originalLabel)
+                const wrongOption = isSettled && !correctOption && answerIncludes(currentResult.user_answer, option.originalLabel)
                 return (
                   <View
-                    key={option.label}
+                    key={option.originalLabel}
                     className={`${styles.option} ${correctOption ? styles.optionCorrect : wrongOption ? styles.optionWrong : selected ? styles.optionSelected : ''}`}
-                    onClick={() => handleOptionClick(currentQuestion, option.label)}
+                    onClick={() => handleOptionClick(currentQuestion, option.originalLabel)}
                   >
                     <View className={`${styles.optionLabel} ${correctOption ? styles.optionLabelCorrect : wrongOption ? styles.optionLabelWrong : selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
                     <View className={styles.optionBody}>
                       {option.text && <Text className={styles.optionText}>{option.text}</Text>}
-                      {currentQuestion.option_image_urls?.[option.label] && (
+                      {currentQuestion.option_image_urls?.[option.originalLabel] && (
                         <Image
                           className={styles.optionImage}
-                          src={currentQuestion.option_image_urls[option.label]}
+                          src={currentQuestion.option_image_urls[option.originalLabel]}
                           mode='widthFix'
-                          onClick={e => { e.stopPropagation(); previewQuestionImages(currentQuestion.option_image_urls![option.label]) }}
+                          onClick={e => { e.stopPropagation(); previewQuestionImages(currentQuestion.option_image_urls![option.originalLabel]) }}
                         />
                       )}
                     </View>
@@ -580,30 +580,49 @@ export default function QuizPracticePage() {
             )}
           </View>
 
-          <View className={styles.navRow}>
-            <Button variant='secondary' onClick={() => {
+        </ScrollView>
+
+        <View className={styles.bottomBar}>
+          <View
+            className={`${styles.navItem} ${!session.questions.some(item => item.position < currentQuestion.position) ? styles.navItemDisabled : ''}`}
+            onClick={() => {
+              if (!session.questions.some(item => item.position < currentQuestion.position)) return
               const previous = session.questions.filter(item => item.position < currentQuestion.position).sort((a, b) => b.position - a.position)[0]
               if (previous) setCurrentSessionQuestionId(previous.session_question_id)
-            }} disabled={!session.questions.some(item => item.position < currentQuestion.position)}>查看上一题</Button>
-            {session.questions.some(item => item.position > currentQuestion.position)
-              ? <Button variant='primary' onClick={() => {
+            }}
+          >
+            <Icon name='left' size={22} color={!session.questions.some(item => item.position < currentQuestion.position) ? '#C0C4CC' : '#666666'} />
+            <Text className={styles.navItemText}>上一题</Text>
+          </View>
+
+          <View className={styles.navItem} onClick={() => setDrawerVisible(true)}>
+            <Icon name='app' size={22} color='#666666' />
+            <Text className={styles.navItemText}>答题卡</Text>
+          </View>
+
+          <View className={styles.navItem} onClick={toggleCollection}>
+            <Icon name={collectionIds.has(currentQuestion.id) ? 'star-filled' : 'star'} size={22} color={collectionIds.has(currentQuestion.id) ? '#FFB800' : '#999999'} />
+            <Text className={styles.navItemText}>{collectionIds.has(currentQuestion.id) ? '已收藏' : '收藏'}</Text>
+          </View>
+
+          <View
+            className={styles.navItem}
+            onClick={() => {
+              if (session.questions.some(item => item.position > currentQuestion.position)) {
                 const next = session.questions.find(item => item.position > currentQuestion.position)
                 if (next) setCurrentSessionQuestionId(next.session_question_id)
-              }}>下一题</Button>
-              : <Button variant='gradient' loading={actionBusy} disabled={submitting !== null} onClick={submit}>交卷</Button>}
-          </View>
-        </ScrollView>
-        <View className={styles.bottomBar}>
-          <View className={styles.barItem} onClick={toggleCollection}>
-            <Icon name={collectionIds.has(currentQuestion.id) ? 'star-filled' : 'star'} size={22} color={collectionIds.has(currentQuestion.id) ? '#FFB800' : '#999999'} />
-            <Text>{collectionIds.has(currentQuestion.id) ? '已收藏' : '收藏'}</Text>
-          </View>
-          <View className={styles.barStat}><Text className={styles.barStatLabel}>未答</Text><Text className={styles.barStatNum}>{session.actual_count - answeredCount}</Text></View>
-          <View className={styles.barDone} onClick={() => setDrawerVisible(true)}>
-            <Text className={styles.barDoneCount}>{answeredCount}/{session.actual_count}</Text>
-            <Text className={styles.barDoneLabel}>已做题</Text>
+              } else {
+                submit()
+              }
+            }}
+          >
+            <Icon name='right' size={22} color='#1677FF' />
+            <Text className={`${styles.navItemText} ${styles.navItemTextActive}`}>
+              {session.questions.some(item => item.position > currentQuestion.position) ? '下一题' : '交卷'}
+            </Text>
           </View>
         </View>
+
         <Popup visible={drawerVisible} position='bottom' round closeOnOverlayClick onClose={() => setDrawerVisible(false)}>
           <View className={styles.drawer}>
             <View className={styles.drawerHeader}>

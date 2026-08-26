@@ -30,7 +30,7 @@ import {
   remainingSeconds,
   serverClockOffset,
 } from '@/utils/quizRuntime'
-import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, shuffledQuizOptions, quizTypeLabel } from '@/utils/quizView'
+import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './mock.module.scss'
 
 const QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -570,7 +570,7 @@ export default function QuizMockPage() {
                     {quizImageUrls(question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
                   </View>
                 )}
-                <View className={styles.resultOptions}>{shuffledQuizOptions(question.options, `${exam.id}:${question.id}:${question.position}`).map(option => (
+                <View className={styles.resultOptions}>{quizOptions(question.options).map(option => (
                   <View key={option.label} className={styles.resultOptionItem}>
                     <Text>{option.label}. {option.text}</Text>
                     {question.option_image_urls?.[option.label] && (
@@ -591,14 +591,14 @@ export default function QuizMockPage() {
 
   const inProgress = exam as QuizExamInProgress
   const currentQuestion = inProgress.questions[currentIndex]
-  const options = currentQuestion ? shuffledQuizOptions(currentQuestion.options, `${inProgress.id}:${currentQuestion.id}:${currentQuestion.position}`) : []
+  const options = currentQuestion ? relabeledQuizOptions(currentQuestion.options, `${inProgress.id}:${currentQuestion.id}:${currentQuestion.position}`) : []
   const currentImageUrls = quizImageUrls(currentQuestion?.image_urls)
   const answeredCount = inProgress.questions.filter(question => question.user_answer !== null).length
   const previewQuestionImages = (current: string) => {
     const urls = [
       ...currentImageUrls,
       ...options.flatMap(option => {
-        const url = currentQuestion.option_image_urls?.[option.label]
+        const url = currentQuestion.option_image_urls?.[option.originalLabel]
         return url ? [url] : []
       }),
     ]
@@ -625,17 +625,17 @@ export default function QuizMockPage() {
               </View>
             )}
             <View className={styles.options}>{options.map(option => {
-              const selected = answerIncludes(currentQuestion.user_answer, option.label)
-              return <View key={option.label} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => selectAnswer(currentQuestion, option.label)}>
+              const selected = answerIncludes(currentQuestion.user_answer, option.originalLabel)
+              return <View key={option.originalLabel} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => selectAnswer(currentQuestion, option.originalLabel)}>
                 <View className={`${styles.optionLabel} ${selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
                 <View className={styles.optionBody}>
                   {option.text && <Text className={styles.optionText}>{option.text}</Text>}
-                  {currentQuestion.option_image_urls?.[option.label] && (
+                  {currentQuestion.option_image_urls?.[option.originalLabel] && (
                     <Image
                       className={styles.optionImage}
-                      src={currentQuestion.option_image_urls[option.label]}
+                      src={currentQuestion.option_image_urls[option.originalLabel]}
                       mode='widthFix'
-                      onClick={e => { e.stopPropagation(); previewQuestionImages(currentQuestion.option_image_urls![option.label]) }}
+                      onClick={e => { e.stopPropagation(); previewQuestionImages(currentQuestion.option_image_urls![option.originalLabel]) }}
                     />
                   )}
                 </View>
