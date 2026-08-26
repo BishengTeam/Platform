@@ -52,7 +52,14 @@ export default function WrongBookPage() {
                   {quizImageUrls(item.question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
                 </View>
               )}
-              <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label} className={styles.optionText}>{option.label}. {option.text}</Text>)}</View>
+              <View className={styles.options}>{quizOptions(item.question.options).map(option => (
+                <View key={option.label} className={styles.optionBlock}>
+                  <Text className={styles.optionText}>{option.label}. {option.text}</Text>
+                  {item.question.option_image_urls?.[option.label] && (
+                    <Image className={styles.optionImage} src={item.question.option_image_urls[option.label]} mode='widthFix' onClick={() => Taro.previewImage({ urls: [item.question.option_image_urls![option.label]], current: item.question.option_image_urls![option.label] })} />
+                  )}
+                </View>
+              ))}</View>
               {!item.usable_for_practice && <Text className={styles.disabled}>题目已停用，可查看历史内容，但不会进入新的错题专项</Text>}
             </View>
           ))}

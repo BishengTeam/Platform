@@ -414,6 +414,16 @@ export default function QuizPracticePage() {
     ? shuffledQuizOptions(currentQuestion.options, `${session.id}:${currentQuestion.id}:${currentQuestion.position}`)
     : [], [currentQuestion, session?.id])
   const currentImageUrls = quizImageUrls(currentQuestion?.image_urls)
+  const previewQuestionImages = (current: string) => {
+    const urls = [
+      ...currentImageUrls,
+      ...optionItems.flatMap(option => {
+        const url = currentQuestion?.option_image_urls?.[option.label]
+        return url ? [url] : []
+      }),
+    ]
+    if (urls.length > 0) Taro.previewImage({ urls, current: urls.includes(current) ? current : urls[0] })
+  }
 
   if (loading) {
     return <AuthGuard><View className={styles.page}><PageHeader title='练习' shouldShowBack /><View className={styles.resultBody}><Text>正在检查练习范围…</Text></View></View></AuthGuard>
@@ -537,7 +547,17 @@ export default function QuizPracticePage() {
                     onClick={() => handleOptionClick(currentQuestion, option.label)}
                   >
                     <View className={`${styles.optionLabel} ${correctOption ? styles.optionLabelCorrect : wrongOption ? styles.optionLabelWrong : selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
-                    <Text className={styles.optionText}>{option.text}</Text>
+                    <View className={styles.optionBody}>
+                      {option.text && <Text className={styles.optionText}>{option.text}</Text>}
+                      {currentQuestion.option_image_urls?.[option.label] && (
+                        <Image
+                          className={styles.optionImage}
+                          src={currentQuestion.option_image_urls[option.label]}
+                          mode='widthFix'
+                          onClick={e => { e.stopPropagation(); previewQuestionImages(currentQuestion.option_image_urls![option.label]) }}
+                        />
+                      )}
+                    </View>
                   </View>
                 )
               })}

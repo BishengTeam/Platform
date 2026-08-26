@@ -4,6 +4,7 @@ import {
   QuizContractError,
   parseExamDetail,
   parseLibraryProgress,
+  parseQuizQuestionPage,
   parsePracticeScopePreview,
   parsePracticeAnswerSaved,
   parsePracticeSession,
@@ -339,6 +340,58 @@ test('practice parser keeps immediate grading result while session is in progres
   assert.equal(parsed.questions[0].latest_result?.correct_answer, 'A')
   assert.equal(parsed.questions[0].latest_result?.explanation, '解析内容')
   assert.equal(parsed.questions[1].latest_result, null)
+})
+
+test('question parser accepts option images and defaults them for old servers', () => {
+  const withImages = parseQuizQuestionPage({
+    items: [{
+      id: 3,
+      category_id: 2,
+      question_type: 'single_choice',
+      question_text: '选择正确的拓扑图',
+      options: { A: '', B: '', C: '文字选项' },
+      image_urls: [],
+      option_image_urls: {
+        A: 'https://cdn.example.com/a.png',
+        B: 'https://cdn.example.com/b.png',
+      },
+    }],
+    total: 1,
+    page: 1,
+    page_size: 20,
+  })
+  assert.equal(withImages.items[0].option_image_urls.A, 'https://cdn.example.com/a.png')
+  assert.equal(withImages.items[0].option_image_urls.C, undefined)
+
+  const legacy = parseQuizQuestionPage({
+    items: [{
+      id: 4,
+      category_id: 2,
+      question_type: 'judge',
+      question_text: 'TCP 面向连接。',
+      options: { A: '正确', B: '错误' },
+      image_urls: [],
+    }],
+    total: 1,
+    page: 1,
+    page_size: 20,
+  })
+  assert.deepEqual(legacy.items[0].option_image_urls, {})
+
+  assert.throws(() => parseQuizQuestionPage({
+    items: [{
+      id: 5,
+      category_id: 2,
+      question_type: 'single_choice',
+      question_text: '非法键',
+      options: { A: '甲', B: '乙', C: '丙' },
+      image_urls: [],
+      option_image_urls: { E: 'https://cdn.example.com/e.png' },
+    }],
+    total: 1,
+    page: 1,
+    page_size: 20,
+  }), QuizContractError)
 })
 
 test('wrong-book parser permits status markers but rejects answers and explanations', () => {

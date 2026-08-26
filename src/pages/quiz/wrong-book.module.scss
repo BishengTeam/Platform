@@ -69,6 +69,19 @@
   background: $color-bg-secondary;
 }
 
+.optionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.optionImage {
+  width: 60%;
+  max-width: 320px;
+  border-radius: $radius-sm;
+  background: $color-bg-secondary;
+}
+
 .options {
   display: flex;
   flex-direction: column;

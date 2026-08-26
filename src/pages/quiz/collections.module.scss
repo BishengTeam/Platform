@@ -22,6 +22,8 @@
 .state { display: block; padding: $spacing-xl; text-align: center; color: $color-text-tertiary; }
 .disabled { color: $color-price; font-size: $font-sm; }
 .options { display: flex; flex-direction: column; gap: 4px; margin-bottom: $spacing-sm; color: $color-text-secondary; font-size: $font-sm; }
+.optionBlock { display: flex; flex-direction: column; gap: $spacing-xs; }
+.optionImage { width: 60%; max-width: 320px; border-radius: $radius-sm; background: $color-bg-secondary; }
 .pager { display: flex; align-items: center; justify-content: space-between; padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom}); }
 
 .card {

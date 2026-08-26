@@ -569,7 +569,14 @@ export default function QuizMockPage() {
                     {quizImageUrls(question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
                   </View>
                 )}
-                <View className={styles.resultOptions}>{shuffledQuizOptions(question.options, `${exam.id}:${question.id}:${question.position}`).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
+                <View className={styles.resultOptions}>{shuffledQuizOptions(question.options, `${exam.id}:${question.id}:${question.position}`).map(option => (
+                  <View key={option.label} className={styles.resultOptionItem}>
+                    <Text>{option.label}. {option.text}</Text>
+                    {question.option_image_urls?.[option.label] && (
+                      <Image className={styles.optionImage} src={question.option_image_urls[option.label]} mode='widthFix' onClick={() => Taro.previewImage({ urls: [question.option_image_urls![option.label]], current: question.option_image_urls![option.label] })} />
+                    )}
+                  </View>
+                ))}</View>
                 <Text className={styles.answerLine}>你的答案：{answerText(question.user_answer)}　正确答案：{answerText(question.correct_answer)}</Text>
                 <Text className={styles.explanation}>解析：{question.explanation}</Text>
               </View>
@@ -586,6 +593,16 @@ export default function QuizMockPage() {
   const options = currentQuestion ? shuffledQuizOptions(currentQuestion.options, `${inProgress.id}:${currentQuestion.id}:${currentQuestion.position}`) : []
   const currentImageUrls = quizImageUrls(currentQuestion?.image_urls)
   const answeredCount = inProgress.questions.filter(question => question.user_answer !== null).length
+  const previewQuestionImages = (current: string) => {
+    const urls = [
+      ...currentImageUrls,
+      ...options.flatMap(option => {
+        const url = currentQuestion.option_image_urls?.[option.label]
+        return url ? [url] : []
+      }),
+    ]
+    if (urls.length > 0) Taro.previewImage({ urls, current: urls.includes(current) ? current : urls[0] })
+  }
   if (!currentQuestion) return <AuthGuard><View className={styles.page}><PageHeader title='模拟考试' shouldShowBack /><EmptyState title='考试中没有题目' /></View></AuthGuard>
 
   return (
@@ -608,7 +625,20 @@ export default function QuizMockPage() {
             )}
             <View className={styles.options}>{options.map(option => {
               const selected = answerIncludes(currentQuestion.user_answer, option.label)
-              return <View key={option.label} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => selectAnswer(currentQuestion, option.label)}><View className={`${styles.optionLabel} ${selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View><Text className={styles.optionText}>{option.text}</Text></View>
+              return <View key={option.label} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => selectAnswer(currentQuestion, option.label)}>
+                <View className={`${styles.optionLabel} ${selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
+                <View className={styles.optionBody}>
+                  {option.text && <Text className={styles.optionText}>{option.text}</Text>}
+                  {currentQuestion.option_image_urls?.[option.label] && (
+                    <Image
+                      className={styles.optionImage}
+                      src={currentQuestion.option_image_urls[option.label]}
+                      mode='widthFix'
+                      onClick={e => { e.stopPropagation(); previewQuestionImages(currentQuestion.option_image_urls![option.label]) }}
+                    />
+                  )}
+                </View>
+              </View>
             })}</View>
             <Text className={styles.noResultHint}>考试进行中不展示答案、正误或解析；选择变化会自动保存。</Text>
           </View>

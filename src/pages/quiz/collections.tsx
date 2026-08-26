@@ -67,7 +67,14 @@ export default function QuizCollectionsPage() {
                   {quizImageUrls(item.question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
                 </View>
               )}
-              <View className={styles.options}>{quizOptions(item.question.options).map(option => <Text key={option.label}>{option.label}. {option.text}</Text>)}</View>
+              <View className={styles.options}>{quizOptions(item.question.options).map(option => (
+                <View key={option.label} className={styles.optionBlock}>
+                  <Text>{option.label}. {option.text}</Text>
+                  {item.question.option_image_urls?.[option.label] && (
+                    <Image className={styles.optionImage} src={item.question.option_image_urls[option.label]} mode='widthFix' onClick={() => Taro.previewImage({ urls: [item.question.option_image_urls![option.label]], current: item.question.option_image_urls![option.label] })} />
+                  )}
+                </View>
+              ))}</View>
               <View className={styles.actions}><Button size='sm' variant='secondary' disabled={busyQuestions.has(item.question_id)} loading={busyQuestions.has(item.question_id)} onClick={() => void remove(item.question_id)}>取消收藏</Button></View>
             </View>
           ))}
