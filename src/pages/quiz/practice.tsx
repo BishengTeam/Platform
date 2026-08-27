@@ -20,6 +20,7 @@ import {
   addQuizCollection,
   createPracticeSession,
   clearWrongBookItem,
+  abandonPracticeSession,
   getCurrentPracticeSession,
   getPracticeSession,
   listQuizCollections,
@@ -620,7 +621,22 @@ export default function QuizPracticePage() {
                     try {
                       const { cleared } = await clearWrongBookItem(currentQuestion.id)
                       Taro.showToast({ title: cleared ? '已移出错题本' : '该题不在错题本中', icon: 'none', duration: 1500 })
-                      await refreshSession()
+                      // Remove only this question from the local session view;
+                      // answered questions and progress stay intact.
+                      if (cleared) {
+                        const remaining = session.questions.filter(
+                          item => item.session_question_id !== currentQuestion.session_question_id
+                        )
+                        const next = remaining.find(item => item.position > currentQuestion.position)
+                          ?? remaining.find(item => !item.answered)
+                          ?? remaining[0]
+                        setSession({
+                          ...session,
+                          questions: remaining,
+                          remaining_count: Math.max(0, session.remaining_count - 1),
+                        })
+                        setCurrentSessionQuestionId(next?.session_question_id ?? null)
+                      }
                     } catch (err) {
                       Taro.showToast({ title: err instanceof Error && err.message !== 'UNAUTHORIZED' ? err.message : '移出失败，请重试', icon: 'none', duration: 2500 })
                     }
