@@ -15,6 +15,24 @@ const GRADIENTS: Record<string, string> = {
   'gradient-gray': 'linear-gradient(to right, #999999, #BFBFBF)',
 }
 
+/** TabBar 页面必须用 switchTab 跳转，navigateTo 会失败 */
+const TAB_PAGES = [
+  'pages/index/index',
+  'pages/training/index',
+  'pages/activity-zone/index',
+  'pages/profile/index',
+]
+
+function navigateToUrl(url: string) {
+  const normalized = url.startsWith('/') ? url.slice(1) : url
+  const [path] = normalized.split('?')
+  if (TAB_PAGES.includes(path)) {
+    Taro.switchTab({ url: `/${path}` })
+  } else {
+    Taro.navigateTo({ url })
+  }
+}
+
 export interface ZoneBannerItem {
   id: string | number
   title: string
@@ -56,7 +74,7 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
                 style={{ backgroundImage: `url(${item.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                 onClick={() => {
                   if (item.jump_link) {
-                    Taro.navigateTo({ url: item.jump_link })
+                    navigateToUrl(item.jump_link)
                   }
                 }}
               >

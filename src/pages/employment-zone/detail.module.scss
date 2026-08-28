@@ -1,0 +1,99 @@
+.container {
+  min-height: 100vh;
+  background: #F5F7FA;
+}
+
+.placeholder {
+  padding: 120px 0;
+  text-align: center;
+  color: #999;
+  font-size: 28px;
+}
+
+.detail {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title {
+  font-size: 38px;
+  font-weight: 600;
+  color: #1A1A1A;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.salary {
+  font-size: 30px;
+  font-weight: 600;
+  color: #FA8C16;
+  flex-shrink: 0;
+}
+
+.company {
+  margin-top: 12px;
+  font-size: 28px;
+  color: #555;
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.tag {
+  padding: 6px 20px;
+  background: #E6F4FF;
+  color: #1677FF;
+  border-radius: 999px;
+  font-size: 22px;
+}
+
+.section {
+  margin-top: 24px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+}
+
+.sectionTitle {
+  font-size: 30px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 16px;
+}
+
+.sectionBody {
+  font-size: 26px;
+  color: #555;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+}
+
+.contactValue {
+  font-size: 28px;
+  color: #1677FF;
+  font-weight: 500;
+}
+
+.actions {
+  margin-top: 40px;
+  padding-bottom: 60px;
+}
+
+.actionBtn {
+  width: 100%;
+}

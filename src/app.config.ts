@@ -5,6 +5,7 @@ export default defineAppConfig({
     ROUTES.INDEX,
     'pages/training/index',
     'pages/activity-zone/index',
+    'pages/activity-zone/detail',
     ROUTES.PROFILE,
   ],
   subPackages: [
@@ -58,7 +59,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/employment-zone',
-      pages: ['index'],
+      pages: ['index', 'detail'],
     },
     {
       root: 'pages/login-poster',
