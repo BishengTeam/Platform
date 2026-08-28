@@ -10,7 +10,7 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import {
   getHomeAggregation, getActivityList, getJobList, getCompetitionList,
-  enrollActivity, remindActivity, applyJob,
+  enrollActivity, remindActivity,
   signupCompetition,
 } from '@/services/dataService'
 import type { ActivityBrief, JobBrief, ZoneBrief } from '@/types'
@@ -117,8 +117,11 @@ export default function ActivityZonePage() {
     return { text: STRINGS.COMPETITION_SIGNUP, variant: 'primary' as const }
   }
 
-  const getEmploymentButton = (_item: JobBrief) => {
-    return { text: STRINGS.EMPLOYMENT_APPLY, variant: 'primary' as const }
+  const getEmploymentButton = (item: JobBrief) => {
+    return {
+      text: item.contact_info ? `联系：${item.contact_info}` : '暂无联系方式',
+      variant: 'secondary' as const,
+    }
   }
 
   const currentBanner = mainTab === 'activity'
@@ -277,11 +280,12 @@ export default function ActivityZonePage() {
                       buttonText={btn.text}
                       buttonVariant={btn.variant}
                       buttonColor='#13C2C2'
-                      onButtonClick={async () => {
-                        try {
-                          await applyJob(job.id)
-                          Taro.showToast({ title: '投递成功', icon: 'success' })
-                        } catch { /* 错误已由 request 层统一 toast */ }
+                      onButtonClick={() => {
+                        if (!job.contact_info) {
+                          Taro.showToast({ title: '暂无联系方式', icon: 'none' })
+                          return
+                        }
+                        Taro.setClipboardData({ data: job.contact_info })
                       }}
                     />
                   )

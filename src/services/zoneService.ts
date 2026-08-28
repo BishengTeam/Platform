@@ -214,12 +214,6 @@ export async function signupCompetition(
   })
 }
 
-/** POST /api/jobs/{id}/apply — 岗位投递 */
-export async function applyJob(jobId: number): Promise<void> {
-  if (USE_MOCK) return
-  await post(`/api/jobs/${jobId}/apply`)
-}
-
 // ================================================================
 // 竞赛赛道（Phase 5 补充 — 代替已移除的 getCompetitionZone）
 // ================================================================

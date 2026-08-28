@@ -43,7 +43,7 @@ export {
 export {
   getHomeAggregation, getCourseList, getActivityList,
   getJobList, getCertificationList, getCompetitionList,
-  enrollActivity, remindActivity, signupCompetition, applyJob,
+  enrollActivity, remindActivity, signupCompetition,
   getZoneIcons, getQuickQuestions, getInitialMessages,
   getContactList, getOrderItems, getProfileFunctions, getExamBannerItems,
 } from './zoneService'
