@@ -30,7 +30,6 @@ export interface ZoneBrief {
   title: string
   cover_url: string | null
   description: string | null
-  link_url: string | null
   sort_order: number
 }
 
@@ -46,13 +45,28 @@ export interface CourseBrief {
   teacher_name: string | null
 }
 
-/** 竞赛报名简要 */
+/** 竞赛赛道（含余量） */
+export interface CompetitionTrackBrief {
+  id: number
+  name: string
+  max_participants: number
+  enrolled: number
+  remaining: number | null
+  sort_order: number
+}
+
+/** 赛事 */
 export interface CompetitionBrief {
   id: number
-  competition_name: string
-  school: string
-  track: string | null
-  created_at: string // ISO 8601
+  name: string
+  description: string | null
+  cover_url: string | null
+  start_time: string | null
+  end_time: string | null
+  registration_deadline: string | null
+  is_active: boolean
+  tracks: CompetitionTrackBrief[]
+  created_at: string
 }
 
 /** 活动简要 */
@@ -65,6 +79,11 @@ export interface ActivityBrief {
   start_time: string | null // ISO 8601
   end_time: string | null   // ISO 8601
   max_participants: number | null
+  related_cert_id: number | null
+  related_course_id: number | null
+  live_url: string | null
+  group_qrcode_url: string | null
+  registration_deadline: string | null
 }
 
 /** 岗位简要 */

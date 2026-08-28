@@ -59,7 +59,11 @@ export default defineAppConfig({
     },
     {
       root: 'pages/employment-zone',
-      pages: ['index', 'detail'],
+      pages: ['detail'],
+    },
+    {
+      root: 'pages/competition',
+      pages: ['detail'],
     },
     {
       root: 'pages/login-poster',

@@ -99,32 +99,32 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
       zones: {
         cert: {
           items: [
-            { id: 1, zone_type: 'cert', title: 'H3CNE 认证', cover_url: null, description: '新华三网络工程师认证', link_url: null, sort_order: 0 },
-            { id: 2, zone_type: 'cert', title: '深信服认证', cover_url: null, description: '安全技术方向认证', link_url: null, sort_order: 1 },
-            { id: 3, zone_type: 'cert', title: 'NISP 认证', cover_url: null, description: '国家信息安全水平考试', link_url: null, sort_order: 2 },
+            { id: 1, zone_type: 'cert', title: 'H3CNE 认证', cover_url: null, description: '新华三网络工程师认证', sort_order: 0 },
+            { id: 2, zone_type: 'cert', title: '深信服认证', cover_url: null, description: '安全技术方向认证', sort_order: 1 },
+            { id: 3, zone_type: 'cert', title: 'NISP 认证', cover_url: null, description: '国家信息安全水平考试', sort_order: 2 },
           ],
         },
         study: {
           items: [
-            { id: 4, zone_type: 'study', title: '网络基础课程', cover_url: null, description: '零基础入门到精通', link_url: null, sort_order: 0 },
+            { id: 4, zone_type: 'study', title: '网络基础课程', cover_url: null, description: '零基础入门到精通', sort_order: 0 },
           ],
           courses: homeCourses as unknown as CourseBrief[],
         },
         competition: {
           items: [
-            { id: 5, zone_type: 'competition', title: '网络技术大赛', cover_url: null, description: '展示技术实力赢取奖金', link_url: null, sort_order: 0 },
+            { id: 5, zone_type: 'competition', title: '网络技术大赛', cover_url: null, description: '展示技术实力赢取奖金', sort_order: 0 },
           ],
         },
         activity: {
           items: [
-            { id: 6, zone_type: 'activity', title: '线下实训营', cover_url: null, description: '7天集中培训', link_url: null, sort_order: 0 },
+            { id: 6, zone_type: 'activity', title: '线下实训营', cover_url: null, description: '7天集中培训', sort_order: 0 },
           ],
           activities: homeActivities as unknown as ActivityBrief[],
         },
         employment: {
           items: [
-            { id: 7, zone_type: 'employment', title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', link_url: null, sort_order: 0 },
-            { id: 8, zone_type: 'employment', title: '安全运维工程师', cover_url: null, description: '深信服生态企业', link_url: null, sort_order: 1 },
+            { id: 7, zone_type: 'employment', title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', sort_order: 0 },
+            { id: 8, zone_type: 'employment', title: '安全运维工程师', cover_url: null, description: '深信服生态企业', sort_order: 1 },
           ],
         },
       },
@@ -204,22 +204,23 @@ export async function remindActivity(activityId: number): Promise<void> {
 
 /** POST /api/competition/signup — 竞赛报名 */
 export async function signupCompetition(
-  competitionName: string, school: string, track?: string,
+  trackId: number, school: string, realName: string, phone: string,
 ): Promise<void> {
   if (USE_MOCK) return
   await post('/api/competition/signup', {
-    competition_name: competitionName,
-    school: school,
-    track: track ?? null,
+    track_id: trackId,
+    school,
+    real_name: realName,
+    phone,
   })
 }
 
 // ================================================================
-// 竞赛赛道（Phase 5 补充 — 代替已移除的 getCompetitionZone）
+// 竞赛赛事（2026-08 赛事化重构：两级结构 赛事→赛道）
 // ================================================================
-/** GET /api/competition/tracks → string[] — 后端返回赛道名列表 */
-export async function getCompetitionList(): Promise<string[]> {
-  if (USE_MOCK) return mockCompetitionBriefs().map(c => c.track || c.competition_name)
-  const res = await get<{ tracks: string[] }>('/api/competition/tracks')
-  return res.data?.tracks || []
+/** GET /api/competition/list — 赛事列表（含赛道与余量） */
+export async function getCompetitionList(): Promise<CompetitionBrief[]> {
+  if (USE_MOCK) return []
+  const res = await get<CompetitionBrief[]>('/api/competition/list')
+  return res.data ?? []
 }

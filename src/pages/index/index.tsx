@@ -149,12 +149,31 @@ export default function IndexPage() {
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[2]} onViewAll={handleGoCompetitionZone} />
-            <HomeCard items={homeData?.zones['competition']?.items ?? []} onCardClick={handleGoCompetitionZone} />
+            <HomeCard
+              items={(homeData?.zones['competition']?.competitions ?? []).map((comp) => ({
+                id: comp.id,
+                title: comp.name,
+                description: comp.description ?? '',
+                cover_url: comp.cover_url,
+                tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
+                tagColor: '#FA8C16',
+              }))}
+              onCardClick={handleGoCompetitionZone}
+            />
           </View>
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
-            <HomeCard items={homeData?.zones['employment']?.items ?? []} onCardClick={handleGoEmploymentZone} />
+            <HomeCard
+              items={(homeData?.zones['employment']?.jobs ?? []).map((job) => ({
+                id: job.id,
+                title: job.title,
+                description: [job.company, job.location].filter(Boolean).join(' · ') || null,
+                tag: job.salary_range ?? undefined,
+                tagColor: '#13C2C2',
+              }))}
+              onCardClick={handleGoEmploymentZone}
+            />
           </View>
         </View>
 

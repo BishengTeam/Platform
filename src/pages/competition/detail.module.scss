@@ -40,7 +40,7 @@
   padding: 12px 0;
 
   .metaLabel {
-    width: 120px;
+    width: 160px;
     color: #999;
     font-size: 26px;
     flex-shrink: 0;
@@ -74,15 +74,51 @@
   white-space: pre-wrap;
 }
 
-.actions {
-  display: flex;
-  gap: 24px;
-  margin-top: 40px;
-  padding-bottom: 60px;
+.closedTip {
+  padding: 16px 24px;
+  background: #FFF7E6;
+  color: #FA8C16;
+  border-radius: 10px;
+  font-size: 24px;
+  margin-bottom: 16px;
 }
 
-.actionBtn {
+.trackList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trackItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  background: #F5F7FA;
+  border-radius: 14px;
+}
+
+.trackInfo {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trackName {
+  font-size: 28px;
+  color: #1A1A1A;
+  font-weight: 500;
+}
+
+.trackQuota {
+  font-size: 22px;
+  color: #999;
+}
+
+.trackBtn {
+  flex-shrink: 0;
 }
 
 /* ── 报名弹层 ── */
@@ -113,7 +149,7 @@
 .enrollSub {
   margin-top: 8px;
   font-size: 24px;
-  color: #999;
+  color: #FA8C16;
   text-align: center;
   margin-bottom: 32px;
 }
@@ -136,49 +172,7 @@
   font-size: 28px;
 }
 
-.fieldArea {
-  margin-top: 12px;
-  padding: 20px 24px;
-  background: #F5F7FA;
-  border-radius: 12px;
-  font-size: 28px;
-  width: 100%;
-  min-height: 120px;
-  box-sizing: border-box;
-}
-
 .enrollSubmit {
   margin-top: 40px;
   width: 100%;
-}
-
-/* ── 参与方式 / CTA ── */
-.entryRow {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.entryBtn {
-  flex: 1;
-  min-width: 280px;
-}
-
-.qrcodeWrap {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.qrcode {
-  width: 320px;
-  height: 320px;
-  border-radius: 12px;
-}
-
-.qrcodeTip {
-  margin-top: 16px;
-  font-size: 24px;
-  color: #999;
 }
