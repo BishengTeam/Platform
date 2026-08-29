@@ -214,6 +214,7 @@ export interface QuizWrongBookItem {
   usable_for_practice: boolean
   first_wrong_at: string
   latest_wrong_at: string
+  wrong_count: number
 }
 
 export interface QuizCollectionItem {
@@ -417,6 +418,12 @@ function decimalAt(value: unknown, path: string): number {
 function integerAt(value: unknown, path: string): number {
   const number = numberAt(value, path)
   if (!Number.isInteger(number)) throw new QuizContractError(path, 'integer')
+  return number
+}
+
+function positiveIntegerAt(value: unknown, path: string): number {
+  const number = integerAt(value, path)
+  if (number < 1) throw new QuizContractError(path, 'positive integer')
   return number
 }
 
@@ -822,7 +829,7 @@ function parseHistoryItem(value: unknown, path: string): QuizPracticeHistoryItem
 export const parsePracticeHistoryPage = (value: unknown): PageData<QuizPracticeHistoryItem> => parsePage(value, parseHistoryItem)
 
 function parseWrongBookItem(value: unknown, path: string): QuizWrongBookItem {
-  const object = exactObject(value, path, ['id', 'question_id', 'status', 'question', 'question_status', 'usable_for_practice', 'first_wrong_at', 'latest_wrong_at'])
+  const object = exactObject(value, path, ['id', 'question_id', 'status', 'question', 'question_status', 'usable_for_practice', 'first_wrong_at', 'latest_wrong_at', 'wrong_count'])
   return {
     id: integerAt(object.id, `${path}.id`),
     question_id: integerAt(object.question_id, `${path}.question_id`),
@@ -832,6 +839,7 @@ function parseWrongBookItem(value: unknown, path: string): QuizWrongBookItem {
     usable_for_practice: booleanAt(object.usable_for_practice, `${path}.usable_for_practice`),
     first_wrong_at: dateTimeAt(object.first_wrong_at, `${path}.first_wrong_at`),
     latest_wrong_at: dateTimeAt(object.latest_wrong_at, `${path}.latest_wrong_at`),
+    wrong_count: positiveIntegerAt(object.wrong_count, `${path}.wrong_count`),
   }
 }
 

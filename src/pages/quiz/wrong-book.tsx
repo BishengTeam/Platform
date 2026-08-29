@@ -33,7 +33,7 @@ export default function WrongBookPage() {
       <View className={styles.page}>
         <PageHeader title='错题本' shouldShowBack />
         <View className={styles.notice}>
-          <Text>错题完全由系统维护；后续练习会话首次答对后自动移出。列表只展示题干和选项，进入错题专项作答后立即展示答案与解析。</Text>
+          <Text>错题完全由系统维护；练习中连续三次答对后自动移出。列表只展示题干和选项，进入错题专项作答后立即展示答案与解析。</Text>
           <Button size='sm' variant='gradient' disabled={(page?.total ?? 0) === 0} onClick={() => Taro.navigateTo({ url: '/pages/quiz/practice?mode=wrong' })}>最近 20 题专项</Button>
         </View>
         <ScrollView className={styles.body} scrollY>
@@ -43,7 +43,9 @@ export default function WrongBookPage() {
           {page?.items.map(item => (
             <View key={item.id} className={styles.card}>
               <View className={styles.cardHeader}>
-                <Text className={styles.wrongCount}>{quizTypeLabel(item.question.question_type)}</Text>
+                <Text className={styles.wrongCount}>
+                  {quizTypeLabel(item.question.question_type)} · 已错 {item.wrong_count} 次
+                </Text>
                 <Text className={styles.wrongDate}>{item.latest_wrong_at.slice(0, 10)}</Text>
               </View>
               <Text className={styles.stem}>{item.question.question_text}</Text>

@@ -628,9 +628,9 @@ export async function getJobs(): Promise<import('@/types').JobBrief[]> {
   return data?.items ?? []
 }
 
-export async function createTicket(data: { title: string; description: string }): Promise<{ id: string }> {
+export async function createTicket(data: { content: string }): Promise<{ id: string }> {
   if (USE_MOCK) return { id: 'mock_ticket' }
-  const res = await post<{ id: string }>('/api/tickets', { content: data.title + '\n' + data.description } as unknown as Record<string, unknown>)
+  const res = await post<{ id: string }>('/api/tickets', data as unknown as Record<string, unknown>)
   return res.data
 }
 

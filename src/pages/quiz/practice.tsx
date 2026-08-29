@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Image, ScrollView, Text, View } from '@tarojs/components'
+import { Image, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -18,6 +18,7 @@ import type {
 } from '@/contracts/quiz'
 import {
   addQuizCollection,
+  createTicket,
   createPracticeSession,
   clearWrongBookItem,
   abandonPracticeSession,
@@ -110,6 +111,9 @@ export default function QuizPracticePage() {
   const [collectionBusy, setCollectionBusy] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [drawerVisible, setDrawerVisible] = useState(false)
+  const [feedbackVisible, setFeedbackVisible] = useState(false)
+  const [feedbackDescription, setFeedbackDescription] = useState('')
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
 
   const applySession = (next: QuizPracticeSession, preferredQuestionId?: number) => {
     setSession(next)
@@ -427,6 +431,34 @@ export default function QuizPracticePage() {
     if (urls.length > 0) Taro.previewImage({ urls, current: urls.includes(current) ? current : urls[0] })
   }
 
+  const submitFeedback = async () => {
+    if (!currentQuestion || feedbackSubmitting) return
+    const description = feedbackDescription.trim()
+    if (description.length < 5 || description.length > 500) {
+      Taro.showToast({ title: '请填写 5-500 字的问题说明', icon: 'none', duration: 2000 })
+      return
+    }
+    setFeedbackSubmitting(true)
+    try {
+      await createTicket({
+        content: [
+          '【题目反馈】',
+          `题目ID：${currentQuestion.id}`,
+          `题型：${quizTypeLabel(currentQuestion.question_type)}`,
+          `题目：${currentQuestion.question_text}`,
+          `说明：${description}`,
+        ].join('\n'),
+      })
+      setFeedbackVisible(false)
+      setFeedbackDescription('')
+      Taro.showToast({ title: '已提交，感谢反馈', icon: 'success', duration: 2000 })
+    } catch (error) {
+      Taro.showToast({ title: `提交失败：${errorMessage(error)}`, icon: 'none', duration: 2500 })
+    } finally {
+      setFeedbackSubmitting(false)
+    }
+  }
+
   if (loading) {
     return <AuthGuard><View className={styles.page}><PageHeader title='练习' shouldShowBack /><View className={styles.resultBody}><Text>正在检查练习范围…</Text></View></View></AuthGuard>
   }
@@ -528,7 +560,7 @@ export default function QuizPracticePage() {
           <View className={styles.questionCard}>
             <View className={styles.questionHeader}>
               <Text className={styles.questionType}>{quizTypeLabel(currentQuestion.question_type)}</Text>
-              <Text className={styles.saveState}>{submittingThis ? '判分中…' : isSettled ? '已作答' : '未作答'}</Text>
+              <Text className={styles.feedbackTrigger} onClick={() => setFeedbackVisible(true)}>纠错</Text>
             </View>
             <Text className={styles.pathText}>{currentQuestion.category_path.map(item => item.name).join(' / ')}</Text>
             <Text className={styles.stem}>{currentQuestion.question_text}</Text>
@@ -666,6 +698,48 @@ export default function QuizPracticePage() {
             </Text>
           </View>
         </View>
+
+        <Popup visible={feedbackVisible} position='bottom' round closeOnOverlayClick onClose={() => setFeedbackVisible(false)}>
+          <View className={styles.feedbackModal}>
+            <View className={styles.feedbackHeader}>
+              <Text className={styles.feedbackTitle}>题目纠错</Text>
+              <Text className={styles.feedbackClose} onClick={() => setFeedbackVisible(false)}>取消</Text>
+            </View>
+            <ScrollView className={styles.feedbackBody} scrollY>
+              <View className={styles.feedbackField}>
+                <Text className={styles.feedbackLabel}>题目ID</Text>
+                <Text className={styles.feedbackValue}>{currentQuestion.id}</Text>
+              </View>
+              <View className={styles.feedbackField}>
+                <Text className={styles.feedbackLabel}>题型</Text>
+                <Text className={styles.feedbackValue}>{quizTypeLabel(currentQuestion.question_type)}</Text>
+              </View>
+              <View className={styles.feedbackField}>
+                <Text className={styles.feedbackLabel}>题目</Text>
+                <Text className={styles.feedbackValue}>{currentQuestion.question_text}</Text>
+              </View>
+              <View className={styles.feedbackField}>
+                <Text className={styles.feedbackLabel}>说明</Text>
+                <Textarea
+                  className={styles.feedbackTextArea}
+                  value={feedbackDescription}
+                  maxlength={500}
+                  disabled={feedbackSubmitting}
+                  placeholder='请描述题目存在的问题（5-500字）'
+                  onInput={event => setFeedbackDescription(event.detail.value)}
+                />
+                <Text className={styles.feedbackCounter}>{feedbackDescription.trim().length}/500</Text>
+              </View>
+              <Button
+                variant='gradient'
+                size='lg'
+                loading={feedbackSubmitting}
+                disabled={feedbackSubmitting}
+                onClick={() => void submitFeedback()}
+              >提交反馈</Button>
+            </ScrollView>
+          </View>
+        </Popup>
 
         <Popup visible={drawerVisible} position='bottom' round closeOnOverlayClick onClose={() => setDrawerVisible(false)}>
           <View className={styles.drawer}>

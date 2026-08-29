@@ -396,14 +396,18 @@ test('question parser accepts option images and defaults them for old servers', 
 
 test('wrong-book parser permits status markers but rejects answers and explanations', () => {
   const page = {
-    items: [{ id: 1, question_id: 2, status: 'active', question: { id: 2, category_id: 3, question_type: 'judge', question_text: '题干', options: { A: '正确', B: '错误' }, image_urls: [] }, question_status: 'disabled', usable_for_practice: false, first_wrong_at: '2026-08-12T00:00:00Z', latest_wrong_at: '2026-08-12T00:01:00Z' }],
+    items: [{ id: 1, question_id: 2, status: 'active', question: { id: 2, category_id: 3, question_type: 'judge', question_text: '题干', options: { A: '正确', B: '错误' }, image_urls: [] }, question_status: 'disabled', usable_for_practice: false, first_wrong_at: '2026-08-12T00:00:00Z', latest_wrong_at: '2026-08-12T00:01:00Z', wrong_count: 3 }],
     total: 1,
     page: 1,
     page_size: 20,
   }
   assert.equal(parseWrongBookPage(page).items[0].question_status, 'disabled')
+  assert.equal(parseWrongBookPage(page).items[0].wrong_count, 3)
   page.items[0].question_status = 'deleted'
   assert.equal(parseWrongBookPage(page).items[0].question_status, 'deleted')
   page.items[0].question.explanation = '不应泄露'
+  assert.throws(() => parseWrongBookPage(page), QuizContractError)
+  page.items[0].question.explanation = null
+  page.items[0].wrong_count = 0
   assert.throws(() => parseWrongBookPage(page), QuizContractError)
 })
