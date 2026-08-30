@@ -123,24 +123,28 @@ test('library progress parser keeps per-node first-attempt statistics', () => {
     question_count: 160,
     answered_questions: 40,
     accuracy: '75.0',
+    latest_accuracy: '80.0',
     modules: [
       {
         module_id: 21,
         question_count: 120,
         answered_questions: 40,
         accuracy: '75.0',
+        latest_accuracy: '80.0',
         knowledge_points: [
           {
             knowledge_point_id: 31,
             question_count: 60,
             answered_questions: 30,
             accuracy: '80.0',
+            latest_accuracy: '83.3',
           },
           {
             knowledge_point_id: 32,
             question_count: 60,
             answered_questions: 0,
             accuracy: '0.0',
+            latest_accuracy: '0.0',
           },
         ],
       },
@@ -150,12 +154,15 @@ test('library progress parser keeps per-node first-attempt statistics', () => {
   assert.equal(progress.question_count, 160)
   assert.equal(progress.answered_questions, 40)
   assert.equal(progress.accuracy, 75)
+  assert.equal(progress.latest_accuracy, 80)
+  assert.equal(progress.modules[0].knowledge_points[0].latest_accuracy, 83.3)
   assert.equal(progress.modules[0].knowledge_points[1].accuracy, 0)
   assert.throws(() => parseLibraryProgress({
     library_id: 11,
     question_count: 10,
     answered_questions: 11,
     accuracy: '100.0',
+    latest_accuracy: '100.0',
     modules: [],
   }), QuizContractError)
   assert.throws(() => parseLibraryProgress({
@@ -163,11 +170,12 @@ test('library progress parser keeps per-node first-attempt statistics', () => {
     question_count: 10,
     answered_questions: 5,
     accuracy: '100.0',
+    latest_accuracy: '100.0',
     modules: [{ module_id: 21, extra: true }],
   }), QuizContractError)
 })
 
-test('V2 scope preview preserves unfinished-session and large-scope semantics', () => {
+test('V2 scope preview preserves unfinished-session and last-round semantics', () => {
   const preview = parsePracticeScopePreview({
     library_id: 11,
     scope_type: 'knowledge_point',
@@ -179,9 +187,26 @@ test('V2 scope preview preserves unfinished-session and large-scope semantics', 
     requires_large_scope_confirmation: true,
     unfinished_session_id: 601,
     unfinished_session_expires_at: '2026-08-20T00:00:00Z',
+    last_completed_session: null,
   })
   assert.equal(preview.requires_large_scope_confirmation, true)
   assert.equal(preview.unfinished_session_id, 601)
+  assert.equal(preview.last_completed_session, null)
+  const resumed = parsePracticeScopePreview({
+    ...preview,
+    unfinished_session_id: null,
+    last_completed_session: {
+      session_id: 501,
+      answered_count: 8,
+      correct_count: 6,
+      accuracy: '75.0',
+      completed_at: '2026-08-19T23:59:00Z',
+    },
+  })
+  assert.equal(resumed.last_completed_session.session_id, 501)
+  assert.equal(resumed.last_completed_session.accuracy, 75)
+  assert.equal(resumed.last_completed_session.completed_at, '2026-08-19T23:59:00Z')
+  assert.throws(() => parsePracticeScopePreview({ ...preview, last_completed_session: { session_id: 501 } }), QuizContractError)
   assert.throws(() => parsePracticeScopePreview({ ...preview, valid_days: 30 }), QuizContractError)
 })
 
@@ -241,10 +266,11 @@ test('practice answer save parses only the non-grading receipt', () => {
 
 test('stats parser converts Pydantic Decimal strings without accepting guesses', () => {
   const stats = parseQuizStats({
-    practice: { total_attempts: 2, first_attempts: 1, first_correct_attempts: 1, accuracy: '100.0', answered_questions: 1, active_wrong_count: 0, active_collection_count: 0, checkin_days: 1, consecutive_days: 1, today_questions: 1 },
+    practice: { total_attempts: 2, first_attempts: 1, first_correct_attempts: 1, accuracy: '100.0', latest_accuracy: '50.0', answered_questions: 1, active_wrong_count: 0, active_collection_count: 0, checkin_days: 1, consecutive_days: 1, today_questions: 1 },
     exam: { completed_exam_count: 1, timed_out_exam_count: 0, total_questions: 10, correct_count: 8, wrong_count: 2, unanswered_count: 0, average_score: '80.0', highest_score: '80.0', latest_score: '80.0' },
   })
   assert.equal(stats.practice.accuracy, 100)
+  assert.equal(stats.practice.latest_accuracy, 50)
   assert.equal(stats.exam.latest_score, 80)
 })
 

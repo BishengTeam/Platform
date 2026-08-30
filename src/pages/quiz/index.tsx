@@ -16,7 +16,7 @@ import styles from './index.module.scss'
 
 interface StatCard { label: string; value: string; color: string; onClick?: () => void }
 
-const COLORS = ['#1677FF', '#52C41A', '#722ED1', '#FF4D4F', '#FA8C16', '#13C2C2']
+const COLORS = ['#1677FF', '#52C41A', '#722ED1', '#FF4D4F', '#FA8C16', '#13C2C2', '#EB2F96']
 
 export default function QuizIndexPage() {
   const { isChecked, isLoggedIn } = useAuth()
@@ -105,20 +105,26 @@ export default function QuizIndexPage() {
   }, [expanded])
 
   const practiceUrl = (scopeType: QuizPracticeScopeType, scopeId: number) =>
-    `/${ROUTES.QUIZ_PRACTICE}?scopeType=${scopeType}&scopeId=${scopeId}`
+    `/${ROUTES.QUIZ_PREPARE}?scopeType=${scopeType}&scopeId=${scopeId}`
 
   const openWrongBook = () => requireLogin(() => {
     Taro.navigateTo({ url: `/${ROUTES.QUIZ_WRONG_BOOK}` })
       .catch(() => Taro.showToast({ title: '错题本入口打开失败，请稍后重试', icon: 'none' }))
   })
 
-  const progressLabel = (item: { question_count: number; answered_questions: number; accuracy: number }) =>
-    `已做 ${item.answered_questions}/${item.question_count} · 正确率 ${item.answered_questions > 0 ? `${item.accuracy}%` : '—'}`
+  const progressLabel = (item: { question_count: number; answered_questions: number; latest_accuracy: number }) =>
+    `已做 ${item.answered_questions}/${item.question_count} · 正确率 ${item.answered_questions > 0 ? `${item.latest_accuracy}%` : '—'}`
+
+  const totalQuestionCount = libraries.reduce((sum, library) => sum + library.question_count, 0)
+  const unansweredCount = stats
+    ? Math.max(0, totalQuestionCount - stats.practice.answered_questions)
+    : 0
 
   const statCards: StatCard[] = stats ? [
     { label: '已练', value: String(stats.practice.total_attempts), color: COLORS[0] },
-    { label: '正确率', value: `${stats.practice.accuracy}%`, color: COLORS[1] },
+    { label: '正确率', value: `${stats.practice.latest_accuracy}%`, color: COLORS[1] },
     { label: '已答', value: String(stats.practice.answered_questions), color: COLORS[2] },
+    { label: '未做', value: String(unansweredCount), color: COLORS[6] },
     { label: '错题', value: String(stats.practice.active_wrong_count), color: COLORS[3], onClick: openWrongBook },
     { label: '连续', value: `${stats.practice.consecutive_days}天`, color: COLORS[4] },
     { label: '今日', value: String(stats.practice.today_questions), color: COLORS[5] },

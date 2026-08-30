@@ -269,7 +269,7 @@ export default function TrainingPage() {
             <Text className={styles.statsLabel}>范围首答正确率</Text>
           </View>
         </View>
-        <View className={styles.statsCta} onClick={() => selectedScope && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PRACTICE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}` })}>
+        <View className={styles.statsCta} onClick={() => selectedScope && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PREPARE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}` })}>
           <Text className={styles.statsCtaText}>开始练习</Text>
         </View>
       </View>

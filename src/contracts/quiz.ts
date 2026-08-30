@@ -67,6 +67,7 @@ export interface QuizKnowledgePointProgress {
   question_count: number
   answered_questions: number
   accuracy: number
+  latest_accuracy: number
 }
 
 export interface QuizModuleProgress {
@@ -74,6 +75,7 @@ export interface QuizModuleProgress {
   question_count: number
   answered_questions: number
   accuracy: number
+  latest_accuracy: number
   knowledge_points: QuizKnowledgePointProgress[]
 }
 
@@ -82,7 +84,16 @@ export interface QuizLibraryProgress {
   question_count: number
   answered_questions: number
   accuracy: number
+  latest_accuracy: number
   modules: QuizModuleProgress[]
+}
+
+export interface QuizPracticeScopeLastSession {
+  session_id: number
+  answered_count: number
+  correct_count: number
+  accuracy: number | null
+  completed_at: string
 }
 
 export interface QuizPracticeScopePreview {
@@ -96,6 +107,7 @@ export interface QuizPracticeScopePreview {
   requires_large_scope_confirmation: boolean
   unfinished_session_id: number | null
   unfinished_session_expires_at: string | null
+  last_completed_session: QuizPracticeScopeLastSession | null
 }
 
 export interface QuizPublicQuestion {
@@ -250,6 +262,7 @@ export interface QuizPracticeStats {
   first_attempts: number
   first_correct_attempts: number
   accuracy: number
+  latest_accuracy: number
   answered_questions: number
   active_wrong_count: number
   active_collection_count: number
@@ -573,7 +586,7 @@ export function parseQuizLibrary(value: unknown): QuizLibraryCatalogDetail {
 }
 
 function parseKnowledgePointProgress(value: unknown, path: string): QuizKnowledgePointProgress {
-  const object = exactObject(value, path, ['knowledge_point_id', 'question_count', 'answered_questions', 'accuracy'])
+  const object = exactObject(value, path, ['knowledge_point_id', 'question_count', 'answered_questions', 'accuracy', 'latest_accuracy'])
   const questionCount = integerAt(object.question_count, `${path}.question_count`)
   const answeredQuestions = integerAt(object.answered_questions, `${path}.answered_questions`)
   if (answeredQuestions > questionCount) throw new QuizContractError(`${path}.answered_questions`, '不能超过总题数')
@@ -582,11 +595,12 @@ function parseKnowledgePointProgress(value: unknown, path: string): QuizKnowledg
     question_count: questionCount,
     answered_questions: answeredQuestions,
     accuracy: decimalAt(object.accuracy, `${path}.accuracy`),
+    latest_accuracy: decimalAt(object.latest_accuracy, `${path}.latest_accuracy`),
   }
 }
 
 function parseModuleProgress(value: unknown, path: string): QuizModuleProgress {
-  const object = exactObject(value, path, ['module_id', 'question_count', 'answered_questions', 'accuracy', 'knowledge_points'])
+  const object = exactObject(value, path, ['module_id', 'question_count', 'answered_questions', 'accuracy', 'latest_accuracy', 'knowledge_points'])
   const questionCount = integerAt(object.question_count, `${path}.question_count`)
   const answeredQuestions = integerAt(object.answered_questions, `${path}.answered_questions`)
   if (answeredQuestions > questionCount) throw new QuizContractError(`${path}.answered_questions`, '不能超过总题数')
@@ -595,12 +609,13 @@ function parseModuleProgress(value: unknown, path: string): QuizModuleProgress {
     question_count: questionCount,
     answered_questions: answeredQuestions,
     accuracy: decimalAt(object.accuracy, `${path}.accuracy`),
+    latest_accuracy: decimalAt(object.latest_accuracy, `${path}.latest_accuracy`),
     knowledge_points: arrayOf(object.knowledge_points, `${path}.knowledge_points`, parseKnowledgePointProgress),
   }
 }
 
 export function parseLibraryProgress(value: unknown): QuizLibraryProgress {
-  const object = exactObject(value, 'data', ['library_id', 'question_count', 'answered_questions', 'accuracy', 'modules'])
+  const object = exactObject(value, 'data', ['library_id', 'question_count', 'answered_questions', 'accuracy', 'latest_accuracy', 'modules'])
   const questionCount = integerAt(object.question_count, 'data.question_count')
   const answeredQuestions = integerAt(object.answered_questions, 'data.answered_questions')
   if (answeredQuestions > questionCount) throw new QuizContractError('data.answered_questions', '不能超过总题数')
@@ -609,12 +624,24 @@ export function parseLibraryProgress(value: unknown): QuizLibraryProgress {
     question_count: questionCount,
     answered_questions: answeredQuestions,
     accuracy: decimalAt(object.accuracy, 'data.accuracy'),
+    latest_accuracy: decimalAt(object.latest_accuracy, 'data.latest_accuracy'),
     modules: arrayOf(object.modules, 'data.modules', parseModuleProgress),
   }
 }
 
+function parseScopeLastSession(value: unknown): QuizPracticeScopeLastSession {
+  const object = exactObject(value, 'data.last_completed_session', ['session_id', 'answered_count', 'correct_count', 'accuracy', 'completed_at'])
+  return {
+    session_id: positiveIntegerAt(object.session_id, 'data.last_completed_session.session_id'),
+    answered_count: integerAt(object.answered_count, 'data.last_completed_session.answered_count'),
+    correct_count: integerAt(object.correct_count, 'data.last_completed_session.correct_count'),
+    accuracy: nullable(object.accuracy, 'data.last_completed_session.accuracy', decimalAt),
+    completed_at: dateTimeAt(object.completed_at, 'data.last_completed_session.completed_at'),
+  }
+}
+
 export function parsePracticeScopePreview(value: unknown): QuizPracticeScopePreview {
-  const object = exactObject(value, 'data', ['library_id', 'scope_type', 'scope_id', 'mode', 'question_count', 'estimated_minutes', 'valid_days', 'requires_large_scope_confirmation', 'unfinished_session_id', 'unfinished_session_expires_at'])
+  const object = exactObject(value, 'data', ['library_id', 'scope_type', 'scope_id', 'mode', 'question_count', 'estimated_minutes', 'valid_days', 'requires_large_scope_confirmation', 'unfinished_session_id', 'unfinished_session_expires_at', 'last_completed_session'])
   const validDays = integerAt(object.valid_days, 'data.valid_days')
   if (validDays !== 7) throw new QuizContractError('data.valid_days', '7')
   return {
@@ -628,6 +655,7 @@ export function parsePracticeScopePreview(value: unknown): QuizPracticeScopePrev
     requires_large_scope_confirmation: booleanAt(object.requires_large_scope_confirmation, 'data.requires_large_scope_confirmation'),
     unfinished_session_id: nullable(object.unfinished_session_id, 'data.unfinished_session_id', integerAt),
     unfinished_session_expires_at: nullable(object.unfinished_session_expires_at, 'data.unfinished_session_expires_at', dateTimeAt),
+    last_completed_session: nullable(object.last_completed_session, 'data.last_completed_session', parseScopeLastSession),
   }
 }
 
@@ -891,7 +919,7 @@ export const parseCheckinCalendar = (value: unknown): QuizCheckinDay[] => arrayO
 
 export function parseQuizStats(value: unknown): QuizStats {
   const object = exactObject(value, 'data', ['practice', 'exam'])
-  const practice = exactObject(object.practice, 'data.practice', ['total_attempts', 'first_attempts', 'first_correct_attempts', 'accuracy', 'answered_questions', 'active_wrong_count', 'active_collection_count', 'checkin_days', 'consecutive_days', 'today_questions'])
+  const practice = exactObject(object.practice, 'data.practice', ['total_attempts', 'first_attempts', 'first_correct_attempts', 'accuracy', 'latest_accuracy', 'answered_questions', 'active_wrong_count', 'active_collection_count', 'checkin_days', 'consecutive_days', 'today_questions'])
   const exam = exactObject(object.exam, 'data.exam', ['completed_exam_count', 'timed_out_exam_count', 'total_questions', 'correct_count', 'wrong_count', 'unanswered_count', 'average_score', 'highest_score', 'latest_score'])
   return {
     practice: {
@@ -899,6 +927,7 @@ export function parseQuizStats(value: unknown): QuizStats {
       first_attempts: integerAt(practice.first_attempts, 'data.practice.first_attempts'),
       first_correct_attempts: integerAt(practice.first_correct_attempts, 'data.practice.first_correct_attempts'),
       accuracy: decimalAt(practice.accuracy, 'data.practice.accuracy'),
+      latest_accuracy: decimalAt(practice.latest_accuracy, 'data.practice.latest_accuracy'),
       answered_questions: integerAt(practice.answered_questions, 'data.practice.answered_questions'),
       active_wrong_count: integerAt(practice.active_wrong_count, 'data.practice.active_wrong_count'),
       active_collection_count: integerAt(practice.active_collection_count, 'data.practice.active_collection_count'),
