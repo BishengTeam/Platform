@@ -195,6 +195,12 @@
   line-height: 1.4;
 }
 
+.quizAssignmentStatus {
+  color: $color-primary;
+  font-size: $font-sm;
+  line-height: 1.4;
+}
+
 .quizLibraryAvailable,
 .quizLibraryPending {
   flex-shrink: 0;

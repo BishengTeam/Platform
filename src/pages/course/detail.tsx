@@ -7,17 +7,30 @@ import { Button } from '@/components/Button'
 import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
+import type { CourseAssignmentListItem } from '@/contracts/courseAssignment'
+import { useAuth } from '@/hooks/useAuth'
 import { getCourseById, purchaseCourse, prepayOrder, pollCourseAccess } from '@/services/dataService'
+import { listCourseAssignments } from '@/services/courseAssignmentService'
 import { formatCategory } from '@/utils/format'
 import type { CourseDetail, CoursePurchaseResponse } from '@/types'
 import styles from './detail.module.scss'
 
+const assignmentStatusLabels: Record<CourseAssignmentListItem['display_status'], string> = {
+  not_started: '未开始',
+  draft: '作答中',
+  submitted: '已提交，可撤回',
+  reviewing: '评阅中',
+  graded: '已评分',
+}
+
 export default function CourseDetailPage() {
+  const { isChecked, isLoggedIn } = useAuth()
   const [courseId, setCourseId] = useState('')
   const [course, setCourse] = useState<CourseDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [purchasing, setPurchasing] = useState(false)
+  const [assignments, setAssignments] = useState<Record<number, CourseAssignmentListItem>>({})
 
   useLoad((options) => {
     setCourseId(options?.id || '')
@@ -52,8 +65,24 @@ export default function CourseDetailPage() {
       .finally(() => setLoading(false))
   }, [courseId])
 
+  useEffect(() => {
+    if (!isChecked || !isLoggedIn || !courseId || Number.isNaN(Number(courseId))) return
+    let cancelled = false
+    listCourseAssignments(Number(courseId))
+      .then(items => {
+        if (!cancelled) setAssignments(Object.fromEntries(items.map(item => [item.library_id, item])))
+      })
+      .catch(() => undefined)
+    return () => { cancelled = true }
+  }, [courseId, isChecked, isLoggedIn])
+
   const enterContent = (id: number) => {
     Taro.navigateTo({ url: `/${ROUTES.COURSE_CONTENT}?id=${id}` })
+  }
+
+  const openAssignment = (assignmentId: number) => {
+    Taro.navigateTo({ url: `/${ROUTES.QUIZ_ASSIGNMENT}?assignmentId=${assignmentId}` })
+      .catch(() => Taro.showToast({ title: '作业入口打开失败，请稍后重试', icon: 'none' }))
   }
 
   const handlePurchaseResult = async (
@@ -230,10 +259,23 @@ export default function CourseDetailPage() {
                     <View className={styles.quizLibraryInfo}>
                       <Text className={styles.quizLibraryName}>{item.name}</Text>
                       {item.description && <Text className={styles.quizLibraryDescription}>{item.description}</Text>}
+                      {course.has_access && (
+                        <Text className={styles.quizAssignmentStatus}>
+                          {assignments[item.id]
+                            ? `${assignmentStatusLabels[assignments[item.id].display_status]} · ${assignments[item.id].question_count} 题作业`
+                            : '课程作业未发布'}
+                        </Text>
+                      )}
                     </View>
-                    <Text className={item.available ? styles.quizLibraryAvailable : styles.quizLibraryPending}>
-                      {item.available ? '购买后开放' : item.status === 'suspended' ? '暂时停用' : '准备中'}
-                    </Text>
+                    {course.has_access && assignments[item.id] ? (
+                      <Text className={styles.quizLibraryAvailable} onClick={() => openAssignment(assignments[item.id].assignment_id)}>
+                        {assignments[item.id].display_status === 'graded' ? '查看成绩' : '进入作业'}
+                      </Text>
+                    ) : (
+                      <Text className={item.available ? styles.quizLibraryAvailable : styles.quizLibraryPending}>
+                        {item.available ? '购买后开放' : item.status === 'suspended' ? '暂时停用' : '准备中'}
+                      </Text>
+                    )}
                   </View>
                 ))}
               </View>

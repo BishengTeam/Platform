@@ -10,13 +10,23 @@ import type { QuizBottomItem } from '@/constants/quiz'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizLibraryProgress, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
+import type { CourseAssignmentListItem } from '@/contracts/courseAssignment'
 import { useAuth } from '@/hooks/useAuth'
 import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries } from '@/services/dataService'
+import { listCourseAssignments } from '@/services/courseAssignmentService'
 import styles from './index.module.scss'
 
 interface StatCard { label: string; value: string; color: string; onClick?: () => void }
 
 const COLORS = ['#1677FF', '#52C41A', '#722ED1', '#FF4D4F', '#FA8C16', '#13C2C2', '#EB2F96']
+
+const assignmentStatusLabels: Record<CourseAssignmentListItem['display_status'], string> = {
+  not_started: '未开始',
+  draft: '作答中',
+  submitted: '已提交，可撤回',
+  reviewing: '评阅中',
+  graded: '已评分',
+}
 
 export default function QuizIndexPage() {
   const { isChecked, isLoggedIn } = useAuth()
@@ -27,6 +37,8 @@ export default function QuizIndexPage() {
   const [streakDays, setStreakDays] = useState(0)
   const [loading, setLoading] = useState(true)
   const [catalogError, setCatalogError] = useState(false)
+  const [assignments, setAssignments] = useState<Record<number, CourseAssignmentListItem>>({})
+  const [assignmentsLoading, setAssignmentsLoading] = useState(false)
 
   const requireLogin = useCallback((action: () => void) => {
     if (isLoggedIn) action()
@@ -80,6 +92,29 @@ export default function QuizIndexPage() {
     loadPersonal()
   }, [isChecked, isLoggedIn, loadPersonal])
 
+  useEffect(() => {
+    if (!isChecked || !isLoggedIn) {
+      setAssignments({})
+      setAssignmentsLoading(false)
+      return
+    }
+    let cancelled = false
+    setAssignmentsLoading(true)
+    listCourseAssignments()
+      .then(items => {
+        if (!cancelled) setAssignments(Object.fromEntries(items.map(item => [item.library_id, item])))
+      })
+      .catch(() => {
+        if (!cancelled) setAssignments({})
+      })
+      .finally(() => {
+        if (!cancelled) setAssignmentsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isChecked, isLoggedIn])
+
   const handleGrid = useCallback((item: { mode: string }) => requireLogin(() => {
     if (item.mode === 'mock') Taro.navigateTo({ url: `/${ROUTES.QUIZ_MOCK}` })
     else if (item.mode === 'history') Taro.navigateTo({ url: `/${ROUTES.QUIZ_HISTORY}` })
@@ -107,6 +142,16 @@ export default function QuizIndexPage() {
   const practiceUrl = (scopeType: QuizPracticeScopeType, scopeId: number) =>
     `/${ROUTES.QUIZ_PREPARE}?scopeType=${scopeType}&scopeId=${scopeId}`
 
+  const openAssignment = (libraryId: number) => requireLogin(() => {
+    const assignment = assignments[libraryId]
+    if (!assignment) {
+      Taro.showToast({ title: '课程作业未发布', icon: 'none' })
+      return
+    }
+    Taro.navigateTo({ url: `/${ROUTES.QUIZ_ASSIGNMENT}?assignmentId=${assignment.assignment_id}` })
+      .catch(() => Taro.showToast({ title: '作业入口打开失败，请稍后重试', icon: 'none' }))
+  })
+
   const openWrongBook = () => requireLogin(() => {
     Taro.navigateTo({ url: `/${ROUTES.QUIZ_WRONG_BOOK}` })
       .catch(() => Taro.showToast({ title: '错题本入口打开失败，请稍后重试', icon: 'none' }))
@@ -115,7 +160,10 @@ export default function QuizIndexPage() {
   const progressLabel = (item: { question_count: number; answered_questions: number; latest_accuracy: number }) =>
     `已做 ${item.answered_questions}/${item.question_count} · 正确率 ${item.answered_questions > 0 ? `${item.latest_accuracy}%` : '—'}`
 
-  const totalQuestionCount = libraries.reduce((sum, library) => sum + library.question_count, 0)
+  const visibleLibraries = libraries.filter(library =>
+    library.access_mode !== 'course_entitlement' || Boolean(assignments[library.id]))
+  const pageLoading = loading || (isChecked && isLoggedIn && assignmentsLoading)
+  const totalQuestionCount = visibleLibraries.reduce((sum, library) => sum + library.question_count, 0)
   const unansweredCount = stats
     ? Math.max(0, totalQuestionCount - stats.practice.answered_questions)
     : 0
@@ -152,33 +200,62 @@ export default function QuizIndexPage() {
         )}
 
         <QuizGrid items={QUIZ_GRID} onItemClick={handleGrid} />
-        {loading && <Text className={styles.stateText}>正在加载题库…</Text>}
-        {!loading && catalogError && <Text className={styles.stateText}>题库加载失败，请稍后重试</Text>}
-        {!loading && !catalogError && libraries.length === 0 && <Text className={styles.stateText}>暂无可用题库</Text>}
+        {pageLoading && <Text className={styles.stateText}>正在加载题库…</Text>}
+        {!pageLoading && catalogError && <Text className={styles.stateText}>题库加载失败，请稍后重试</Text>}
+        {!pageLoading && !catalogError && visibleLibraries.length === 0 && <Text className={styles.stateText}>暂无可用题库</Text>}
         <View className={styles.libraryList}>
-          {libraries.map(library => {
+          {visibleLibraries.map(library => {
             const detail = expanded[library.id]
             const libraryProgress = progress[library.id]
+            const assignment = assignments[library.id]
+            const isCourseLibrary = library.access_mode === 'course_entitlement'
             return (
               <View key={library.id} className={styles.libraryCard}>
-                <View className={styles.libraryHeader} onClick={() => void toggleLibrary(library.id)}>
+                <View className={styles.libraryHeader} onClick={() => isCourseLibrary ? openAssignment(library.id) : void toggleLibrary(library.id)}>
                   {library.cover_url ? <Image className={styles.libraryCover} src={library.cover_url} mode='aspectFill' /> : <View className={styles.libraryCoverPlaceholder}><Text>题库</Text></View>}
                   <View className={styles.libraryInfo}>
                     <Text className={styles.libraryName}>{library.name}</Text>
                     <Text className={styles.libraryDescription}>{library.description}</Text>
                     <Text className={styles.libraryMeta}>{library.module_count} 个模块 · {library.question_count} 题 · {library.access_mode === 'free' ? '免费' : '课程附赠'}</Text>
                   </View>
-                  <Text className={styles.expandIcon}>{detail ? '收起' : '展开'}</Text>
+                  <Text className={styles.expandIcon}>{isCourseLibrary ? (assignment ? '进入' : '未发布') : detail ? '收起' : '展开'}</Text>
                 </View>
-                {detail && (
+                {isCourseLibrary && (
                   <View className={styles.catalogTree}>
-                    <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('library', library.id) }))}>
+                    <View className={styles.scopeRow} onClick={() => openAssignment(library.id)}>
                       <View className={styles.scopeMain}>
-                        <Text className={styles.scopeName}>练习整库全部 {detail.question_count} 题</Text>
-                        {libraryProgress && <Text className={styles.scopeMeta}>{progressLabel(libraryProgress)}</Text>}
+                        <Text className={styles.scopeName}>课程正式作业 · {assignment?.question_count ?? library.question_count} 题</Text>
+                        <Text className={styles.scopeMeta}>
+                          {assignment ? assignmentStatusLabels[assignment.display_status] : '作业未发布'}
+                          {assignment?.display_status === 'graded' && assignment.total_score != null ? ` · ${assignment.total_score}分` : ''}
+                        </Text>
                       </View>
-                      <Text className={styles.scopeAction}>开始</Text>
+                      <Text className={styles.scopeAction}>{assignment ? '进入' : '暂不可用'}</Text>
                     </View>
+                  </View>
+                )}
+                {detail && !isCourseLibrary && (
+                  <View className={styles.catalogTree}>
+                    {isCourseLibrary ? (
+                      <View className={styles.scopeRow} onClick={() => openAssignment(library.id)}>
+                        <View className={styles.scopeMain}>
+                          <Text className={styles.scopeName}>课程正式作业 · {assignment?.question_count ?? detail.question_count} 题</Text>
+                          <Text className={styles.scopeMeta}>
+                            {assignment ? assignmentStatusLabels[assignment.display_status] : '作业未发布'}
+                            {assignment?.display_status === 'graded' && assignment.total_score != null ? ` · ${assignment.total_score}分` : ''}
+                          </Text>
+                        </View>
+                        <Text className={styles.scopeAction}>{assignment ? '进入' : '暂不可用'}</Text>
+                      </View>
+                    ) : (
+                      <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('library', library.id) }))}>
+                        <View className={styles.scopeMain}>
+                          <Text className={styles.scopeName}>练习整库全部 {detail.question_count} 题</Text>
+                          {libraryProgress && <Text className={styles.scopeMeta}>{progressLabel(libraryProgress)}</Text>}
+                        </View>
+                        <Text className={styles.scopeAction}>开始</Text>
+                      </View>
+                    )}
                     {detail.modules.map(module => {
                       const moduleProgress = libraryProgress?.modules.find(item => item.module_id === module.id)
                       return (
