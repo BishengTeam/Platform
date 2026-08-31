@@ -15,18 +15,32 @@ const TYPE_LABELS: Record<H3cRegistrationType, string> = {
   full: '全额报名',
 }
 
-const FIELDS = [
-  ['candidate_name', '姓名'],
-  ['gender', '性别'],
-  ['candidate_idcard', '身份证号'],
-  ['school', '单位/学校'],
-  ['address', '通信地址'],
-  ['phone', '手机号'],
-  ['email', '邮箱'],
-  ['education', '学历'],
-  ['first_name_en', 'First Name'],
-  ['last_name_en', 'Last Name'],
-] as const
+const TYPE_DESCRIPTIONS: Record<H3cRegistrationType, string> = {
+  coupon: '参加新华三大赛获奖、持有厂商赠送考券的考生',
+  student: '学生身份享受补贴，需提交学生证明材料',
+  full: '无优惠券的社会考生，按全额缴费报名',
+}
+
+interface H3cFieldDef {
+  key: string
+  label: string
+  required?: boolean
+  placeholder: string
+  remark?: string
+}
+
+const BASE_FIELDS: H3cFieldDef[] = [
+  { key: 'candidate_name', label: '姓名', required: true, placeholder: '如：王小二' },
+  { key: 'gender', label: '性别', required: true, placeholder: '男 / 女', remark: '可选值：男、女' },
+  { key: 'candidate_idcard', label: '身份证号', required: true, placeholder: '请输入身份证号', remark: '18位居民身份证号码' },
+  { key: 'school', label: '单位/学校', required: true, placeholder: '请输入学校或单位全称' },
+  { key: 'address', label: '通信地址', required: true, placeholder: '请输入详细通信地址' },
+  { key: 'phone', label: '手机号', required: true, placeholder: '如：188XXXX8888' },
+  { key: 'email', label: '邮箱', required: true, placeholder: '如：wxe@XX.com' },
+  { key: 'education', label: '学历', required: true, placeholder: '如：本科', remark: '可选：本科 / 中职 / 高职 / 硕士 / 博士' },
+  { key: 'first_name_en', label: 'First Name', required: true, placeholder: '如：Xiaoer', remark: '官方模板示例：王小二 → Xiaoer' },
+  { key: 'last_name_en', label: 'Last Name', required: true, placeholder: '如：Wang', remark: '官方模板示例：王小二 → Wang' },
+]
 
 export default function H3CFormPage() {
   const [batchId, setBatchId] = useState(0)
@@ -85,7 +99,7 @@ export default function H3CFormPage() {
 
   const submit = async () => {
     if (!batch || submitting) return
-    if (FIELDS.some(([key]) => !form[key])) {
+    if (BASE_FIELDS.some((field) => !form[field.key])) {
       Taro.showToast({ title: '请完整填写报名信息', icon: 'none' })
       return
     }
@@ -147,6 +161,7 @@ export default function H3CFormPage() {
                 </View>
               ))}
             </View>
+            <Text className={styles.desc}>{TYPE_DESCRIPTIONS[type]}</Text>
             <View className={styles.row}>
               <Text className={styles.label}>应付金额</Text>
               <Text className={styles.price}>{(price / 100).toFixed(2)} 元</Text>
@@ -155,10 +170,21 @@ export default function H3CFormPage() {
 
           <View className={styles.card}>
             <Text className={styles.title}>基础信息</Text>
-            {FIELDS.map(([key, label]) => (
-              <View key={key} style={{ marginTop: 10 }}>
-                <Text className={styles.label}>{label}</Text>
-                <Input className={styles.input} value={form[key]} onInput={(event) => update(key, event.detail.value)} />
+            <Text className={styles.remark}>带 * 为必填项，填写内容与官方报名模板保持一致</Text>
+            {BASE_FIELDS.map((field) => (
+              <View key={field.key} className={styles.field}>
+                <View className={styles.labelRow}>
+                  {field.required && <Text className={styles.required}>*</Text>}
+                  <Text className={styles.label}>{field.label}</Text>
+                </View>
+                <Input
+                  className={styles.input}
+                  placeholder={field.placeholder}
+                  placeholderClass={styles.placeholder}
+                  value={form[field.key]}
+                  onInput={(event) => update(field.key, event.detail.value)}
+                />
+                {field.remark && <Text className={styles.remark}>{field.remark}</Text>}
               </View>
             ))}
           </View>
@@ -166,26 +192,48 @@ export default function H3CFormPage() {
           {type === 'coupon' && (
             <View className={styles.card}>
               <Text className={styles.title}>考券材料</Text>
-              <View style={{ marginTop: 10 }}>
-                <Text className={styles.label}>考券号</Text>
-                <Input className={styles.input} value={form.coupon_code} onInput={(event) => update('coupon_code', event.detail.value)} />
+              <View className={styles.field}>
+                <View className={styles.labelRow}>
+                  <Text className={styles.required}>*</Text>
+                  <Text className={styles.label}>考券号</Text>
+                </View>
+                <Input
+                  className={styles.input}
+                  placeholder='请输入考券号'
+                  placeholderClass={styles.placeholder}
+                  value={form.coupon_code}
+                  onInput={(event) => update('coupon_code', event.detail.value)}
+                />
+                <Text className={styles.remark}>参加新华三大赛获奖、由厂商赠送的考券号</Text>
               </View>
               <View className={styles.uploadBox} onClick={() => chooseMaterial('coupon_proof')}>
                 <Text className={couponKey ? styles.uploaded : ''}>{couponKey ? '优惠券证明已上传' : '上传 JPG 优惠券证明'}</Text>
               </View>
+              <Text className={styles.remark}>学生/内部员工优惠券需提供证明图片，JPG 格式</Text>
             </View>
           )}
 
           {type === 'student' && (
             <View className={styles.card}>
               <Text className={styles.title}>学生材料</Text>
-              <View style={{ marginTop: 10 }}>
-                <Text className={styles.label}>学信网在线验证码</Text>
-                <Input className={styles.input} value={form.verify_code} onInput={(event) => update('verify_code', event.detail.value)} />
+              <View className={styles.field}>
+                <View className={styles.labelRow}>
+                  <Text className={styles.required}>*</Text>
+                  <Text className={styles.label}>学信网在线验证码</Text>
+                </View>
+                <Input
+                  className={styles.input}
+                  placeholder='请输入学信网在线验证码'
+                  placeholderClass={styles.placeholder}
+                  value={form.verify_code}
+                  onInput={(event) => update('verify_code', event.detail.value)}
+                />
+                <Text className={styles.remark}>必须提供，且需与学生证明图片同时提交</Text>
               </View>
               <View className={styles.uploadBox} onClick={() => chooseMaterial('student_proof')}>
                 <Text className={studentKey ? styles.uploaded : ''}>{studentKey ? '学生证明已上传' : '上传 JPG 学生证明'}</Text>
               </View>
+              <Text className={styles.remark}>如无学信网在线验证码，请上传有学院盖章的学籍证明图片；如提供验证码，请上传身份证人像一面清晰图片，JPG 格式</Text>
             </View>
           )}
 

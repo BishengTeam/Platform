@@ -67,6 +67,29 @@
 }
 
 /* ── 报名表单 ── */
+.field { margin-top: 24px; }
+
+.labelRow {
+  display: flex;
+  align-items: center;
+}
+
+.required {
+  margin-right: 6px;
+  color: #ef4444;
+  font-size: 26px;
+}
+
+.placeholder { color: #98a2b3; }
+
+.remark {
+  display: block;
+  margin-top: 8px;
+  color: #98a2b3;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
