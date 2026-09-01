@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Image, ScrollView, Text, Textarea, View } from '@tarojs/components'
+import { Image, Input, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -38,7 +38,7 @@ import {
   getOrCreateAttemptKey,
 } from '@/utils/quizRuntime'
 import { ApiError } from '@/utils/request'
-import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
+import { answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './practice.module.scss'
 
 const LEGACY_QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -107,6 +107,8 @@ export default function QuizPracticePage() {
   const [starting, setStarting] = useState(false)
   const [submitting, setSubmitting] = useState<{ sessionQuestionId: number; answer: QuizAnswer } | null>(null)
   const [multiDraft, setMultiDraft] = useState<string[]>([])
+  const [fillDraft, setFillDraft] = useState<string[]>([])
+  const [essayAnswerVisible, setEssayAnswerVisible] = useState(false)
   const [actionBusy, setActionBusy] = useState(false)
   const [collectionBusy, setCollectionBusy] = useState(false)
   const [loadError, setLoadError] = useState('')
@@ -295,9 +297,25 @@ export default function QuizPracticePage() {
     setMultiDraft(Array.isArray(saved) ? [...saved] : [])
   }, [currentQuestion?.session_question_id, currentQuestion?.user_answer])
 
+  useEffect(() => {
+    if (!currentQuestion || !isFillBlank(currentQuestion.question_type)) {
+      setFillDraft([])
+      return
+    }
+    const saved = Array.isArray(currentQuestion.user_answer) ? currentQuestion.user_answer : []
+    const count = fillBlankCount(currentQuestion.question_text)
+    setFillDraft(Array.from({ length: count }, (_, index) => saved[index] ?? ''))
+  }, [currentQuestion?.session_question_id, currentQuestion?.user_answer, currentQuestion?.question_type])
+
+  useEffect(() => {
+    setEssayAnswerVisible(false)
+  }, [currentQuestion?.session_question_id])
+
   const submitAttempt = async (question: QuizPracticeQuestionState, answer: QuizAnswer) => {
     if (!session || session.status !== 'in_progress' || submitting !== null || actionBusy) return
-    if (question.latest_result !== null) return
+    // 填空题按设计允许当场重输（每次提交生成新 attempt，最新结果覆盖展示）；
+    // 选择/判断题仍然保持一次作答不可修改。
+    if (question.latest_result !== null && !isFillBlank(question.question_type)) return
     setSubmitting({ sessionQuestionId: question.session_question_id, answer })
     try {
       const result = await submitPracticeAttempt(session.id, {
@@ -352,7 +370,7 @@ export default function QuizPracticePage() {
   const submit = () => {
     if (!session || session.status !== 'in_progress' || actionBusy || submitting !== null) return
     setDrawerVisible(false)
-    const unanswered = session.questions.filter(question => question.user_answer === null).length
+    const unanswered = session.questions.filter(question => !question.answered).length
     Taro.showModal({
       title: '确认交卷',
       content: unanswered > 0
@@ -569,8 +587,53 @@ export default function QuizPracticePage() {
                 {currentImageUrls.map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
               </View>
             )}
+            {isFillBlank(currentQuestion.question_type) && (
+              <View className={styles.blankList}>
+                <Text className={styles.blankHint}>按空位顺序填写，共 {fillBlankCount(currentQuestion.question_text)} 空；答案须与标准答案完全一致。</Text>
+                {fillDraft.map((value, blankIndex) => (
+                  <View key={blankIndex} className={styles.blankRow}>
+                    <Text className={styles.blankIndex}>{blankIndex + 1}.</Text>
+                    <Input
+                      className={styles.blankInput}
+                      value={value}
+                      maxlength={200}
+                      placeholder={`第 ${blankIndex + 1} 空答案`}
+                      onInput={event => setFillDraft(previous => previous.map((item, index) => index === blankIndex ? String(event.detail.value) : item))}
+                    />
+                  </View>
+                ))}
+                <View className={styles.answerButton}>
+                  <Button
+                    variant='gradient'
+                    size='lg'
+                    disabled={fillDraft.every(blank => blank === '')}
+                    loading={submittingThis}
+                    onClick={() => { void submitAttempt(currentQuestion, [...fillDraft]) }}
+                  >
+                    {currentResult ? '再答一次' : '确认答案'}
+                  </Button>
+                </View>
+              </View>
+            )}
+            {isEssay(currentQuestion.question_type) && (
+              <View className={styles.essayViewBlock}>
+                <Text className={styles.essayViewHint}>问答题为查看型题目：自行对照参考答案复习，不计入正确率。</Text>
+                <View
+                  className={styles.essayReferenceToggle}
+                  onClick={() => setEssayAnswerVisible(previous => !previous)}
+                >
+                  <Text>{essayAnswerVisible ? '收起参考答案' : '查看参考答案'}</Text>
+                </View>
+                {essayAnswerVisible && (
+                  <View className={styles.essayReferenceBody}>
+                    <Text className={styles.essayReferenceText}>{correctAnswerText(currentQuestion.correct_answer)}</Text>
+                    {currentQuestion.explanation && <Text className={styles.explanation}>解析：{currentQuestion.explanation}</Text>}
+                  </View>
+                )}
+              </View>
+            )}
             <View className={styles.options}>
-              {optionItems.map(option => {
+              {optionItems.length > 0 && optionItems.map(option => {
                 const selected = !isSettled && answerIncludes(selectedAnswer, option.originalLabel)
                 const correctOption = isSettled && answerIncludes(currentResult.correct_answer, option.originalLabel)
                 const wrongOption = isSettled && !correctOption && answerIncludes(currentResult.user_answer, option.originalLabel)
@@ -596,10 +659,25 @@ export default function QuizPracticePage() {
                 )
               })}
             </View>
-            {isSettled ? (
+            {isSettled && !isEssay(currentQuestion.question_type) ? (
               <View className={`${styles.feedback} ${currentResult.is_correct ? styles.feedbackCorrect : styles.feedbackWrong}`}>
-                <Text className={styles.feedbackText}>{currentResult.is_correct ? '回答正确' : '回答错误'}</Text>
-                <Text className={styles.explanation}>你的答案：{answerText(currentResult.user_answer)}　正确答案：{answerText(currentResult.correct_answer)}</Text>
+                <Text className={styles.feedbackText}>{currentResult.is_correct ? '回答正确' : currentResult.is_correct === false && isFillBlank(currentQuestion.question_type) && fillBlankBlankResults(currentResult.user_answer, currentResult.correct_answer).some(blank => blank.correct) ? '部分正确' : '回答错误'}</Text>
+                {isFillBlank(currentQuestion.question_type) ? (
+                  <View className={styles.blankResultList}>
+                    {fillBlankBlankResults(currentResult.user_answer, currentResult.correct_answer).map((blank, blankIndex) => (
+                      <View key={blankIndex} className={`${styles.blankResultRow} ${blank.correct ? styles.blankResultCorrect : styles.blankResultWrong}`}>
+                        <Text className={styles.blankIndex}>{blankIndex + 1}.</Text>
+                        <View className={styles.blankResultBody}>
+                          <Text className={styles.blankResultValue}>{blank.value === '' ? '未填' : blank.value}</Text>
+                          {!blank.correct && <Text className={styles.blankResultCandidates}>可接受答案：{blank.candidates.join(' / ')}</Text>}
+                        </View>
+                        <Text className={blank.correct ? styles.blankTagCorrect : styles.blankTagWrong}>{blank.correct ? '对' : '错'}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <Text className={styles.explanation}>你的答案：{answerText(currentResult.user_answer)}　正确答案：{answerText(currentResult.correct_answer)}</Text>
+                )}
                 {currentResult.explanation && <Text className={styles.explanation}>解析：{currentResult.explanation}</Text>}
               </View>
             ) : (
@@ -609,7 +687,15 @@ export default function QuizPracticePage() {
                     <Button variant='gradient' size='lg' disabled={multiDraft.length === 0} loading={submittingThis} onClick={() => void submitAttempt(currentQuestion, [...multiDraft])}>确认答案</Button>
                   </View>
                 )}
-                <Text className={styles.noResultHint}>{isMultipleChoice(currentQuestion.question_type) ? '选择选项后点「确认答案」提交判分；答案提交后不可修改。' : '点击选项立即判分并展示解析；答案提交后不可修改。'}</Text>
+                <Text className={styles.noResultHint}>
+                  {isEssay(currentQuestion.question_type)
+                    ? '查看型题目：展开参考答案自行对照，点「下一题」继续。'
+                    : isFillBlank(currentQuestion.question_type)
+                      ? '填写每空后点「确认答案」提交判分；答错可当场重输。'
+                      : isMultipleChoice(currentQuestion.question_type)
+                        ? '选择选项后点「确认答案」提交判分；答案提交后不可修改。'
+                        : '点击选项立即判分并展示解析；答案提交后不可修改。'}
+                </Text>
               </>
             )}
           </View>

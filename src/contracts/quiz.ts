@@ -6,13 +6,16 @@
  */
 
 export type QuizAnswer = string | string[]
-export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'judge'
+/** 填空题正确答案：每空一组候选；问答题正确答案：参考答案文本 */
+export type QuizCorrectAnswer = QuizAnswer | string[][]
+export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'judge' | 'fill_blank' | 'essay'
 export type QuizQuestionStatus = 'draft' | 'published' | 'disabled' | 'deleted'
 export type QuizPracticeMode = 'normal' | 'wrong' | 'full' | 'wrong_only' | 'legacy_limited'
 export type QuizPracticeStatus = 'in_progress' | 'paused' | 'completed' | 'abandoned' | 'expired' | 'terminated'
 export type QuizPracticeScopeType = 'library' | 'module' | 'knowledge_point'
 export type QuizPracticePauseReason = 'quiz_library_suspended' | 'quiz_entitlement_inactive'
 export type QuizExamStatus = 'in_progress' | 'completed' | 'timed_out' | 'abandoned'
+export type QuizExamReviewStatus = 'none' | 'pending' | 'in_progress' | 'recalled' | 'completed'
 
 export interface QuizCategoryNode {
   id: number
@@ -134,7 +137,7 @@ export interface QuizPracticeAttemptResult {
   attempt_no: number
   user_answer: QuizAnswer
   is_correct: boolean
-  correct_answer: QuizAnswer
+  correct_answer: QuizCorrectAnswer
   explanation: string
   submitted_at: string
 }
@@ -146,7 +149,7 @@ export interface QuizPracticeQuestionState extends QuizPublicQuestion {
   answered: boolean
   user_answer: QuizAnswer | null
   answer_lock_version: number
-  correct_answer: QuizAnswer | null
+  correct_answer: QuizCorrectAnswer | null
   explanation: string | null
   is_correct: boolean | null
   attempt_count: number
@@ -209,7 +212,7 @@ export interface QuizPracticeHistoryItem {
   question_text: string
   options: Record<string, string>
   user_answer: QuizAnswer
-  correct_answer: QuizAnswer
+  correct_answer: QuizCorrectAnswer
   explanation: string
   is_correct: boolean
   attempt_no: number
@@ -330,22 +333,33 @@ export interface QuizExamQuestionResult extends QuizPublicQuestion {
   exam_question_id: number
   position: number
   user_answer: QuizAnswer | null
-  correct_answer: QuizAnswer
+  correct_answer: QuizCorrectAnswer
   explanation: string
   is_correct: boolean
+  score_ratio: number | null
+  review_comment: string | null
+}
+
+/** 含问答题的考试在人工评阅完成前：只给状态，不给任何分数与对错 */
+export interface QuizExamReviewPending extends QuizExamBase {
+  status: 'completed' | 'timed_out'
+  review_status: 'pending' | 'in_progress' | 'recalled'
+  finished_at: string
 }
 
 export interface QuizExamSettled extends QuizExamBase {
   status: 'completed' | 'timed_out'
+  review_status: QuizExamReviewStatus
   finished_at: string
   correct_count: number
+  partial_count: number
   wrong_count: number
   unanswered_count: number
   score: number
   questions: QuizExamQuestionResult[]
 }
 
-export type QuizExamDetail = QuizExamInProgress | QuizExamAbandoned | QuizExamSettled
+export type QuizExamDetail = QuizExamInProgress | QuizExamAbandoned | QuizExamReviewPending | QuizExamSettled
 
 export interface QuizExamListItem {
   id: number
@@ -356,6 +370,7 @@ export interface QuizExamListItem {
   question_count: number
   duration_seconds: 3600
   status: QuizExamStatus
+  review_status: QuizExamReviewStatus
   started_at: string
   deadline_at: string
   finished_at: string | null
@@ -478,10 +493,38 @@ function dateAt(value: unknown, path: string): string {
 }
 
 function answerAt(value: unknown, path: string): QuizAnswer {
-  if (typeof value === 'string') return literalAt(value, path, ['A', 'B', 'C', 'D'] as const)
-  const answer = arrayOf(value, path, (item, itemPath) => literalAt(item, itemPath, ['A', 'B', 'C', 'D'] as const))
+  // User answers are type-dependent: choice questions use option keys,
+  // fill-blank submits one string per blank, essay submits free text. The
+  // backend re-validates against each question's own type.
+  if (typeof value === 'string') {
+    if (value.length === 0 || value.length > 2000) throw new QuizContractError(path, '1-2000 字的答案文本')
+    return value
+  }
+  const answer = arrayOf(value, path, (item, itemPath) => {
+    const blank = stringAt(item, itemPath)
+    if (blank.length > 200) throw new QuizContractError(itemPath, '每空答案不超过 200 字')
+    return blank
+  })
   if (answer.length === 0) throw new QuizContractError(path, 'non-empty answer array')
   return answer
+}
+
+function correctAnswerAt(value: unknown, path: string): QuizCorrectAnswer {
+  if (Array.isArray(value) && value.length > 0 && value.every(group => Array.isArray(group))) {
+    const groups = arrayOf(value, path, (group, groupPath) => {
+      const candidates = arrayOf(group, groupPath, (item, itemPath) => {
+        const candidate = stringAt(item, itemPath)
+        if (candidate.length === 0 || candidate.length > 200) throw new QuizContractError(itemPath, '候选答案 1-200 字')
+        return candidate
+      })
+      if (candidates.length === 0 || candidates.length > 5) throw new QuizContractError(groupPath, '每空 1-5 个候选')
+      return candidates
+    })
+    if (groups.length > 5) throw new QuizContractError(path, '填空题最多 5 空')
+    return groups
+  }
+  if (typeof value === 'string' && value.length > 0 && value.length <= 5000) return value
+  return answerAt(value, path)
 }
 
 function optionsAt(value: unknown, path: string): Record<string, string> {
@@ -509,7 +552,7 @@ function optionImageUrlsAt(value: unknown, path: string): Record<string, string>
 }
 
 function questionTypeAt(value: unknown, path: string): QuizQuestionType {
-  return literalAt(value, path, ['single_choice', 'multiple_choice', 'judge'] as const)
+  return literalAt(value, path, ['single_choice', 'multiple_choice', 'judge', 'fill_blank', 'essay'] as const)
 }
 
 function questionStatusAt(value: unknown, path: string): QuizQuestionStatus {
@@ -718,7 +761,7 @@ export function parsePracticeAttempt(value: unknown, path = 'data'): QuizPractic
     attempt_no: integerAt(object.attempt_no, `${path}.attempt_no`),
     user_answer: answerAt(object.user_answer, `${path}.user_answer`),
     is_correct: booleanAt(object.is_correct, `${path}.is_correct`),
-    correct_answer: answerAt(object.correct_answer, `${path}.correct_answer`),
+    correct_answer: correctAnswerAt(object.correct_answer, `${path}.correct_answer`),
     explanation: stringAt(object.explanation, `${path}.explanation`),
     submitted_at: dateTimeAt(object.submitted_at, `${path}.submitted_at`),
   }
@@ -741,7 +784,7 @@ function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuesti
     answered: booleanAt(object.answered, `${path}.answered`),
     user_answer: nullable(object.user_answer, `${path}.user_answer`, answerAt),
     answer_lock_version: integerAt(object.answer_lock_version, `${path}.answer_lock_version`),
-    correct_answer: object.correct_answer === undefined ? null : nullable(object.correct_answer, `${path}.correct_answer`, answerAt),
+    correct_answer: object.correct_answer === undefined ? null : nullable(object.correct_answer, `${path}.correct_answer`, correctAnswerAt),
     explanation: object.explanation === undefined ? null : nullable(object.explanation, `${path}.explanation`, stringAt),
     is_correct: object.is_correct === undefined ? null : nullable(object.is_correct, `${path}.is_correct`, booleanAt),
     attempt_count: integerAt(object.attempt_count, `${path}.attempt_count`),
@@ -759,7 +802,13 @@ export function parsePracticeSession(value: unknown): QuizPracticeSession {
   const status = literalAt(object.status, 'data.status', ['in_progress', 'paused', 'completed', 'abandoned', 'expired', 'terminated'] as const)
   const questions = arrayOf(object.questions, 'data.questions', parsePracticeQuestion)
   for (const [index, question] of questions.entries()) {
-    if (status !== 'completed' && (question.correct_answer !== null || question.explanation !== null || question.is_correct !== null)) {
+    // 问答题是背题模式的查看型题目：练习进行中即可下发参考答案与解析，
+    // 但与判分相关的 is_correct 仍然必须在交卷后才允许出现。
+    const essay = question.question_type === 'essay'
+    const leaked = essay
+      ? question.is_correct !== null
+      : question.correct_answer !== null || question.explanation !== null || question.is_correct !== null
+    if (status !== 'completed' && leaked) {
       throw new QuizContractError(`data.questions[${index}]`, '交卷前不得包含答案、正误或解析')
     }
     if (status === 'completed') {
@@ -845,7 +894,7 @@ function parseHistoryItem(value: unknown, path: string): QuizPracticeHistoryItem
     question_text: stringAt(object.question_text, `${path}.question_text`),
     options: optionsAt(object.options, `${path}.options`),
     user_answer: answerAt(object.user_answer, `${path}.user_answer`),
-    correct_answer: answerAt(object.correct_answer, `${path}.correct_answer`),
+    correct_answer: correctAnswerAt(object.correct_answer, `${path}.correct_answer`),
     explanation: stringAt(object.explanation, `${path}.explanation`),
     is_correct: booleanAt(object.is_correct, `${path}.is_correct`),
     attempt_no: integerAt(object.attempt_no, `${path}.attempt_no`),
@@ -997,7 +1046,7 @@ function parseExamAbandonedQuestion(value: unknown, path: string): QuizExamAband
 
 function parseExamQuestionResult(value: unknown, path: string): QuizExamQuestionResult {
   const object = objectAt(value, path)
-  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'exam_question_id', 'position', 'user_answer', 'correct_answer', 'explanation', 'is_correct']
+  const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'exam_question_id', 'position', 'user_answer', 'correct_answer', 'explanation', 'is_correct', 'score_ratio', 'review_comment']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
   for (const key of Object.keys(object)) if (![...baseKeys, ...optionalKeys, 'option_image_urls'].includes(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
@@ -1006,9 +1055,11 @@ function parseExamQuestionResult(value: unknown, path: string): QuizExamQuestion
     exam_question_id: integerAt(object.exam_question_id, `${path}.exam_question_id`),
     position: integerAt(object.position, `${path}.position`),
     user_answer: nullable(object.user_answer, `${path}.user_answer`, answerAt),
-    correct_answer: answerAt(object.correct_answer, `${path}.correct_answer`),
+    correct_answer: correctAnswerAt(object.correct_answer, `${path}.correct_answer`),
     explanation: stringAt(object.explanation, `${path}.explanation`),
     is_correct: booleanAt(object.is_correct, `${path}.is_correct`),
+    score_ratio: object.score_ratio === undefined ? null : nullable(object.score_ratio, `${path}.score_ratio`, decimalAt),
+    review_comment: object.review_comment === undefined ? null : nullable(object.review_comment, `${path}.review_comment`, stringAt),
   }
 }
 
@@ -1023,11 +1074,21 @@ export function parseExamDetail(value: unknown): QuizExamDetail {
     const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'abandoned_at', 'questions'])
     return { ...parseExamBase(checked, 'data'), status, abandoned_at: dateTimeAt(checked.abandoned_at, 'data.abandoned_at'), questions: arrayOf(checked.questions, 'data.questions', parseExamAbandonedQuestion) }
   }
-  const checked = exactObject(object, 'data', ['id', 'status', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'finished_at', 'correct_count', 'wrong_count', 'unanswered_count', 'score', 'questions'])
+  if ('review_status' in object && object.review_status !== 'none' && object.review_status !== 'completed') {
+    const checked = exactObject(object, 'data', ['id', 'status', 'review_status', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'finished_at'])
+    return {
+      ...parseExamBase(checked, 'data'), status,
+      review_status: literalAt(checked.review_status, 'data.review_status', ['pending', 'in_progress', 'recalled'] as const),
+      finished_at: dateTimeAt(checked.finished_at, 'data.finished_at'),
+    }
+  }
+  const checked = exactObject(object, 'data', ['id', 'status', 'review_status', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'started_at', 'deadline_at', 'finished_at', 'correct_count', 'partial_count', 'wrong_count', 'unanswered_count', 'score', 'questions'])
   return {
     ...parseExamBase(checked, 'data'), status,
+    review_status: literalAt(checked.review_status, 'data.review_status', ['none', 'completed'] as const),
     finished_at: dateTimeAt(checked.finished_at, 'data.finished_at'),
     correct_count: integerAt(checked.correct_count, 'data.correct_count'),
+    partial_count: object.partial_count === undefined ? 0 : integerAt(checked.partial_count, 'data.partial_count'),
     wrong_count: integerAt(checked.wrong_count, 'data.wrong_count'),
     unanswered_count: integerAt(checked.unanswered_count, 'data.unanswered_count'),
     score: decimalAt(checked.score, 'data.score'),
@@ -1040,7 +1101,7 @@ export function parseNullableExam(value: unknown): QuizExamDetail | null {
 }
 
 function parseExamListItem(value: unknown, path: string): QuizExamListItem {
-  const object = exactObject(value, path, ['id', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'status', 'started_at', 'deadline_at', 'finished_at', 'score'])
+  const object = exactObject(value, path, ['id', 'category_id', 'library_id', 'scope_type', 'scope_id', 'question_count', 'duration_seconds', 'status', 'review_status', 'started_at', 'deadline_at', 'finished_at', 'score'])
   const duration = integerAt(object.duration_seconds, `${path}.duration_seconds`)
   if (duration !== 3600) throw new QuizContractError(`${path}.duration_seconds`, '3600')
   return {
@@ -1050,6 +1111,7 @@ function parseExamListItem(value: unknown, path: string): QuizExamListItem {
     scope_id: nullable(object.scope_id, `${path}.scope_id`, integerAt),
     question_count: integerAt(object.question_count, `${path}.question_count`), duration_seconds: 3600,
     status: literalAt(object.status, `${path}.status`, ['in_progress', 'completed', 'timed_out', 'abandoned'] as const),
+    review_status: literalAt(object.review_status, `${path}.review_status`, ['none', 'pending', 'in_progress', 'recalled', 'completed'] as const),
     started_at: dateTimeAt(object.started_at, `${path}.started_at`), deadline_at: dateTimeAt(object.deadline_at, `${path}.deadline_at`),
     finished_at: nullable(object.finished_at, `${path}.finished_at`, dateTimeAt), score: nullable(object.score, `${path}.score`, decimalAt),
   }
@@ -1075,3 +1137,4 @@ export function parseExamAction(value: unknown): QuizExamAction {
     score: nullable(object.score, 'data.score', decimalAt),
   }
 }
+

@@ -175,6 +175,123 @@ test('library progress parser keeps per-node first-attempt statistics', () => {
   }), QuizContractError)
 })
 
+test('exam parser routes review-pending exams to the scoreless variant', () => {
+  const detail = parseExamDetail({
+    id: 701,
+    status: 'completed',
+    review_status: 'pending',
+    category_id: null,
+    library_id: 11,
+    scope_type: 'library',
+    scope_id: 11,
+    question_count: 10,
+    duration_seconds: 3600,
+    started_at: '2026-09-01T10:00:00Z',
+    deadline_at: '2026-09-01T11:00:00Z',
+    finished_at: '2026-09-01T10:40:00Z',
+  })
+  assert.equal(detail.status, 'completed')
+  assert.equal(detail.review_status, 'pending')
+  assert.equal('score' in detail, false)
+  assert.equal('questions' in detail, false)
+})
+
+test('settled exam parser accepts fill-blank and essay results with review fields', () => {
+  const detail = parseExamDetail({
+    id: 702,
+    status: 'completed',
+    review_status: 'completed',
+    category_id: null,
+    library_id: 11,
+    scope_type: 'library',
+    scope_id: 11,
+    question_count: 2,
+    duration_seconds: 3600,
+    started_at: '2026-09-01T10:00:00Z',
+    deadline_at: '2026-09-01T11:00:00Z',
+    finished_at: '2026-09-01T10:40:00Z',
+    correct_count: 1,
+    partial_count: 1,
+    wrong_count: 0,
+    unanswered_count: 0,
+    score: 75.0,
+    questions: [
+      {
+        id: 801,
+        category_id: null,
+        library_id: 11,
+        knowledge_point_id: 31,
+        question_revision_id: 901,
+        question_type: 'fill_blank',
+        question_text: 'TCP 三次握手：____、____、ACK',
+        options: {},
+        image_urls: [],
+        option_image_urls: {},
+        exam_question_id: 851,
+        position: 1,
+        user_answer: ['SYN', '错误'],
+        correct_answer: [['SYN', '同步'], ['SYN+ACK']],
+        explanation: '三次握手建立连接。',
+        is_correct: false,
+        score_ratio: 0.5,
+        review_comment: null,
+      },
+      {
+        id: 802,
+        category_id: null,
+        library_id: 11,
+        knowledge_point_id: 31,
+        question_revision_id: 902,
+        question_type: 'essay',
+        question_text: '简述 TCP 与 UDP 的区别。',
+        options: {},
+        image_urls: [],
+        option_image_urls: {},
+        exam_question_id: 852,
+        position: 2,
+        user_answer: 'TCP 面向连接。',
+        correct_answer: 'TCP 面向连接、可靠；UDP 无连接、轻量。',
+        explanation: '评分参考',
+        is_correct: true,
+        score_ratio: 1.0,
+        review_comment: '要点齐全',
+      },
+    ],
+  })
+  assert.equal(detail.partial_count, 1)
+  assert.deepEqual(detail.questions[0].correct_answer, [['SYN', '同步'], ['SYN+ACK']])
+  assert.equal(detail.questions[0].score_ratio, 0.5)
+  assert.equal(detail.questions[1].review_comment, '要点齐全')
+})
+
+test('practice parser allows essay reference answers before settlement but never is_correct', () => {
+  const session = parsePracticeSession(v2Session({
+    questions: [{
+      ...v2Question,
+      question_type: 'essay',
+      options: {},
+      answered: true,
+      user_answer: null,
+      correct_answer: 'TCP 面向连接、可靠；UDP 无连接、轻量。',
+      explanation: '评分参考',
+      is_correct: null,
+    }],
+  }))
+  assert.equal(session.questions[0].correct_answer, 'TCP 面向连接、可靠；UDP 无连接、轻量。')
+  assert.equal(session.questions[0].answered, true)
+  assert.throws(() => parsePracticeSession(v2Session({
+    questions: [{
+      ...v2Question,
+      question_type: 'essay',
+      options: {},
+      answered: true,
+      correct_answer: 'TCP 面向连接、可靠；UDP 无连接、轻量。',
+      explanation: '评分参考',
+      is_correct: true,
+    }],
+  })), QuizContractError)
+})
+
 test('V2 scope preview preserves unfinished-session and last-round semantics', () => {
   const preview = parsePracticeScopePreview({
     library_id: 11,

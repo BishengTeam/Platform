@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import type { PageData, QuizWrongBookItem } from '@/contracts/quiz'
 import { listWrongBook } from '@/services/dataService'
-import { quizImageUrls, quizOptions, quizTypeLabel } from '@/utils/quizView'
+import { isEssay, quizImageUrls, quizOptions, quizTypeLabel } from '@/utils/quizView'
 import styles from './wrong-book.module.scss'
 
 const PAGE_SIZE = 20
@@ -62,6 +62,7 @@ export default function WrongBookPage() {
                   )}
                 </View>
               ))}</View>
+              {isEssay(item.question.question_type) && <Text className={styles.disabled}>问答题为查看型：进入错题专项可对照参考答案复习</Text>}
               {!item.usable_for_practice && <Text className={styles.disabled}>题目已停用，可查看历史内容，但不会进入新的错题专项</Text>}
             </View>
           ))}

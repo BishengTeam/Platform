@@ -327,8 +327,186 @@
   display: block;
 }
 
+.reviewPendingTitle {
+  display: block;
+  margin-bottom: $spacing-sm;
+  color: $color-warning;
+  font-size: $font-xl;
+  font-weight: 700;
+}
+
+.reviewPendingHint {
+  display: block;
+  margin-top: $spacing-sm;
+  color: $color-text-secondary;
+  font-size: $font-sm;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.reviewProgress {
+  display: block;
+  margin-top: $spacing-md;
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+}
+
+.blankList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.blankHint {
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+}
+
+.blankRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.blankIndex {
+  min-width: 32px;
+  color: $color-text-secondary;
+  font-size: $font-lg;
+  font-weight: 600;
+}
+
+.blankInput {
+  flex: 1;
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: $font-base;
+}
+
+.essayBlock {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.essayTextarea {
+  width: 100%;
+  min-height: 240px;
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: $font-base;
+  box-sizing: border-box;
+}
+
+.essayMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.essayCount {
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+}
+
+.blankResultList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  margin-top: $spacing-sm;
+}
+
+.blankResultRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  border-radius: $radius-sm;
+  background: $color-bg-secondary;
+}
+
+.blankResultBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.blankResultValue {
+  color: $color-text;
+  font-size: $font-sm;
+  word-break: break-all;
+}
+
+.blankResultCandidates {
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+  word-break: break-all;
+}
+
+.blankTagCorrect,
+.blankTagWrong {
+  font-size: $font-sm;
+  font-weight: 700;
+}
+
+.blankTagCorrect { color: $color-success; }
+.blankTagWrong { color: $color-price; }
+
+.essayResultBlock {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  margin-top: $spacing-sm;
+}
+
+.essayResultLabel {
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+}
+
+.essayResultAnswer,
+.essayResultReference {
+  padding: $spacing-sm;
+  background: $color-bg-secondary;
+  border-radius: $radius-sm;
+  color: $color-text;
+  font-size: $font-sm;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.essayVerdictRow {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  margin-top: $spacing-xs;
+}
+
+.essayVerdictTag {
+  align-self: flex-start;
+  padding: 2px $spacing-sm;
+  border-radius: $radius-sm;
+  background: $color-blue-tint;
+  color: $color-primary;
+  font-size: $font-sm;
+  font-weight: 600;
+}
+
+.essayComment {
+  color: $color-text-secondary;
+  font-size: $font-sm;
+  line-height: 1.6;
+}
+
 .btnWrap {
   width: 100%;
   display: flex;
   justify-content: center;
 }
+

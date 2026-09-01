@@ -1,4 +1,4 @@
-import type { QuizAnswer, QuizQuestionType } from '@/contracts/quiz'
+import type { QuizAnswer, QuizCorrectAnswer, QuizQuestionType } from '@/contracts/quiz'
 
 export function quizOptions(options: Record<string, string>): Array<{ label: string; text: string }> {
   return Object.entries(options)
@@ -59,6 +59,8 @@ export function quizImageUrls(imageUrls: string[] | null | undefined): string[] 
 export function quizTypeLabel(type: QuizQuestionType): string {
   if (type === 'multiple_choice') return '多选题'
   if (type === 'judge') return '判断题'
+  if (type === 'fill_blank') return '填空题'
+  if (type === 'essay') return '问答题'
   return '单选题'
 }
 
@@ -66,11 +68,66 @@ export function isMultipleChoice(type: QuizQuestionType): boolean {
   return type === 'multiple_choice'
 }
 
-export function answerIncludes(answer: QuizAnswer | null | undefined, label: string): boolean {
-  return typeof answer === 'string' ? answer === label : Array.isArray(answer) && answer.includes(label)
+export function answerIncludes(answer: QuizAnswer | QuizCorrectAnswer | null | undefined, label: string): boolean {
+  if (typeof answer === 'string') return answer === label
+  if (!Array.isArray(answer)) return false
+  // Fill-blank candidate groups never match an option label.
+  return answer.every(item => typeof item === 'string') && (answer as string[]).includes(label)
 }
 
-export function answerText(answer: QuizAnswer | null | undefined): string {
+export function answerText(answer: QuizAnswer | QuizCorrectAnswer | null | undefined): string {
   if (answer === null || answer === undefined) return '未作答'
+  if (Array.isArray(answer) && answer.length > 0 && answer.every(group => Array.isArray(group))) {
+    return (answer as string[][]).map((group, index) => `空${index + 1}：${group.join(' / ')}`).join('；')
+  }
   return typeof answer === 'string' ? answer : answer.join('、')
+}
+
+export function isFillBlank(type: QuizQuestionType): boolean {
+  return type === 'fill_blank'
+}
+
+export function isEssay(type: QuizQuestionType): boolean {
+  return type === 'essay'
+}
+
+export function fillBlankCount(questionText: string): number {
+  const matches = questionText.match(/_{4,}/g)
+  return matches ? matches.length : 0
+}
+
+export function fillBlankCandidateGroups(correct: QuizCorrectAnswer | null | undefined): string[][] {
+  if (!Array.isArray(correct) || correct.length === 0) return []
+  if (!correct.every(group => Array.isArray(group))) return []
+  return correct as string[][]
+}
+
+export function fillBlankBlankResults(
+  userAnswer: QuizAnswer | null | undefined,
+  correct: QuizCorrectAnswer | null | undefined,
+): Array<{ value: string; candidates: string[]; correct: boolean }> {
+  const groups = fillBlankCandidateGroups(correct)
+  const answers = Array.isArray(userAnswer) && userAnswer.every(item => typeof item === 'string')
+    ? userAnswer
+    : groups.map(() => '')
+  return groups.map((candidates, index) => {
+    const value = answers[index] ?? ''
+    return { value, candidates, correct: candidates.includes(value) }
+  })
+}
+
+export function correctAnswerText(correct: QuizCorrectAnswer | null | undefined): string {
+  if (correct === null || correct === undefined) return '未作答'
+  const groups = fillBlankCandidateGroups(correct)
+  if (groups.length > 0) {
+    return groups.map((group, index) => `空${index + 1}：${group.join(' / ')}`).join('；')
+  }
+  return typeof correct === 'string' ? correct : correct.join('、')
+}
+
+export function reviewVerdictLabel(ratio: number | null | undefined): string {
+  if (ratio === null || ratio === undefined) return '待评阅'
+  if (ratio >= 1) return '满分'
+  if (ratio > 0) return '半对'
+  return '不得分'
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Image, ScrollView, Text, View } from '@tarojs/components'
+import { Image, Input, ScrollView, Text, Textarea, View } from '@tarojs/components'
 import { Icon } from '@/components/Icon'
 import Taro, { useLoad, useUnload } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
@@ -31,7 +31,7 @@ import {
   remainingSeconds,
   serverClockOffset,
 } from '@/utils/quizRuntime'
-import { answerIncludes, answerText, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
+import { answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel, reviewVerdictLabel } from '@/utils/quizView'
 import styles from './mock.module.scss'
 
 const QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -117,6 +117,7 @@ export default function QuizMockPage() {
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
   const [savingQuestionId, setSavingQuestionId] = useState<number | null>(null)
+  const [textDrafts, setTextDrafts] = useState<Record<number, string[] | string>>({})
   const [actionBusy, setActionBusy] = useState(false)
   const [remaining, setRemaining] = useState(0)
   const [loadError, setLoadError] = useState('')
@@ -383,6 +384,58 @@ export default function QuizMockPage() {
     }
   }
 
+  const draftFor = (question: QuizExamQuestionState): string[] | string => {
+    const draft = textDrafts[question.exam_question_id]
+    if (draft !== undefined) return draft
+    if (isFillBlank(question.question_type)) {
+      const count = fillBlankCount(question.question_text)
+      const saved = Array.isArray(question.user_answer) ? question.user_answer : []
+      return Array.from({ length: count }, (_, index) => saved[index] ?? '')
+    }
+    return typeof question.user_answer === 'string' ? question.user_answer : ''
+  }
+
+  const saveTextAnswer = async (question: QuizExamQuestionState, answer: string[] | string) => {
+    if (!exam || exam.status !== 'in_progress' || savingQuestionId !== null || remaining <= 0) return
+    if (isFillBlank(question.question_type)) {
+      const blanks = answer as string[]
+      if (blanks.some(blank => blank.length > 200)) {
+        Taro.showToast({ title: '每空答案不超过 200 字', icon: 'none' })
+        return
+      }
+    } else if (String(answer).length > 2000) {
+      Taro.showToast({ title: '问答题答案不超过 2000 字', icon: 'none' })
+      return
+    }
+    setSavingQuestionId(question.exam_question_id)
+    try {
+      const saved = await saveQuizExamAnswer(exam.id, question.exam_question_id, {
+        user_answer: answer,
+        lock_version: question.answer_lock_version ?? 0,
+      })
+      setExam(current => current?.status === 'in_progress' ? {
+        ...current,
+        questions: current.questions.map(item => item.exam_question_id === saved.exam_question_id
+          ? { ...item, user_answer: saved.user_answer, answer_lock_version: saved.lock_version }
+          : item),
+      } : current)
+      Taro.showToast({ title: '答案已保存', icon: 'success', duration: 1200 })
+    } catch (error) {
+      if (error instanceof ApiError && (error.statusCode === 409 || error.code === 40201)) {
+        try {
+          await refreshExam(exam.id)
+          Taro.showToast({ title: '答案版本已变化，已加载服务端最新状态', icon: 'none', duration: 2500 })
+        } catch {
+        Taro.showToast({ title: '答案版本冲突且刷新失败，请重新进入考试', icon: 'none', duration: 3000 })
+        }
+      } else {
+        Taro.showToast({ title: `答案保存失败：${messageOf(error)}`, icon: 'none', duration: 2500 })
+      }
+    } finally {
+      setSavingQuestionId(null)
+    }
+  }
+
   const submit = () => {
     if (!exam || exam.status !== 'in_progress' || actionBusy) return
     setDrawerVisible(false)
@@ -563,6 +616,28 @@ export default function QuizMockPage() {
   }
 
   if (exam.status === 'completed' || exam.status === 'timed_out') {
+    if ('review_status' in exam && exam.review_status !== 'none' && exam.review_status !== 'completed') {
+      const reviewLabel = exam.review_status === 'pending' ? '等待管理员领取评阅' : exam.review_status === 'recalled' ? '评分已撤回，待重新评阅' : '管理员评阅中'
+      return (
+        <AuthGuard>
+          <View className={styles.page}>
+            <PageHeader title='考试评阅中' shouldShowBack />
+            <ScrollView className={styles.body} scrollY>
+              <View className={`${styles.resultCard} ${styles.resultCardScroll}`}>
+                <Text className={styles.reviewPendingTitle}>评阅中</Text>
+                <Text className={styles.resultAccuracy}>{exam.status === 'timed_out' ? '服务端超时结算' : '正常交卷'} · {exam.question_count} 题</Text>
+                <Text className={styles.reviewPendingHint}>{reviewLabel}。本场考试包含问答题，评阅完成前不显示任何分数、对错与解析。</Text>
+                <Text className={styles.reviewProgress}>上交答案 · 评阅中 · 评分成绩</Text>
+              </View>
+              <View className={styles.resultActions}>
+                <Button variant='secondary' size='lg' onClick={() => { void refreshExam(exam.id) }}>刷新评阅进度</Button>
+                <Button variant='gradient' size='lg' onClick={() => Taro.navigateTo({ url: '/pages/quiz/exam-history' })}>考试历史</Button>
+              </View>
+            </ScrollView>
+          </View>
+        </AuthGuard>
+      )
+    }
     return (
       <AuthGuard>
         <View className={styles.page}>
@@ -570,7 +645,7 @@ export default function QuizMockPage() {
           <ScrollView className={styles.body} scrollY>
             <View className={`${styles.resultCard} ${styles.resultCardScroll}`}>
               <Text className={styles.resultScore}>{exam.score.toFixed(1)} 分</Text>
-              <Text className={styles.resultAccuracy}>{exam.status === 'timed_out' ? '服务端超时结算' : '正常交卷'} · 对 {exam.correct_count} / 错 {exam.wrong_count} / 未答 {exam.unanswered_count}</Text>
+              <Text className={styles.resultAccuracy}>{exam.status === 'timed_out' ? '服务端超时结算' : '正常交卷'} · 对 {exam.correct_count} / 半对 {exam.partial_count} / 错 {exam.wrong_count} / 未答 {exam.unanswered_count}</Text>
             </View>
             {exam.questions.map((question, index) => (
               <View key={question.exam_question_id} className={styles.resultQuestion}>
@@ -580,7 +655,7 @@ export default function QuizMockPage() {
                     {quizImageUrls(question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
                   </View>
                 )}
-                <View className={styles.resultOptions}>{quizOptions(question.options).map(option => (
+                <View className={styles.resultOptions}>{!isFillBlank(question.question_type) && !isEssay(question.question_type) && quizOptions(question.options).map(option => (
                   <View key={option.label} className={styles.resultOptionItem}>
                     <Text>{option.label}. {option.text}</Text>
                     {question.option_image_urls?.[option.label] && (
@@ -588,7 +663,33 @@ export default function QuizMockPage() {
                     )}
                   </View>
                 ))}</View>
-                <Text className={styles.answerLine}>你的答案：{answerText(question.user_answer)}　正确答案：{answerText(question.correct_answer)}</Text>
+                {isFillBlank(question.question_type) ? (
+                  <View className={styles.blankResultList}>
+                    {fillBlankBlankResults(question.user_answer, question.correct_answer).map((blank, blankIndex) => (
+                      <View key={blankIndex} className={`${styles.blankResultRow} ${blank.correct ? styles.blankResultCorrect : styles.blankResultWrong}`}>
+                        <Text className={styles.blankIndex}>{blankIndex + 1}.</Text>
+                        <View className={styles.blankResultBody}>
+                          <Text className={styles.blankResultValue}>{blank.value === '' ? '未填' : blank.value}</Text>
+                          {!blank.correct && <Text className={styles.blankResultCandidates}>可接受答案：{blank.candidates.join(' / ')}</Text>}
+                        </View>
+                        <Text className={blank.correct ? styles.blankTagCorrect : styles.blankTagWrong}>{blank.correct ? '对' : '错'}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : isEssay(question.question_type) ? (
+                  <View className={styles.essayResultBlock}>
+                    <Text className={styles.essayResultLabel}>你的答案</Text>
+                    <Text className={styles.essayResultAnswer}>{answerText(question.user_answer)}</Text>
+                    <Text className={styles.essayResultLabel}>参考答案</Text>
+                    <Text className={styles.essayResultReference}>{correctAnswerText(question.correct_answer)}</Text>
+                    <View className={styles.essayVerdictRow}>
+                      <Text className={styles.essayVerdictTag}>人工评阅：{reviewVerdictLabel(question.score_ratio)}</Text>
+                      {question.review_comment && <Text className={styles.essayComment}>评语：{question.review_comment}</Text>}
+                    </View>
+                  </View>
+                ) : (
+                  <Text className={styles.answerLine}>你的答案：{answerText(question.user_answer)}　正确答案：{answerText(question.correct_answer)}</Text>
+                )}
                 <Text className={styles.explanation}>解析：{question.explanation}</Text>
               </View>
             ))}
@@ -634,7 +735,7 @@ export default function QuizMockPage() {
                 {currentImageUrls.map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
               </View>
             )}
-            <View className={styles.options}>{options.map(option => {
+            <View className={styles.options}>{options.length > 0 && options.map(option => {
               const selected = answerIncludes(currentQuestion.user_answer, option.originalLabel)
               return <View key={option.originalLabel} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => selectAnswer(currentQuestion, option.originalLabel)}>
                 <View className={`${styles.optionLabel} ${selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
@@ -651,7 +752,64 @@ export default function QuizMockPage() {
                 </View>
               </View>
             })}</View>
-            <Text className={styles.noResultHint}>考试进行中不展示答案、正误或解析；选择变化会自动保存。</Text>
+            {isFillBlank(currentQuestion.question_type) && (() => {
+              const draft = draftFor(currentQuestion) as string[]
+              return (
+                <View className={styles.blankList}>
+                  <Text className={styles.blankHint}>按空位顺序填写，共 {draft.length} 空；答案须与标准答案完全一致。</Text>
+                  {draft.map((value, blankIndex) => (
+                    <View key={blankIndex} className={styles.blankRow}>
+                      <Text className={styles.blankIndex}>{blankIndex + 1}.</Text>
+                      <Input
+                        className={styles.blankInput}
+                        value={value}
+                        maxlength={200}
+                        placeholder={`第 ${blankIndex + 1} 空答案`}
+                        onInput={event => setTextDrafts(previous => ({
+                          ...previous,
+                          [currentQuestion.exam_question_id]: draft.map((item, index) => index === blankIndex ? String(event.detail.value) : item),
+                        }))}
+                      />
+                    </View>
+                  ))}
+                  <Button
+                    variant='secondary'
+                    loading={savingQuestionId === currentQuestion.exam_question_id}
+                    onClick={() => { void saveTextAnswer(currentQuestion, draft) }}
+                  >
+                    保存填空答案
+                  </Button>
+                </View>
+              )
+            })()}
+            {isEssay(currentQuestion.question_type) && (() => {
+              const draft = String(draftFor(currentQuestion))
+              return (
+                <View className={styles.essayBlock}>
+                  <Textarea
+                    className={styles.essayTextarea}
+                    value={draft}
+                    maxlength={2000}
+                    placeholder='输入你的作答（不超过 2000 字），提交后由管理员人工评阅'
+                    onInput={event => setTextDrafts(previous => ({
+                      ...previous,
+                      [currentQuestion.exam_question_id]: String(event.detail.value),
+                    }))}
+                  />
+                  <View className={styles.essayMetaRow}>
+                    <Text className={styles.essayCount}>{draft.length}/2000</Text>
+                    <Button
+                      variant='secondary'
+                      loading={savingQuestionId === currentQuestion.exam_question_id}
+                      onClick={() => { void saveTextAnswer(currentQuestion, draft) }}
+                    >
+                      保存作答
+                    </Button>
+                  </View>
+                </View>
+              )
+            })()}
+            <Text className={styles.noResultHint}>{options.length > 0 ? '考试进行中不展示答案、正误或解析；选择变化会自动保存。' : '考试进行中不展示答案、正误或解析；文字答案请点击保存按钮。'}</Text>
           </View>
         </ScrollView>
         <View className={styles.bottomBar}>
