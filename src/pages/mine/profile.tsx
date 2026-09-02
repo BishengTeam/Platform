@@ -17,6 +17,8 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
+  { icon: 'users', label: '加入课堂', route: 'pages/classroom/join' },
+  { icon: 'book-open', label: '我的课堂', route: 'pages/classroom/join' },
   { label: STRINGS.MINE_PROFILE_TITLE, route: ROUTES.MINE_PERSONAL_INFO },
   { label: STRINGS.MINE_AGREEMENTS_TITLE, route: ROUTES.MINE_AGREEMENTS },
   { icon: 'info', label: STRINGS.SETTINGS_ABOUT_US },

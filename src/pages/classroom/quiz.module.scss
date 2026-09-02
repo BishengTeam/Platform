@@ -1,0 +1,46 @@
+.page { min-height: 100vh; background: #F5F7FA; }
+.countdown {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 16px 32px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+}
+.countdownText { font-size: 32px; font-weight: 700; color: #1677FF; }
+.countdownWarn { font-size: 32px; font-weight: 700; color: #FF4D4F; }
+.body { padding: 24px; }
+.empty { padding: 120px 0; text-align: center; color: #999; font-size: 28px; }
+.question {
+  margin-bottom: 24px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+}
+.stemRow { display: flex; margin-bottom: 20px; }
+.stemIndex { font-size: 28px; font-weight: 600; color: #1A1A1A; margin-right: 8px; }
+.stem { font-size: 28px; color: #1A1A1A; flex: 1; line-height: 1.5; }
+.score { font-size: 22px; color: #999; flex-shrink: 0; }
+.option {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 28px;
+  color: #333;
+}
+.input {
+  padding: 20px 24px;
+  background: #F5F7FA;
+  border-radius: 12px;
+  font-size: 28px;
+}
+.textarea {
+  padding: 20px 24px;
+  background: #F5F7FA;
+  border-radius: 12px;
+  font-size: 28px;
+  width: 100%;
+  min-height: 160px;
+  box-sizing: border-box;
+}
+.submit { margin-top: 16px; margin-bottom: 60px; }

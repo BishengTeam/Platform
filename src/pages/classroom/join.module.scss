@@ -1,0 +1,49 @@
+.page { min-height: 100vh; background: #F5F7FA; }
+.body { padding: 48px 32px; }
+.card {
+  padding: 40px 32px;
+  background: #fff;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.label { font-size: 28px; color: #333; font-weight: 600; margin-bottom: 24px; }
+.input {
+  padding: 24px;
+  background: #F5F7FA;
+  border-radius: 14px;
+  font-size: 44px;
+  letter-spacing: 16px;
+  text-align: center;
+  font-weight: 700;
+}
+.tip { margin-top: 20px; font-size: 22px; color: #999; text-align: center; }
+.btn { margin-top: 40px; }
+
+.mySection {
+  margin-bottom: 24px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 20px;
+}
+.sectionTitle { font-size: 28px; font-weight: 600; color: #1A1A1A; margin-bottom: 16px; display: block; }
+.myItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: #F5F7FA;
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+.myInfo { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.myName { font-size: 28px; color: #1A1A1A; font-weight: 500; }
+.myMeta { font-size: 22px; color: #999; }
+.quizBadge {
+  padding: 4px 16px;
+  background: #FFF7E6;
+  color: #FA8C16;
+  border-radius: 999px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
