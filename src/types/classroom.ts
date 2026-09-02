@@ -53,3 +53,42 @@ export interface ClassroomQuizResult {
   total_score: number | null
   submitted_at: string | null
 }
+
+export type ClassroomAttachmentKind = 'image' | 'document' | 'archive'
+
+/** POST /api/classroom/quizzes/{id}/attachments/upload-url */
+export interface ClassroomAttachmentUploadTarget {
+  attachment_id: number
+  object_key: string
+  upload_url: string
+  expires_at: string
+}
+
+export interface ClassroomAttachmentItem {
+  id: number
+  question_id: number
+  kind: ClassroomAttachmentKind
+  filename: string
+  content_type: string
+  size_bytes: number
+  url: string
+}
+
+export interface ClassroomSubmissionDetailQuestion {
+  id: number
+  type: 'single' | 'multiple' | 'judge' | 'blank' | 'short'
+  stem: string
+  options: string[] | null
+  score: number
+}
+
+/** GET /api/classroom/quizzes/{id}/submission — 批改完成后才回发作答内容 */
+export interface ClassroomSubmissionDetail {
+  status: 'pending_review' | 'approved'
+  total_score?: number | null
+  submitted_at?: string | null
+  approved_at?: string | null
+  questions?: ClassroomSubmissionDetailQuestion[]
+  answers?: Record<string, string>
+  attachments?: ClassroomAttachmentItem[]
+}

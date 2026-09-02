@@ -32,7 +32,8 @@ export default function ClassroomDetailPage() {
 
   const goQuiz = (quizId: number, submitted: boolean) => {
     if (submitted) {
-      Taro.showToast({ title: '已提交，等待老师批改', icon: 'none' })
+      // 已交卷 → 回看页：批改完成前仅显示状态，批改后回发作答与附件
+      Taro.navigateTo({ url: `/pages/classroom/result?id=${quizId}` })
       return
     }
     Taro.navigateTo({ url: `/pages/classroom/quiz?id=${quizId}` })

@@ -1,5 +1,13 @@
-import { get, post } from '@/utils/request'
-import type { ClassroomDetail, ClassroomMyItem, ClassroomQuizPaper, ClassroomQuizResult } from '@/types/classroom'
+import { get, post, del } from '@/utils/request'
+import type {
+  ClassroomAttachmentItem,
+  ClassroomAttachmentUploadTarget,
+  ClassroomDetail,
+  ClassroomMyItem,
+  ClassroomQuizPaper,
+  ClassroomQuizResult,
+  ClassroomSubmissionDetail,
+} from '@/types/classroom'
 
 /** POST /api/classroom/join — 课堂码加入（需实名） */
 export async function joinClassroom(code: string): Promise<{ classroom_id: number; name: string }> {
@@ -31,13 +39,49 @@ export async function getQuizPaper(quizId: number): Promise<ClassroomQuizPaper> 
   return res.data
 }
 
-/** POST /api/classroom/quizzes/{id}/submit */
-export async function submitQuiz(quizId: number, answers: Record<string, string>): Promise<void> {
-  await post(`/api/classroom/quizzes/${quizId}/submit`, { answers })
+/** POST /api/classroom/quizzes/{id}/submit — short 为富文本 HTML，附件显式绑定 */
+export async function submitQuiz(
+  quizId: number,
+  answers: Record<string, string>,
+  attachments: Record<string, number[]> = {},
+): Promise<void> {
+  await post(`/api/classroom/quizzes/${quizId}/submit`, { answers, attachments })
 }
 
 /** GET /api/classroom/quizzes/{id}/result */
 export async function getQuizResult(quizId: number): Promise<ClassroomQuizResult> {
   const res = await get<ClassroomQuizResult>(`/api/classroom/quizzes/${quizId}/result`)
+  return res.data
+}
+
+/** POST /api/classroom/quizzes/{id}/attachments/upload-url */
+export async function createClassroomAttachmentUpload(
+  quizId: number,
+  questionId: number,
+  filename: string,
+  contentType: string,
+  sizeBytes: number,
+): Promise<ClassroomAttachmentUploadTarget> {
+  const res = await post<ClassroomAttachmentUploadTarget>(
+    `/api/classroom/quizzes/${quizId}/attachments/upload-url`,
+    { question_id: questionId, filename, content_type: contentType, size_bytes: sizeBytes },
+  )
+  return res.data
+}
+
+/** GET /api/classroom/quizzes/{id}/attachments — 草稿附件（答题页恢复） */
+export async function getClassroomAttachments(quizId: number): Promise<ClassroomAttachmentItem[]> {
+  const res = await get<ClassroomAttachmentItem[]>(`/api/classroom/quizzes/${quizId}/attachments`)
+  return res.data ?? []
+}
+
+/** DELETE /api/classroom/quizzes/{id}/attachments/{attachmentId} */
+export async function deleteClassroomAttachment(quizId: number, attachmentId: number): Promise<void> {
+  await del(`/api/classroom/quizzes/${quizId}/attachments/${attachmentId}`)
+}
+
+/** GET /api/classroom/quizzes/{id}/submission — 提交详情回看（approved 后含内容） */
+export async function getClassroomSubmissionDetail(quizId: number): Promise<ClassroomSubmissionDetail> {
+  const res = await get<ClassroomSubmissionDetail>(`/api/classroom/quizzes/${quizId}/submission`)
   return res.data
 }

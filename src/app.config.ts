@@ -67,7 +67,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/classroom',
-      pages: ['join', 'detail', 'quiz'],
+      pages: ['join', 'detail', 'quiz', 'result'],
     },
     {
       root: 'pages/login-poster',

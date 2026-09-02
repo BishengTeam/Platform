@@ -1,0 +1,79 @@
+.page { min-height: 100vh; background: #F5F7FA; }
+.body { padding: 24px; }
+.empty { padding: 120px 0; text-align: center; color: #999; font-size: 28px; }
+.stateCard {
+  padding: 48px 32px;
+  background: #fff;
+  border-radius: 16px;
+  text-align: center;
+}
+.stateTitle { display: block; font-size: 34px; font-weight: 600; color: #1A1A1A; }
+.stateHint { display: block; margin-top: 12px; font-size: 24px; color: #999; }
+.scoreCard {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+.scoreLabel { font-size: 28px; color: #666; }
+.scoreValue { font-size: 56px; font-weight: 700; color: #1677FF; }
+.question {
+  margin-bottom: 24px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+}
+.stemRow { display: flex; margin-bottom: 16px; }
+.stemIndex { font-size: 28px; font-weight: 600; color: #1A1A1A; margin-right: 8px; }
+.stem { font-size: 28px; color: #1A1A1A; flex: 1; line-height: 1.5; }
+.score { font-size: 22px; color: #999; flex-shrink: 0; }
+.answerBlock { margin-top: 8px; }
+.answerLabel { display: block; font-size: 24px; color: #999; margin-bottom: 8px; }
+.plainAnswer {
+  display: block;
+  padding: 16px;
+  background: #F5F7FA;
+  border-radius: 12px;
+  font-size: 26px;
+  color: #333;
+}
+.richText {
+  padding: 16px;
+  background: #F5F7FA;
+  border-radius: 12px;
+  font-size: 26px;
+  color: #333;
+}
+.fileList { margin-top: 16px; }
+.fileRow {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  margin-top: 8px;
+  background: #FAFBFC;
+  border: 1px solid #E8ECF1;
+  border-radius: 12px;
+}
+.fileIcon { font-size: 34px; margin-right: 12px; }
+.fileMeta { flex: 1; min-width: 0; }
+.fileName {
+  display: block;
+  font-size: 26px;
+  color: #1A1A1A;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fileSize { display: block; margin-top: 4px; font-size: 22px; color: #999; }
+.fileAction {
+  padding: 6px 16px;
+  background: #E6F4FF;
+  border-radius: 8px;
+  color: #1677FF;
+  font-size: 24px;
+  flex-shrink: 0;
+}
