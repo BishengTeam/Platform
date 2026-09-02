@@ -18,6 +18,7 @@ export const profileGridItems: ProfileMenuItem[] = [
 
 export const profileListItems: ProfileMenuItem[] = [
   { icon: 'file-text', label: STRINGS.PROFILE_LIST_ORDERS, route: 'pages/orders/index' },
+  { icon: 'book-open', label: STRINGS.PROFILE_GRID_MY_CLASSROOMS, route: 'pages/classroom/join' },
   { icon: 'check-circle-2', label: STRINGS.PROFILE_GRID_CHECKIN, route: 'pages/quiz/checkin' },
   { icon: 'search', label: STRINGS.MINE_EXAM_QUERY_TITLE, route: 'pages/mine/exam-query' },
   { icon: 'users', label: STRINGS.PROFILE_LIST_SERVICE, route: 'pages/service/index' },

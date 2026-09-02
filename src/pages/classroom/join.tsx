@@ -8,6 +8,10 @@ import { joinClassroom, getMyClassrooms } from '@/services/classroomService'
 import type { ClassroomMyItem } from '@/types/classroom'
 import styles from './join.module.scss'
 
+function normalizeClassroomCode(value: unknown): string {
+  return String(value ?? '').replace(/\D/g, '').slice(0, 6)
+}
+
 export default function ClassroomJoinPage() {
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -18,14 +22,14 @@ export default function ClassroomJoinPage() {
   }, [])
 
   const submit = async () => {
-    const trimmed = code.trim()
-    if (trimmed.length < 4) {
+    const normalizedCode = normalizeClassroomCode(code)
+    if (!/^\d{6}$/.test(normalizedCode)) {
       Taro.showToast({ title: '请输入完整课堂码', icon: 'none' })
       return
     }
     setSubmitting(true)
     try {
-      const result = await joinClassroom(trimmed)
+      const result = await joinClassroom(normalizedCode)
       Taro.showToast({ title: `已加入 ${result.name}`, icon: 'success' })
       setTimeout(() => {
         getMyClassrooms().then(setMine)
@@ -67,10 +71,10 @@ export default function ClassroomJoinPage() {
             <Input
               className={styles.input}
               type='number'
-              maxlength={8}
+              maxlength={6}
               placeholder='6 位数字课堂码'
               value={code}
-              onInput={(e) => setCode(e.detail.value)}
+              onInput={(e) => setCode(normalizeClassroomCode(e.detail.value))}
             />
             <Text className={styles.tip}>课堂码 30 分钟内有效；加入需已完成实名认证</Text>
             <Button variant='primary' disabled={submitting} onClick={submit} className={styles.btn}>

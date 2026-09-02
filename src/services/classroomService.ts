@@ -11,7 +11,10 @@ import type {
 
 /** POST /api/classroom/join — 课堂码加入（需实名） */
 export async function joinClassroom(code: string): Promise<{ classroom_id: number; name: string }> {
-  const res = await post<{ classroom_id: number; name: string }>('/api/classroom/join', { code })
+  const normalizedCode = String(code).trim()
+  const res = await post<{ classroom_id: number; name: string }>('/api/classroom/join', {
+    code: normalizedCode,
+  })
   return res.data
 }
 
