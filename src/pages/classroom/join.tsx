@@ -17,6 +17,8 @@ export default function ClassroomJoinPage() {
   const [submitting, setSubmitting] = useState(false)
   const [mine, setMine] = useState<ClassroomMyItem[]>([])
   const [listError, setListError] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [focusInput, setFocusInput] = useState(false)
 
   const loadMine = async () => {
     try {
@@ -40,6 +42,7 @@ export default function ClassroomJoinPage() {
     try {
       const result = await joinClassroom(normalizedCode)
       Taro.showToast({ title: `已加入 ${result.name}`, icon: 'success' })
+      setSheetOpen(false)
       setTimeout(() => {
         void loadMine()
         Taro.navigateTo({ url: `/pages/classroom/detail?id=${result.classroom_id}` })
@@ -47,6 +50,13 @@ export default function ClassroomJoinPage() {
     } catch { /* request 层 toast */ } finally {
       setSubmitting(false)
     }
+  }
+
+  const digits = code.padEnd(6, ' ')
+  const cells = Array.from({ length: 6 }, (_, i) => digits[i])
+
+  const handleCellTap = (index: number) => {
+    setFocusInput(true)
   }
 
   return (
@@ -86,23 +96,49 @@ export default function ClassroomJoinPage() {
             ))}
           </View>
 
-          <View className={styles.card}>
-            <Text className={styles.label}>输入课堂码加入新课堂</Text>
-            <Input
-              className={styles.input}
-              type='number'
-              maxlength={6}
-              placeholder='6 位数字课堂码'
-              value={code}
-              onInput={(e) => setCode(normalizeClassroomCode(e.detail.value))}
-            />
-            <Text className={styles.tip}>课堂码 30 分钟内有效；加入需已完成实名认证</Text>
-            <Button variant='primary' disabled={submitting} onClick={submit} className={styles.btn}>
-              {submitting ? '加入中…' : '加入课堂'}
+          <View className={styles.joinBtnWrap}>
+            <Button variant='primary' onClick={() => setSheetOpen(true)} className={styles.joinBtn}>
+              + 加入课堂
             </Button>
           </View>
         </View>
       </View>
+
+      {sheetOpen && (
+        <View className={styles.mask} onClick={() => setSheetOpen(false)}>
+          <View className={styles.sheet} onClick={(e) => e.stopPropagation()}>
+            <View className={styles.sheetBar} onClick={() => setSheetOpen(false)} />
+            <Text className={styles.sheetTitle}>输入课堂码</Text>
+
+            <View className={styles.codeRow} onClick={() => setFocusInput(true)}>
+              {cells.map((d, i) => (
+                <View key={i} className={styles.codeCell}>
+                  <Text className={styles.codeDigit}>{d.trim() || ''}</Text>
+                  {code.length === i && focusInput && <View className={styles.cursor} />}
+                </View>
+              ))}
+            </View>
+
+            <Input
+              className={styles.hiddenInput}
+              type='number'
+              maxlength={6}
+              value={code}
+              focus={focusInput}
+              onBlur={() => setFocusInput(false)}
+              onInput={(e) => {
+                setCode(normalizeClassroomCode(e.detail.value))
+              }}
+            />
+
+            <Text className={styles.sheetTip}>课堂码 30 分钟内有效，加入需完成实名认证</Text>
+
+            <Button variant='primary' disabled={submitting || code.length !== 6} onClick={submit} className={styles.sheetBtn}>
+              {submitting ? '加入中…' : '加入课堂'}
+            </Button>
+          </View>
+        </View>
+      )}
     </AuthGuard>
   )
 }

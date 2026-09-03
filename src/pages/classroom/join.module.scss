@@ -62,3 +62,101 @@
   border-radius: 14px;
 }
 .stateText { font-size: 24px; color: #999; }
+
+/* ── 加入课堂按钮 ── */
+.joinBtnWrap { padding: 24px 0 60px; }
+.joinBtn { width: 100%; }
+
+/* ── 课堂码弹层 ── */
+.mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 32px 32px 0 0;
+  padding: 24px 40px calc(48px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sheetBar {
+  width: 72px;
+  height: 8px;
+  border-radius: 8px;
+  background: #E0E0E0;
+  margin-bottom: 32px;
+}
+
+.sheetTitle {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 40px;
+}
+
+/* ── 分格验证码输入框 ── */
+.codeRow {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.codeCell {
+  width: 88px;
+  height: 100px;
+  border: 2px solid #E0E0E0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #FAFAFA;
+}
+
+.codeDigit {
+  font-size: 44px;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1;
+}
+
+.cursor {
+  position: absolute;
+  width: 4px;
+  height: 48px;
+  background: #1677FF;
+  border-radius: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.hiddenInput {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.sheetTip {
+  font-size: 22px;
+  color: #999;
+  margin-bottom: 32px;
+}
+
+.sheetBtn {
+  width: 100%;
+}
