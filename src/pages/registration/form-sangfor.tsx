@@ -34,8 +34,6 @@ export default function SangforFormPage() {
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
 
   const identity = useIdentityCheck()
-  const [identityName, setIdentityName] = useState('')
-  const [identityIdCard, setIdentityIdCard] = useState('')
   const { decrypting, handleGetPhoneNumber } = usePhoneDecrypt()
 
   useLoad((options) => {
@@ -124,19 +122,8 @@ export default function SangforFormPage() {
     )
   }
 
-  // 实名认证检查：未认证，展示认证表单
-  if (identity.phase === 'unverified' || identity.phase === 'submitting') {
-    const handleIdentitySubmit = async () => {
-      if (!identityName.trim() || !identityIdCard.trim()) {
-        Taro.showToast({ title: '请填写完整信息', icon: 'none' })
-        return
-      }
-      const ok = await identity.submit('student', identityName.trim(), identityIdCard.trim())
-      if (!ok) {
-        Taro.showToast({ title: STRINGS.IDENTITY_CHECK_FAILED, icon: 'none' })
-      }
-    }
-
+  // 实名认证检查：未认证 → 引导到编辑资料完成完整实名（材料必填，不再提供轻量提交）
+  if (identity.phase === 'unverified') {
     return (
       <AuthGuard>
         <View className={styles.page}>
@@ -144,32 +131,17 @@ export default function SangforFormPage() {
           <View className={styles.body}>
             <View className={styles.section}>
               <Text className={styles.sectionTitle}>{STRINGS.IDENTITY_CHECK_DESC}</Text>
-            </View>
-            <View className={styles.section}>
-              <FormInput
-                label={STRINGS.FORM_REAL_NAME}
-                required
-                placeholder={STRINGS.FORM_REAL_NAME_PLACEHOLDER}
-                value={identityName}
-                onChange={setIdentityName}
-              />
-              <FormInput
-                label={STRINGS.FORM_ID_CARD}
-                required
-                placeholder={STRINGS.FORM_ID_CARD_PLACEHOLDER}
-                value={identityIdCard}
-                type='idcard'
-                maxlength={18}
-                onChange={setIdentityIdCard}
-              />
+              <Text className={styles.sectionDesc}>
+                实名认证需上传身份证照片、二寸免冠照等材料，请前往「我的-编辑资料」完成完整实名认证后返回报名。
+              </Text>
             </View>
             <View className={styles.btnWrap}>
               <Button
                 variant='gradient'
                 size='lg'
-                onClick={handleIdentitySubmit}
+                onClick={() => Taro.navigateTo({ url: '/pages/mine/edit-profile' })}
               >
-                {identity.phase === 'submitting' ? STRINGS.IDENTITY_CHECK_SUBMITTING : STRINGS.IDENTITY_CHECK_SUBMIT}
+                去完成实名认证
               </Button>
             </View>
           </View>

@@ -160,8 +160,8 @@ export interface UserProfileAggregated {
 
 /** POST /api/user/identity — 提交/修改实名信息（触发审核） */
 export interface UpdateIdentityPayload {
-  user_type: 'student' | 'enterprise'
-  real_name?: string
+  user_type: 'student'
+  real_name: string
   id_card_number: string
   id_card_front_oss: string
   id_card_back_oss: string
@@ -169,9 +169,9 @@ export interface UpdateIdentityPayload {
   first_name_zh?: string
   last_name_en?: string
   first_name_en?: string
-  avatar_oss?: string
-  political_status?: string
-  ethnicity?: string
+  avatar_oss: string
+  political_status: string
+  ethnicity: string
 }
 
 /** POST /api/user/student — 首次提交学生信息（触发审核） */

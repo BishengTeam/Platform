@@ -14,6 +14,7 @@ import {
   submitStudent, updateStudent,
   submitEnterprise, updateEnterprise,
   uploadFile,
+  uploadIdentityMaterial,
 } from '@/services/dataService'
 import type { UserProfileAggregated, UserRealnameL2, UserStudentL2, UserEnterpriseL2 } from '@/types/profile'
 import { validateIdCard } from '@/utils/validator'
@@ -56,6 +57,10 @@ const REGION_MAP: Record<string, string[]> = {
 const PROVINCES = Object.keys(REGION_MAP)
 
 const idMap = STRINGS.IDENTITY_STATUS_MAP
+
+function isPrivateMaterialKey(value: string | null | undefined): value is string {
+  return Boolean(value) && !value!.startsWith('/') && !/^https?:\/\//i.test(value!)
+}
 
 type IdentityStatus = 'pending' | 'verified' | 'rejected' | null
 
@@ -267,31 +272,62 @@ export default function EditProfilePage() {
   // Level 2 提交：实名认证
   // ================================================================
   const handleSubmitIdentity = async () => {
+    if (userType !== 'student') return Taro.showToast({ title: '当前实名认证仅支持学生身份', icon: 'none' })
     if (!idCardNumber.trim()) return Taro.showToast({ title: '请输入身份证号', icon: 'none' })
     const v = validateIdCard(idCardNumber)
     if (!v.valid) return Taro.showToast({ title: v.message, icon: 'none' })
-    // 上传本地图片（如果有新选的），否则用已有 OSS key
-    let frontOss = idCardFrontOss
-    let backOss = idCardBackOss
-    try {
-      if (idCardFrontFile) { Taro.showLoading({ title: '上传正面...' }); const r = await uploadFile(idCardFrontFile); frontOss = r.url; Taro.hideLoading() }
-      if (idCardBackFile) { Taro.showLoading({ title: '上传反面...' }); const r = await uploadFile(idCardBackFile); backOss = r.url; Taro.hideLoading() }
-    } catch {
-      Taro.hideLoading()
-      Taro.showToast({ title: '图片上传失败，请重试', icon: 'none' })
-      return
-    }
-    if (!frontOss) return Taro.showToast({ title: '请上传身份证正面照片', icon: 'none' })
-    if (!backOss) return Taro.showToast({ title: '请上传身份证反面照片', icon: 'none' })
-
-    // 上传二寸照（如果有新选的）
-    let avatarOssFinal = avatarOss
-    try {
-      if (avatarFile) { Taro.showLoading({ title: '上传二寸照...' }); const r = await uploadFile(avatarFile); avatarOssFinal = r.url; Taro.hideLoading() }
-    } catch { Taro.hideLoading(); Taro.showToast({ title: '二寸照上传失败', icon: 'none' }); return }
 
     const realName = realname?.real_name || `${lastNameZh}${firstNameZh}`.trim()
     if (!realName) return Taro.showToast({ title: '请填写中文姓名', icon: 'none' })
+    if (!idCardFrontFile && !isPrivateMaterialKey(idCardFrontOss)) {
+      return Taro.showToast({ title: '请上传身份证正面照片', icon: 'none' })
+    }
+    if (!idCardBackFile && !isPrivateMaterialKey(idCardBackOss)) {
+      return Taro.showToast({ title: '请上传身份证反面照片', icon: 'none' })
+    }
+    if (!avatarFile && !isPrivateMaterialKey(avatarOss)) {
+      return Taro.showToast({ title: '请上传二寸免冠照片', icon: 'none' })
+    }
+    if (!politicalStatus.trim()) return Taro.showToast({ title: '请填写政治面貌', icon: 'none' })
+    if (!ethnicity.trim()) return Taro.showToast({ title: '请填写民族', icon: 'none' })
+
+    const uploadPrivateMaterial = async (
+      filePath: string,
+      kind: 'id_card_front' | 'id_card_back' | 'portrait',
+      loadingTitle: string,
+    ) => {
+      Taro.showLoading({ title: loadingTitle, mask: true })
+      try {
+        return (await uploadIdentityMaterial(filePath, kind)).storage_key
+      } finally {
+        Taro.hideLoading()
+      }
+    }
+
+    // 新材料走私有接口；已有材料仅接受后端私有序列化 key，不接受 /api/media/* 公开地址。
+    let frontOss = idCardFrontOss
+    let backOss = idCardBackOss
+    try {
+      if (idCardFrontFile) frontOss = await uploadPrivateMaterial(idCardFrontFile, 'id_card_front', '上传正面...')
+      if (idCardBackFile) backOss = await uploadPrivateMaterial(idCardBackFile, 'id_card_back', '上传反面...')
+    } catch {
+      Taro.showToast({ title: '身份证照片上传失败，请重试', icon: 'none' })
+      return
+    }
+
+    let avatarOssFinal = avatarOss
+    try {
+      if (avatarFile) {
+        avatarOssFinal = await uploadPrivateMaterial(avatarFile, 'portrait', '上传二寸照...')
+      }
+    } catch {
+      Taro.showToast({ title: '二寸照上传失败，请重试', icon: 'none' })
+      return
+    }
+    if (!isPrivateMaterialKey(frontOss) || !isPrivateMaterialKey(backOss) || !isPrivateMaterialKey(avatarOssFinal)) {
+      Taro.showToast({ title: '实名材料上传结果无效，请重新上传', icon: 'none' })
+      return
+    }
 
     setSavingIdentity(true)
     const payload = {
@@ -302,9 +338,9 @@ export default function EditProfilePage() {
       id_card_back_oss: backOss,
       last_name_zh: lastNameZh.trim() || undefined,
       first_name_zh: firstNameZh.trim() || undefined,
-      avatar_oss: avatarOssFinal || undefined,
-      political_status: politicalStatus.trim() || undefined,
-      ethnicity: ethnicity.trim() || undefined,
+      avatar_oss: avatarOssFinal,
+      political_status: politicalStatus.trim(),
+      ethnicity: ethnicity.trim(),
     }
     try {
       if (realname && identityStatus !== null) {

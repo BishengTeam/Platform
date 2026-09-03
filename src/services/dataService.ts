@@ -32,6 +32,14 @@ export {
 } from './h3cService'
 export type { PageData as H3CPageData } from './h3cService'
 
+export {
+  uploadIdentityMaterial,
+} from './identityMaterialService'
+export type {
+  IdentityMaterialKind,
+  IdentityMaterialUploadResult,
+} from './identityMaterialService'
+
 // Auth
 export {
   wxLogin, refreshToken, logout,

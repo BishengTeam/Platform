@@ -11,10 +11,6 @@ import styles from '../form.module.scss'
 
 interface Props { children: ReactNode }
 
-function pickIdCard(p: import('@/types/profile').UserProfileAggregated | null): string {
-  return p?.realname?.id_card_raw || ''
-}
-
 /**
  * 实名认证检查网关（v4 — 阻断时弹出提示并跳回）
  *
@@ -91,33 +87,15 @@ export function IdentityCheckGate({ children }: Props) {
           return
         }
 
-        // unverified → 尝试自动提交
+        // unverified → 引导去编辑资料完成完整实名（材料必填后无法在此自动提交）
         if (identity.phase === 'unverified') {
-          const rawIdCard = pickIdCard(profile)
-          if (!rawIdCard) {
-            Taro.showModal({
-              title: '提示',
-              content: STRINGS.IDENTITY_NEED_ID_CARD,
-              showCancel: false,
-              success: () => Taro.switchTab({ url: '/pages/profile/index' }),
-            })
-            setHandled(true)
-            return
-          }
-          const userType = (profile?.realname?.user_type === 'enterprise' ? 'enterprise' : 'student') as 'student' | 'enterprise'
-          identity.submit(userType, profile?.realname?.real_name || '', rawIdCard).then((ok) => {
-            if (!ok) {
-              Taro.showModal({
-                title: STRINGS.IDENTITY_REJECTED_TITLE,
-                content: STRINGS.IDENTITY_CHECK_FAILED,
-                showCancel: false,
-                success: () => Taro.switchTab({ url: '/pages/profile/index' }),
-              })
-            }
-            // 成功 → phase 变为 verified，children 自然渲染
-            setHandled(ok)
+          Taro.showModal({
+            title: '提示',
+            content: '实名认证需上传身份证照片等材料，请先在「我的-编辑资料」完成完整实名认证',
+            showCancel: false,
+            success: () => Taro.navigateTo({ url: '/pages/mine/edit-profile' }),
           })
-          return
+          setHandled(true)
         }
       })
       .catch(() => {

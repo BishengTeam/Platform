@@ -516,6 +516,7 @@ export async function uploadFile(filePath: string): Promise<{ url: string }> {
   return data.data
 }
 
+
 // ================================================================
 // 深信服 / NISP 报名
 // ================================================================
@@ -782,16 +783,11 @@ export async function updateIdentity(data: UpdateIdentityPayload): Promise<UserP
       level2_edit_reset: '2026-07-01T00:00:00Z',
     }
   }
-  // 后端 POST /api/user/identity 要求必填字段，先拉取现有数据合并
-  const current = await get<import('@/types/profile').UserRealnameL2>('/api/user/identity')
-  const merged = {
-    ...data,
-    user_type: data.user_type || current.data?.user_type,
-    id_card_number: data.id_card_number || current.data?.id_card,
-    id_card_front_oss: data.id_card_front_oss || current.data?.id_card_front_oss,
-    id_card_back_oss: data.id_card_back_oss || current.data?.id_card_back_oss,
-  }
-  const res = await post<UserProfileAggregated>('/api/user/identity', merged as unknown as Record<string, unknown>)
+  // 修改与首次提交使用同一后端 Schema；页面必须提交完整实名字段。
+  const res = await post<UserProfileAggregated>(
+    '/api/user/identity',
+    data as unknown as Record<string, unknown>,
+  )
   return res.data
 }
 

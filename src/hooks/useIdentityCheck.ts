@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
-import { getIdentityStatus, submitIdentity } from '@/services/authService'
+import { useState, useEffect } from 'react'
+import { getIdentityStatus } from '@/services/authService'
 
-type IdentityPhase = 'checking' | 'verified' | 'pending' | 'rejected' | 'null' | 'unverified' | 'submitting'
+type IdentityPhase = 'checking' | 'verified' | 'pending' | 'rejected' | 'null' | 'unverified'
 
 interface IdentityState {
   phase: IdentityPhase
@@ -21,7 +21,9 @@ interface IdentityState {
  *     rejected   — 已拒绝，阻断，展示原因后可重新提交
  *     null       — 无认证记录，引导完善个人资料
  *     unverified — 异常状态，引导提交
- *     submitting — 提交中
+ *
+ * 实名提交统一走「我的-编辑资料」完整材料流程；
+ * 后端 RealnameSubmit 要求全部材料字段，报名页不再提供轻量提交。
  */
 export function useIdentityCheck() {
   const [state, setState] = useState<IdentityState>({ phase: 'checking' })
@@ -30,7 +32,11 @@ export function useIdentityCheck() {
     getIdentityStatus()
       .then((res) => {
         if (res.status === 'verified') {
-          setState({ phase: 'verified', realName: res.real_name, idCardNumber: res.id_card_number })
+          setState({
+            phase: 'verified',
+            realName: res.real_name ?? undefined,
+            idCardNumber: res.id_card_number ?? undefined,
+          })
         } else if (res.status === 'pending') {
           setState({ phase: 'pending' })
         } else if (res.status === 'rejected') {
@@ -46,27 +52,10 @@ export function useIdentityCheck() {
       })
   }, [])
 
-  const submit = useCallback(async (userType: 'student' | 'enterprise', realName: string, idCardNumber: string) => {
-    setState((s) => ({ ...s, phase: 'submitting' }))
-    try {
-      await submitIdentity({
-        user_type: userType,
-        real_name: realName,
-        id_card_number: idCardNumber,
-      })
-      setState({ phase: 'verified', realName, idCardNumber })
-      return true
-    } catch {
-      setState((s) => ({ ...s, phase: 'unverified' }))
-      return false
-    }
-  }, [])
-
   return {
     phase: state.phase,
     realName: state.realName,
     idCardNumber: state.idCardNumber,
     rejectReason: state.rejectReason,
-    submit,
   }
 }
