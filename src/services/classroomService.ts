@@ -1,4 +1,4 @@
-import { get, post, del } from '@/utils/request'
+import { get, post, del } from '../utils/request.ts'
 import type {
   ClassroomAttachmentItem,
   ClassroomAttachmentUploadTarget,
@@ -20,8 +20,8 @@ export async function joinClassroom(code: string): Promise<{ classroom_id: numbe
 
 /** GET /api/classroom/my — 我的课堂（仅进行中） */
 export async function getMyClassrooms(): Promise<ClassroomMyItem[]> {
-  const res = await get<{ items?: ClassroomMyItem[] }>('/api/classroom/my')
-  return res.data?.items ?? []
+  const res = await get<ClassroomMyItem[]>('/api/classroom/my')
+  return res.data ?? []
 }
 
 /** GET /api/classroom/{id} — 详情（视频+测验） */
