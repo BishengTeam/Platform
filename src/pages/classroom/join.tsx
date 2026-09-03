@@ -47,7 +47,9 @@ export default function ClassroomJoinPage() {
         void loadMine()
         Taro.navigateTo({ url: `/pages/classroom/detail?id=${result.classroom_id}` })
       }, 800)
-    } catch { /* request 层 toast */ } finally {
+    } catch (error) {
+      Taro.showToast({ title: error instanceof Error ? error.message : '加入失败，请重试', icon: 'none', duration: 3000 })
+    } finally {
       setSubmitting(false)
     }
   }
