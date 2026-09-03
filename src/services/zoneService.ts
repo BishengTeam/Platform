@@ -11,26 +11,11 @@ import {
   homeActivities,
   courseList,
   competitionBannerItems,
-  ongoingCompetitions,
-  upcomingCompetitions,
-  endedCompetitions,
   contactList,
   orderItems,
   profileFunctions,
   examBannerItems,
 } from '@/constants/mock'
-
-/** 从竞赛 mock 数据派生 CompetitionBrief 列表（用于聚合端点覆盖前） */
-function mockCompetitionBriefs(): import('@/types').CompetitionBrief[] {
-  const all = [...ongoingCompetitions, ...upcomingCompetitions]
-  return all.map(c => ({
-    id: c.id,
-    competition_name: c.title,
-    school: '',
-    track: null,
-    created_at: c.startTime,
-  })) as import('@/types').CompetitionBrief[]
-}
 
 import { get, post, resolveUrl } from '@/utils/request'
 
