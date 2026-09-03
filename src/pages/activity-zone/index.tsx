@@ -212,7 +212,7 @@ export default function ActivityZonePage() {
                             await remindActivity(item.id)
                             Taro.showToast({ title: '已设置提醒', icon: 'success' })
                           }
-                        } catch { /* 错误已由 request 层统一 toast */ }
+                        } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '报名失败', icon: 'none', duration: 3000 }) }
                       }}
                     />
                   )

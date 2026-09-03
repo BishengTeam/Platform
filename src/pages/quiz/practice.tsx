@@ -756,7 +756,7 @@ export default function QuizPracticePage() {
                         setCurrentSessionQuestionId(next?.session_question_id ?? null)
                       }
                     } catch (err) {
-                      Taro.showToast({ title: err instanceof Error && err.message !== 'UNAUTHORIZED' ? err.message : '移出失败，请重试', icon: 'none', duration: 2500 })
+                      Taro.showToast({ title: err instanceof Error && err.message !== 'UNAUTHORIZED' && !/fail|timeout/i.test(err.message) ? err.message : '移出失败，请重试', icon: 'none', duration: 2500 })
                     }
                   },
                 })

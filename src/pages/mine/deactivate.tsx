@@ -40,7 +40,8 @@ export default function DeactivatePage() {
       setTimeout(() => {
         Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
       }, 800)
-    } catch {
+    } catch (error) {
+      Taro.showToast({ title: error instanceof Error ? error.message : '注销失败', icon: 'none', duration: 3000 })
       Taro.showToast({ title: '注销失败，请重试', icon: 'none' })
     } finally {
       setDeleting(false)

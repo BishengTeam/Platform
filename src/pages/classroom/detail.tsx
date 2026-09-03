@@ -27,7 +27,7 @@ export default function ClassroomDetailPage() {
     try {
       const url = await getVideoPlayUrl(videoId)
       setPlayUrl(url)
-    } catch { /* request 层 toast */ }
+    } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '加载失败', icon: 'none', duration: 3000 }) }
   }
 
   const goQuiz = (quizId: number, submitted: boolean) => {

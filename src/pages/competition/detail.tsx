@@ -60,7 +60,7 @@ export default function CompetitionDetailPage() {
       setEnrolledTrackIds((prev) => [...prev, enrollTrack.id])
       setEnrollTrack(null)
       Taro.showToast({ title: '报名成功', icon: 'success' })
-    } catch { /* 错误已由 request 层统一 toast */ } finally {
+    } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '报名失败', icon: 'none', duration: 3000 }) } finally {
       setSubmitting(false)
     }
   }

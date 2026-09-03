@@ -188,7 +188,7 @@ export async function request<T = unknown>(options: RequestOptions, allowRefresh
     if ((res.statusCode < 200 || res.statusCode >= 300) && !hasBusinessCode) {
       // 保留 HTTP 状态码，调用方可以区分“接口未部署”和业务资源 404。
       throw new ApiError(
-        result?.message || `服务器异常 (${res.statusCode})`,
+        result?.message || '服务器开小差了，请稍后重试',
         res.statusCode,
         res.statusCode,
       )
@@ -241,7 +241,9 @@ export async function request<T = unknown>(options: RequestOptions, allowRefresh
       throw err
     }
 
-    const msg = err instanceof Error ? err.message : '网络异常，请稍后重试'
+    const rawMsg = err instanceof Error ? err.message : ''
+    const isNetworkError = /fail|timeout|abort|ssl|dns/i.test(rawMsg)
+    const msg = isNetworkError ? '网络连接失败，请检查网络后重试' : (rawMsg || '操作失败，请稍后重试')
     Taro.showToast({ title: msg, icon: 'none' })
     throw err
   }

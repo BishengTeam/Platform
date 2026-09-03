@@ -251,7 +251,7 @@ export default function ClassroomQuizPage() {
     try {
       await deleteClassroomAttachment(quizId, item.id)
       await refreshAttachments()
-    } catch { /* request 层 toast */ }
+    } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) }
   }
 
   // 交卷宽限：存在未完成上传时确认并最多等待 30 秒
@@ -300,7 +300,7 @@ export default function ClassroomQuizPage() {
       await submitQuiz(quizId, answers, attachmentPayload)
       Taro.showToast({ title: '已提交，等待老师批改', icon: 'success' })
       setTimeout(() => Taro.navigateBack(), 1200)
-    } catch { /* request 层 toast */ } finally {
+    } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) } finally {
       setSubmitting(false)
     }
   }

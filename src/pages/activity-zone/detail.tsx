@@ -57,7 +57,7 @@ export default function ActivityDetailPage() {
       setEnrolled(true)
       setEnrollOpen(false)
       Taro.showToast({ title: '报名成功', icon: 'success' })
-    } catch { /* 错误已由 request 层统一 toast */ } finally {
+    } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) } finally {
       setSubmitting(false)
     }
   }
@@ -78,7 +78,7 @@ export default function ActivityDetailPage() {
       Taro.navigateTo({
         url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}`,
       })
-    } catch { /* 错误已由 request 层统一 toast */ }
+    } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) }
   }
 
   const goRelatedCourse = () => {
@@ -97,7 +97,7 @@ export default function ActivityDetailPage() {
       await remindActivity(activity.id)
       setReminded(true)
       Taro.showToast({ title: '已设置提醒', icon: 'success' })
-    } catch { /* 错误已由 request 层统一 toast */ }
+    } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) }
   }
 
   return (

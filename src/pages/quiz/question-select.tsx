@@ -204,7 +204,7 @@ export default function QuizQuestionSelectPage() {
           Taro.removeStorageSync(BASKET_KEY)
           await Taro.redirectTo({ url: `/pages/quiz/mock?examId=${exam.id}` })
         } catch (err) {
-          Taro.showToast({ title: err instanceof Error && err.message !== 'UNAUTHORIZED' ? err.message : '组卷失败，请重试', icon: 'none', duration: 2500 })
+          Taro.showToast({ title: err instanceof Error && err.message !== 'UNAUTHORIZED' && !/fail|timeout/i.test(err.message) ? err.message : '组卷失败，请重试', icon: 'none', duration: 2500 })
         } finally {
           setCreating(false)
         }

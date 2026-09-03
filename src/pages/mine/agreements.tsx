@@ -60,7 +60,8 @@ export default function AgreementsPage() {
       setSignatureImage('')
       Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_SUCCESS, icon: 'success' })
       await loadAgreements()
-    } catch {
+    } catch (error) {
+      Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 })
       Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_HINT, icon: 'none' })
     } finally {
       setSubmitting(false)
