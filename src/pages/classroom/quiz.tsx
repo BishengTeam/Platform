@@ -173,7 +173,7 @@ export default function ClassroomQuizPage() {
         const target = await createClassroomAttachmentUpload(
           quizId, qid, `插图-${Date.now()}.${ext}`, mime, file.size,
         )
-        await uploadToOss(target.upload_url, file.tempFilePath, mime)
+        await uploadToOss(target.upload_url, file.tempFilePath, target.content_type)
         const drafts = await refreshAttachments()
         const url = drafts.find((item) => item.id === target.attachment_id)?.url
         if (url) ctx.insertImage({ src: url })
@@ -210,7 +210,7 @@ export default function ClassroomQuizPage() {
         const target = await createClassroomAttachmentUpload(
           quizId, qid, file.name || `附件-${Date.now()}.${ext}`, mime, file.size,
         )
-        await uploadToOss(target.upload_url, file.path, mime)
+        await uploadToOss(target.upload_url, file.path, target.content_type)
         await refreshAttachments()
       } finally {
         endUpload()

@@ -31,6 +31,16 @@ test('quiz page renders native editor with upload and grace submit', async () =>
   assert.doesNotMatch(source, /<Textarea/)
 })
 
+test('quiz uploads use the backend-signed content type', async () => {
+  const page = await readFile('src/pages/classroom/quiz.tsx', 'utf8')
+  const types = await readFile('src/types/classroom.ts', 'utf8')
+
+  assert.match(page, /uploadToOss\(target\.upload_url, file\.tempFilePath, target\.content_type\)/)
+  assert.match(page, /uploadToOss\(target\.upload_url, file\.path, target\.content_type\)/)
+  assert.doesNotMatch(page, /uploadToOss\(target\.upload_url, file\.(tempFilePath|path), mime\)/)
+  assert.match(types, /content_type: string/)
+})
+
 test('result page gates review behind grading state and renders rich text', async () => {
   const source = await readFile('src/pages/classroom/result.tsx', 'utf8')
   assert.match(source, /getClassroomSubmissionDetail/)

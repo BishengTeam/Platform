@@ -63,6 +63,8 @@ export interface ClassroomAttachmentUploadTarget {
   attachment_id: number
   object_key: string
   upload_url: string
+  /** 参与预签名 PUT 的 Content-Type，直传时必须原样使用 */
+  content_type: string
   expires_at: string
 }
 
