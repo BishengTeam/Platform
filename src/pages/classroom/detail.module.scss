@@ -34,6 +34,15 @@
 .quizMeta { font-size: 22px; color: #999; }
 .quizBtn { flex-shrink: 0; }
 .submitted { font-size: 22px; color: #FA8C16; flex-shrink: 0; }
+.reviewReady { font-size: 22px; color: #1677FF; flex-shrink: 0; }
+.quizItemReview { cursor: pointer; }
+.endedBadge {
+  padding: 4px 16px;
+  background: #F0F0F0;
+  color: #999;
+  border-radius: 999px;
+  font-size: 22px;
+}
 .videoMask {
   position: fixed;
   inset: 0;

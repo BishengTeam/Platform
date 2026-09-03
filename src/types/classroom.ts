@@ -12,6 +12,8 @@ export interface ClassroomQuizBrief {
   started_at: string
   ends_at: string
   submitted: boolean
+  /** 本人的批改状态：未交卷为 null；前端据此显示待批改/查看结果 */
+  submission_status: 'pending_review' | 'approved' | null
 }
 
 export interface ClassroomMyItem {

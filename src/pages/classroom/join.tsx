@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { View, Text, Input } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -16,10 +16,19 @@ export default function ClassroomJoinPage() {
   const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [mine, setMine] = useState<ClassroomMyItem[]>([])
+  const [listError, setListError] = useState(false)
 
-  useEffect(() => {
-    getMyClassrooms().then(setMine).catch(() => setMine([]))
-  }, [])
+  const loadMine = async () => {
+    try {
+      setMine(await getMyClassrooms())
+      setListError(false)
+    } catch {
+      setMine([])
+      setListError(true)
+    }
+  }
+
+  useDidShow(() => { void loadMine() })
 
   const submit = async () => {
     const normalizedCode = normalizeClassroomCode(code)
@@ -32,7 +41,7 @@ export default function ClassroomJoinPage() {
       const result = await joinClassroom(normalizedCode)
       Taro.showToast({ title: `已加入 ${result.name}`, icon: 'success' })
       setTimeout(() => {
-        getMyClassrooms().then(setMine)
+        void loadMine()
         Taro.navigateTo({ url: `/pages/classroom/detail?id=${result.classroom_id}` })
       }, 800)
     } catch { /* request 层 toast */ } finally {
@@ -45,26 +54,37 @@ export default function ClassroomJoinPage() {
       <View className={styles.page}>
         <PageHeader title='我的课堂' shouldShowBack />
         <View className={styles.body}>
-          {mine.length > 0 && (
-            <View className={styles.mySection}>
-              <Text className={styles.sectionTitle}>已加入的课堂</Text>
-              {mine.map((c) => (
-                <View
-                  key={c.id}
-                  className={styles.myItem}
-                  onClick={() => Taro.navigateTo({ url: `/pages/classroom/detail?id=${c.id}` })}
-                >
-                  <View className={styles.myInfo}>
+          <View className={styles.mySection}>
+            <Text className={styles.sectionTitle}>已加入的课堂</Text>
+            {listError && (
+              <View className={styles.listState} onClick={() => { void loadMine() }}>
+                <Text className={styles.stateText}>加载失败，点击重试</Text>
+              </View>
+            )}
+            {!listError && mine.length === 0 && (
+              <View className={styles.listState}>
+                <Text className={styles.stateText}>暂无已加入的课堂</Text>
+              </View>
+            )}
+            {!listError && mine.map((c) => (
+              <View
+                key={c.id}
+                className={styles.myItem}
+                onClick={() => Taro.navigateTo({ url: `/pages/classroom/detail?id=${c.id}` })}
+              >
+                <View className={styles.myInfo}>
+                  <View className={styles.nameRow}>
                     <Text className={styles.myName}>{c.name}</Text>
-                    <Text className={styles.myMeta}>
-                      {c.video_count} 个视频{c.ongoing_quiz_id ? ' · 测验进行中' : ''}
-                    </Text>
+                    {c.status === 'stopped' && <Text className={styles.endedBadge}>已结束</Text>}
                   </View>
-                  {c.ongoing_quiz_id && <Text className={styles.quizBadge}>测验中</Text>}
+                  <Text className={styles.myMeta}>
+                    {c.video_count} 个视频{c.ongoing_quiz_id ? ' · 测验进行中' : ''}
+                  </Text>
                 </View>
-              ))}
-            </View>
-          )}
+                {c.ongoing_quiz_id && <Text className={styles.quizBadge}>测验中</Text>}
+              </View>
+            ))}
+          </View>
 
           <View className={styles.card}>
             <Text className={styles.label}>输入课堂码加入新课堂</Text>

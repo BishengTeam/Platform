@@ -37,8 +37,17 @@
   margin-bottom: 12px;
 }
 .myInfo { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.nameRow { display: flex; align-items: center; gap: 12px; }
 .myName { font-size: 28px; color: #1A1A1A; font-weight: 500; }
 .myMeta { font-size: 22px; color: #999; }
+.endedBadge {
+  padding: 4px 16px;
+  background: #F0F0F0;
+  color: #999;
+  border-radius: 999px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
 .quizBadge {
   padding: 4px 16px;
   background: #FFF7E6;
@@ -47,3 +56,9 @@
   font-size: 22px;
   flex-shrink: 0;
 }
+.listState {
+  padding: 32px 24px;
+  background: #F5F7FA;
+  border-radius: 14px;
+}
+.stateText { font-size: 24px; color: #999; }

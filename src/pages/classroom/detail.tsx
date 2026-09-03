@@ -42,7 +42,15 @@ export default function ClassroomDetailPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={detail?.name || '课堂'} shouldShowBack />
+        <PageHeader
+          title={detail?.name || '课堂'}
+          shouldShowBack
+          rightContent={
+            detail?.status === 'stopped' ? (
+              <Text className={styles.endedBadge}>已结束</Text>
+            ) : undefined
+          }
+        />
         <View className={styles.body}>
           {loading && <View className={styles.empty}>加载中…</View>}
           {!loading && !detail && <View className={styles.empty}>课堂不存在或已停课</View>}
@@ -67,7 +75,11 @@ export default function ClassroomDetailPage() {
                 <View className={styles.section}>
                   <Text className={styles.sectionTitle}>随堂测验</Text>
                   {detail.quizzes.map((q) => (
-                    <View key={q.id} className={styles.quizItem}>
+                    <View
+                      key={q.id}
+                      className={q.submitted ? `${styles.quizItem} ${styles.quizItemReview}` : styles.quizItem}
+                      onClick={q.submitted ? () => goQuiz(q.id, true) : undefined}
+                    >
                       <View className={styles.quizInfo}>
                         <Text className={styles.quizTitle}>{q.title}</Text>
                         <Text className={styles.quizMeta}>
@@ -80,7 +92,9 @@ export default function ClassroomDetailPage() {
                         </Button>
                       )}
                       {q.submitted && (
-                        <Text className={styles.submitted}>待批改</Text>
+                        <Text className={q.submission_status === 'approved' ? styles.reviewReady : styles.submitted}>
+                          {q.submission_status === 'approved' ? '已批改 · 查看结果' : '待批改'}
+                        </Text>
                       )}
                     </View>
                   ))}
