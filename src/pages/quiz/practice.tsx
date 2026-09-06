@@ -108,6 +108,7 @@ export default function QuizPracticePage() {
   const [submitting, setSubmitting] = useState<{ sessionQuestionId: number; answer: QuizAnswer } | null>(null)
   const [multiDraft, setMultiDraft] = useState<string[]>([])
   const [fillDraft, setFillDraft] = useState<string[]>([])
+  const [essayDrafts, setEssayDrafts] = useState<Record<number, string>>({})
   const [essayAnswerVisible, setEssayAnswerVisible] = useState(false)
   const [actionBusy, setActionBusy] = useState(false)
   const [collectionBusy, setCollectionBusy] = useState(false)
@@ -616,21 +617,39 @@ export default function QuizPracticePage() {
               </View>
             )}
             {isEssay(currentQuestion.question_type) && (
-              <View className={styles.essayViewBlock}>
-                <Text className={styles.essayViewHint}>问答题为查看型题目：自行对照参考答案复习，不计入正确率。</Text>
-                <View
-                  className={styles.essayReferenceToggle}
-                  onClick={() => setEssayAnswerVisible(previous => !previous)}
-                >
-                  <Text>{essayAnswerVisible ? '收起参考答案' : '查看参考答案'}</Text>
-                </View>
-                {essayAnswerVisible && (
-                  <View className={styles.essayReferenceBody}>
-                    <Text className={styles.essayReferenceText}>{correctAnswerText(currentQuestion.correct_answer)}</Text>
-                    {currentQuestion.explanation && <Text className={styles.explanation}>解析：{currentQuestion.explanation}</Text>}
+              (() => {
+                const essayDraft = essayDrafts[currentQuestion.session_question_id] ?? ''
+                return (
+                  <View className={styles.essayViewBlock}>
+                    <Text className={styles.essayViewHint}>问答题为查看型题目：先写下你的作答，再展开参考答案对照，不计入正确率。</Text>
+                    <Textarea
+                      className={styles.essayDraftTextarea}
+                      value={essayDraft}
+                      maxlength={2000}
+                      placeholder='输入你的作答（仅本机对照，不会提交）'
+                      onInput={event => setEssayDrafts(previous => ({
+                        ...previous,
+                        [currentQuestion.session_question_id]: String(event.detail.value),
+                      }))}
+                    />
+                    <View className={styles.essayDraftMetaRow}>
+                      <Text className={styles.essayDraftCount}>{essayDraft.length}/2000</Text>
+                      <View
+                        className={styles.essayReferenceToggle}
+                        onClick={() => setEssayAnswerVisible(previous => !previous)}
+                      >
+                        <Text>{essayAnswerVisible ? '收起参考答案' : '查看参考答案'}</Text>
+                      </View>
+                    </View>
+                    {essayAnswerVisible && (
+                      <View className={styles.essayReferenceBody}>
+                        <Text className={styles.essayReferenceText}>{correctAnswerText(currentQuestion.correct_answer)}</Text>
+                        {currentQuestion.explanation && <Text className={styles.explanation}>解析：{currentQuestion.explanation}</Text>}
+                      </View>
+                    )}
                   </View>
-                )}
-              </View>
+                )
+              })()
             )}
             <View className={styles.options}>
               {optionItems.length > 0 && optionItems.map(option => {
@@ -689,7 +708,7 @@ export default function QuizPracticePage() {
                 )}
                 <Text className={styles.noResultHint}>
                   {isEssay(currentQuestion.question_type)
-                    ? '查看型题目：展开参考答案自行对照，点「下一题」继续。'
+                    ? '查看型题目：写下你的作答后展开参考答案对照，点「下一题」继续。'
                     : isFillBlank(currentQuestion.question_type)
                       ? '填写每空后点「确认答案」提交判分；答错可当场重输。'
                       : isMultipleChoice(currentQuestion.question_type)

@@ -172,6 +172,29 @@
   line-height: 1.5;
 }
 
+.essayDraftTextarea {
+  width: 100%;
+  min-height: 200px;
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: $font-base;
+  box-sizing: border-box;
+}
+
+.essayDraftMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.essayDraftCount {
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+}
+
 .essayReferenceToggle {
   align-self: flex-start;
   padding: $spacing-xs $spacing-md;
