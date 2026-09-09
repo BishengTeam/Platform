@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Text, View } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import { ScrollView, Text, View } from '@tarojs/components'
+import Taro, { usePullDownRefresh, useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -23,28 +23,32 @@ export default function H3CRecordsPage() {
   const [items, setItems] = useState<H3cRegistration[]>([])
   const [selected, setSelected] = useState<H3cRegistration | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     setLoading(true)
-    try {
-      const result = await h3cService.listRegistrations()
-      setItems(result.items)
-      if (selected) setSelected(await h3cService.getRegistration(selected.id))
-    } finally {
-      setLoading(false)
-    }
-  }, [selected])
-
-  useLoad(() => {
+    setError(false)
     h3cService.listRegistrations()
       .then((result) => setItems(result.items))
+      .catch(() => {
+        setItems([])
+        setError(true)
+      })
       .finally(() => setLoading(false))
+  }, [])
+
+  useLoad(() => load())
+  usePullDownRefresh(() => {
+    load()
+    Taro.stopPullDownRefresh()
   })
 
-  useEffect(() => {
-    if (!selected) return
-    h3cService.getRegistration(selected.id).then(setSelected)
-  }, [selected?.id])
+  const openDetail = (item: H3cRegistration) => {
+    setSelected(item)
+    h3cService.getRegistration(item.id)
+      .then(setSelected)
+      .catch(() => Taro.showToast({ title: '加载详情失败', icon: 'none' }))
+  }
 
   const upload = async (registration: H3cRegistration) => {
     const materialType = registration.latest_review?.rejected_material_types?.[0]
@@ -61,6 +65,8 @@ export default function H3CRecordsPage() {
       })
       Taro.showToast({ title: '补交成功', icon: 'success' })
       await load()
+    } catch (error) {
+      Taro.showToast({ title: error instanceof Error ? error.message : '补交失败，请重试', icon: 'none', duration: 3000 })
     } finally {
       Taro.hideLoading()
     }
@@ -72,9 +78,19 @@ export default function H3CRecordsPage() {
         <PageHeader title='我的 H3C 报名' shouldShowBack />
         <View className={styles.body}>
           {loading && <View className={styles.empty}>加载中...</View>}
-          {!loading && items.length === 0 && <View className={styles.empty}>暂无 H3C 报名记录</View>}
+          {error && (
+            <View className={styles.empty} onClick={load}>
+              <Text>加载失败，点击重试</Text>
+            </View>
+          )}
+          {!loading && !error && items.length === 0 && (
+            <View className={styles.empty}>
+              <Text>暂无 H3C 报名记录</Text>
+              <Text style={{ fontSize: '24rpx', color: '#999', marginTop: '12rpx' }}>回到列表页选择批次开始报名</Text>
+            </View>
+          )}
           {items.map((item) => (
-            <View key={item.id} className={styles.card} onClick={() => setSelected(item)}>
+            <View key={item.id} className={styles.card} onClick={() => openDetail(item)}>
               <Text className={styles.title}>{item.registration_no}</Text>
               <View className={styles.row}>
                 <Text className={styles.label}>状态</Text>
@@ -88,8 +104,10 @@ export default function H3CRecordsPage() {
           ))}
 
           {selected && (
-            <View className={styles.card}>
-              <Text className={styles.title}>报名详情</Text>
+            <View className={styles.detailMask} onClick={() => setSelected(null)}>
+              <View className={styles.detailSheet} onClick={(e) => e.stopPropagation()}>
+                <View className={styles.detailBar} onClick={() => setSelected(null)} />
+                <Text className={styles.title}>报名详情</Text>
               {Object.entries(selected.candidate_snapshot).map(([key, value]) => (
                 <View className={styles.row} key={key}>
                   <Text className={styles.label}>{key}</Text>
@@ -109,14 +127,16 @@ export default function H3CRecordsPage() {
               {selected.status === 'pending_payment' && (
                 <View style={{ marginTop: 12 }}>
                   <Button variant='secondary' onClick={async () => {
-                    await h3cService.cancelPayment(selected.id)
-                    Taro.showToast({ title: '已取消', icon: 'success' })
-                    await load()
+                    try {
+                      await h3cService.cancelPayment(selected.id)
+                      Taro.showToast({ title: '已取消', icon: 'success' })
+                      await load()
+                    } catch (error) {
+                      Taro.showToast({ title: error instanceof Error ? error.message : '取消失败', icon: 'none' })
+                    }
                   }}>取消报名</Button>
                 </View>
               )}
-              <View style={{ marginTop: 8 }}>
-                <Button variant='secondary' onClick={() => setSelected(null)}>收起详情</Button>
               </View>
             </View>
           )}

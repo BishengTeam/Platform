@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { View, Text } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import { useCallback, useState } from 'react'
+import { ScrollView, View, Text } from '@tarojs/components'
+import Taro, { usePullDownRefresh, useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -12,11 +12,24 @@ import styles from './h3c.module.scss'
 export default function H3CListPage() {
   const [batches, setBatches] = useState<H3cExamBatch[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useLoad(() => {
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(false)
     h3cService.listBatches()
       .then(setBatches)
+      .catch(() => {
+        setBatches([])
+        setError(true)
+      })
       .finally(() => setLoading(false))
+  }, [])
+
+  useLoad(() => load())
+  usePullDownRefresh(() => {
+    load()
+    Taro.stopPullDownRefresh()
   })
 
   return (
@@ -28,7 +41,17 @@ export default function H3CListPage() {
             我的 H3C 报名
           </Button>
           {loading && <View className={styles.empty}>正在加载考试批次...</View>}
-          {!loading && batches.length === 0 && <View className={styles.empty}>暂无可报名考试</View>}
+          {error && (
+            <View className={styles.empty} onClick={load}>
+              <Text>加载失败，点击重试</Text>
+            </View>
+          )}
+          {!loading && !error && batches.length === 0 && (
+            <View className={styles.empty}>
+              <Text>暂无可报名考试</Text>
+              <Text style={{ fontSize: '24rpx', color: '#999', marginTop: '12rpx' }}>请联系老师发布考试批次</Text>
+            </View>
+          )}
           {batches.map((batch) => (
             <View key={batch.id} className={styles.card}>
               <Text className={styles.title}>{batch.name}</Text>

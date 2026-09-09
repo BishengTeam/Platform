@@ -72,12 +72,16 @@ export default function H3CFormPage() {
         first_name_en: data.first_name_en || '',
         last_name_en: data.last_name_en || '',
       }))
+    }).catch(() => {
+      Taro.showToast({ title: '加载个人信息失败，请手动填写', icon: 'none' })
     })
   }, [])
 
   useEffect(() => {
     if (!batchId) return
-    h3cService.listBatches().then((batches) => setBatch(batches.find((item) => item.id === batchId) || null))
+    h3cService.listBatches()
+      .then((batches) => setBatch(batches.find((item) => item.id === batchId) || null))
+      .catch(() => Taro.showToast({ title: '加载考试批次失败', icon: 'none' }))
   }, [batchId])
 
   const update = (key: string, value: string) => setForm((old) => ({ ...old, [key]: value }))
@@ -92,6 +96,8 @@ export default function H3CFormPage() {
       if (materialType === 'coupon_proof') setCouponKey(uploaded.storage_key)
       else setStudentKey(uploaded.storage_key)
       Taro.showToast({ title: '上传成功', icon: 'success' })
+    } catch (error) {
+      Taro.showToast({ title: error instanceof Error ? error.message : '上传失败，请重试', icon: 'none', duration: 3000 })
     } finally {
       Taro.hideLoading()
     }
@@ -101,6 +107,18 @@ export default function H3CFormPage() {
     if (!batch || submitting) return
     if (BASE_FIELDS.some((field) => !form[field.key])) {
       Taro.showToast({ title: '请完整填写报名信息', icon: 'none' })
+      return
+    }
+    if (!/^1\d{10}$/.test(form.phone)) {
+      Taro.showToast({ title: '请输入正确的手机号', icon: 'none' })
+      return
+    }
+    if (!/^\d{17}[\dXx]$/.test(form.candidate_idcard)) {
+      Taro.showToast({ title: '请输入正确的身份证号', icon: 'none' })
+      return
+    }
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      Taro.showToast({ title: '请输入正确的邮箱', icon: 'none' })
       return
     }
     if (type === 'coupon' && (!form.coupon_code || !couponKey)) {
@@ -136,6 +154,8 @@ export default function H3CFormPage() {
       } else {
         Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${registration.order_id}` })
       }
+    } catch (error) {
+      Taro.showToast({ title: error instanceof Error ? error.message : '提交失败，请重试', icon: 'none', duration: 3000 })
     } finally {
       setSubmitting(false)
     }

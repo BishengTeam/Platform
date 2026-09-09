@@ -131,3 +131,31 @@
 }
 
 .uploaded { color: #16a34a; }
+
+/* ── 详情弹窗 ── */
+.detailMask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.detailSheet {
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 32px 32px 0 0;
+  padding: 24px 40px calc(40px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.detailBar {
+  width: 72px;
+  height: 8px;
+  border-radius: 8px;
+  background: #E0E0E0;
+  margin: 0 auto 24px;
+}
