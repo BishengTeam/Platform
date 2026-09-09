@@ -48,6 +48,7 @@ export const ROUTES = {
   MINE_SHARE: 'pages/mine/share',
   MINE_DEACTIVATE: 'pages/mine/deactivate',
   LOGIN_POSTER: 'pages/login-poster/index',
+  AGREEMENT_VIEW: 'pages/agreement/view',
 } as const
 
 export const TAB_BAR_CONFIG = [

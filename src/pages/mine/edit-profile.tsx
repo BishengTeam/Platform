@@ -15,6 +15,7 @@ import {
   submitEnterprise, updateEnterprise,
   uploadFile,
   uploadIdentityMaterial,
+  hasAcceptedLatest,
 } from '@/services/dataService'
 import type { UserProfileAggregated, UserRealnameL2, UserStudentL2, UserEnterpriseL2 } from '@/types/profile'
 import { validateIdCard } from '@/utils/validator'
@@ -326,6 +327,19 @@ export default function EditProfilePage() {
     }
     if (!isPrivateMaterialKey(frontOss) || !isPrivateMaterialKey(backOss) || !isPrivateMaterialKey(avatarOssFinal)) {
       Taro.showToast({ title: '实名材料上传结果无效，请重新上传', icon: 'none' })
+      return
+    }
+
+    // P0 电子协议：提交实名前须已签署最新版《实名信息处理授权协议》（后端同样强制校验）
+    if (!(await hasAcceptedLatest('identity_auth'))) {
+      const modal = await Taro.showModal({
+        title: STRINGS.AGREEMENT_TYPE_IDENTITY_AUTH,
+        content: '提交实名认证前，请先阅读并同意该授权协议',
+        confirmText: '去签署',
+      })
+      if (modal.confirm) {
+        Taro.navigateTo({ url: '/pages/agreement/view?type=identity_auth&requireSign=1' })
+      }
       return
     }
 

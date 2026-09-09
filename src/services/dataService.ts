@@ -35,6 +35,15 @@ export type { PageData as H3CPageData } from './h3cService'
 export {
   uploadIdentityMaterial,
 } from './identityMaterialService'
+
+// P0 电子协议
+export {
+  getAgreementTemplate, acceptAgreements, getMyAgreementAcceptances,
+  hasAcceptedLatest, acceptLoginAgreements,
+} from './agreementService'
+export type {
+  AgreementType, AgreementTemplate, AgreementAcceptance,
+} from './agreementService'
 export type {
   IdentityMaterialKind,
   IdentityMaterialUploadResult,

@@ -3,74 +3,46 @@ import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getAgreements, signAgreement } from '@/services/dataService'
-import type { Agreement } from '@/types'
+import { getMyAgreementAcceptances } from '@/services/dataService'
+import type { AgreementAcceptance } from '@/services/dataService'
 import styles from './agreements.module.scss'
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending_sign: { label: STRINGS.MINE_AGREEMENTS_STATUS_PENDING_SIGN, color: '#FA8C16' },
-  pending_review: { label: STRINGS.MINE_AGREEMENTS_STATUS_PENDING_REVIEW, color: '#1677FF' },
-  stamped: { label: STRINGS.MINE_AGREEMENTS_STATUS_STAMPED, color: '#52C41A' },
-  completed: { label: STRINGS.MINE_AGREEMENTS_STATUS_COMPLETED, color: '#999' },
-  signed: { label: '已签署', color: '#52C41A' },
+const TYPE_LABELS: Record<string, string> = {
+  user_terms: STRINGS.AUTH_AGREEMENT_TERMS,
+  privacy: STRINGS.AUTH_AGREEMENT_PRIVACY,
+  identity_auth: STRINGS.AGREEMENT_TYPE_IDENTITY_AUTH,
 }
 
-function getStatusMeta(status: string) {
-  return STATUS_MAP[status] || { label: status || '未知', color: '#999' }
+function formatTime(value: string): string {
+  if (!value) return '-'
+  return value.replace('T', ' ').replace(/Z$/, '').slice(0, 19)
 }
 
+/**
+ * 我的协议（P0 电子协议）— 已签署协议记录列表。
+ * 旧版培训协议假签名 demo 已移除；培训协议（业务合同）延后按决策档案开发。
+ */
 export default function AgreementsPage() {
-  const [items, setItems] = useState<Agreement[]>([])
+  const [items, setItems] = useState<AgreementAcceptance[]>([])
   const [loading, setLoading] = useState(true)
-  const [signingId, setSigningId] = useState<string | null>(null)
-  const [signPaths, setSignPaths] = useState<{ x: number; y: number }[]>([])
-  const [signatureImage, setSignatureImage] = useState<string>('')
-  const [submitting, setSubmitting] = useState(false)
 
-  const loadAgreements = useCallback(async () => {
+  const load = useCallback(async () => {
     try {
-      const data = await getAgreements()
-      setItems(data)
+      setItems(await getMyAgreementAcceptances())
+    } catch {
+      Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_LOAD_FAILED, icon: 'none' })
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    loadAgreements()
-  }, [loadAgreements])
+    load()
+  }, [load])
 
-  const handleSignCanvas = (agreementId: string) => {
-    // Canvas signature would use Taro.createCanvasContext in production
-    Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_HINT, icon: 'none' })
-  }
-
-  const handleSubmitSign = async () => {
-    if (!signingId) return
-    setSubmitting(true)
-    try {
-      // In production, get signature image from canvas via Taro.canvasToTempFilePath
-      // For now, serialize signPaths as a fallback signature representation
-      const sigImage = signatureImage || JSON.stringify(signPaths)
-      await signAgreement(signingId, sigImage)
-      setSigningId(null)
-      setSignPaths([])
-      setSignatureImage('')
-      Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_SUCCESS, icon: 'success' })
-      await loadAgreements()
-    } catch (error) {
-      Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 })
-      Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_SIGN_HINT, icon: 'none' })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleClearSign = () => {
-    setSignPaths([])
-    setSignatureImage('')
+  const openDetail = (type: string) => {
+    Taro.navigateTo({ url: `/pages/agreement/view?type=${type}` })
   }
 
   return (
@@ -78,74 +50,30 @@ export default function AgreementsPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_AGREEMENTS_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          {items.map(item => {
-            const statusInfo = getStatusMeta(item.status)
-            return (
-              <View key={item.id} className={styles.card}>
+          {loading ? (
+            <View className={styles.empty}>
+              <Text className={styles.emptyText}>{STRINGS.AGREEMENT_LOADING}</Text>
+            </View>
+          ) : items.length === 0 ? (
+            <View className={styles.empty}>
+              <Text className={styles.emptyText}>{STRINGS.MINE_AGREEMENTS_EMPTY}</Text>
+            </View>
+          ) : (
+            items.map((item) => (
+              <View key={item.id} className={styles.card} onClick={() => openDetail(item.type)}>
                 <View className={styles.cardHeader}>
                   <Text className={styles.cardTitle}>{item.title}</Text>
-                  <Text className={styles.cardStatus} style={{ color: statusInfo.color }}>
-                    {statusInfo.label}
+                  <Text className={styles.badge}>{TYPE_LABELS[item.type] || item.type}</Text>
+                </View>
+                <View className={styles.cardMeta}>
+                  <Text className={styles.metaText}>{STRINGS.MINE_AGREEMENTS_VERSION} v{item.version}</Text>
+                  <Text className={styles.metaText}>
+                    {STRINGS.MINE_AGREEMENTS_SIGN_TIME} {formatTime(item.acceptedAt)}
                   </Text>
                 </View>
-                <Text className={styles.cardContent} numberOfLines={3}>
-                  {item.content}
-                </Text>
-                <View className={styles.cardMeta}>
-                  <Text className={styles.metaText}>{STRINGS.FORM_EXAM_DATE}: {item.createdAt}</Text>
-                  {item.signedAt && <Text className={styles.metaText}>{STRINGS.MINE_AGREEMENTS_SIGN_TIME} {item.signedAt}</Text>}
-                </View>
-
-                {signingId === item.id && (
-                  <View className={styles.signArea}>
-                    <View
-                      className={styles.signCanvas}
-                      onTouchMove={(e: any) => {
-                        const touch = e.touches[0]
-                        if (touch) {
-                          setSignPaths(prev => [...prev, { x: touch.x, y: touch.y }])
-                        }
-                      }}
-                    >
-                      <Text className={styles.signPlaceholder}>
-                        {signPaths.length === 0 ? STRINGS.MINE_AGREEMENTS_SIGN_CANVAS : ''}
-                      </Text>
-                    </View>
-                    <View className={styles.signActions}>
-                      <Button size='sm' variant='secondary' onClick={handleClearSign}>
-                        {STRINGS.MINE_AGREEMENTS_CLEAR}
-                      </Button>
-                      <Button size='sm' onClick={handleSubmitSign}>
-                        {STRINGS.MINE_AGREEMENTS_SUBMIT}
-                      </Button>
-                    </View>
-                  </View>
-                )}
-
-                {item.status === 'pending_sign' && signingId !== item.id && (
-                  <View className={styles.cardFooter}>
-                    <Button
-                      size='sm'
-                      variant='secondary'
-                      onClick={() => {
-                        Taro.showModal({
-                          title: item.title,
-                          content: item.content,
-                          showCancel: false,
-                          confirmText: '\u5173\u95ed',
-                        })
-                      }}
-                    >
-                      {STRINGS.MINE_AGREEMENTS_DETAIL}
-                    </Button>
-                    <Button size='sm' onClick={() => setSigningId(item.id)}>
-                      {STRINGS.MINE_AGREEMENTS_SIGN}
-                    </Button>
-                  </View>
-                )}
               </View>
-            )
-          })}
+            ))
+          )}
         </ScrollView>
       </View>
     </AuthGuard>

@@ -73,6 +73,10 @@ export default defineAppConfig({
       root: 'pages/login-poster',
       pages: ['index'],
     },
+    {
+      root: 'pages/agreement',
+      pages: ['view'],
+    },
   ],
   tabBar: {
     custom: true,

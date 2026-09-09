@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { wxLogin } from '@/services/dataService'
+import { wxLogin, acceptLoginAgreements } from '@/services/dataService'
 import { setAuthTokens } from '@/utils/request'
 import { clearQuizCache } from '@/utils/quizRuntime'
 import { ROUTES } from '@/constants/routes'
@@ -32,6 +32,8 @@ export default function AuthPage() {
               // A new explicit WeChat login may represent a different account.
               clearQuizCache()
               setAuthTokens(data.access_token, data.refresh_token)
+              // P0 电子协议：登录即视为同意用户协议与隐私政策，尽力记录签署（失败不阻断登录）
+              acceptLoginAgreements().catch(() => undefined)
               Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
             })
             .catch((err: unknown) => {
@@ -79,9 +81,25 @@ export default function AuthPage() {
           onChange={setIsAgreed}
         >
           {STRINGS.AUTH_AGREEMENT_PREFIX}
-          <Text className={styles.link}>{STRINGS.AUTH_AGREEMENT_TERMS}</Text>
+          <Text
+            className={styles.link}
+            onClick={(e) => {
+              e.stopPropagation()
+              Taro.navigateTo({ url: '/pages/agreement/view?type=user_terms' })
+            }}
+          >
+            {STRINGS.AUTH_AGREEMENT_TERMS}
+          </Text>
           {STRINGS.AUTH_AGREEMENT_AND}
-          <Text className={styles.link}>{STRINGS.AUTH_AGREEMENT_PRIVACY}</Text>
+          <Text
+            className={styles.link}
+            onClick={(e) => {
+              e.stopPropagation()
+              Taro.navigateTo({ url: '/pages/agreement/view?type=privacy' })
+            }}
+          >
+            {STRINGS.AUTH_AGREEMENT_PRIVACY}
+          </Text>
           {STRINGS.AUTH_AGREEMENT_SUFFIX}
         </AgreementCheckbox>
       </View>
