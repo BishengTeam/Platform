@@ -92,7 +92,7 @@ export default function AgreementViewPage() {
                   {STRINGS.AGREEMENT_VERSION} v{template.version}
                 </Text>
               </View>
-              <Text className={styles.content}>{template.content}</Text>
+              <RichText className={styles.content} nodes={template.content} />
             </View>
           )
         )}

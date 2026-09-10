@@ -70,3 +70,27 @@
   flex-direction: column;
   gap: $spacing-md;
 }
+
+/* ── 富文本渲染 ── */
+.richText {
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: #333;
+  word-break: break-all;
+
+  :global(h1), :global(h2), :global(h3), :global(h4) {
+    font-weight: 600;
+    margin: 24rpx 0 12rpx;
+    color: #1a1a1a;
+  }
+  :global(h1) { font-size: 36rpx; }
+  :global(h2) { font-size: 32rpx; }
+  :global(h3) { font-size: 30rpx; }
+  :global(p) { margin: 0 0 16rpx; }
+  :global(strong), :global(b) { font-weight: 600; }
+  :global(ul), :global(ol) {
+    padding-left: 32rpx;
+    margin: 0 0 16rpx;
+  }
+  :global(li) { margin-bottom: 8rpx; }
+}
