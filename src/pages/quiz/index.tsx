@@ -11,7 +11,7 @@ import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizLibraryProgress, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import { useAuth } from '@/hooks/useAuth'
-import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries } from '@/services/dataService'
+import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries, prepayOrder } from '@/services/dataService'
 import { post } from '@/utils/request'
 import styles from './index.module.scss'
 
