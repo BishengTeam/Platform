@@ -12,6 +12,7 @@ import { STRINGS } from '@/constants/strings'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizLibraryProgress, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import { useAuth } from '@/hooks/useAuth'
 import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries } from '@/services/dataService'
+import { post } from '@/utils/request'
 import styles from './index.module.scss'
 
 interface StatCard { label: string; value: string; color: string; onClick?: () => void }
@@ -166,12 +167,18 @@ export default function QuizIndexPage() {
                   <View className={styles.libraryInfo}>
                     <Text className={styles.libraryName}>{library.name}</Text>
                     <Text className={styles.libraryDescription}>{library.description}</Text>
-                    <Text className={styles.libraryMeta}>{library.module_count} 个模块 · {library.question_count} 题 · {library.access_mode === 'free' ? '免费' : '课程附赠'}</Text>
+                    <Text className={styles.libraryMeta}>{library.module_count} 个模块 · {library.question_count} 题 · {library.access_mode === 'free' ? '免费' : library.access_mode === 'paid' ? `¥${((library.price_cents || 0) / 100).toFixed(2)}` : '课程附赠'}</Text>
                   </View>
                   <Text className={styles.expandIcon}>{detail ? '收起' : '展开'}</Text>
                 </View>
                 {detail && (
                   <View className={styles.catalogTree}>
+                    {library.access_mode === 'paid' && (
+                      <View className={styles.purchaseRow}>
+                        <Text className={styles.purchasePrice}>¥{((library.price_cents || 0) / 100).toFixed(2)}</Text>
+                        <Text className={styles.purchaseBtn} onClick={() => void purchaseLibrary(library.id, library.name)}>购买题库</Text>
+                      </View>
+                    )}
                     <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('library', library.id) }))}>
                       <View className={styles.scopeMain}>
                         <Text className={styles.scopeName}>练习整库全部 {detail.question_count} 题</Text>

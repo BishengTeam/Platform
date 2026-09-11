@@ -193,3 +193,29 @@
   font-size: $font-2xs;
   color: $color-text-tertiary;
 }
+
+/* ── 题库购买 ── */
+.purchaseRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 24rpx;
+  margin-bottom: 12rpx;
+  background: #FFF7E6;
+  border-radius: 12rpx;
+}
+
+.purchasePrice {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FA8C16;
+}
+
+.purchaseBtn {
+  padding: 12rpx 32rpx;
+  background: #FA8C16;
+  color: #fff;
+  border-radius: 24rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+}
