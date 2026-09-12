@@ -7,6 +7,7 @@ import { usePhoneDecrypt } from '@/hooks/usePhoneDecrypt'
 import { STRINGS } from '@/constants/strings'
 import { getCertDetail, uploadFile, createOrder, getUserProfile } from '@/services/dataService'
 import type { CertificationDetail } from '@/types'
+import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
 import { autoPinyin } from '@/utils/pinyin'
@@ -197,6 +198,11 @@ export default function RegistrationFormPage() {
   // ============================================================
   const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
+    if (!(await ensureAgreementSigned(
+      'cert_registration',
+      STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
+      '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
+    ))) return
 
     const base = {
       order_kind: 'certification' as const,

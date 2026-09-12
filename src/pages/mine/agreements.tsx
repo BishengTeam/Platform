@@ -12,6 +12,7 @@ const TYPE_LABELS: Record<string, string> = {
   user_terms: STRINGS.AUTH_AGREEMENT_TERMS,
   privacy: STRINGS.AUTH_AGREEMENT_PRIVACY,
   identity_auth: STRINGS.AGREEMENT_TYPE_IDENTITY_AUTH,
+  cert_registration: STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
 }
 
 function formatTime(value: string): string {

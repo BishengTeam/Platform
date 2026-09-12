@@ -15,6 +15,7 @@ import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
 import { resolveUrl } from '@/utils/request'
 import type { ValidationResult } from '@/utils/validator'
+import { ensureAgreementSigned } from '@/utils/agreementGate'
 import styles from './form.module.scss'
 
 const STORAGE_KEY = 'registration_nisp_form'
@@ -115,6 +116,11 @@ export default function NispFormPage() {
 
   const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
+    if (!(await ensureAgreementSigned(
+      'cert_registration',
+      STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
+      '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
+    ))) return
     await createOrder({
       order_kind: 'certification' as const,
       product_type: 'nisp',

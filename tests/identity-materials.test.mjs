@@ -99,3 +99,17 @@ test('registration pages no longer submit lightweight identity without materials
     assert.match(source, /pages\/mine\/edit-profile/)
   }
 })
+
+test('certification submissions gate the cert-registration agreement', async () => {
+  const sources = await Promise.all([
+    readFile('src/pages/h3c/form.tsx', 'utf8'),
+    readFile('src/pages/registration/form.tsx', 'utf8'),
+    readFile('src/pages/registration/form-sangfor.tsx', 'utf8'),
+    readFile('src/pages/registration/form-nisp.tsx', 'utf8'),
+    readFile('src/pages/registration/form-renshe.tsx', 'utf8'),
+  ])
+
+  for (const source of sources) {
+    assert.match(source, /ensureAgreementSigned\(\s*'cert_registration'/)
+  }
+})

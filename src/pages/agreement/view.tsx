@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, RichText } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -13,6 +13,7 @@ const TYPE_TITLES: Record<string, string> = {
   user_terms: STRINGS.AUTH_AGREEMENT_TERMS,
   privacy: STRINGS.AUTH_AGREEMENT_PRIVACY,
   identity_auth: STRINGS.AGREEMENT_TYPE_IDENTITY_AUTH,
+  cert_registration: STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
 }
 
 /**

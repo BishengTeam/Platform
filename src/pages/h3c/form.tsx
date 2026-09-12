@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { h3cService } from '@/services/h3cService'
 import { ROUTES } from '@/constants/routes'
+import { STRINGS } from '@/constants/strings'
+import { ensureAgreementSigned } from '@/utils/agreementGate'
 import type { H3cExamBatch, H3cProfileDefaults, H3cRegistrationType } from '@/types/h3c'
 import styles from './h3c.module.scss'
 
@@ -129,6 +131,11 @@ export default function H3CFormPage() {
       Taro.showToast({ title: '请上传学生证明', icon: 'none' })
       return
     }
+    if (!(await ensureAgreementSigned(
+      'cert_registration',
+      STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
+      '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
+    ))) return
     setSubmitting(true)
     try {
       const registration = await h3cService.createOrder({

@@ -13,6 +13,7 @@ import { getCertDetail, createOrder, getUserProfile } from '@/services/dataServi
 import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
+import { ensureAgreementSigned } from '@/utils/agreementGate'
 import styles from './form.module.scss'
 
 const BRANCHES = [STRINGS.RENSHE_BRANCH_NETWORK_SECURITY, STRINGS.RENSHE_BRANCH_BUSINESS_DATA, STRINGS.RENSHE_BRANCH_AI_ENGINEER, STRINGS.RENSHE_BRANCH_IOT_ENGINEER]
@@ -62,6 +63,11 @@ export default function RensheFormPage() {
 
   const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
+    if (!(await ensureAgreementSigned(
+      'cert_registration',
+      STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
+      '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
+    ))) return
     const order = await createOrder({
       order_kind: 'certification' as const,
       product_type: 'renshe',

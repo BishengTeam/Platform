@@ -8,7 +8,11 @@
  */
 import { get, post } from '../utils/request.ts'
 
-export type AgreementType = 'user_terms' | 'privacy' | 'identity_auth'
+export type AgreementType =
+  | 'user_terms'
+  | 'privacy'
+  | 'identity_auth'
+  | 'cert_registration'
 
 export interface AgreementTemplate {
   type: AgreementType

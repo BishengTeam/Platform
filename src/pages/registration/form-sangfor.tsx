@@ -13,6 +13,7 @@ import { getCertDetail, createOrder, getUserProfile, validateCoupon } from '@/se
 import type { CertificationDetail } from '@/types'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
+import { ensureAgreementSigned } from '@/utils/agreementGate'
 import styles from './form.module.scss'
 
 const STORAGE_KEY = 'registration_sangfor_form'
@@ -75,6 +76,11 @@ export default function SangforFormPage() {
 
   const handleSubmit = async () => {
     if (!cert || !handleValidate()) return
+    if (!(await ensureAgreementSigned(
+      'cert_registration',
+      STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
+      '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
+    ))) return
 
     // 如果填写了考试券码，先核销校验
     if (couponCode.trim()) {
