@@ -51,6 +51,16 @@
   padding: 2px 8px;
 }
 
+.badgeGreen {
+  color: $color-success;
+  background: rgba(7, 193, 96, 0.08);
+}
+
+.badgeOrange {
+  color: $color-warning;
+  background: rgba(250, 140, 22, 0.08);
+}
+
 .cardMeta {
   display: flex;
   gap: $spacing-md;

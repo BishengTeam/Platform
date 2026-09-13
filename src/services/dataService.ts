@@ -39,10 +39,10 @@ export {
 // P0 电子协议
 export {
   getAgreementTemplate, acceptAgreements, getMyAgreementAcceptances,
-  hasAcceptedLatest, acceptLoginAgreements,
+  hasAcceptedLatest, acceptLoginAgreements, listAgreementStatuses,
 } from './agreementService'
 export type {
-  AgreementType, AgreementTemplate, AgreementAcceptance,
+  AgreementType, AgreementTemplate, AgreementAcceptance, AgreementStatus,
 } from './agreementService'
 export type {
   IdentityMaterialKind,

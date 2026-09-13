@@ -37,7 +37,24 @@ export interface AgreementAcceptance {
   acceptedAt: string
 }
 
+export interface AgreementStatus {
+  type: AgreementType
+  title: string
+  /** 当前生效版本。 */
+  version: number
+  /** 用户已签署的最高版本；未签署为 null。 */
+  signedVersion: number | null
+  acceptedAt: string | null
+  latestSigned: boolean
+}
+
 const LOGIN_AGREEMENT_TYPES: AgreementType[] = ['user_terms', 'privacy']
+const ALL_AGREEMENT_TYPES: AgreementType[] = [
+  'user_terms',
+  'privacy',
+  'identity_auth',
+  'cert_registration',
+]
 
 export async function getAgreementTemplate(type: AgreementType): Promise<AgreementTemplate> {
   const res = await get<AgreementTemplate>('/api/agreement-templates', { type })
@@ -54,6 +71,41 @@ export async function acceptAgreements(
 export async function getMyAgreementAcceptances(): Promise<AgreementAcceptance[]> {
   const res = await get<AgreementAcceptanceBackendItem[]>('/api/agreement-acceptances')
   return (res.data || []).map(toAcceptance)
+}
+
+/**
+ * 全部已配置协议 + 当前用户签署状态（按固定类型顺序返回）。
+ * 未配置的类型不出现；签署记录查询失败按未签署处理。
+ */
+export async function listAgreementStatuses(): Promise<AgreementStatus[]> {
+  const [templates, acceptances] = await Promise.all([
+    Promise.all(
+      ALL_AGREEMENT_TYPES.map(async (type) => {
+        try {
+          return await getAgreementTemplate(type)
+        } catch {
+          return null
+        }
+      }),
+    ),
+    getMyAgreementAcceptances().catch(() => [] as AgreementAcceptance[]),
+  ])
+
+  return templates
+    .filter((template): template is AgreementTemplate => template !== null)
+    .map((template) => {
+      const acceptance = acceptances
+        .filter((item) => item.type === template.type)
+        .sort((a, b) => b.version - a.version)[0]
+      return {
+        type: template.type,
+        title: template.title,
+        version: template.version,
+        signedVersion: acceptance?.version ?? null,
+        acceptedAt: acceptance?.acceptedAt ?? null,
+        latestSigned: (acceptance?.version ?? 0) >= template.version,
+      }
+    })
 }
 
 /**

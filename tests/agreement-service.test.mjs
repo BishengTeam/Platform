@@ -8,6 +8,7 @@ import {
   getMyAgreementAcceptances,
   hasAcceptedLatest,
   acceptLoginAgreements,
+  listAgreementStatuses,
 } from '../src/services/agreementService.ts'
 
 function envelope(data, code = 0, message = 'ok') {
@@ -109,5 +110,47 @@ test('acceptLoginAgreements records only configured templates', async () => {
 
   await acceptLoginAgreements()
   assert.deepEqual(posts, [{ items: [{ type: 'user_terms', version: 1 }] }])
+  clearAuthTokens()
+})
+
+test('listAgreementStatuses merges configured templates with acceptance state', async () => {
+  resetRequestStateForTest()
+  installStorage()
+  installTaroStubs()
+  Taro.request = async options => {
+    if (options.url.includes('/api/agreement-templates')) {
+      const type = options.data?.type
+      if (type === 'privacy') return envelope(null, 40300, '协议模板 不存在')
+      const templates = {
+        user_terms: { type, title: '用户服务协议', content: 'c', version: 3 },
+        identity_auth: { type, title: '实名信息处理授权协议', content: 'c', version: 2 },
+        cert_registration: { type, title: '认证报名信息处理授权协议', content: 'c', version: 1 },
+      }
+      return envelope(templates[type])
+    }
+    return envelope([
+      { id: 1, type: 'user_terms', title: '用户服务协议', version: 2, accepted_at: '2026-09-01T08:00:00Z' },
+      { id: 2, type: 'user_terms', title: '用户服务协议', version: 3, accepted_at: '2026-09-10T08:00:00Z' },
+      { id: 3, type: 'cert_registration', title: '认证报名信息处理授权协议', version: 1, accepted_at: '2026-09-11T08:00:00Z' },
+    ])
+  }
+  setAuthTokens('a', 'b')
+
+  const list = await listAgreementStatuses()
+  assert.deepEqual(list.map(item => item.type), ['user_terms', 'identity_auth', 'cert_registration'])
+
+  const userTerms = list[0]
+  assert.equal(userTerms.latestSigned, true)
+  assert.equal(userTerms.signedVersion, 3)
+
+  // 已实名的存量用户：从未签署实名协议 → 未签署，可从列表补签
+  const identityAuth = list[1]
+  assert.equal(identityAuth.latestSigned, false)
+  assert.equal(identityAuth.signedVersion, null)
+  assert.equal(identityAuth.acceptedAt, null)
+
+  const certRegistration = list[2]
+  assert.equal(certRegistration.latestSigned, true)
+  assert.equal(certRegistration.signedVersion, 1)
   clearAuthTokens()
 })

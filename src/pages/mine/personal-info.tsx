@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { View, Text, ScrollView, Image } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import { getUserProfile } from '@/services/dataService'
+import { getUserProfile, hasAcceptedLatest } from '@/services/dataService'
 import type { UserProfileAggregated } from '@/types/profile'
 import styles from './personal-info.module.scss'
 
@@ -31,10 +31,20 @@ export default function PersonalInfoPage() {
   // ---- 驳回弹窗 ----
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
   const [rejectReasons, setRejectReasons] = useState<{ section: string, reason: string }[]>([])
+  // ---- 实名协议补签提示（已实名但未签署最新版） ----
+  const [identityAgreementPending, setIdentityAgreementPending] = useState(false)
+  const identityVerifiedRef = useRef(false)
+
+  const checkIdentityAgreement = useCallback(async () => {
+    if (!identityVerifiedRef.current) return
+    setIdentityAgreementPending(!(await hasAcceptedLatest('identity_auth')))
+  }, [])
 
   useEffect(() => {
     getUserProfile().then(p => {
       setProfile(p)
+      identityVerifiedRef.current = p.realname?.identity_status === 'verified'
+      void checkIdentityAgreement()
 
       // 收集驳回信息，弹出浮窗
       const reasons: { section: string, reason: string }[] = []
@@ -56,6 +66,11 @@ export default function PersonalInfoPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  // 从签署页返回时重新检查补签状态
+  useDidShow(() => {
+    void checkIdentityAgreement()
+  })
+
   if (loading || !profile) return null
 
   const { profile: l1, realname, student, enterprise, openid, created_at } = profile
@@ -66,6 +81,28 @@ export default function PersonalInfoPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_PROFILE_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
+
+          {/* 实名协议补签提示 */}
+          {identityAgreementPending && (
+            <View className={styles.agreementBanner}>
+              <View className={styles.agreementBannerText}>
+                <Text className={styles.agreementBannerTitle}>
+                  请补签{STRINGS.AGREEMENT_TYPE_IDENTITY_AUTH}
+                </Text>
+                <Text className={styles.agreementBannerDesc}>
+                  {STRINGS.MINE_IDENTITY_AGREEMENT_BANNER_DESC}
+                </Text>
+              </View>
+              <Text
+                className={styles.agreementBannerAction}
+                onClick={() =>
+                  Taro.navigateTo({ url: '/pages/agreement/view?type=identity_auth&requireSign=1' })
+                }
+              >
+                {STRINGS.MINE_AGREEMENTS_SIGN}
+              </Text>
+            </View>
+          )}
 
           {/* ============================================================ */}
           {/* 个人主页头部 */}

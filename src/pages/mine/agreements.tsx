@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { STRINGS } from '@/constants/strings'
-import { getMyAgreementAcceptances } from '@/services/dataService'
-import type { AgreementAcceptance } from '@/services/dataService'
+import { listAgreementStatuses } from '@/services/dataService'
+import type { AgreementStatus } from '@/services/dataService'
 import styles from './agreements.module.scss'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -15,22 +15,35 @@ const TYPE_LABELS: Record<string, string> = {
   cert_registration: STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
 }
 
-function formatTime(value: string): string {
+function formatTime(value: string | null): string {
   if (!value) return '-'
   return value.replace('T', ' ').replace(/Z$/, '').slice(0, 19)
 }
 
+function badgeClass(item: AgreementStatus): string {
+  if (item.latestSigned) return `${styles.badge} ${styles.badgeGreen}`
+  if (item.signedVersion !== null) return `${styles.badge} ${styles.badgeOrange}`
+  return styles.badge
+}
+
+function badgeText(item: AgreementStatus): string {
+  if (item.latestSigned) return STRINGS.MINE_AGREEMENTS_STATUS_SIGNED
+  if (item.signedVersion !== null) return STRINGS.MINE_AGREEMENTS_STATUS_OUTDATED
+  return STRINGS.MINE_AGREEMENTS_STATUS_UNSIGNED
+}
+
 /**
- * 我的协议（P0 电子协议）— 已签署协议记录列表。
- * 旧版培训协议假签名 demo 已移除；培训协议（业务合同）延后按决策档案开发。
+ * 我的协议 — 展示全部已配置的协议类型与签署状态（未签署也可进入签署）。
+ * 已实名但从未走过实名提交拦截的存量用户，可在这里补签《实名信息授权协议》。
  */
 export default function AgreementsPage() {
-  const [items, setItems] = useState<AgreementAcceptance[]>([])
+  const [items, setItems] = useState<AgreementStatus[]>([])
   const [loading, setLoading] = useState(true)
+  const firstShow = useRef(true)
 
   const load = useCallback(async () => {
     try {
-      setItems(await getMyAgreementAcceptances())
+      setItems(await listAgreementStatuses())
     } catch {
       Taro.showToast({ title: STRINGS.MINE_AGREEMENTS_LOAD_FAILED, icon: 'none' })
     } finally {
@@ -42,8 +55,18 @@ export default function AgreementsPage() {
     load()
   }, [load])
 
-  const openDetail = (type: string) => {
-    Taro.navigateTo({ url: `/pages/agreement/view?type=${type}` })
+  // 从签署页返回时刷新签署状态
+  useDidShow(() => {
+    if (firstShow.current) {
+      firstShow.current = false
+      return
+    }
+    load()
+  })
+
+  const open = (item: AgreementStatus) => {
+    const requireSign = item.latestSigned ? '' : '&requireSign=1'
+    Taro.navigateTo({ url: `/pages/agreement/view?type=${item.type}${requireSign}` })
   }
 
   return (
@@ -57,20 +80,25 @@ export default function AgreementsPage() {
             </View>
           ) : items.length === 0 ? (
             <View className={styles.empty}>
-              <Text className={styles.emptyText}>{STRINGS.MINE_AGREEMENTS_EMPTY}</Text>
+              <Text className={styles.emptyText}>{STRINGS.MINE_AGREEMENTS_NONE_CONFIGURED}</Text>
             </View>
           ) : (
             items.map((item) => (
-              <View key={item.id} className={styles.card} onClick={() => openDetail(item.type)}>
+              <View key={item.type} className={styles.card} onClick={() => open(item)}>
                 <View className={styles.cardHeader}>
                   <Text className={styles.cardTitle}>{item.title}</Text>
-                  <Text className={styles.badge}>{TYPE_LABELS[item.type] || item.type}</Text>
+                  <Text className={badgeClass(item)}>{badgeText(item)}</Text>
                 </View>
                 <View className={styles.cardMeta}>
-                  <Text className={styles.metaText}>{STRINGS.MINE_AGREEMENTS_VERSION} v{item.version}</Text>
+                  <Text className={styles.metaText}>{TYPE_LABELS[item.type] || item.type}</Text>
                   <Text className={styles.metaText}>
-                    {STRINGS.MINE_AGREEMENTS_SIGN_TIME} {formatTime(item.acceptedAt)}
+                    {STRINGS.MINE_AGREEMENTS_VERSION} v{item.version}
                   </Text>
+                  {item.signedVersion !== null && (
+                    <Text className={styles.metaText}>
+                      已签 v{item.signedVersion} · {formatTime(item.acceptedAt)}
+                    </Text>
+                  )}
                 </View>
               </View>
             ))
