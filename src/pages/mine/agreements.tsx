@@ -74,35 +74,37 @@ export default function AgreementsPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_AGREEMENTS_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          {loading ? (
-            <View className={styles.empty}>
-              <Text className={styles.emptyText}>{STRINGS.AGREEMENT_LOADING}</Text>
-            </View>
-          ) : items.length === 0 ? (
-            <View className={styles.empty}>
-              <Text className={styles.emptyText}>{STRINGS.MINE_AGREEMENTS_NONE_CONFIGURED}</Text>
-            </View>
-          ) : (
-            items.map((item) => (
-              <View key={item.type} className={styles.card} onClick={() => open(item)}>
-                <View className={styles.cardHeader}>
-                  <Text className={styles.cardTitle}>{item.title}</Text>
-                  <Text className={badgeClass(item)}>{badgeText(item)}</Text>
-                </View>
-                <View className={styles.cardMeta}>
-                  <Text className={styles.metaText}>{TYPE_LABELS[item.type] || item.type}</Text>
-                  <Text className={styles.metaText}>
-                    {STRINGS.MINE_AGREEMENTS_VERSION} v{item.version}
-                  </Text>
-                  {item.signedVersion !== null && (
-                    <Text className={styles.metaText}>
-                      已签 v{item.signedVersion} · {formatTime(item.acceptedAt)}
-                    </Text>
-                  )}
-                </View>
+          <View className={styles.bodyInner}>
+            {loading ? (
+              <View className={styles.empty}>
+                <Text className={styles.emptyText}>{STRINGS.AGREEMENT_LOADING}</Text>
               </View>
-            ))
-          )}
+            ) : items.length === 0 ? (
+              <View className={styles.empty}>
+                <Text className={styles.emptyText}>{STRINGS.MINE_AGREEMENTS_NONE_CONFIGURED}</Text>
+              </View>
+            ) : (
+              items.map((item) => (
+                <View key={item.type} className={styles.card} onClick={() => open(item)}>
+                  <View className={styles.cardHeader}>
+                    <Text className={styles.cardTitle}>{item.title}</Text>
+                    <Text className={badgeClass(item)}>{badgeText(item)}</Text>
+                  </View>
+                  <View className={styles.cardMeta}>
+                    <Text className={styles.metaText}>{TYPE_LABELS[item.type] || item.type}</Text>
+                    <Text className={styles.metaText}>
+                      {STRINGS.MINE_AGREEMENTS_VERSION} v{item.version}
+                    </Text>
+                    {item.signedVersion !== null && (
+                      <Text className={styles.metaText}>
+                        已签 v{item.signedVersion} · {formatTime(item.acceptedAt)}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
         </ScrollView>
       </View>
     </AuthGuard>

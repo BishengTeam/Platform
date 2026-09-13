@@ -11,6 +11,10 @@
 .body {
   flex: 1;
   overflow-y: auto;
+}
+
+/* 微信 scroll-view 直接带 padding 时右内边距不可靠，边距放在内层容器 */
+.bodyInner {
   padding: $spacing-md $spacing-lg;
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
   display: flex;
