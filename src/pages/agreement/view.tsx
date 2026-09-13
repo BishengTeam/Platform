@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { View, Text, ScrollView, RichText } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
@@ -7,6 +7,7 @@ import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { STRINGS } from '@/constants/strings'
 import { getAgreementTemplate, acceptAgreements } from '@/services/dataService'
 import type { AgreementType, AgreementTemplate } from '@/services/dataService'
+import { normalizeAgreementHtml } from '@/utils/agreementHtml'
 import styles from './view.module.scss'
 
 const TYPE_TITLES: Record<string, string> = {
@@ -33,6 +34,16 @@ export default function AgreementViewPage() {
   const [failed, setFailed] = useState(false)
   const [agreed, setAgreed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  // 页面横向占用：body 左右 32px + card 左右 24px（按 750 设计稿折半后共 56px）。
+  const tableWidthPx = useMemo(() => {
+    try {
+      const info = Taro.getWindowInfo?.() ?? Taro.getSystemInfoSync()
+      return Math.max(180, Math.floor(info.windowWidth - 56))
+    } catch {
+      return 319
+    }
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -79,24 +90,29 @@ export default function AgreementViewPage() {
     <View className={styles.page}>
       <PageHeader title={headerTitle} shouldShowBack />
       <ScrollView className={styles.body} scrollY>
-        {loading || failed ? (
-          <View className={styles.statusWrap}>
-            <Text className={styles.statusText}>
-              {loading ? STRINGS.AGREEMENT_LOADING : STRINGS.AGREEMENT_NOT_CONFIGURED}
-            </Text>
-          </View>
-        ) : (
-          template && (
-            <View className={styles.card}>
-              <View className={styles.cardMeta}>
-                <Text className={styles.metaText}>
-                  {STRINGS.AGREEMENT_VERSION} v{template.version}
-                </Text>
-              </View>
-              <RichText className={styles.content} nodes={template.content} />
+        <View className={styles.bodyInner}>
+          {loading || failed ? (
+            <View className={styles.statusWrap}>
+              <Text className={styles.statusText}>
+                {loading ? STRINGS.AGREEMENT_LOADING : STRINGS.AGREEMENT_NOT_CONFIGURED}
+              </Text>
             </View>
-          )
-        )}
+          ) : (
+            template && (
+              <View className={styles.card}>
+                <View className={styles.cardMeta}>
+                  <Text className={styles.metaText}>
+                    {STRINGS.AGREEMENT_VERSION} v{template.version}
+                  </Text>
+                </View>
+                <RichText
+                  className={styles.content}
+                  nodes={normalizeAgreementHtml(template.content, { tableWidthPx })}
+                />
+              </View>
+            )
+          )}
+        </View>
       </ScrollView>
 
       {requireSign && !loading && !failed && (
