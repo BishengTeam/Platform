@@ -10,6 +10,8 @@ import type { CertificationDetail } from '@/types'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
+import { normalizeGenderZh } from '@/utils/gender'
+import type { GenderZh } from '@/utils/gender'
 import { autoPinyin } from '@/utils/pinyin'
 import {
   IdentityCheckGate, CertSummaryCard, BaseInfoSection, PriceSummary,
@@ -79,7 +81,7 @@ export default function RegistrationFormPage() {
   const [major, setMajor] = useState('')
   const [province, setProvince] = useState('')
   const [level, setLevel] = useState<'1' | '2'>('1')
-  const [nispGender, setNispGender] = useState<'male' | 'female'>('male')
+  const [nispGender, setNispGender] = useState<GenderZh>('男')
   const [age, setAge] = useState('')
   const [nispEducation, setNispEducation] = useState('')
   const [address, setAddress] = useState('')
@@ -115,7 +117,10 @@ export default function RegistrationFormPage() {
       switch (cert.vendor) {
         case 'H3C':
           if (profile.profile.email && !email) setEmail(profile.profile.email)
-          if (profile.realname?.gender && !h3cGender) setH3cGender(profile.realname.gender)
+          if (profile.realname?.gender) {
+            const g = normalizeGenderZh(profile.realname.gender)
+            if (g && !h3cGender) setH3cGender(g)
+          }
           break
         case '深信服':
           if (profile.profile.email && !email) setEmail(profile.profile.email)
@@ -125,8 +130,8 @@ export default function RegistrationFormPage() {
           if (profile.student?.school && !school) setSchool(profile.student.school)
           if (profile.student?.major && !major) setMajor(profile.student.major)
           if (profile.realname?.gender) {
-            const g = profile.realname.gender
-            if (g === 'male' || g === 'female') setNispGender(g)
+            const g = normalizeGenderZh(profile.realname.gender)
+            if (g) setNispGender(g)
           }
           break
       }

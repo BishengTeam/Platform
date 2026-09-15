@@ -83,10 +83,10 @@ export function H3CExtraSection(props: H3CExtraSectionProps) {
         <View className={styles.identityRow}>
           <Text className={styles.identityLabel}>{STRINGS.FORM_GENDER}</Text>
           <View className={styles.identityToggle}>
-            <View className={`${styles.identityOption} ${gender === 'male' ? styles.identityActive : ''}`} onClick={() => setGender('male')}>
+            <View className={`${styles.identityOption} ${gender === '男' ? styles.identityActive : ''}`} onClick={() => setGender('男')}>
               <Text>{STRINGS.FORM_GENDER_MALE}</Text>
             </View>
-            <View className={`${styles.identityOption} ${gender === 'female' ? styles.identityActive : ''}`} onClick={() => setGender('female')}>
+            <View className={`${styles.identityOption} ${gender === '女' ? styles.identityActive : ''}`} onClick={() => setGender('女')}>
               <Text>{STRINGS.FORM_GENDER_FEMALE}</Text>
             </View>
           </View>

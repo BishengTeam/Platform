@@ -12,6 +12,8 @@ import { PriceRow } from '@/components/PriceRow'
 import { STRINGS } from '@/constants/strings'
 import { getCertDetail, uploadFile, createOrder, getUserProfile, getNispPinyin, getNispTemplate } from '@/services/dataService'
 import type { CertificationDetail } from '@/types'
+import { normalizeGenderZh } from '@/utils/gender'
+import type { GenderZh } from '@/utils/gender'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
 import { resolveUrl } from '@/utils/request'
 import type { ValidationResult } from '@/utils/validator'
@@ -30,7 +32,7 @@ export default function NispFormPage() {
   const [major, setMajor] = useState('')
   const [province, setProvince] = useState('')
   const [level, setLevel] = useState<'1' | '2'>('1')
-  const [gender, setGender] = useState<'male' | 'female'>('male')
+  const [gender, setGender] = useState<GenderZh>('男')
   const [age, setAge] = useState('')
   const [education, setEducation] = useState('')
   const [address, setAddress] = useState('')
@@ -66,8 +68,8 @@ export default function NispFormPage() {
       if (profile.student?.school && !school) setSchool(profile.student.school)
       if (profile.student?.major && !major) setMajor(profile.student.major)
       if (profile.realname?.gender) {
-        const g = profile.realname.gender
-        if (g === 'male' || g === 'female') setGender(g)
+        const g = normalizeGenderZh(profile.realname.gender)
+        if (g) setGender(g)
       }
     }).catch(() => {})
   }, [])
@@ -255,10 +257,10 @@ export default function NispFormPage() {
                 <View className={styles.identityRow}>
                   <Text className={styles.identityLabel}>{STRINGS.FORM_GENDER}</Text>
                   <View className={styles.identityToggle}>
-                    <View className={`${styles.identityOption} ${gender === 'male' ? styles.identityActive : ''}`} onClick={() => setGender('male')}>
+                    <View className={`${styles.identityOption} ${gender === '男' ? styles.identityActive : ''}`} onClick={() => setGender('男')}>
                       <Text>{STRINGS.FORM_GENDER_MALE}</Text>
                     </View>
-                    <View className={`${styles.identityOption} ${gender === 'female' ? styles.identityActive : ''}`} onClick={() => setGender('female')}>
+                    <View className={`${styles.identityOption} ${gender === '女' ? styles.identityActive : ''}`} onClick={() => setGender('女')}>
                       <Text>{STRINGS.FORM_GENDER_FEMALE}</Text>
                     </View>
                   </View>

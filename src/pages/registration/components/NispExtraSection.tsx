@@ -4,6 +4,7 @@ import { FormPicker } from '@/components/FormPicker'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import type { ValidationResult } from '@/utils/validator'
+import type { GenderZh } from '@/utils/gender'
 import styles from '../form.module.scss'
 
 export interface NispExtraSectionProps {
@@ -12,7 +13,7 @@ export interface NispExtraSectionProps {
   major: string; setMajor: (v: string) => void
   province: string; setProvince: (v: string) => void
   level: '1' | '2'; setLevel: (v: '1' | '2') => void
-  gender: 'male' | 'female'; setGender: (v: 'male' | 'female') => void
+  gender: GenderZh; setGender: (v: GenderZh) => void
   age: string; setAge: (v: string) => void
   education: string; setEducation: (v: string) => void
   address: string; setAddress: (v: string) => void
@@ -64,10 +65,10 @@ export function NispExtraSection(props: NispExtraSectionProps) {
           <View className={styles.identityRow}>
             <Text className={styles.identityLabel}>{STRINGS.FORM_GENDER}</Text>
             <View className={styles.identityToggle}>
-              <View className={`${styles.identityOption} ${gender === 'male' ? styles.identityActive : ''}`} onClick={() => setGender('male')}>
+            <View className={`${styles.identityOption} ${gender === '男' ? styles.identityActive : ''}`} onClick={() => setGender('男')}>
                 <Text>{STRINGS.FORM_GENDER_MALE}</Text>
               </View>
-              <View className={`${styles.identityOption} ${gender === 'female' ? styles.identityActive : ''}`} onClick={() => setGender('female')}>
+            <View className={`${styles.identityOption} ${gender === '女' ? styles.identityActive : ''}`} onClick={() => setGender('女')}>
                 <Text>{STRINGS.FORM_GENDER_FEMALE}</Text>
               </View>
             </View>
