@@ -47,6 +47,7 @@ export const ROUTES = {
   MINE_EXAM_QUERY: 'pages/mine/exam-query',
   MINE_SHARE: 'pages/mine/share',
   MINE_DEACTIVATE: 'pages/mine/deactivate',
+  MINE_REGISTRATIONS: 'pages/mine/registrations',
   LOGIN_POSTER: 'pages/login-poster/index',
   AGREEMENT_VIEW: 'pages/agreement/view',
 } as const

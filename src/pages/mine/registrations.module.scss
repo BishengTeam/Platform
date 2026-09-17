@@ -1,0 +1,222 @@
+.page {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.body {
+  height: calc(100vh - 88px - env(safe-area-inset-top));
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.card {
+  margin-bottom: 24px;
+  padding: 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.typeBadge {
+  padding: 4px 16px;
+  border-radius: 8px;
+  background: #eef4ff;
+  color: #3366ff;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.title {
+  display: block;
+  color: #17233d;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.label {
+  color: #667085;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.value {
+  max-width: 65%;
+  color: #17233d;
+  font-size: 28px;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-all;
+}
+
+.status {
+  padding: 4px 16px;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.statusPending {
+  background: #fff7e6;
+  color: #d97706;
+}
+
+.statusReview {
+  background: #eef4ff;
+  color: #3366ff;
+}
+
+.statusRejected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.statusApproved {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.statusNeutral {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.amount {
+  color: #ef4444;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.empty {
+  padding: 120px 32px;
+  color: #8091a5;
+  text-align: center;
+  font-size: 28px;
+}
+
+.emptyHint {
+  display: block;
+  margin-top: 12px;
+  color: #98a2b3;
+  font-size: 24px;
+}
+
+.retryBtn {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 12px 40px;
+  border: 1px solid #3366ff;
+  border-radius: 999px;
+  color: #3366ff;
+  font-size: 26px;
+}
+
+.loading {
+  padding: 120px 32px;
+  color: #8091a5;
+  text-align: center;
+  font-size: 28px;
+}
+
+/* ── 详情弹窗 ── */
+.detailMask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.detailSheet {
+  width: 100%;
+  max-height: 72vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 32px 32px 0 0;
+  padding: 24px 40px calc(40px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.detailBar {
+  width: 72px;
+  height: 8px;
+  border-radius: 8px;
+  background: #e0e0e0;
+  margin: 0 auto 24px;
+}
+
+.detailTitle {
+  display: block;
+  margin-bottom: 8px;
+  color: #17233d;
+  font-size: 34px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.detailSubtitle {
+  display: block;
+  margin-bottom: 24px;
+  color: #667085;
+  font-size: 24px;
+  text-align: center;
+}
+
+.sectionTitle {
+  display: block;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  color: #17233d;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.rejectReason {
+  margin-top: 16px;
+  padding: 20px;
+  background: #fef2f2;
+  border-radius: 14px;
+  color: #dc2626;
+  font-size: 24px;
+  line-height: 1.6;
+}
+
+.actionRow {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.actionBtn {
+  flex: 1;
+  height: 76px;
+  border-radius: 38px;
+  font-size: 26px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 76px;
+}
+
+.actionPrimary {
+  background: #3366ff;
+  color: #fff;
+}
+
+.actionSecondary {
+  background: #f3f4f6;
+  color: #374151;
+}
