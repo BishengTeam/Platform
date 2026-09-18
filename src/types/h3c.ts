@@ -79,6 +79,8 @@ export interface H3cRegistration {
   resubmission_count: number
   rejection_count: number
   resubmission_due_at: string | null
+  exam_date: string | null
+  exam_location: string | null
   materials: H3cMaterial[]
   latest_review: {
     decision: string

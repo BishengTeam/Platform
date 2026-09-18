@@ -137,6 +137,16 @@ export default function H3CFormPage() {
       '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
     ))) return
     setSubmitting(true)
+    // Request subscribe message permission (best-effort).
+    const subscribeTemplateId = process.env.TARO_APP_H3C_SUBSCRIBE_TMPL_ID || ''
+    if (subscribeTemplateId) {
+      try {
+        await Taro.requestSubscribeMessage({ tmplIds: [subscribeTemplateId] })
+      } catch {
+        // User may decline; proceed regardless.
+      }
+    }
+
     try {
       const registration = await h3cService.createOrder({
         batch_id: batch.id,

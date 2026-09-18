@@ -37,6 +37,18 @@ const FIELD_LABELS: Record<string, string> = {
   last_name_en: '英文姓',
 }
 
+
+function formatExamDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  return `${y}-${m}-${d} ${h}:${min}`
+}
+
 export default function MyRegistrationsPage() {
   const [items, setItems] = useState<H3cRegistration[]>([])
   const [selected, setSelected] = useState<H3cRegistration | null>(null)
@@ -193,6 +205,24 @@ export default function MyRegistrationsPage() {
                     拒绝原因：{selected.latest_review.reason_detail || selected.latest_review.reason_code || '请联系客服'}
                   </Text>
                 </View>
+              )}
+
+              {selected.status === 'approved' && (selected.exam_date || selected.exam_location) && (
+                <>
+                  <Text className={styles.sectionTitle}>考试安排</Text>
+                  {selected.exam_date && (
+                    <View className={styles.row}>
+                      <Text className={styles.label}>考试时间</Text>
+                      <Text className={styles.value}>{formatExamDate(selected.exam_date)}</Text>
+                    </View>
+                  )}
+                  {selected.exam_location && (
+                    <View className={styles.row}>
+                      <Text className={styles.label}>考试地点</Text>
+                      <Text className={styles.value}>{selected.exam_location}</Text>
+                    </View>
+                  )}
+                </>
               )}
 
               <Text className={styles.sectionTitle}>报名信息</Text>
