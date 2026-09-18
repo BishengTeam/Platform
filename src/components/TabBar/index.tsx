@@ -30,7 +30,6 @@ export function CustomTabBar({ activeTabKey, onSwitch }: CustomTabBarProps) {
       activeColor='#1677FF'
       inactiveColor='#999999'
       onSwitch={handleSwitch}
-      fixed
     >
       {tabs.map(tab => (
         <TabbarItem
