@@ -18,7 +18,6 @@ export const ROUTES = {
   REGISTRATION_CONFIRM: 'pages/registration/confirm',
   H3C_INDEX: 'pages/h3c/index',
   H3C_FORM: 'pages/h3c/form',
-  H3C_RECORDS: 'pages/h3c/records',
   PAYMENT_RESULT: 'pages/payment/result',
   ORDER_DETAIL: 'pages/order-detail/index',
   AI_CONSULT: 'pages/ai-consult/index',

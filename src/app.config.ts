@@ -27,7 +27,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/h3c',
-      pages: ['index', 'form', 'records'],
+      pages: ['index', 'form'],
     },
     {
       root: 'pages/payment',

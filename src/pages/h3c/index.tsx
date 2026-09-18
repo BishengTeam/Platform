@@ -37,8 +37,8 @@ export default function H3CListPage() {
       <View className={styles.page}>
         <PageHeader title='H3C 认证报名' shouldShowBack />
         <View className={styles.body}>
-          <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: `/${ROUTES.H3C_RECORDS}` })}>
-            我的 H3C 报名
+          <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_REGISTRATIONS}` })}>
+            我的报名
           </Button>
           {loading && <View className={styles.empty}>正在加载考试批次...</View>}
           {error && (
