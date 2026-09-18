@@ -32,6 +32,15 @@ export function orderAmount(price: number | null | undefined): string {
   return `¥${(price / 100).toFixed(2)}`
 }
 
+/** 后端 ISO UTC 时间 → 本地时区可读时间（yyyy-MM-dd HH:mm:ss）。 */
+export function formatOrderTime(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return iso
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())} ${p(date.getHours())}:${p(date.getMinutes())}:${p(date.getSeconds())}`
+}
+
 export function toOrder(item: OrderBackendItem): Order {
   return {
     id: String(item.id),
@@ -52,7 +61,7 @@ export function toOrderDetail(item: OrderBackendItem): OrderDetail {
     courseSubtitle: orderDescription(item),
     amountPaid: item.price != null ? (item.price / 100).toFixed(2) : '0.00',
     paymentMethod: item.paid_at ? '微信支付' : item.price === 0 ? '免费开通' : '未支付',
-    paymentTime: item.paid_at || '未支付',
-    orderTime: item.created_at || '',
+    paymentTime: item.paid_at ? formatOrderTime(item.paid_at) : '未支付',
+    orderTime: formatOrderTime(item.created_at),
   }
 }

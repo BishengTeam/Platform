@@ -82,6 +82,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .metaLabel {
@@ -93,6 +95,7 @@
   font-size: $font-base;
   font-weight: 500;
   color: $color-text;
+  word-break: break-all;
 }
 
 .section {

@@ -205,11 +205,16 @@
 .fieldLabel {
   font-size: 26px;
   color: $color-text-tertiary;
+  flex-shrink: 0;
 }
 
 .fieldValue {
   font-size: 26px;
   color: $color-text;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  word-break: break-all;
 }
 
 // ---- 双列字段行 ----

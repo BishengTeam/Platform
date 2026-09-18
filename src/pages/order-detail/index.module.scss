@@ -103,6 +103,10 @@
   font-size: $font-base;
   color: $color-text;
   text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metaValueHighlight {
@@ -110,12 +114,19 @@
   font-weight: 600;
   color: $color-price;
   text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metaValueWrap {
   display: flex;
   align-items: center;
   gap: $spacing-xs;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-end;
 }
 
 .copyBtn {
