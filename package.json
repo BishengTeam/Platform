@@ -12,7 +12,7 @@
   "scripts": {
     "prepare": "husky",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
-    "test": "NODE_OPTIONS='--import=./tests/taro-node-globals.mjs' node --experimental-strip-types --test tests/*.test.mjs",
+    "test": "node --import=./tests/taro-node-globals.mjs --experimental-strip-types --test tests/*.test.mjs",
     "new": "taro new",
     "build:weapp": "taro build --type weapp --mode production",
     "build:swan": "taro build --type swan",
