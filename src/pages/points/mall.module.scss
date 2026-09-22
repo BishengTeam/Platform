@@ -1,0 +1,103 @@
+.page { min-height: 100vh; background: #f5f7fb; }
+.body { padding: 24px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+
+.balanceCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  color: #fff;
+}
+
+.balanceLabel { font-size: 24px; opacity: .8; }
+.balanceValue { font-size: 56px; font-weight: 700; line-height: 1.2; }
+.balanceUnit { font-size: 24px; margin-left: 4px; font-weight: 400; }
+.myCouponsBtn { padding: 12px 28px; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; font-size: 24px; color: #fff; }
+
+.sectionTitle {
+  display: block;
+  margin-bottom: 16px;
+  color: #17233d;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.card {
+  margin-bottom: 20px;
+  padding: 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, .05);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  flex: 1;
+  color: #17233d;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.cardBadge {
+  flex-shrink: 0;
+  margin-left: 12px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: #fff7e6;
+  color: #d97706;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.cardDesc {
+  display: block;
+  margin-top: 8px;
+  color: #667085;
+  font-size: 24px;
+  line-height: 1.5;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f4f7;
+}
+
+.scopeLabel { color: #667085; font-size: 22px; }
+.pointsCost { color: #ef4444; font-size: 28px; font-weight: 700; }
+.pointsCostUnit { color: #ef4444; font-size: 22px; margin-left: 2px; }
+
+.redeemBtn {
+  padding: 12px 32px;
+  border-radius: 999px;
+  background: #3366ff;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.redeemBtnDisabled {
+  padding: 12px 32px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.empty { padding: 120px 32px; color: #8091a5; text-align: center; font-size: 28px; }
+.loading { padding: 120px 32px; color: #8091a5; text-align: center; font-size: 28px; }

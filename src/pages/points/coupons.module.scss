@@ -1,0 +1,86 @@
+.page { min-height: 100vh; background: #f5f7fb; }
+.body { padding: 24px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+
+.tabs {
+  display: flex;
+  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tab {
+  flex: 1;
+  padding: 20px 0;
+  text-align: center;
+  font-size: 26px;
+  color: #667085;
+  border-bottom: 3px solid transparent;
+}
+
+.tabActive {
+  color: #3366ff;
+  font-weight: 700;
+  border-bottom-color: #3366ff;
+}
+
+.card {
+  display: flex;
+  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, .05);
+}
+
+.cardDisabled { opacity: .45; }
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.leftDisabled { background: #e5e7eb; }
+
+.discountValue { font-size: 40px; font-weight: 700; line-height: 1.2; }
+.discountUnit { font-size: 20px; margin-top: 4px; }
+
+.right {
+  flex: 1;
+  padding: 24px;
+  min-width: 0;
+}
+
+.couponName {
+  display: block;
+  color: #17233d;
+  font-size: 28px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.couponScope { display: block; margin-top: 6px; color: #667085; font-size: 22px; }
+.couponCode { display: block; margin-top: 4px; color: #98a2b3; font-size: 20px; }
+.couponExpiry { display: block; margin-top: 10px; color: #98a2b3; font-size: 22px; }
+
+.statusBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.empty { padding: 120px 32px; color: #8091a5; text-align: center; font-size: 28px; }
+.loading { padding: 120px 32px; color: #8091a5; text-align: center; font-size: 28px; }
