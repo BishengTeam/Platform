@@ -14,7 +14,6 @@ export const profileGridItems: ProfileMenuItem[] = [
   { icon: 'heart', label: STRINGS.PROFILE_GRID_MY_FAVORITES, route: 'pages/mine/collections' },
   { icon: 'star', label: STRINGS.MINE_POINTS_TITLE, route: 'pages/mine/points' },
   { icon: 'gift', label: '积分商城', route: 'pages/points/mall' },
-  { icon: 'file-text', label: STRINGS.MINE_AGREEMENTS_TITLE, route: 'pages/mine/agreements' },
 ]
 
 export const profileListItems: ProfileMenuItem[] = [

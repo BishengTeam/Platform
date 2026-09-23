@@ -59,3 +59,24 @@ export const pointsMallService = {
     return (await post<UsableCoupon[]>('/api/points-mall/usable-coupons', payload as Record<string, unknown>)).data
   },
 }
+
+export async function applyCouponToOrder(
+  orderId: number,
+  couponCode: string,
+): Promise<{
+  order_id: number
+  original_price: number
+  discount_amount: number
+  final_price: number
+  coupon_code: string | null
+}> {
+  return (
+    await post<{
+      order_id: number
+      original_price: number
+      discount_amount: number
+      final_price: number
+      coupon_code: string | null
+    }>(`/api/orders/${orderId}/apply-coupon`, { coupon_code: couponCode })
+  ).data
+}

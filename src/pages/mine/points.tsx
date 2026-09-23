@@ -5,19 +5,17 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
-import { getPointsBalance, getPointRecords, getCoupons, redeemPoints } from '@/services/dataService'
+import { getPointsBalance, getPointRecords } from '@/services/dataService'
 import type { PointRecord } from '@/types/mine'
 import styles from './points.module.scss'
 
 export default function PointsPage() {
   const [balance, setBalance] = useState(0)
   const [records, setRecords] = useState<PointRecord[]>([])
-  const [coupons, setCoupons] = useState<Array<{ id: string; name: string; discount: number; valid_until: string; amount: number; expire_at: string; status: string }>>([])
 
   const refresh = useCallback(() => {
     getPointsBalance().then(b => setBalance(b.total)).catch(() => {})
     getPointRecords().then(setRecords).catch(() => {})
-    getCoupons().then(setCoupons).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -32,33 +30,11 @@ export default function PointsPage() {
           <View className={styles.balanceCard}>
             <Text className={styles.balanceLabel}>{STRINGS.MINE_POINTS_BALANCE}</Text>
             <Text className={styles.balanceValue}>{balance}</Text>
-            <Text className={styles.balanceTip}>{STRINGS.MINE_POINTS_REDEEM_TIP}</Text>
+            <Text className={styles.balanceTip}>答题打卡自动获得积分</Text>
             <Button size='sm' variant='secondary' onClick={() => {
-            redeemPoints('exam_discount', 50).then(() => {
-              refresh()
-              Taro.showToast({ title: STRINGS.MINE_POINTS_REDEEM + '成功', icon: 'success' })
-            }).catch(() => {
-              Taro.showToast({ title: '兑换失败', icon: 'none' })
-            })
-          }}>{STRINGS.MINE_POINTS_REDEEM}</Button>
+              Taro.navigateTo({ url: '/pages/points/mall' })
+            }}>去积分商城</Button>
           </View>
-
-          {coupons.length > 0 && (
-            <View className={styles.section}>
-              <Text className={styles.sectionTitle}>优惠券</Text>
-              <View className={styles.recordList}>
-                {coupons.map(c => (
-                  <View key={c.id} className={styles.recordItem}>
-                    <View className={styles.recordInfo}>
-                      <Text className={styles.recordDesc}>{c.name}</Text>
-                      <Text className={styles.recordDate}>有效期至 {c.expire_at}</Text>
-                    </View>
-                    <Text className={styles.recordAmount}>¥{c.amount}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
 
           <View className={styles.section}>
             <Text className={styles.sectionTitle}>{STRINGS.MINE_POINTS_HISTORY}</Text>
@@ -74,6 +50,14 @@ export default function PointsPage() {
                   </Text>
                 </View>
               ))}
+              {records.length === 0 && (
+                <View className={styles.recordItem}>
+                  <View className={styles.recordInfo}>
+                    <Text className={styles.recordDesc}>暂无积分记录</Text>
+                    <Text className={styles.recordDate}>答题打卡后自动获得积分</Text>
+                  </View>
+                </View>
+              )}
             </View>
           </View>
         </View>

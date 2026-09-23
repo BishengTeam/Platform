@@ -4,6 +4,7 @@ import Taro, { usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { pointsMallService } from '@/services/pointsMallService'
+import { getPointsBalance } from '@/services/dataService'
 import type { PointsMallItem } from '@/services/pointsMallService'
 import styles from './mall.module.scss'
 
@@ -18,7 +19,7 @@ export default function PointsMallPage() {
     setError(false)
     Promise.all([
       pointsMallService.listItems(),
-      fetch('/api/points').then(r => r.json()).then(d => d?.data?.balance ?? 0).catch(() => 0),
+      getPointsBalance().then(d => d.available ?? 0).catch(() => 0),
     ])
       .then(([list, bal]) => { setItems(list); setBalance(bal) })
       .catch(() => setError(true))
