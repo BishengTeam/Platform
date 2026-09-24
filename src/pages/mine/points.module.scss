@@ -99,3 +99,111 @@
 .redeem {
   color: $color-price;
 }
+
+/* ── 优惠券 ── */
+.couponTabs {
+  display: flex;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.couponTab {
+  padding: $spacing-xs $spacing-md;
+  border-radius: 999px;
+  background: $color-white;
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+.couponTabActive {
+  background: $color-primary;
+  color: $color-white;
+  font-weight: 600;
+}
+
+.couponCard {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  border-radius: $radius-md;
+  background: $color-white;
+  margin-bottom: $spacing-sm;
+
+  &.couponCardDisabled {
+    opacity: 0.45;
+  }
+}
+
+.couponLeft {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, $color-primary, #722ED1);
+}
+
+.couponDiscount {
+  color: $color-white;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.couponRight {
+  flex: 1;
+  min-width: 0;
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.couponName {
+  color: $color-text;
+  font-size: $font-base;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.couponScope {
+  color: $color-text-secondary;
+  font-size: $font-xs;
+}
+
+.couponCode {
+  color: $color-text-tertiary;
+  font-size: $font-xs;
+}
+
+.couponExpiry {
+  color: $color-text-tertiary;
+  font-size: $font-xs;
+  margin-top: 2px;
+}
+
+.couponStatusBadge {
+  position: absolute;
+  top: $spacing-xs;
+  right: $spacing-xs;
+  padding: 2px $spacing-sm;
+  border-radius: 999px;
+  background: $color-bg;
+  font-size: $font-xs;
+  color: $color-text-secondary;
+}
+
+.emptyState {
+  padding: $spacing-3xl $spacing-md;
+  text-align: center;
+  color: $color-text-secondary;
+  font-size: $font-base;
+}
+
+.emptyHint {
+  display: block;
+  margin-top: $spacing-xs;
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+}

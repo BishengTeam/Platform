@@ -59,7 +59,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/mine',
-      pages: ['courses', 'profile', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations'],
+      pages: ['courses', 'profile', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations', 'points-history'],
     },
     {
       root: 'pages/employment-zone',

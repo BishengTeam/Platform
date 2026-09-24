@@ -1,0 +1,66 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-x: hidden;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  box-sizing: border-box;
+}
+
+.recordItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  background: $color-white;
+  border-radius: $radius-md;
+}
+
+.recordInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.recordDesc {
+  font-size: $font-base;
+  color: $color-text;
+}
+
+.recordDate {
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+}
+
+.recordAmount {
+  font-size: $font-lg;
+  font-weight: 700;
+}
+
+.earn { color: #16a34a; }
+.redeem { color: $color-text-secondary; }
+
+.empty {
+  padding: $spacing-3xl $spacing-md;
+  text-align: center;
+  color: $color-text-secondary;
+  font-size: $font-base;
+}
+
+.emptyHint {
+  display: block;
+  margin-top: $spacing-xs;
+  color: $color-text-tertiary;
+  font-size: $font-sm;
+}

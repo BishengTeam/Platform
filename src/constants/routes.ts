@@ -41,6 +41,7 @@ export const ROUTES = {
   MINE_PERSONAL_INFO: 'pages/mine/personal-info',
   MINE_EDIT_PROFILE: 'pages/mine/edit-profile',
   MINE_POINTS: 'pages/mine/points',
+  MINE_POINTS_HISTORY: 'pages/mine/points-history',
   POINTS_MALL: 'pages/points/mall',
   POINTS_COUPONS: 'pages/points/coupons',
   MINE_AGREEMENTS: 'pages/mine/agreements',
