@@ -207,3 +207,19 @@
   color: $color-text-tertiary;
   font-size: $font-sm;
 }
+
+/* ── 悬浮积分记录按钮 ── */
+.fabButton {
+  position: fixed;
+  left: $spacing-lg;
+  bottom: calc(#{$spacing-xl} + #{$safe-bottom});
+  z-index: 100;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-primary;
+  border-radius: 50%;
+  box-shadow: 0 8px 24px rgba(51, 102, 255, 0.35);
+}

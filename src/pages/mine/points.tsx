@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { getPointsBalance } from '@/services/dataService'
 import { pointsMallService } from '@/services/pointsMallService'
@@ -35,18 +36,7 @@ export default function PointsPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader
-            title={STRINGS.MINE_POINTS_TITLE}
-            shouldShowBack
-            rightContent={
-              <View
-                style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
-                onClick={() => Taro.navigateTo({ url: '/pages/mine/points-history' })}
-              >
-                <Text style={{ fontSize: '24rpx', color: '#667085' }}>积分记录</Text>
-              </View>
-            }
-          />
+        <PageHeader title={STRINGS.MINE_POINTS_TITLE} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
           <View className={styles.balanceCard}>
             <Text className={styles.balanceLabel}>{STRINGS.MINE_POINTS_BALANCE}</Text>
@@ -110,6 +100,13 @@ export default function PointsPage() {
 
         </ScrollView>
       </View>
+
+        <View
+          className={styles.fabButton}
+          onClick={() => Taro.navigateTo({ url: '/pages/mine/points-history' })}
+        >
+          <Icon name='file-text' size={44} color='#fff' />
+        </View>
     </AuthGuard>
   )
 }
