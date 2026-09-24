@@ -1,5 +1,21 @@
-.page { min-height: 100vh; background: #f5f7fb; }
-.body { padding: 24px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: #f5f7fb;
+}
+
+.body {
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+  padding: -md -lg;
+  padding-bottom: calc(#{-lg} + #{-bottom});
+  box-sizing: border-box;
+}
 
 .balanceCard {
   display: flex;
