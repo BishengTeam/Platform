@@ -1,4 +1,4 @@
-export type PointsClaimScene = 'daily_checkin' | 'quiz_task' | 'new_user' | 'activity'
+export type PointsClaimScene = 'daily_checkin' | 'new_user' | 'activity'
 export type PointsRedeemType = 'exam_discount' | 'course'
 
 export interface MyCourse {

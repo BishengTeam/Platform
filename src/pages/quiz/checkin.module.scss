@@ -12,12 +12,10 @@
   flex: 1;
   overflow-y: auto;
   padding: $spacing-md $spacing-lg;
-  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  padding-bottom: calc(160px + #{$safe-bottom});
 }
 
-.notice { padding: $spacing-md; color: $color-text-secondary; background: $color-blue-tint; border-radius: $radius-md; font-size: $font-sm; line-height: 1.5; }
 .error { display: block; padding: $spacing-lg; color: $color-price; text-align: center; }
-.todayStatus { display: block; margin-top: $spacing-md; color: $color-text-secondary; text-align: center; font-size: $font-sm; }
 
 .statsCard {
   display: flex;
@@ -56,17 +54,63 @@
 .calendarCard {
   background: $color-white;
   border-radius: $radius-md;
-  padding: $spacing-lg;
+  padding: $spacing-lg $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: $spacing-md;
 }
 
 .calendarTitle {
+  flex: 1;
+  text-align: center;
   font-size: $font-lg;
   font-weight: 600;
   color: $color-text;
-  text-align: center;
-  display: block;
-  margin-bottom: $spacing-md;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.monthArrow {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.monthArrowIcon {
+  font-size: 44px;
+  line-height: 44px;
+  color: $color-text-secondary;
+  font-weight: 500;
+}
+
+.helpButton {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid $color-border;
+  background: $color-blue-tint;
+}
+
+.helpButtonText {
+  font-size: $font-base;
+  font-weight: 700;
+  color: $color-primary;
+  line-height: 1;
 }
 
 .weekdayRow {
@@ -88,46 +132,174 @@
 
 .dayCell {
   width: calc(100% / 7);
-  aspect-ratio: 1;
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .dayText {
-  width: 32px;
-  height: 32px;
-  line-height: 32px;
+  width: 64px;
+  height: 64px;
+  line-height: 64px;
   text-align: center;
   border-radius: 50%;
-  font-size: $font-sm;
+  font-size: $font-base;
   color: $color-text;
+  box-sizing: border-box;
+}
+
+.dayOtherMonth {
+  .dayText {
+    color: $color-text-tertiary;
+    opacity: 0.55;
+  }
+}
+
+.dayFuture {
+  .dayText {
+    color: $color-text-tertiary;
+  }
 }
 
 .dayCompleted {
   .dayText {
-    background: $color-primary;
-    color: $color-white;
+    background: $color-blue-light;
+    color: $color-primary-dark;
+    font-weight: 600;
   }
 }
 
 .dayToday {
   .dayText {
-    border: 1px solid $color-primary;
+    background: $color-primary-dark;
+    color: $color-white;
     font-weight: 600;
+    box-shadow: 0 4px 10px rgba(24, 144, 255, 0.3);
   }
 
   &.dayCompleted .dayText {
-    border: none;
+    background: $color-primary-dark;
+    color: $color-white;
   }
 }
 
-.dayFuture {
-  color: $color-text-tertiary;
+.todayStatus {
+  display: block;
+  margin-top: $spacing-md;
+  color: $color-text-secondary;
+  text-align: center;
+  font-size: $font-sm;
 }
 
-.btnWrap {
+.actionBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: $spacing-md $spacing-lg calc(#{$spacing-lg} + #{$safe-bottom});
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.actionButton {
+  height: 88px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: $spacing-md 0;
+  border-radius: 999px;
+  background: $gradient-blue;
+  box-shadow: 0 8px 20px rgba(22, 119, 255, 0.28);
+}
+
+.actionButtonDone {
+  background: $color-blue-light;
+  box-shadow: none;
+
+  .actionButtonText {
+    color: $color-primary-dark;
+  }
+}
+
+.actionButtonText {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-white;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  width: 560px;
+  background: $color-white;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.modalTitle {
+  display: block;
+  text-align: center;
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+  padding: 44px 0 20px;
+}
+
+.ruleList {
+  padding: 0 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ruleItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.ruleIndex {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  flex-shrink: 0;
+  text-align: center;
+  border-radius: 50%;
+  background: $color-blue-light;
+  color: $color-primary;
+  font-size: $font-sm;
+  font-weight: 600;
+}
+
+.ruleText {
+  flex: 1;
+  font-size: $font-base;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 0;
+  border-top: 1px solid $color-border-light;
+}
+
+.modalPrimaryText {
+  font-size: $font-base;
+  color: $color-primary;
+  font-weight: 500;
 }
