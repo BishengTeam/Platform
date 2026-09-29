@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ScrollView, Text, View } from '@tarojs/components'
 import Taro, { usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
+import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import { pointsMallService } from '@/services/pointsMallService'
 import { getPointsBalance } from '@/services/dataService'
 import type { PointsMallItem } from '@/services/pointsMallService'
+import { COUPON_CATEGORY_TABS, getCouponCategory, formatMinimumSpend } from './mallUtils'
 import styles from './mall.module.scss'
 
 export default function PointsMallPage() {
@@ -13,6 +15,7 @@ export default function PointsMallPage() {
   const [balance, setBalance] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<(typeof COUPON_CATEGORY_TABS)[number]['key']>('all')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -28,6 +31,11 @@ export default function PointsMallPage() {
 
   useEffect(() => { load() }, [load])
   usePullDownRefresh(() => { load(); Taro.stopPullDownRefresh() })
+
+  const visibleItems = useMemo(() => {
+    if (activeCategory === 'all') return items
+    return items.filter(item => getCouponCategory(item) === activeCategory)
+  }, [activeCategory, items])
 
   const redeem = async (item: PointsMallItem) => {
     if (!item.can_redeem) return
@@ -62,42 +70,65 @@ export default function PointsMallPage() {
         <PageHeader title='积分商城' shouldShowBack />
         <ScrollView className={styles.body} scrollY>
           <View className={styles.balanceCard}>
-            <View>
+            <View className={styles.balanceMain}>
               <Text className={styles.balanceLabel}>我的积分</Text>
-              <View>
+              <View className={styles.balanceRow}>
+                <Icon name='coin' size={32} color='rgba(255, 255, 255, 0.92)' className={styles.balanceIcon} />
                 <Text className={styles.balanceValue}>{balance}</Text>
                 <Text className={styles.balanceUnit}>分</Text>
               </View>
             </View>
             <View className={styles.myCouponsBtn} onClick={() => Taro.navigateTo({ url: '/pages/points/coupons' })}>
               <Text>我的优惠券</Text>
+              <Icon name='chevron-right' size={22} color='rgba(255, 255, 255, 0.88)' className={styles.myCouponsArrow} />
             </View>
           </View>
 
+          <ScrollView className={styles.categoryBar} scrollX enhanced showScrollbar={false}>
+            <View className={styles.categoryTabs}>
+              {COUPON_CATEGORY_TABS.map(tab => {
+                const isActive = tab.key === activeCategory
+                return (
+                  <View
+                    key={tab.key}
+                    className={`${styles.categoryTab} ${isActive ? styles.categoryTabActive : ''}`}
+                    onClick={() => setActiveCategory(tab.key)}
+                  >
+                    <Text>{tab.label}</Text>
+                  </View>
+                )
+              })}
+            </View>
+          </ScrollView>
+
           {loading && <View className={styles.loading}>加载中...</View>}
           {error && <View className={styles.empty}>加载失败，下拉重试</View>}
-          {!loading && !error && items.length === 0 && (
-            <View className={styles.empty}>暂无可兑换的优惠券</View>
+          {!loading && !error && visibleItems.length === 0 && (
+            <View className={styles.empty}>
+              {items.length === 0 ? '暂无可兑换的优惠券' : '该分类暂无可兑换的优惠券'}
+            </View>
           )}
 
-          {!loading && !error && items.map((item) => (
-            <View key={item.id} className={styles.card}>
-              <View className={styles.cardHeader}>
-                <Text className={styles.cardTitle}>{item.name}</Text>
-                <Text className={styles.cardBadge}>{item.discount_label}</Text>
+          {!loading && !error && visibleItems.map((item) => (
+            <View key={item.id} className={styles.couponCard}>
+              <View className={styles.amountArea}>
+                <Text className={styles.amountValue}>{item.discount_label}</Text>
+                <Text className={styles.amountType}>
+                  {item.discount_type === 'percent' ? '折扣券' : '满减券'}
+                </Text>
               </View>
-              {item.description && <Text className={styles.cardDesc}>{item.description}</Text>}
-              <View className={styles.cardMeta}>
-                <View>
-                  <Text className={styles.scopeLabel}>{item.scope_label}</Text>
-                  <Text className={styles.scopeLabel}> · 满 {(item.min_order_amount_cents / 100).toFixed(0)} 元可用</Text>
-                </View>
-                <View>
-                  <Text className={styles.pointsCost}>{item.points_cost}</Text>
+              <View className={styles.infoArea}>
+                <Text className={styles.couponTitle}>{item.name}</Text>
+                <Text className={styles.couponSubtitle}>
+                  {item.scope_label} · 满{formatMinimumSpend(item.min_order_amount_cents)}元可用
+                </Text>
+                {item.description && <Text className={styles.couponDesc}>{item.description}</Text>}
+              </View>
+              <View className={styles.actionArea}>
+                <View className={styles.pointsCost}>
+                  <Text className={styles.pointsCostValue}>{item.points_cost}</Text>
                   <Text className={styles.pointsCostUnit}>积分</Text>
                 </View>
-              </View>
-              <View style={{ marginTop: 20 }}>
                 {item.can_redeem ? (
                   <View className={styles.redeemBtn} onClick={() => redeem(item)}>
                     <Text>立即兑换</Text>
@@ -110,6 +141,12 @@ export default function PointsMallPage() {
               </View>
             </View>
           ))}
+
+          {!loading && !error && visibleItems.length > 0 && (
+            <View className={styles.listEnd}>
+              <Text>— 暂无更多优惠券 —</Text>
+            </View>
+          )}
         </ScrollView>
       </View>
     </AuthGuard>

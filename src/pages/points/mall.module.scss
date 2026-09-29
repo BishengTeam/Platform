@@ -9,111 +9,341 @@
 }
 
 .body {
+  box-sizing: border-box;
   flex: 1;
   width: 100%;
   overflow-x: hidden;
-  padding: -md -lg;
-  padding-bottom: calc(#{-lg} + #{-bottom});
-  box-sizing: border-box;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
 .balanceCard {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  padding: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
+  margin-bottom: $spacing-sm;
+  padding: 36px 32px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: $radius-lg;
+  box-shadow: 0 18px 40px rgba(79, 70, 229, 0.32);
   color: #fff;
+
+  &::before {
+    position: absolute;
+    top: -96px;
+    right: -88px;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 68%);
+    border-radius: 50%;
+    content: '';
+  }
+
+  &::after {
+    position: absolute;
+    right: -40px;
+    bottom: -72px;
+    width: 184px;
+    height: 184px;
+    border: 24px solid rgba(255, 255, 255, 0.09);
+    border-radius: 50%;
+    content: '';
+  }
 }
 
-.balanceLabel { font-size: 24px; opacity: .8; }
-.balanceValue { font-size: 56px; font-weight: 700; line-height: 1.2; }
-.balanceUnit { font-size: 24px; margin-left: 4px; font-weight: 400; }
-.myCouponsBtn { padding: 12px 28px; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; font-size: 24px; color: #fff; }
+.balanceMain,
+.balanceRow {
+  position: relative;
+  z-index: 1;
+}
 
-.sectionTitle {
+.balanceMain {
+  min-width: 0;
+}
+
+.balanceLabel {
   display: block;
-  margin-bottom: 16px;
-  color: #17233d;
-  font-size: 30px;
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: $font-sm;
+  line-height: 1.3;
 }
 
-.card {
-  margin-bottom: 20px;
-  padding: 28px;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, .05);
-}
-
-.cardHeader {
+.balanceRow {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 10px;
 }
 
-.cardTitle {
-  flex: 1;
-  color: #17233d;
-  font-size: 30px;
+.balanceIcon {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.balanceValue {
+  color: #fff;
+  font-size: 64px;
   font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.balanceUnit {
+  margin-left: 6px;
+  margin-bottom: 5px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: $font-sm;
+  line-height: 1;
+}
+
+.myCouponsBtn {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1PX solid rgba(255, 255, 255, 0.42);
+  border-radius: $radius-full;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: $font-sm;
+  font-weight: 600;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.28);
+    transform: scale(0.98);
+  }
+}
+
+.myCouponsArrow {
+  margin-left: 4px;
+}
+
+.categoryBar {
+  width: 100%;
+  margin-bottom: $spacing-sm;
+  white-space: nowrap;
+}
+
+.categoryTabs {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 2px;
+}
+
+.categoryTab {
+  flex-shrink: 0;
+  margin-right: 12px;
+  padding: 12px 26px;
+  background: #fff;
+  border-radius: $radius-full;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+  color: $color-text-secondary;
+  font-size: $font-sm;
+  transition:
+    color $motion-duration-state $motion-ease-out,
+    background-color $motion-duration-state $motion-ease-out,
+    box-shadow $motion-duration-state $motion-ease-out;
+
+  &:active {
+    opacity: 0.88;
+  }
+}
+
+.categoryTabActive {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.24);
+  color: #fff;
+  font-weight: 700;
+}
+
+.couponCard {
+  position: relative;
+  display: flex;
+  min-height: 172px;
+  margin-bottom: $spacing-sm;
+  background: #fff;
+  border-radius: $radius-md;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+
+  &::before,
+  &::after {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #f5f7fb;
+    border-radius: 50%;
+    box-shadow: inset 1PX 2px 3px rgba(15, 23, 42, 0.05);
+    content: '';
+    pointer-events: none;
+  }
+
+  &::before {
+    top: calc(50% - 10px);
+    left: -10px;
+  }
+
+  &::after {
+    top: calc(50% - 10px);
+    right: -10px;
+  }
+}
+
+.amountArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 176px;
+  flex-shrink: 0;
+  padding: 24px 12px;
+  border-right: 2PX dashed #dbe1f5;
+  background: linear-gradient(150deg, #f5f7ff 0%, #fff 100%);
+}
+
+.amountValue {
+  max-width: 152px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  background-clip: text;
+  color: #ef4444;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-text-fill-color: transparent;
+}
+
+.amountType {
+  margin-top: 8px;
+  color: #98a2b3;
+  font-size: $font-2xs;
+}
+
+.infoArea {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 0;
+  flex: 1;
+  padding: 24px 18px;
+}
+
+.couponTitle {
+  overflow: hidden;
+  color: #17233d;
+  font-size: $font-base;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.couponSubtitle {
+  margin-top: 8px;
+  color: #667085;
+  font-size: $font-xs;
   line-height: 1.4;
 }
 
-.cardBadge {
-  flex-shrink: 0;
-  margin-left: 12px;
-  padding: 6px 16px;
-  border-radius: 999px;
-  background: #fff7e6;
-  color: #d97706;
-  font-size: 22px;
-  font-weight: 600;
+.couponDesc {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 6px;
+  color: #98a2b3;
+  font-size: $font-2xs;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-.cardDesc {
-  display: block;
-  margin-top: 8px;
-  color: #667085;
-  font-size: 24px;
-  line-height: 1.5;
-}
-
-.cardMeta {
+.actionArea {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #f2f4f7;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 168px;
+  flex-shrink: 0;
+  padding: 24px 20px 24px 4px;
 }
 
-.scopeLabel { color: #667085; font-size: 22px; }
-.pointsCost { color: #ef4444; font-size: 28px; font-weight: 700; }
-.pointsCostUnit { color: #ef4444; font-size: 22px; margin-left: 2px; }
+.pointsCost {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
 
-.redeemBtn {
-  padding: 12px 32px;
-  border-radius: 999px;
-  background: #3366ff;
-  color: #fff;
-  font-size: 24px;
+.pointsCostValue {
+  color: #4f46e5;
+  font-size: $font-lg;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pointsCostUnit {
+  margin-left: 3px;
+  color: #6d28d9;
+  font-size: $font-xs;
+  line-height: 1.2;
+}
+
+.redeemBtn,
+.redeemBtnDisabled {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 13px 0;
+  border-radius: $radius-full;
+  font-size: $font-xs;
   font-weight: 600;
   text-align: center;
+}
+
+.redeemBtn {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 8px 16px rgba(79, 70, 229, 0.24);
+  color: #fff;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .redeemBtnDisabled {
-  padding: 12px 32px;
-  border-radius: 999px;
+  overflow: hidden;
   background: #f3f4f6;
   color: #9ca3af;
-  font-size: 24px;
-  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listEnd {
+  padding: 6px 0 20px;
+  color: #a5b0c0;
+  font-size: $font-xs;
   text-align: center;
 }
 
-.empty { padding: 120px 32px; color: #8091a5; text-align: center; font-size: 28px; }
-.loading { padding: 120px 32px; color: #8091a5; text-align: center; font-size: 28px; }
+.empty {
+  padding: 120px $spacing-lg;
+  color: #8091a5;
+  font-size: $font-base;
+  text-align: center;
+}
+
+.loading {
+  padding: 120px $spacing-lg;
+  color: #8091a5;
+  font-size: $font-base;
+  text-align: center;
+}
