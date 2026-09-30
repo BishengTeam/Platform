@@ -490,7 +490,7 @@ export const STRINGS = {
   // ---- Training Tabs ----
   TRAINING_TAB_TECH: '技术培训',
   TRAINING_TAB_COURSE: '在线课程',
-  TRAINING_TAB_QUIZ: '题库助手',
+  TRAINING_TAB_QUIZ: '智能题库',
   TRAINING_FREE_COURSE: '免费课',
   TRAINING_PAID_COURSE: '付费课',
 

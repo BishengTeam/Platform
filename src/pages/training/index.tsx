@@ -17,7 +17,8 @@ import type { CourseBrief } from '@/types'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import styles from './index.module.scss'
 
-const MAIN_TABS = [STRINGS.TRAINING_TAB_COURSE, STRINGS.TRAINING_TAB_QUIZ]
+// 在线课程暂时隐藏，只显示智能题库
+const MAIN_TABS = [STRINGS.TRAINING_TAB_QUIZ]
 
 const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
   { label: '模拟考试', icon: 'clipboard', color: '#1677FF', route: ROUTES.QUIZ_MOCK },

@@ -26,13 +26,14 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     icon: 'check-circle-2',
     url: '/pages/registration/index',
   },
-  {
-    name: STRINGS.INDEX_ZONE_STUDY,
-    bg: '#F6FFED',
-    iconColor: '#2e7d32',
-    icon: 'book-open',
-    url: '/pages/training/index',
-  },
+  // 学习专区暂时隐藏
+  // {
+  //   name: STRINGS.INDEX_ZONE_STUDY,
+  //   bg: '#F6FFED',
+  //   iconColor: '#2e7d32',
+  //   icon: 'book-open',
+  //   url: '/pages/training/index',
+  // },
   {
     name: STRINGS.INDEX_ZONE_COMPETITION,
     bg: '#FFF7E6',
@@ -41,13 +42,14 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     url: '/pages/activity-zone/index',
     tab: 'competition',
   },
-  {
-    name: STRINGS.ZONE_NAMES[3],
-    bg: '#E6FFFB',
-    iconColor: '#13C2C2',
-    icon: 'gift',
-    url: '/pages/activity-zone/index',
-  },
+  // 活动专区暂时隐藏
+  // {
+  //   name: STRINGS.ZONE_NAMES[3],
+  //   bg: '#E6FFFB',
+  //   iconColor: '#13C2C2',
+  //   icon: 'gift',
+  //   url: '/pages/activity-zone/index',
+  // },
 ]
 
 export default function IndexPage() {
@@ -132,15 +134,17 @@ export default function IndexPage() {
 
           <KingKongZone items={KING_KONG_ITEMS} onItemClick={handleKingKongClick} />
 
-          <View className={styles.section}>
+          {/* 在线课程暂时隐藏 */}
+          {/* <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_ONLINE_COURSES} onViewAll={handleGoStudyZone} />
             <HomeCard items={homeData?.zones['study']?.courses ?? []} onCardClick={handleGoStudyZone} />
-          </View>
+          </View> */}
 
-          <View className={styles.section}>
+          {/* 活动专区暂时隐藏 */}
+          {/* <View className={styles.section}>
             <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
             <HomeCard items={homeData?.zones['activity']?.activities ?? []} onCardClick={handleGoActivityZone} />
-          </View>
+          </View> */}
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
