@@ -30,6 +30,10 @@ export default defineAppConfig({
       pages: ['index', 'form'],
     },
     {
+      root: 'pages/nisp',
+      pages: ['index', 'form'],
+    },
+    {
       root: 'pages/payment',
       pages: ['result'],
     },

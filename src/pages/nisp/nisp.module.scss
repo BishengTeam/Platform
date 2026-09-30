@@ -1,0 +1,99 @@
+.page { min-height: 100vh; background: #f5f7fb; }
+.body { padding: 24px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+
+/* ── 批次卡片 ── */
+.card {
+  margin-bottom: 24px;
+  padding: 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title { color: #17233d; font-size: 32px; font-weight: 700; line-height: 1.4; }
+.levelBadge {
+  padding: 4px 16px;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 600;
+}
+.level1 { background: #eef4ff; color: #3366ff; }
+.level2 { background: #f9f0ff; color: #722ed1; }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+.label { color: #667085; font-size: 26px; }
+.value { color: #17233d; font-size: 28px; font-weight: 500; text-align: right; word-break: break-all; }
+.price { color: #ef4444; font-size: 36px; font-weight: 700; }
+
+/* ── 状态标签 ── */
+.status {
+  padding: 4px 16px;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #3366ff;
+  font-size: 22px;
+}
+.statusPending { background: #fff7e6; color: #d97706; }
+.statusReview { background: #eef4ff; color: #3366ff; }
+.statusRejected { background: #fef2f2; color: #dc2626; }
+.statusApproved { background: #ecfdf5; color: #059669; }
+.statusCancelled { background: #f3f4f6; color: #6b7280; }
+
+/* ── 表单 ── */
+.field { margin-top: 24px; }
+.labelRow { display: flex; align-items: center; }
+.required { margin-right: 6px; color: #ef4444; font-size: 26px; }
+.remark { display: block; margin-top: 8px; color: #98a2b3; font-size: 22px; line-height: 1.5; }
+.input {
+  height: 84px;
+  margin-top: 12px;
+  padding: 0 20px;
+  background: #f7f9fc;
+  border-radius: 14px;
+  color: #17233d;
+  font-size: 28px;
+}
+.uploadBox {
+  margin-top: 16px;
+  padding: 28px;
+  background: #f7f9fc;
+  border: 1px dashed #cfd8e8;
+  border-radius: 16px;
+  color: #667085;
+  font-size: 26px;
+  text-align: center;
+}
+.uploaded { color: #16a34a; }
+
+/* ── 详情弹窗 ── */
+.detailMask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+.detailSheet {
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 32px 32px 0 0;
+  padding: 24px 40px calc(40px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.detailBar { width: 72px; height: 8px; border-radius: 8px; background: #E0E0E0; margin: 0 auto 24px; }
+
+.empty { padding: 96px 32px; color: #8091a5; text-align: center; font-size: 28px; }
