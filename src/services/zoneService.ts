@@ -193,6 +193,7 @@ export async function signupCompetition(
 ): Promise<void> {
   if (USE_MOCK) return
   await post('/api/competition/signup', {
+    custom_field_values: customFieldValues,
     track_id: trackId,
     school,
     real_name: realName,
