@@ -6,7 +6,7 @@ import { ChatArea } from '@/components/ChatArea'
 import { ChatInput } from '@/components/ChatInput'
 import { FloatingService } from '@/components/FloatingService'
 import { STRINGS } from '@/constants/strings'
-import { ROUTES, ZONE_ROUTES } from '@/constants/routes'
+import { ROUTES, TAB_BAR_CONFIG, ZONE_ROUTES } from '@/constants/routes'
 import {
   KEYWORD_TEACHER, KEYWORD_EXAM, KEYWORD_EMPLOYMENT,
   KEYWORD_COMPETITION, KEYWORD_ACTIVITY, KEYWORD_COURSE,
@@ -112,7 +112,20 @@ export default function AiConsultPage() {
 
   const handleCardTap = useCallback((zoneKey: string) => {
     const route = ZONE_ROUTES[zoneKey]
-    if (route) Taro.navigateTo({ url: route })
+    if (!route) return
+    // tabBar 页必须用 switchTab（navigateTo 跳 tab 页会失败）；
+    // 子页签参数不能挂在 switchTab URL 上，沿用首页的 storage 约定传递
+    const [rawPath, query = ''] = route.split('?')
+    const path = rawPath.replace(/^\//, '')
+    if (TAB_BAR_CONFIG.some(t => t.key === path)) {
+      const tab = query.split('&')
+        .map(pair => pair.split('='))
+        .find(([key]) => key === 'tab')?.[1]
+      if (tab) Taro.setStorageSync('activityZoneTab', tab)
+      Taro.switchTab({ url: `/${path}` })
+    } else {
+      Taro.navigateTo({ url: route })
+    }
   }, [])
 
   const handleGoService = useCallback(() => {
