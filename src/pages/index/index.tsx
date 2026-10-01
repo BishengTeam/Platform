@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Avatar } from '@nutui/nutui-react-taro'
@@ -18,7 +18,7 @@ import { getHomeAggregation } from '@/services/dataService'
 import type { HomeAggregationResponse } from '@/types'
 import styles from './index.module.scss'
 
-const KING_KONG_ITEMS: KingKongItem[] = [
+const BASE_KING_KONG_ITEMS: KingKongItem[] = [
   {
     name: STRINGS.INDEX_ZONE_REGISTRATION,
     bg: '#E6F7FF',
@@ -41,28 +41,16 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     url: '/pages/activity-zone/index',
     tab: 'competition',
   },
-  // 活动专区暂时隐藏（活动/就业内容筹备中）
-  // {
-  //   name: STRINGS.ZONE_NAMES[3],
-  //   bg: '#E6FFFB',
-  //   iconColor: '#13C2C2',
-  //   icon: 'gift',
-  //   url: '/pages/activity-zone/index',
-  //   comingSoon: true,
-  // },
 ]
 
 export default function IndexPage() {
   const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
-  const [homeLoaded, setHomeLoaded] = useState(false)
 
   useEffect(() => {
     getHomeAggregation().then((data) => {
       setHomeData(data)
     }).catch((err) => {
       // 加载失败静默处理，页面展示空状态
-    }).finally(() => {
-      setHomeLoaded(true)
     })
   }, [])
 
@@ -110,15 +98,34 @@ export default function IndexPage() {
     Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
   }
 
+  // 活动与就业入口完全由后台内容驱动：管理端上架才出现，下架自动隐藏。
+  const activities = homeData?.zones['activity']?.activities ?? []
   const employmentJobs = homeData?.zones['employment']?.jobs ?? []
-  const employmentPlaceholderItems = [{
-    id: -1,
-    title: STRINGS.INDEX_EMPLOYMENT_PLACEHOLDER_TITLE,
-    description: STRINGS.INDEX_EMPLOYMENT_PLACEHOLDER_DESC,
-    gradient: 'linear-gradient(135deg, #13C2C2 0%, #08979C 100%)',
-    icon: 'briefcase',
-    tall: true,
-  }]
+
+  const kingKongItems = useMemo(() => {
+    const items = [...BASE_KING_KONG_ITEMS]
+    if (activities.length > 0) {
+      items.push({
+        name: STRINGS.ZONE_NAMES[3],
+        bg: '#F9F0FF',
+        iconColor: '#722ED1',
+        icon: 'gift',
+        url: '/pages/activity-zone/index',
+        tab: 'activity',
+      })
+    }
+    if (employmentJobs.length > 0) {
+      items.push({
+        name: STRINGS.ZONE_NAMES[4],
+        bg: '#E6FFFB',
+        iconColor: '#13C2C2',
+        icon: 'briefcase',
+        url: '/pages/activity-zone/index',
+        tab: 'employment',
+      })
+    }
+    return items
+  }, [activities.length, employmentJobs.length])
 
   return (
     <AuthGuard>
@@ -149,7 +156,7 @@ export default function IndexPage() {
             </View>
           </View>
 
-          <KingKongZone items={KING_KONG_ITEMS} onItemClick={handleKingKongClick} />
+          <KingKongZone items={kingKongItems} onItemClick={handleKingKongClick} />
 
           {/* 在线课程暂时隐藏 */}
           {/* <View className={styles.section}>
@@ -157,11 +164,12 @@ export default function IndexPage() {
             <HomeCard items={homeData?.zones['study']?.courses ?? []} onCardClick={handleGoStudyZone} />
           </View> */}
 
-          {/* 活动专区暂时隐藏 */}
-          {/* <View className={styles.section}>
-            <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
-            <HomeCard items={homeData?.zones['activity']?.activities ?? []} onCardClick={handleGoActivityZone} />
-          </View> */}
+          {activities.length > 0 && (
+            <View className={styles.section}>
+              <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
+              <HomeCard items={activities} onCardClick={handleGoActivityZone} />
+            </View>
+          )}
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
@@ -183,12 +191,9 @@ export default function IndexPage() {
             />
           </View>
 
-          {/* 就业专区暂时隐藏 */}
-          {/* <View className={styles.section}>
-            <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
-            {homeLoaded && employmentJobs.length === 0 ? (
-              <HomeCard items={employmentPlaceholderItems} onCardClick={handleGoEmploymentZone} />
-            ) : (
+          {employmentJobs.length > 0 && (
+            <View className={styles.section}>
+              <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
               <HomeCard
                 items={employmentJobs.map((job) => ({
                   id: job.id,
@@ -199,8 +204,8 @@ export default function IndexPage() {
                 }))}
                 onCardClick={handleGoEmploymentZone}
               />
-            )}
-          </View> */}
+            </View>
+          )}
         </View>
 
         <CustomTabBar activeTabKey='pages/index/index' onSwitch={(url) => Taro.switchTab({ url })} />

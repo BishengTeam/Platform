@@ -17,15 +17,17 @@ test('activity zone defaults to competition and shows preparing empty states', a
   assert.match(source, /title=\{STRINGS\.EMPLOYMENT_EMPTY_TITLE\}/)
 })
 
-test('home king-kong grid hides the preparing activity entry', async () => {
+test('home activity and employment surfaces follow backend content visibility', async () => {
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
-  // 2026-10-01 甲方要求：活动/就业内容筹备中，金刚区活动入口暂时隐藏。
-  assert.match(source, /活动专区暂时隐藏/)
+  // 金刚区：后台上架活动/岗位后入口自动出现，下架自动隐藏，无需改代码发版。
+  assert.match(source, /if \(activities\.length > 0\)[\s\S]*?tab: 'activity'/)
+  assert.match(source, /if \(employmentJobs\.length > 0\)[\s\S]*?tab: 'employment'/)
+  // 首页瀑布流：同样按内容有无整块显示/隐藏。
+  assert.match(source, /activities\.length > 0 && \(/)
+  assert.match(source, /employmentJobs\.length > 0 && \(/)
+  // 不再允许“敬请期待”占位入口回潮。
   const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
-  assert.doesNotMatch(activeSource, /ZONE_NAMES\[3\]/)
-  assert.match(source, /if \(item\.comingSoon\) \{[\s\S]*?STRINGS\.INDEX_ACTIVITY_COMING_SOON[\s\S]*?return/)
-  // 就业板块：与活动专区一致，首页瀑布流整体暂时隐藏
-  assert.match(source, /就业专区暂时隐藏/)
+  assert.doesNotMatch(activeSource, /comingSoon: true/)
 })
 
 test('home king-kong grid keeps the study zone entry visible', async () => {
