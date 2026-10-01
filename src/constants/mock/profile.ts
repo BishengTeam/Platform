@@ -9,8 +9,8 @@ export const orderItems: OrderItem[] = [
 
 export const profileFunctions: ProfileFunction[] = []
 
+// 学习相关入口随学习专区在线课程一起暂时下线。
 export const profileGridItems: ProfileMenuItem[] = [
-  { icon: 'play-circle', label: STRINGS.PROFILE_GRID_MY_COURSES, route: 'pages/mine/courses' },
   { icon: 'heart', label: STRINGS.PROFILE_GRID_MY_FAVORITES, route: 'pages/mine/collections' },
   { icon: 'star', label: STRINGS.MINE_POINTS_TITLE, route: 'pages/mine/points' },
   { icon: 'gift', label: '积分商城', route: 'pages/points/mall' },
@@ -19,7 +19,6 @@ export const profileGridItems: ProfileMenuItem[] = [
 export const profileListItems: ProfileMenuItem[] = [
   { icon: 'file-text', label: STRINGS.PROFILE_LIST_ORDERS, route: 'pages/orders/index' },
   { icon: 'award', label: STRINGS.PROFILE_LIST_REGISTRATIONS, route: 'pages/mine/registrations' },
-  { icon: 'book-open', label: STRINGS.PROFILE_GRID_MY_CLASSROOMS, route: 'pages/classroom/join' },
   { icon: 'check-circle-2', label: STRINGS.PROFILE_GRID_CHECKIN, route: 'pages/quiz/checkin' },
   { icon: 'search', label: STRINGS.MINE_EXAM_QUERY_TITLE, route: 'pages/mine/exam-query' },
   { icon: 'users', label: STRINGS.PROFILE_LIST_SERVICE, route: 'pages/service/index' },

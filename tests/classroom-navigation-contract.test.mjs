@@ -2,18 +2,12 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-test('profile places my classrooms between orders and check-in', async () => {
+test('profile temporarily hides learning entries while training courses are hidden', async () => {
   const source = await readFile('src/constants/mock/profile.ts', 'utf8')
 
-  const orders = source.indexOf('label: STRINGS.PROFILE_LIST_ORDERS')
-  const classrooms = source.indexOf('label: STRINGS.PROFILE_GRID_MY_CLASSROOMS')
-  const checkin = source.indexOf('label: STRINGS.PROFILE_GRID_CHECKIN')
-
-  assert.notEqual(orders, -1)
-  assert.notEqual(classrooms, -1)
-  assert.notEqual(checkin, -1)
-  assert.ok(orders < classrooms && classrooms < checkin)
-  assert.match(source, /route: 'pages\/classroom\/join'/)
+  assert.doesNotMatch(source, /route: 'pages\/mine\/courses'/)
+  assert.doesNotMatch(source, /route: 'pages\/classroom\/join'/)
+  assert.match(source, /学习相关入口随学习专区在线课程一起暂时下线/)
 })
 
 test('settings no longer exposes a standalone classroom entry', async () => {
