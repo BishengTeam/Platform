@@ -80,7 +80,7 @@ export default function OrdersPage() {
             <View
               className={styles.tabIndicator}
               style={{
-                width: `calc((100% - 32px) / ${TAG_KEYS.length})`,
+                width: `calc((100% - 48px) / ${TAG_KEYS.length})`,
                 transform: `translateX(${activeIndex * 100}%)`,
               }}
             />

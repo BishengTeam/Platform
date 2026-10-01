@@ -19,7 +19,8 @@
 .tabs {
   display: flex;
   width: 100%;
-  padding: 0 $spacing-sm;
+  box-sizing: border-box;
+  padding: 0 $spacing-xl;
   position: relative;
 }
 
@@ -57,7 +58,7 @@
 .tabIndicator {
   position: absolute;
   bottom: $spacing-sm;
-  left: $spacing-sm;
+  left: $spacing-xl;
   height: 3px;
   background: $color-primary;
   border-radius: 2px;
@@ -67,6 +68,7 @@
 .list {
   display: flex;
   flex-direction: column;
+  padding: 0 $spacing-lg $spacing-lg;
   gap: $spacing-sm;
 }
 
