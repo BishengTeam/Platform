@@ -29,9 +29,9 @@ const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
 
 // 题库厂商筛选：默认 H3C；none 归入「其他」，保证四个页签覆盖全部题库。
 const VENDOR_TABS: Array<{ tag: QuizVendorTag; label: string; logo?: string }> = [
-  { tag: 'h3c', label: 'H3C', logo: 'assets/vendor/h3c.png' },
-  { tag: 'nisp', label: 'NISP', logo: 'assets/vendor/nisp.png' },
-  { tag: 'sangfor', label: '深信服', logo: 'assets/vendor/sangfor.png' },
+  { tag: 'h3c', label: 'H3C', logo: '/assets/vendor/h3c.png' },
+  { tag: 'nisp', label: 'NISP', logo: '/assets/vendor/nisp.png' },
+  { tag: 'sangfor', label: '深信服', logo: '/assets/vendor/sangfor.png' },
   { tag: 'none', label: '其他' },
 ]
 
