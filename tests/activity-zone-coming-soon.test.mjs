@@ -21,9 +21,8 @@ test('home keeps activity entry visible but only toasts coming soon', async () =
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
   assert.match(source, /name: STRINGS\.ZONE_NAMES\[3\][\s\S]*?comingSoon: true/)
   assert.match(source, /if \(item\.comingSoon\) \{[\s\S]*?STRINGS\.INDEX_ACTIVITY_COMING_SOON[\s\S]*?return/)
-  // 就业板块：空数据展示占位卡，有岗位时自动回退真实卡片
-  assert.match(source, /homeLoaded && employmentJobs\.length === 0/)
-  assert.match(source, /employmentJobs\.map\(\(job\) =>/)
+  // 就业板块：与活动专区一致，首页瀑布流整体暂时隐藏
+  assert.match(source, /就业专区暂时隐藏/)
 })
 
 test('home king-kong grid keeps the study zone entry visible', async () => {

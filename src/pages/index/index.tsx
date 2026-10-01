@@ -182,7 +182,8 @@ export default function IndexPage() {
             />
           </View>
 
-          <View className={styles.section}>
+          {/* 就业专区暂时隐藏 */}
+          {/* <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
             {homeLoaded && employmentJobs.length === 0 ? (
               <HomeCard items={employmentPlaceholderItems} onCardClick={handleGoEmploymentZone} />
@@ -198,7 +199,7 @@ export default function IndexPage() {
                 onCardClick={handleGoEmploymentZone}
               />
             )}
-          </View>
+          </View> */}
         </View>
 
         <CustomTabBar activeTabKey='pages/index/index' onSwitch={(url) => Taro.switchTab({ url })} />
