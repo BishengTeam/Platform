@@ -130,7 +130,7 @@ export default function MyRegistrationsPage() {
   const openDetail = (item: UnifiedRegistration) => {
     setSelected(item)
     h3cService.getRegistration(item.id)
-      .then(setSelected)
+      .then((data) => setSelected(data as unknown as UnifiedRegistration))
       .catch(() => Taro.showToast({ title: '加载详情失败', icon: 'none' }))
   }
 

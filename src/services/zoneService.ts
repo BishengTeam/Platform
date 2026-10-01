@@ -190,6 +190,7 @@ export async function remindActivity(activityId: number): Promise<void> {
 /** POST /api/competition/signup — 竞赛报名 */
 export async function signupCompetition(
   trackId: number, school: string, realName: string, phone: string,
+  customFieldValues?: Record<string, string | string[]>,
 ): Promise<void> {
   if (USE_MOCK) return
   await post('/api/competition/signup', {

@@ -56,6 +56,17 @@ export interface CompetitionTrackBrief {
 }
 
 /** 赛事 */
+export interface CompetitionCustomField {
+  key: string
+  label: string
+  type: string
+  required: boolean
+  placeholder?: string | null
+  max_length?: number | null
+  options?: string[] | null
+  sort_order: number
+}
+
 export interface CompetitionBrief {
   id: number
   name: string
@@ -66,6 +77,7 @@ export interface CompetitionBrief {
   registration_deadline: string | null
   is_active: boolean
   tracks: CompetitionTrackBrief[]
+  custom_fields: CompetitionCustomField[] | null
   created_at: string
 }
 

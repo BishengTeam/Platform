@@ -33,12 +33,12 @@ export default function CompetitionDetailPage() {
   const [school, setSchool] = useState('')
   const [realName, setRealName] = useState('')
   const [phone, setPhone] = useState('')
-  const [customValues, setCustomValues] = useState<Record<string, string | string[]>>({})
+  const [customValues, setCustomValues] = useState<{ [key: string]: string | string[] }>({})
   const [submitting, setSubmitting] = useState(false)
   const [enrolledTrackIds, setEnrolledTrackIds] = useState<number[]>([])
 
   // Get custom fields from competition (needs to be added to CompetitionBrief type)
-  const customFields: CustomField[] = (competition as any)?.custom_fields || []
+  const customFields: CustomField[] = competition?.custom_fields || []
 
   useEffect(() => {
     if (!Number.isFinite(competitionId) || competitionId <= 0) {
@@ -56,13 +56,13 @@ export default function CompetitionDetailPage() {
     return new Date(competition.registration_deadline) <= new Date()
   })()
 
-  const setCustomValue = (key: string, value: string | string[]) => {
-    setCustomValues(prev => ({ ...prev, [key]: value }))
+  const setCustomValue = (key: string, value: string | string[]): void => {
+    setCustomValues((prev: Record<string, string | string[]>) => ({ ...prev, [key]: value }))
   }
 
   const validateCustomFields = (): boolean => {
     for (const field of customFields) {
-      const value = customValues[field.key]
+      const value = customValues[field.key as string]
       if (field.required) {
         if (value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
           Taro.showToast({ title: `请填写${field.label}`, icon: 'none' })
@@ -128,7 +128,7 @@ export default function CompetitionDetailPage() {
     t.max_participants > 0 && t.enrolled >= t.max_participants
 
   const renderCustomField = (field: CustomField) => {
-    const value = customValues[field.key]
+    const value = customValues[field.key as string]
 
     if (field.type === 'select' || field.type === 'radio') {
       const options = field.options || []
@@ -157,7 +157,7 @@ export default function CompetitionDetailPage() {
 
     if (field.type === 'checkbox') {
       const options = field.options || []
-      const selected = Array.isArray(value) ? value : []
+      const selected: string[] = Array.isArray(value) ? value : []
       return (
         <View key={field.key}>
           <View className={styles.fieldLabel}>

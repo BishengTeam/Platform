@@ -60,6 +60,7 @@ export default function NispFormPage() {
   const uploadFile = async (
     setter: (key: string) => void,
     fileType: 'image' | 'pdf',
+    materialType: 'id_card_both_sides' | 'portrait_photo' | 'xuexin_report' | 'application_form',
   ) => {
     try {
       let filePath = ''
@@ -80,7 +81,7 @@ export default function NispFormPage() {
         url: `${baseUrl}/api/nisp/materials/upload`,
         filePath,
         name: 'file',
-        formData: { material_type: fileType === 'image' ? 'portrait_photo' : 'id_card_both_sides' },
+        formData: { material_type: materialType },
         header: { Authorization: token ? `Bearer ${token}` : '' },
       })
       Taro.hideLoading()
@@ -258,7 +259,7 @@ export default function NispFormPage() {
             </View>
             <View
               className={`${styles.uploadBox} ${idCardKey ? styles.uploaded : ''}`}
-              onClick={() => uploadFile(setIdCardKey, 'pdf')}
+              onClick={() => uploadFile(setIdCardKey, 'pdf', 'id_card_both_sides')}
             >
               <Text>{idCardKey ? '已上传' : '点击上传（以姓名命名，PDF格式）'}</Text>
             </View>
@@ -271,7 +272,7 @@ export default function NispFormPage() {
             </View>
             <View
               className={`${styles.uploadBox} ${portraitKey ? styles.uploaded : ''}`}
-              onClick={() => uploadFile(setPortraitKey, 'image')}
+              onClick={() => uploadFile(setPortraitKey, 'image', 'portrait_photo')}
             >
               <Text>{portraitKey ? '已上传' : '点击上传（30KB-200KB，2寸蓝底证件照）'}</Text>
             </View>
@@ -286,7 +287,7 @@ export default function NispFormPage() {
                 </View>
                 <View
                   className={`${styles.uploadBox} ${xuexinKey ? styles.uploaded : ''}`}
-                  onClick={() => uploadFile(setXuexinKey, 'pdf')}
+                  onClick={() => uploadFile(setXuexinKey, 'pdf', 'xuexin_report')}
                 >
                   <Text>{xuexinKey ? '已上传' : '点击上传（教育部学籍在线验证报告）'}</Text>
                 </View>
@@ -299,7 +300,7 @@ export default function NispFormPage() {
                 </View>
                 <View
                   className={`${styles.uploadBox} ${appFormKey ? styles.uploaded : ''}`}
-                  onClick={() => uploadFile(setAppFormKey, 'pdf')}
+                  onClick={() => uploadFile(setAppFormKey, 'pdf', 'application_form')}
                 >
                   <Text>{appFormKey ? '已上传' : '点击上传（下载模板填写后上传）'}</Text>
                 </View>
