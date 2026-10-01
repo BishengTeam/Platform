@@ -352,8 +352,8 @@ export default function TrainingPage() {
           <TagFilter tags={MAIN_TABS} activeTag={mainTab} onChange={setMainTab} variant='underline' />
         </View>
         <ScrollView className={styles.body} scrollY>
-          {mainTab === MAIN_TABS[0] && renderTechTab()}
-          {mainTab === MAIN_TABS[1] && renderQuizTab()}
+          {/* 在线课程暂时隐藏：唯一 tab「练习助手」必须渲染练习功能，不能落到课程列表 */}
+          {mainTab === MAIN_TABS[0] && renderQuizTab()}
         </ScrollView>
       </AuthGuard>
       <CustomTabBar activeTabKey='pages/training/index' onSwitch={(url: string) => Taro.switchTab({ url })} />
