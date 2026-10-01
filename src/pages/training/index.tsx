@@ -17,7 +17,7 @@ import type { CourseBrief } from '@/types'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import styles from './index.module.scss'
 
-// 在线课程暂时隐藏，只显示智能题库
+// 在线课程暂时隐藏，只显示练习助手
 const MAIN_TABS = [STRINGS.TRAINING_TAB_QUIZ]
 
 const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
