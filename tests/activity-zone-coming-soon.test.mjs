@@ -26,6 +26,13 @@ test('home keeps activity entry visible but only toasts coming soon', async () =
   assert.match(source, /employmentJobs\.map\(\(job\) =>/)
 })
 
+test('home king-kong grid keeps the study zone entry visible', async () => {
+  const source = await readFile(file('pages/index/index.tsx'), 'utf8')
+  assert.match(source, /name: STRINGS\.INDEX_ZONE_STUDY,[\s\S]*?url: '\/pages\/training\/index'/)
+  // 2026-10-01 甲方要求：学习专区入口不再隐藏，金刚区保持 2x2 填满。
+  assert.doesNotMatch(source, /学习专区暂时隐藏/)
+})
+
 test('ai consult no longer advertises unavailable activities or jobs', async () => {
   const source = await readFile(file('pages/ai-consult/index.tsx'), 'utf8')
   const activityBlock = source.match(/activity: \(id\) => \(\{[\s\S]*?\}\),/)?.[0] ?? ''

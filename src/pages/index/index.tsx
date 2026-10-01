@@ -26,14 +26,13 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     icon: 'check-circle-2',
     url: '/pages/registration/index',
   },
-  // 学习专区暂时隐藏
-  // {
-  //   name: STRINGS.INDEX_ZONE_STUDY,
-  //   bg: '#F6FFED',
-  //   iconColor: '#2e7d32',
-  //   icon: 'book-open',
-  //   url: '/pages/training/index',
-  // },
+  {
+    name: STRINGS.INDEX_ZONE_STUDY,
+    bg: '#F6FFED',
+    iconColor: '#2e7d32',
+    icon: 'book-open',
+    url: '/pages/training/index',
+  },
   {
     name: STRINGS.INDEX_ZONE_COMPETITION,
     bg: '#FFF7E6',
