@@ -62,14 +62,47 @@ export default function NispFormPage() {
     fileType: 'image' | 'pdf',
   ) => {
     try {
+      let filePath = ''
       if (fileType === 'image') {
         const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
-        if (result.tempFilePaths[0]) setter(result.tempFilePaths[0])
+        filePath = result.tempFilePaths[0]
       } else {
         const result = await Taro.chooseMessageFile({ count: 1, type: 'file' })
-        if (result.tempFiles[0]) setter(result.tempFiles[0].path)
+        filePath = result.tempFiles[0].path
       }
-    } catch { /* user cancelled */ }
+      if (!filePath) return
+
+      Taro.showLoading({ title: '上传中', mask: true })
+      // Upload to server which stores to OSS
+      const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
+      const token = Taro.getStorageSync('access_token') || ''
+      const uploadResult = await Taro.uploadFile({
+        url: `${baseUrl}/api/nisp/materials/upload`,
+        filePath,
+        name: 'file',
+        formData: { material_type: fileType === 'image' ? 'portrait_photo' : 'id_card_both_sides' },
+        header: { Authorization: token ? `Bearer ${token}` : '' },
+      })
+      Taro.hideLoading()
+
+      const payload = JSON.parse(uploadResult.data) as {
+        code: number
+        data?: { storage_key: string }
+        message: string
+      }
+      if (payload.code !== 0 || !payload.data?.storage_key) {
+        throw new Error(payload.message || '上传失败')
+      }
+      setter(payload.data.storage_key)
+    } catch (error) {
+      Taro.hideLoading()
+      if ((error as { errMsg?: string })?.errMsg?.includes('cancel')) return
+      Taro.showToast({
+        title: error instanceof Error ? error.message : '上传失败',
+        icon: 'none',
+        duration: 3000,
+      })
+    }
   }
 
   const validate = (): boolean => {

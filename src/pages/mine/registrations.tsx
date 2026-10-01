@@ -4,7 +4,31 @@ import Taro, { usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { h3cService } from '@/services/h3cService'
+import { nispService } from '@/services/nispService'
 import type { H3cRegistration } from '@/types/h3c'
+
+/** Unified registration item for both H3C and NISP */
+interface UnifiedRegistration {
+  id: number
+  registration_no: string
+  status: string
+  type: 'H3C' | 'NISP'
+  price_cents: number
+  level?: string
+  // H3C specific (optional)
+  registration_type?: string
+  candidate_snapshot?: Record<string, unknown>
+  out_trade_no?: string | null
+  latest_review?: {
+    decision: string
+    reason_detail: string | null
+    reason_code: string | null
+    rejected_material_types?: string[] | null
+  } | null
+  batch_id?: number
+  created_at?: string
+  resubmission_due_at?: string | null
+}
 import styles from './registrations.module.scss'
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -50,20 +74,49 @@ function formatExamDate(value: string): string {
 }
 
 export default function MyRegistrationsPage() {
-  const [items, setItems] = useState<H3cRegistration[]>([])
-  const [selected, setSelected] = useState<H3cRegistration | null>(null)
+  const [items, setItems] = useState<UnifiedRegistration[]>([])
+  const [selected, setSelected] = useState<UnifiedRegistration | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   const load = useCallback(() => {
     setLoading(true)
     setError(false)
-    h3cService.listRegistrations()
-      .then((result) => setItems(result.items))
-      .catch(() => {
-        setItems([])
-        setError(true)
-      })
+    Promise.all([
+      h3cService.listRegistrations()
+        .then(r => r.items.map((item): UnifiedRegistration => ({
+          id: item.id,
+          registration_no: item.registration_no,
+          status: item.status,
+          type: 'H3C',
+          price_cents: item.price_cents,
+          level: undefined,
+          registration_type: item.registration_type,
+          candidate_snapshot: item.candidate_snapshot,
+          out_trade_no: item.out_trade_no,
+          latest_review: item.latest_review,
+          batch_id: item.batch_id,
+          created_at: item.created_at,
+          resubmission_due_at: item.resubmission_due_at,
+        })))
+        .catch(() => [] as UnifiedRegistration[]),
+      nispService.listRegistrations()
+        .then(r => r.items.map((item): UnifiedRegistration => ({
+          id: item.id,
+          registration_no: item.registration_no,
+          status: item.status,
+          type: 'NISP',
+          price_cents: item.price_cents,
+          level: item.level === '1' ? '一级' : '二级',
+          candidate_snapshot: item.candidate_snapshot,
+          out_trade_no: item.out_trade_no,
+          latest_review: item.latest_review,
+          created_at: item.created_at,
+          resubmission_due_at: item.resubmission_due_at,
+        })))
+        .catch(() => [] as UnifiedRegistration[]),
+    ])
+      .then(([h3cItems, nispItems]) => setItems([...h3cItems, ...nispItems]))
       .finally(() => setLoading(false))
   }, [])
 
@@ -74,7 +127,7 @@ export default function MyRegistrationsPage() {
     Taro.stopPullDownRefresh()
   })
 
-  const openDetail = (item: H3cRegistration) => {
+  const openDetail = (item: UnifiedRegistration) => {
     setSelected(item)
     h3cService.getRegistration(item.id)
       .then(setSelected)
@@ -167,7 +220,7 @@ export default function MyRegistrationsPage() {
               <View key={item.id} className={styles.card} onClick={() => openDetail(item)}>
                 <View className={styles.cardHeader}>
                   <Text className={styles.title}>{item.registration_no}</Text>
-                  <Text className={styles.typeBadge}>H3C</Text>
+                  <Text className={styles.typeBadge}>{item.type}{item.level ? ` ${item.level}` : ''}</Text>
                 </View>
                 <View className={styles.row}>
                   <Text className={styles.label}>状态</Text>

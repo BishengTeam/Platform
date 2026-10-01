@@ -90,6 +90,10 @@ export default function RegistrationCategoryPage() {
       Taro.navigateTo({ url: `/${ROUTES.H3C_INDEX}` })
       return
     }
+    if (cert.vendor === 'NISP') {
+      Taro.navigateTo({ url: `/${ROUTES.NISP_INDEX}` })
+      return
+    }
     Taro.navigateTo({ url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}` })
   }, [])
 
