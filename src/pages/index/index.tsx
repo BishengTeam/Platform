@@ -41,14 +41,15 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     url: '/pages/activity-zone/index',
     tab: 'competition',
   },
-  {
-    name: STRINGS.ZONE_NAMES[3],
-    bg: '#E6FFFB',
-    iconColor: '#13C2C2',
-    icon: 'gift',
-    url: '/pages/activity-zone/index',
-    comingSoon: true,
-  },
+  // 活动专区暂时隐藏（活动/就业内容筹备中）
+  // {
+  //   name: STRINGS.ZONE_NAMES[3],
+  //   bg: '#E6FFFB',
+  //   iconColor: '#13C2C2',
+  //   icon: 'gift',
+  //   url: '/pages/activity-zone/index',
+  //   comingSoon: true,
+  // },
 ]
 
 export default function IndexPage() {

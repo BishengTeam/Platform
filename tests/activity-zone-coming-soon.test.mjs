@@ -17,9 +17,12 @@ test('activity zone defaults to competition and shows preparing empty states', a
   assert.match(source, /title=\{STRINGS\.EMPLOYMENT_EMPTY_TITLE\}/)
 })
 
-test('home keeps activity entry visible but only toasts coming soon', async () => {
+test('home king-kong grid hides the preparing activity entry', async () => {
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
-  assert.match(source, /name: STRINGS\.ZONE_NAMES\[3\][\s\S]*?comingSoon: true/)
+  // 2026-10-01 甲方要求：活动/就业内容筹备中，金刚区活动入口暂时隐藏。
+  assert.match(source, /活动专区暂时隐藏/)
+  const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
+  assert.doesNotMatch(activeSource, /ZONE_NAMES\[3\]/)
   assert.match(source, /if \(item\.comingSoon\) \{[\s\S]*?STRINGS\.INDEX_ACTIVITY_COMING_SOON[\s\S]*?return/)
   // 就业板块：与活动专区一致，首页瀑布流整体暂时隐藏
   assert.match(source, /就业专区暂时隐藏/)
