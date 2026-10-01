@@ -25,9 +25,9 @@ test('home activity and employment surfaces follow backend content visibility', 
   // 首页瀑布流：同样按内容有无整块显示/隐藏。
   assert.match(source, /activities\.length > 0 && \(/)
   assert.match(source, /employmentJobs\.length > 0 && \(/)
-  // 不再允许“敬请期待”占位入口回潮。
-  const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
-  assert.doesNotMatch(activeSource, /comingSoon: true/)
+  // 第 4 格兜底：活动/就业都未上架时放灰色「敬请期待」占位，任一动态入口出现后让位。
+  assert.match(source, /activities\.length === 0 && employmentJobs\.length === 0[\s\S]*?INDEX_ZONE_COMING_SOON/)
+  assert.equal(STRINGS.INDEX_ZONE_COMING_SOON, '敬请期待')
 })
 
 test('home king-kong grid keeps the study zone entry visible', async () => {

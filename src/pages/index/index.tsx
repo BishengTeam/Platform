@@ -124,6 +124,18 @@ export default function IndexPage() {
         tab: 'employment',
       })
     }
+    // 活动与就业都未上架时，第 4 格放灰色占位，保持 2x2 完整；
+    // 任一动态入口出现后占位自动让位。
+    if (activities.length === 0 && employmentJobs.length === 0) {
+      items.push({
+        name: STRINGS.INDEX_ZONE_COMING_SOON,
+        bg: '#F5F5F5',
+        iconColor: '#999999',
+        icon: 'sparkles',
+        url: '',
+        comingSoon: true,
+      })
+    }
     return items
   }, [activities.length, employmentJobs.length])
 
