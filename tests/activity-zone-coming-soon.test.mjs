@@ -19,14 +19,15 @@ test('activity zone defaults to competition and shows preparing empty states', a
 
 test('home activity and employment surfaces follow backend content visibility', async () => {
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
-  // 金刚区：后台上架活动/岗位后入口自动出现，下架自动隐藏，无需改代码发版。
+  // 金刚区第 4 格只跟随活动：有上架活动显示活动入口，无活动显示敬请期待占位。
+  // 岗位不设金刚区入口，就业走首页瀑布流与活动 tab 子页。
   assert.match(source, /if \(activities\.length > 0\)[\s\S]*?tab: 'activity'/)
-  assert.match(source, /if \(employmentJobs\.length > 0\)[\s\S]*?tab: 'employment'/)
-  // 首页瀑布流：同样按内容有无整块显示/隐藏。
+  assert.match(source, /\} else \{[\s\S]*?INDEX_ZONE_COMING_SOON/)
+  const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
+  assert.doesNotMatch(activeSource, /tab: 'employment'/)
+  // 首页瀑布流：活动/就业均按内容有无整块显示/隐藏。
   assert.match(source, /activities\.length > 0 && \(/)
   assert.match(source, /employmentJobs\.length > 0 && \(/)
-  // 第 4 格兜底：活动/就业都未上架时放灰色「敬请期待」占位，任一动态入口出现后让位。
-  assert.match(source, /activities\.length === 0 && employmentJobs\.length === 0[\s\S]*?INDEX_ZONE_COMING_SOON/)
   assert.equal(STRINGS.INDEX_ZONE_COMING_SOON, '敬请期待')
 })
 

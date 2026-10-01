@@ -98,12 +98,14 @@ export default function IndexPage() {
     Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
   }
 
-  // 活动与就业入口完全由后台内容驱动：管理端上架才出现，下架自动隐藏。
+  // 活动/就业瀑布流由后台内容驱动：管理端上架才出现，下架自动隐藏。
   const activities = homeData?.zones['activity']?.activities ?? []
   const employmentJobs = homeData?.zones['employment']?.jobs ?? []
 
   const kingKongItems = useMemo(() => {
     const items = [...BASE_KING_KONG_ITEMS]
+    // 第 4 格只跟随活动：无上架活动时放灰色占位保持 2x2 完整，上架后自动让位。
+    // 岗位不设金刚区入口，就业走首页瀑布流与活动 tab 子页。
     if (activities.length > 0) {
       items.push({
         name: STRINGS.ZONE_NAMES[3],
@@ -113,20 +115,7 @@ export default function IndexPage() {
         url: '/pages/activity-zone/index',
         tab: 'activity',
       })
-    }
-    if (employmentJobs.length > 0) {
-      items.push({
-        name: STRINGS.ZONE_NAMES[4],
-        bg: '#E6FFFB',
-        iconColor: '#13C2C2',
-        icon: 'briefcase',
-        url: '/pages/activity-zone/index',
-        tab: 'employment',
-      })
-    }
-    // 活动与就业都未上架时，第 4 格放灰色占位，保持 2x2 完整；
-    // 任一动态入口出现后占位自动让位。
-    if (activities.length === 0 && employmentJobs.length === 0) {
+    } else {
       items.push({
         name: STRINGS.INDEX_ZONE_COMING_SOON,
         bg: '#F5F5F5',
@@ -137,7 +126,7 @@ export default function IndexPage() {
       })
     }
     return items
-  }, [activities.length, employmentJobs.length])
+  }, [activities.length])
 
   return (
     <AuthGuard>
