@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { ZoneBanner } from '@/components/ZoneBanner'
 import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
+import { EmptyState } from '@/components/EmptyState'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import {
@@ -20,7 +21,7 @@ import styles from './index.module.scss'
 type MainTab = 'activity' | 'competition' | 'employment'
 
 export default function ActivityZonePage() {
-  const [mainTab, setMainTab] = useState<MainTab>('activity')
+  const [mainTab, setMainTab] = useState<MainTab>('competition')
 
   // 从首页金刚区跳转时通过 storage 指定初始 tab；useDidShow 保证每次切回都能响应
   useDidShow(() => {
@@ -39,6 +40,8 @@ export default function ActivityZonePage() {
   const [allActivities, setAllActivities] = useState<ActivityBrief[]>([])
   const [allCompetitions, setAllCompetitions] = useState<CompetitionBrief[]>([])
   const [allJobs, setAllJobs] = useState<JobBrief[]>([])
+  const [activitiesLoaded, setActivitiesLoaded] = useState(false)
+  const [jobsLoaded, setJobsLoaded] = useState(false)
 
   useEffect(() => {
     getHomeAggregation().then((data: HomeAggregationResponse) => {
@@ -47,14 +50,14 @@ export default function ActivityZonePage() {
     getActivityList().then((data) => {
       setAllActivities(data)
       setActivityBanner(null)
-    }).catch(() => {})
+    }).catch(() => {}).finally(() => setActivitiesLoaded(true))
     getCompetitionList().then((data) => {
       setAllCompetitions(data)
     }).catch(() => {})
     getJobList().then((data) => {
       setAllJobs(data)
       setEmploymentBanner(null)
-    }).catch(() => {})
+    }).catch(() => {}).finally(() => setJobsLoaded(true))
   }, [])
 
   // Activity time-based grouping
@@ -149,6 +152,11 @@ export default function ActivityZonePage() {
     { key: 'employment' as MainTab, label: '就业' },
   ]
 
+  const showActivityEmpty = activitiesLoaded && allActivities.length === 0
+  const showEmploymentEmpty = jobsLoaded && allJobs.length === 0
+  // 活动空态时隐藏筛选标签，避免出现一排筛选 + 空白列表
+  const showTagFilter = mainTab === 'competition' || (mainTab === 'activity' && !showActivityEmpty)
+
   return (
     <AuthGuard>
       <View className={styles.page}>
@@ -181,9 +189,18 @@ export default function ActivityZonePage() {
             ) : null}
           </View>
           <View className={styles.content}>
-            <TagFilter tags={currentTagFilters} activeTag={currentActiveTag} onChange={onTagChange} />
+            {showTagFilter && (
+              <TagFilter tags={currentTagFilters} activeTag={currentActiveTag} onChange={onTagChange} />
+            )}
 
             {mainTab === 'activity' && (
+              showActivityEmpty ? (
+                <EmptyState
+                  icon='gift'
+                  title={STRINGS.ACTIVITY_EMPTY_TITLE}
+                  description={STRINGS.ACTIVITY_EMPTY_DESC}
+                />
+              ) : (
               <View className={styles.cardList}>
                 {activityData.map((item) => {
                   const status = getActivityStatusInfo(item)
@@ -218,6 +235,7 @@ export default function ActivityZonePage() {
                   )
                 })}
               </View>
+              )
             )}
 
             {mainTab === 'competition' && (
@@ -247,6 +265,13 @@ export default function ActivityZonePage() {
             )}
 
             {mainTab === 'employment' && (
+              showEmploymentEmpty ? (
+                <EmptyState
+                  icon='briefcase'
+                  title={STRINGS.EMPLOYMENT_EMPTY_TITLE}
+                  description={STRINGS.EMPLOYMENT_EMPTY_DESC}
+                />
+              ) : (
               <View className={styles.cardList}>
                 {employmentData.map((job) => {
                   const btn = getEmploymentButton(job)
@@ -274,6 +299,7 @@ export default function ActivityZonePage() {
                   )
                 })}
               </View>
+              )
             )}
           </View>
           </ScrollView>

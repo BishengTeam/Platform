@@ -25,7 +25,7 @@ const POSTERS = [
     id: 'p3',
     title: STRINGS.LOGIN_POSTER_CARD_3_TITLE,
     desc: STRINGS.LOGIN_POSTER_CARD_3_DESC,
-    type: 'activity',
+    type: 'quiz',
     tag: STRINGS.LOGIN_POSTER_CARD_3_TAG,
   },
 ]
@@ -46,7 +46,7 @@ export default function LoginPosterPage() {
               <View className={styles.posterImage}>
                 <View className={styles.posterPlaceholder}>
                   <Text className={styles.posterIcon}>
-                    {poster.type === 'competition' ? '🏆' : poster.type === 'coupon' ? '🎫' : '🎉'}
+                    {poster.type === 'competition' ? '🏆' : poster.type === 'coupon' ? '🎫' : poster.type === 'quiz' ? '📝' : '🎉'}
                   </Text>
                 </View>
                 <View className={styles.posterTag}>

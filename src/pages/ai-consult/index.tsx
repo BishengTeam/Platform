@@ -47,7 +47,6 @@ const RESPONSE_BUILDERS: Record<Intent, (id: number) => Message> = {
   }),
   employment: (id) => ({
     id, type: 'ai', text: STRINGS.INDEX_AI_EMPLOYMENT,
-    card: { type: 'zone_link', zoneName: STRINGS.AI_EMPLOYMENT_CARD_NAME, zoneKey: 'job', description: STRINGS.AI_EMPLOYMENT_CARD_DESC },
   }),
   competition: (id) => ({
     id, type: 'ai', text: STRINGS.INDEX_AI_COMPETITION,
@@ -55,7 +54,6 @@ const RESPONSE_BUILDERS: Record<Intent, (id: number) => Message> = {
   }),
   activity: (id) => ({
     id, type: 'ai', text: STRINGS.INDEX_AI_ACTIVITY,
-    card: { type: 'zone_link', zoneName: STRINGS.AI_ACTIVITY_CARD_NAME, zoneKey: 'activity', description: STRINGS.AI_ACTIVITY_CARD_DESC },
   }),
   course: (id) => ({
     id, type: 'ai', text: STRINGS.INDEX_AI_COURSE,

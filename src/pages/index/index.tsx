@@ -42,24 +42,27 @@ const KING_KONG_ITEMS: KingKongItem[] = [
     url: '/pages/activity-zone/index',
     tab: 'competition',
   },
-  // 活动专区暂时隐藏
-  // {
-  //   name: STRINGS.ZONE_NAMES[3],
-  //   bg: '#E6FFFB',
-  //   iconColor: '#13C2C2',
-  //   icon: 'gift',
-  //   url: '/pages/activity-zone/index',
-  // },
+  {
+    name: STRINGS.ZONE_NAMES[3],
+    bg: '#E6FFFB',
+    iconColor: '#13C2C2',
+    icon: 'gift',
+    url: '/pages/activity-zone/index',
+    comingSoon: true,
+  },
 ]
 
 export default function IndexPage() {
   const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
+  const [homeLoaded, setHomeLoaded] = useState(false)
 
   useEffect(() => {
     getHomeAggregation().then((data) => {
       setHomeData(data)
     }).catch((err) => {
       // 加载失败静默处理，页面展示空状态
+    }).finally(() => {
+      setHomeLoaded(true)
     })
   }, [])
 
@@ -68,6 +71,10 @@ export default function IndexPage() {
   }
 
   const handleKingKongClick = (item: KingKongItem) => {
+    if (item.comingSoon) {
+      Taro.showToast({ title: STRINGS.INDEX_ACTIVITY_COMING_SOON, icon: 'none' })
+      return
+    }
     if (!item.url) return
     const path = item.url.replace(/^\//, '')
     if (TAB_BAR_CONFIG.some(t => t.key === path)) {
@@ -102,6 +109,16 @@ export default function IndexPage() {
   const handleGoCertZone = () => {
     Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
   }
+
+  const employmentJobs = homeData?.zones['employment']?.jobs ?? []
+  const employmentPlaceholderItems = [{
+    id: -1,
+    title: STRINGS.INDEX_EMPLOYMENT_PLACEHOLDER_TITLE,
+    description: STRINGS.INDEX_EMPLOYMENT_PLACEHOLDER_DESC,
+    gradient: 'linear-gradient(135deg, #13C2C2 0%, #08979C 100%)',
+    icon: 'briefcase',
+    tall: true,
+  }]
 
   return (
     <AuthGuard>
@@ -168,16 +185,20 @@ export default function IndexPage() {
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
-            <HomeCard
-              items={(homeData?.zones['employment']?.jobs ?? []).map((job) => ({
-                id: job.id,
-                title: job.title,
-                description: [job.company, job.location].filter(Boolean).join(' · ') || null,
-                tag: job.salary_range ?? undefined,
-                tagColor: '#13C2C2',
-              }))}
-              onCardClick={handleGoEmploymentZone}
-            />
+            {homeLoaded && employmentJobs.length === 0 ? (
+              <HomeCard items={employmentPlaceholderItems} onCardClick={handleGoEmploymentZone} />
+            ) : (
+              <HomeCard
+                items={employmentJobs.map((job) => ({
+                  id: job.id,
+                  title: job.title,
+                  description: [job.company, job.location].filter(Boolean).join(' · ') || null,
+                  tag: job.salary_range ?? undefined,
+                  tagColor: '#13C2C2',
+                }))}
+                onCardClick={handleGoEmploymentZone}
+              />
+            )}
           </View>
         </View>
 

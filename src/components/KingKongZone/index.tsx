@@ -10,6 +10,8 @@ export interface KingKongItem {
   icon: string
   url: string
   tab?: string
+  /** 功能尚未上线：点击只弹提示，不跳转 */
+  comingSoon?: boolean
 }
 
 interface KingKongZoneProps {

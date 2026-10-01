@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import test from 'node:test'
+
+import { STRINGS } from '../src/constants/strings.ts'
+
+const file = (p) => new URL(`../src/${p}`, import.meta.url)
+
+test('activity zone defaults to competition and shows preparing empty states', async () => {
+  const source = await readFile(file('pages/activity-zone/index.tsx'), 'utf8')
+  assert.match(source, /useState<MainTab>\('competition'\)/)
+  assert.match(source, /showActivityEmpty = activitiesLoaded && allActivities\.length === 0/)
+  assert.match(source, /showEmploymentEmpty = jobsLoaded && allJobs\.length === 0/)
+  // 活动空态时不得再渲染“全部/进行中/即将开始/已结束”筛选标签
+  assert.match(source, /showTagFilter = mainTab === 'competition' \|\| \(mainTab === 'activity' && !showActivityEmpty\)/)
+  assert.match(source, /title=\{STRINGS\.ACTIVITY_EMPTY_TITLE\}/)
+  assert.match(source, /title=\{STRINGS\.EMPLOYMENT_EMPTY_TITLE\}/)
+})
+
+test('home keeps activity entry visible but only toasts coming soon', async () => {
+  const source = await readFile(file('pages/index/index.tsx'), 'utf8')
+  assert.match(source, /name: STRINGS\.ZONE_NAMES\[3\][\s\S]*?comingSoon: true/)
+  assert.match(source, /if \(item\.comingSoon\) \{[\s\S]*?STRINGS\.INDEX_ACTIVITY_COMING_SOON[\s\S]*?return/)
+  // 就业板块：空数据展示占位卡，有岗位时自动回退真实卡片
+  assert.match(source, /homeLoaded && employmentJobs\.length === 0/)
+  assert.match(source, /employmentJobs\.map\(\(job\) =>/)
+})
+
+test('ai consult no longer advertises unavailable activities or jobs', async () => {
+  const source = await readFile(file('pages/ai-consult/index.tsx'), 'utf8')
+  const activityBlock = source.match(/activity: \(id\) => \(\{[\s\S]*?\}\),/)?.[0] ?? ''
+  const employmentBlock = source.match(/employment: \(id\) => \(\{[\s\S]*?\}\),/)?.[0] ?? ''
+  assert.ok(activityBlock, 'activity intent builder should exist')
+  assert.ok(employmentBlock, 'employment intent builder should exist')
+  assert.doesNotMatch(activityBlock, /card:/)
+  assert.doesNotMatch(employmentBlock, /card:/)
+  assert.ok(STRINGS.INDEX_AI_ACTIVITY.includes('筹备中'))
+  assert.ok(STRINGS.INDEX_AI_EMPLOYMENT.includes('筹备中'))
+  assert.equal(STRINGS.AI_COMPETITION_CARD_DESC, '最新赛事报名与赛道信息')
+})
+
+test('login poster replaces the fake training camp with practice assistant', async () => {
+  const source = await readFile(file('pages/login-poster/index.tsx'), 'utf8')
+  assert.match(source, /type: 'quiz'/)
+  assert.equal(STRINGS.LOGIN_POSTER_CARD_3_TITLE, '练习助手')
+  assert.ok(!STRINGS.LOGIN_POSTER_CARD_3_TITLE.includes('题库'))
+  assert.ok(!STRINGS.LOGIN_POSTER_CARD_3_DESC.includes('题库'))
+  assert.ok(!STRINGS.LOGIN_POSTER_CARD_3_DESC.includes('报名开启'))
+})
