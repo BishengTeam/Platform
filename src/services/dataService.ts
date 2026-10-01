@@ -21,7 +21,7 @@ export {
   abandonPracticeSession, listPracticeHistory,
   listWrongBook, listQuizCollections, addQuizCollection, removeQuizCollection,
   clearWrongBookItem,
-  getQuizCheckinStatus, getQuizCheckinCalendar, getQuizStats,
+  getQuizCheckinStatus, manualQuizCheckin, getQuizCheckinCalendar, getQuizStats,
   createQuizExam, getCurrentQuizExam, listQuizExams, getQuizExam,
   createManualQuizExam, listQuizLibraryQuestions,
   saveQuizExamAnswer, submitQuizExam, abandonQuizExam,

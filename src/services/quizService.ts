@@ -1,4 +1,4 @@
-/** Quiz API client. All 28 user operations use the frozen 2026-08-14 contract. */
+/** Quiz API client. All user operations use the frozen quiz contract. */
 
 import { del, get, post, put } from '@/utils/request'
 import {
@@ -204,6 +204,11 @@ export async function removeQuizCollection(questionId: number): Promise<QuizColl
 
 export async function getQuizCheckinStatus(): Promise<QuizCheckinStatus> {
   const response = await get<unknown>(`${QUIZ_API}/checkin`)
+  return parseCheckinStatus(response.data)
+}
+
+export async function manualQuizCheckin(): Promise<QuizCheckinStatus> {
+  const response = await post<unknown>(`${QUIZ_API}/checkin`)
   return parseCheckinStatus(response.data)
 }
 

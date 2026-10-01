@@ -3,9 +3,8 @@ import { Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { ROUTES } from '@/constants/routes'
 import type { QuizCheckinDay, QuizCheckinStatus } from '@/contracts/quiz'
-import { getQuizCheckinCalendar, getQuizCheckinStatus } from '@/services/dataService'
+import { getQuizCheckinCalendar, getQuizCheckinStatus, manualQuizCheckin } from '@/services/dataService'
 import { shanghaiDate } from '@/utils/quizRuntime'
 import {
   buildCheckinMonthGrid,
@@ -19,8 +18,9 @@ import styles from './checkin.module.scss'
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日']
 
 const RULES = [
-  '当天首次提交普通练习或错题专项作答后，系统自动打卡',
-  '模拟考试不计入打卡，也无需手工签到',
+  '当天未打卡时可在本页手动打卡，无需练习作答',
+  '当天首次提交普通练习或错题专项作答后，也会自动打卡',
+  '模拟考试不计入打卡',
   '每个自然日首次打卡自动获得 5 积分',
   '连续打卡按自然日计算，中断后重新累计',
 ]
@@ -31,6 +31,7 @@ export default function QuizCheckinPage() {
   const [status, setStatus] = useState<QuizCheckinStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [checkingIn, setCheckingIn] = useState(false)
   const [rulesVisible, setRulesVisible] = useState(false)
   const today = shanghaiDate()
   const requestToken = useRef(0)
@@ -79,13 +80,32 @@ export default function QuizCheckinPage() {
     loadMonth(next)
   }, [loadMonth, viewMonth])
 
-  const goPractice = useCallback(() => {
-    Taro.showToast({ title: '完成一次练习即可自动打卡', icon: 'none', duration: 2000 })
-    const pages = Taro.getCurrentPages()
-    const previous = pages.length > 1 ? pages[pages.length - 2] : undefined
-    if (previous?.route === ROUTES.QUIZ_INDEX) Taro.navigateBack()
-    else Taro.redirectTo({ url: `/${ROUTES.QUIZ_INDEX}` })
-  }, [])
+  const handleManualCheckin = useCallback(() => {
+    if (loading || error || checkingIn || status?.checked_in) return
+    setCheckingIn(true)
+    manualQuizCheckin()
+      .then(nextStatus => {
+        setStatus(nextStatus)
+        if (checkinMonthOf(nextStatus.checkin_date) === viewMonth) {
+          setRecords(previous => {
+            if (previous.some(item => item.checkin_date === nextStatus.checkin_date)) return previous
+            return [
+              ...previous,
+              {
+                checkin_date: nextStatus.checkin_date,
+                questions_completed: nextStatus.questions_completed,
+                consecutive_days: nextStatus.consecutive_days,
+              },
+            ].sort((left, right) => left.checkin_date.localeCompare(right.checkin_date))
+          })
+        }
+        Taro.showToast({ title: `打卡成功 · 连续 ${nextStatus.consecutive_days} 天`, icon: 'none', duration: 2000 })
+      })
+      .catch(() => {
+        Taro.showToast({ title: '打卡失败，请稍后重试', icon: 'none', duration: 2000 })
+      })
+      .finally(() => setCheckingIn(false))
+  }, [checkingIn, error, loading, status?.checked_in, viewMonth])
 
   return (
     <AuthGuard>
@@ -130,8 +150,8 @@ export default function QuizCheckinPage() {
               {!loading && (
                 <Text className={styles.todayStatus}>
                   {status?.checked_in
-                    ? `今日已自动打卡 · 完成 ${status.questions_completed} 次练习作答`
-                    : '完成一次练习作答即可自动打卡'}
+                    ? `今日已打卡 · 完成 ${status.questions_completed} 次练习作答`
+                    : '可立即手动打卡；完成练习作答也会自动打卡'}
                 </Text>
               )}
             </View>
@@ -140,11 +160,11 @@ export default function QuizCheckinPage() {
 
         <View className={styles.actionBar}>
           <View
-            className={`${styles.actionButton} ${status?.checked_in || loading || error ? styles.actionButtonDone : ''}`}
-            onClick={status?.checked_in || loading || error ? undefined : goPractice}
+            className={`${styles.actionButton} ${status?.checked_in || loading || error || checkingIn ? styles.actionButtonDone : ''}`}
+            onClick={status?.checked_in || loading || error || checkingIn ? undefined : handleManualCheckin}
           >
             <Text className={styles.actionButtonText}>
-              {loading ? '加载中…' : status?.checked_in ? `今日已打卡 · 连续 ${status.consecutive_days} 天` : '去练习打卡'}
+              {checkingIn ? '打卡中…' : loading ? '加载中…' : status?.checked_in ? `今日已打卡 · 连续 ${status.consecutive_days} 天` : '立即手动打卡'}
             </Text>
           </View>
         </View>

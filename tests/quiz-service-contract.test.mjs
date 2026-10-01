@@ -5,6 +5,8 @@ import test from 'node:test'
 const SERVICE_FILE = new URL('../src/services/quizService.ts', import.meta.url)
 const MANIFEST_FILE = new URL('../src/contracts/quiz-contract.json', import.meta.url)
 const ROUTES_FILE = new URL('../src/constants/routes.ts', import.meta.url)
+const DATA_SERVICE_FILE = new URL('../src/services/dataService.ts', import.meta.url)
+const CHECKIN_PAGE_FILE = new URL('../src/pages/quiz/checkin.tsx', import.meta.url)
 const APP_CONFIG_FILE = new URL('../src/app.config.ts', import.meta.url)
 
 const METHOD_BY_HELPER = {
@@ -25,7 +27,7 @@ function normalizeTemplatePath(path) {
     .replaceAll('${examQuestionId}', '{exam_question_id}')
 }
 
-test('quiz service implements exactly the frozen 32 user operations', async () => {
+test('quiz service implements exactly the frozen 33 user operations', async () => {
   const [source, manifestText] = await Promise.all([
     readFile(SERVICE_FILE, 'utf8'),
     readFile(MANIFEST_FILE, 'utf8'),
@@ -45,8 +47,21 @@ test('quiz service implements exactly the frozen 32 user operations', async () =
   }
   actual.sort()
 
-  assert.equal(expected.length, 32)
+  assert.equal(expected.length, 33)
   assert.deepEqual(actual, expected)
+})
+
+test('check-in page supports the manual check-in contract', async () => {
+  const [serviceSource, dataServiceSource, pageSource] = await Promise.all([
+    readFile(SERVICE_FILE, 'utf8'),
+    readFile(DATA_SERVICE_FILE, 'utf8'),
+    readFile(CHECKIN_PAGE_FILE, 'utf8'),
+  ])
+  assert.match(serviceSource, /export async function manualQuizCheckin\(\): Promise<QuizCheckinStatus>[\s\S]*post<unknown>\(`\$\{QUIZ_API\}\/checkin`\)/)
+  assert.match(dataServiceSource, /manualQuizCheckin/)
+  assert.match(pageSource, /manualQuizCheckin\(\)/)
+  assert.match(pageSource, /立即手动打卡/)
+  assert.doesNotMatch(pageSource, /goPractice/)
 })
 
 test('stats request reuses the frozen route with an optional exact scope', async () => {
