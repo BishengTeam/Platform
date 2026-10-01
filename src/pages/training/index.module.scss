@@ -157,6 +157,63 @@
   color: $color-white;
 }
 
+// ---- Quiz Vendor Buttons ----
+.vendorRow {
+  display: flex;
+  gap: $spacing-xs;
+  margin: $spacing-md $spacing-lg 0;
+}
+
+.vendorButton {
+  flex: 1;
+  min-width: 0;
+  height: 156px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-2xs;
+  box-sizing: border-box;
+  background: $color-white;
+  border: 2PX solid transparent;
+  border-radius: $radius-md;
+  box-shadow: $shadow-xs;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.vendorButtonActive {
+  border-color: $color-primary;
+  background: $color-blue-light;
+}
+
+.vendorLogoBox {
+  width: 100%;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vendorLogo {
+  width: 100%;
+  height: 100%;
+}
+
+.vendorLabel {
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+}
+
+.vendorLabelActive {
+  font-size: $font-xs;
+  font-weight: 600;
+  color: $color-primary;
+}
+
 // ---- Quiz Selector ----
 .quizSelector {
   display: flex;
@@ -231,6 +288,11 @@
   padding: $spacing-lg $spacing-sm;
   background: $color-primary;
   border-radius: $radius-lg;
+}
+
+.statsCtaDisabled {
+  background: $color-primary-light;
+  opacity: 0.6;
 }
 
 .statsCtaText {

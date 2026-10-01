@@ -13,6 +13,7 @@ export type QuizQuestionStatus = 'draft' | 'published' | 'disabled' | 'deleted'
 export type QuizPracticeMode = 'normal' | 'wrong' | 'full' | 'wrong_only' | 'legacy_limited'
 export type QuizPracticeStatus = 'in_progress' | 'paused' | 'completed' | 'abandoned' | 'expired' | 'terminated'
 export type QuizPracticeScopeType = 'library' | 'module' | 'knowledge_point'
+export type QuizVendorTag = 'h3c' | 'nisp' | 'sangfor' | 'none'
 export type QuizPracticePauseReason = 'quiz_library_suspended' | 'quiz_entitlement_inactive'
 export type QuizExamStatus = 'in_progress' | 'completed' | 'timed_out' | 'abandoned'
 export type QuizExamReviewStatus = 'none' | 'pending' | 'in_progress' | 'recalled' | 'completed'
@@ -56,6 +57,7 @@ export interface QuizLibraryCatalogItem {
   description: string
   cover_url: string
   access_mode: QuizLibraryAccessMode
+  vendor_tag: QuizVendorTag
   question_count: number
   module_count: number
 }
@@ -600,7 +602,7 @@ function parseModule(value: unknown, path: string): QuizModuleCatalogItem {
 }
 
 function parseLibraryBase(value: unknown, path: string, detail: boolean): QuizLibraryCatalogItem | QuizLibraryCatalogDetail {
-  const keys = ['id', 'library_code', 'name', 'description', 'cover_url', 'access_mode', 'question_count', 'module_count']
+  const keys = ['id', 'library_code', 'name', 'description', 'cover_url', 'access_mode', 'vendor_tag', 'question_count', 'module_count']
   const object = exactObject(value, path, detail ? [...keys, 'details', 'modules'] : keys)
   const base: QuizLibraryCatalogItem = {
     id: integerAt(object.id, `${path}.id`),
@@ -609,6 +611,7 @@ function parseLibraryBase(value: unknown, path: string, detail: boolean): QuizLi
     description: stringAt(object.description, `${path}.description`),
     cover_url: stringAt(object.cover_url, `${path}.cover_url`),
     access_mode: literalAt(object.access_mode, `${path}.access_mode`, ['free', 'course_entitlement'] as const),
+    vendor_tag: literalAt(object.vendor_tag, `${path}.vendor_tag`, ['h3c', 'nisp', 'sangfor', 'none'] as const),
     question_count: integerAt(object.question_count, `${path}.question_count`),
     module_count: integerAt(object.module_count, `${path}.module_count`),
   }

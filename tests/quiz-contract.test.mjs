@@ -89,10 +89,12 @@ test('V2 library catalog and fixed hierarchy reject contract drift', () => {
     description: '课程配套题库',
     cover_url: 'https://example.invalid/quiz.png',
     access_mode: 'course_entitlement',
+    vendor_tag: 'h3c',
     question_count: 120,
     module_count: 1,
   }
   assert.equal(parseQuizLibraries([summary])[0].library_code, 'QL00000011')
+  assert.equal(parseQuizLibraries([summary])[0].vendor_tag, 'h3c')
   const detail = parseQuizLibrary({
     ...summary,
     details: null,
@@ -115,6 +117,7 @@ test('V2 library catalog and fixed hierarchy reject contract drift', () => {
   })
   assert.equal(detail.modules[0].knowledge_points[0].question_count, 120)
   assert.throws(() => parseQuizLibraries([{ ...summary, entitlement_id: 9 }]), QuizContractError)
+  assert.throws(() => parseQuizLibraries([{ ...summary, vendor_tag: 'renshe' }]), QuizContractError)
 })
 
 test('library progress parser keeps per-node first-attempt statistics', () => {

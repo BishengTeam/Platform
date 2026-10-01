@@ -26,6 +26,8 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
     },
     copy: {
       patterns: [
+        // 厂商标签 logo 以运行时字符串路径引用，需显式拷贝进小程序包。
+        { from: 'src/assets/vendor/', to: 'dist/assets/vendor/' },
       ],
       options: {
       }
