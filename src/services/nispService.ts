@@ -1,4 +1,25 @@
-import { get, post } from '../utils/request.ts'
+import Taro from '@tarojs/taro'
+import { get, getToken, post } from '../utils/request.ts'
+
+export type NispMaterialType =
+  | 'id_card_both_sides'
+  | 'portrait_photo'
+  | 'xuexin_report'
+  | 'application_form'
+
+export interface NispMaterialUploadResult {
+  material_type: NispMaterialType
+  storage_key: string
+  size_bytes: number
+  sha256: string
+}
+
+export interface NispResubmitPayload {
+  id_card_both_sides_key?: string | null
+  portrait_photo_key?: string | null
+  xuexin_report_key?: string | null
+  application_form_key?: string | null
+}
 
 export interface NispBatch {
   id: number
@@ -20,6 +41,8 @@ export interface NispRegistration {
   id: number
   registration_no: string
   batch_id: number
+  plan_id: number
+  order_id: number
   level: '1' | '2'
   status: 'pending_payment' | 'pending_review' | 'rejected_awaiting_resubmission' | 'approved' | 'cancelled'
   candidate_snapshot: Record<string, unknown>
@@ -34,6 +57,7 @@ export interface NispRegistration {
     decision: string
     reason_code: string | null
     reason_detail: string | null
+    rejected_material_types: string[] | null
   } | null
   created_at: string
   updated_at: string
@@ -86,6 +110,38 @@ export const nispService = {
 
   async getRegistration(id: number): Promise<NispRegistration> {
     return (await get<NispRegistration>(`/api/nisp/registrations/${id}`)).data
+  },
+
+  async uploadMaterial(
+    filePath: string,
+    materialType: NispMaterialType,
+  ): Promise<NispMaterialUploadResult> {
+    const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
+    const token = getToken()
+    const response = await Taro.uploadFile({
+      url: `${baseUrl}/api/nisp/materials/upload`,
+      filePath,
+      name: 'file',
+      formData: { material_type: materialType },
+      header: { Authorization: token ? `Bearer ${token}` : '' },
+    })
+    const payload = JSON.parse(response.data) as {
+      code: number
+      data: NispMaterialUploadResult
+      message: string
+    }
+    if (payload.code !== 0) throw new Error(payload.message || '材料上传失败')
+    return payload.data
+  },
+
+  async resubmitMaterials(
+    id: number,
+    payload: NispResubmitPayload,
+  ): Promise<NispRegistration> {
+    return (await post<NispRegistration>(
+      `/api/nisp/registrations/${id}/materials`,
+      payload as Record<string, unknown>,
+    )).data
   },
 
   async cancelPayment(id: number): Promise<NispRegistration> {

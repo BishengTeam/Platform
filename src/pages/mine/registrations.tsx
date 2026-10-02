@@ -4,32 +4,20 @@ import Taro, { usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { h3cService } from '@/services/h3cService'
-import { nispService } from '@/services/nispService'
+import {
+  nispService,
+  type NispMaterialType,
+  type NispRegistration,
+} from '@/services/nispService'
 import type { H3cRegistration } from '@/types/h3c'
-
-/** Unified registration item for both H3C and NISP */
-interface UnifiedRegistration {
-  id: number
-  registration_no: string
-  status: string
-  type: 'H3C' | 'NISP'
-  price_cents: number
-  level?: string
-  // H3C specific (optional)
-  registration_type?: string
-  candidate_snapshot?: Record<string, unknown>
-  out_trade_no?: string | null
-  latest_review?: {
-    decision: string
-    reason_detail: string | null
-    reason_code: string | null
-    rejected_material_types?: string[] | null
-  } | null
-  batch_id?: number
-  created_at?: string
-  resubmission_due_at?: string | null
-}
 import styles from './registrations.module.scss'
+
+type H3cRegistrationCard = H3cRegistration & { type: 'H3C' }
+type NispRegistrationCard = NispRegistration & {
+  type: 'NISP'
+  levelLabel: string
+}
+type UnifiedRegistration = H3cRegistrationCard | NispRegistrationCard
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   pending_payment: { label: '待支付', cls: styles.statusPending },
@@ -59,8 +47,24 @@ const FIELD_LABELS: Record<string, string> = {
   education: '学历',
   first_name_en: '英文名',
   last_name_en: '英文姓',
+  name: '姓名',
+  pinyin: '拼音',
+  major: '专业',
+  id_card: '身份证号',
+  province: '报考省份',
+  training_type: '培训类型',
+  birth_date: '出生日期',
+  institution: '培训机构',
+  age: '年龄',
+  zip_code: '邮编',
 }
 
+const NISP_MATERIAL_LABELS: Record<NispMaterialType, string> = {
+  id_card_both_sides: '身份证双面',
+  portrait_photo: '证件照',
+  xuexin_report: '学籍报告',
+  application_form: '申请表',
+}
 
 function formatExamDate(value: string): string {
   const date = new Date(value)
@@ -71,6 +75,32 @@ function formatExamDate(value: string): string {
   const h = String(date.getHours()).padStart(2, '0')
   const min = String(date.getMinutes()).padStart(2, '0')
   return `${y}-${m}-${d} ${h}:${min}`
+}
+
+function snapshotText(
+  snapshot: Record<string, unknown> | undefined,
+  key: string,
+): string | null {
+  const value = snapshot?.[key]
+  return value === undefined || value === null || value === '' ? null : String(value)
+}
+
+function isUserCancelled(error: unknown): boolean {
+  return Boolean((error as { errMsg?: string } | null)?.errMsg?.includes('cancel'))
+}
+
+async function chooseNispFile(materialType: NispMaterialType): Promise<string> {
+  if (materialType === 'portrait_photo') {
+    const result = await Taro.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+    })
+    return result.tempFilePaths[0] || ''
+  }
+
+  const result = await Taro.chooseMessageFile({ count: 1, type: 'file' })
+  return result.tempFiles[0]?.path || ''
 }
 
 export default function MyRegistrationsPage() {
@@ -84,37 +114,15 @@ export default function MyRegistrationsPage() {
     setError(false)
     Promise.all([
       h3cService.listRegistrations()
-        .then(r => r.items.map((item): UnifiedRegistration => ({
-          id: item.id,
-          registration_no: item.registration_no,
-          status: item.status,
-          type: 'H3C',
-          price_cents: item.price_cents,
-          level: undefined,
-          registration_type: item.registration_type,
-          candidate_snapshot: item.candidate_snapshot,
-          out_trade_no: item.out_trade_no,
-          latest_review: item.latest_review,
-          batch_id: item.batch_id,
-          created_at: item.created_at,
-          resubmission_due_at: item.resubmission_due_at,
-        })))
-        .catch(() => [] as UnifiedRegistration[]),
+        .then(r => r.items.map((item): H3cRegistrationCard => ({ ...item, type: 'H3C' })))
+        .catch(() => [] as H3cRegistrationCard[]),
       nispService.listRegistrations()
-        .then(r => r.items.map((item): UnifiedRegistration => ({
-          id: item.id,
-          registration_no: item.registration_no,
-          status: item.status,
+        .then(r => r.items.map((item): NispRegistrationCard => ({
+          ...item,
           type: 'NISP',
-          price_cents: item.price_cents,
-          level: item.level === '1' ? '一级' : '二级',
-          candidate_snapshot: item.candidate_snapshot,
-          out_trade_no: item.out_trade_no,
-          latest_review: item.latest_review,
-          created_at: item.created_at,
-          resubmission_due_at: item.resubmission_due_at,
+          levelLabel: item.level === '1' ? '一级' : '二级',
         })))
-        .catch(() => [] as UnifiedRegistration[]),
+        .catch(() => [] as NispRegistrationCard[]),
     ])
       .then(([h3cItems, nispItems]) => setItems([...h3cItems, ...nispItems]))
       .finally(() => setLoading(false))
@@ -129,23 +137,40 @@ export default function MyRegistrationsPage() {
 
   const openDetail = (item: UnifiedRegistration) => {
     setSelected(item)
-    h3cService.getRegistration(item.id)
-      .then((data) => setSelected(data as unknown as UnifiedRegistration))
+    if (item.type === 'H3C') {
+      h3cService.getRegistration(item.id)
+        .then(detail => setSelected({ ...detail, type: 'H3C' }))
+        .catch(() => Taro.showToast({ title: '加载详情失败', icon: 'none' }))
+      return
+    }
+
+    nispService.getRegistration(item.id)
+      .then(detail => setSelected({
+        ...detail,
+        type: 'NISP',
+        levelLabel: detail.level === '1' ? '一级' : '二级',
+      }))
       .catch(() => Taro.showToast({ title: '加载详情失败', icon: 'none' }))
   }
 
-  const upload = async (registration: H3cRegistration) => {
+  const uploadH3c = async (registration: H3cRegistrationCard) => {
     const materialType = registration.latest_review?.rejected_material_types?.[0]
-    if (!materialType) return
-    const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
-    const filePath = result.tempFilePaths[0]
-    if (!filePath) return
-    Taro.showLoading({ title: '上传中', mask: true })
+    if (materialType !== 'coupon_proof' && materialType !== 'student_proof') return
+
     try {
+      const result = await Taro.chooseImage({
+        count: 1,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+      })
+      const filePath = result.tempFilePaths[0]
+      if (!filePath) return
+
+      Taro.showLoading({ title: '上传中', mask: true })
       const uploaded = await h3cService.uploadMaterial(
         filePath,
         registration.batch_id,
-        materialType as 'coupon_proof' | 'student_proof',
+        materialType,
       )
       await h3cService.resubmitMaterials(registration.id, {
         coupon_proof_key: materialType === 'coupon_proof' ? uploaded.storage_key : null,
@@ -155,6 +180,7 @@ export default function MyRegistrationsPage() {
       setSelected(null)
       load()
     } catch (err) {
+      if (isUserCancelled(err)) return
       Taro.showToast({
         title: err instanceof Error ? err.message : '补交失败，请重试',
         icon: 'none',
@@ -165,7 +191,56 @@ export default function MyRegistrationsPage() {
     }
   }
 
-  const cancelPayment = async (registration: H3cRegistration) => {
+  const uploadNisp = async (registration: NispRegistrationCard) => {
+    const rejectedMaterials = (registration.latest_review?.rejected_material_types ?? [])
+      .filter((type): type is NispMaterialType => type in NISP_MATERIAL_LABELS)
+    if (rejectedMaterials.length === 0) return
+
+    try {
+      const payload: Partial<Record<NispMaterialType, string>> = {}
+      for (const materialType of rejectedMaterials) {
+        Taro.showToast({
+          title: `请选择${NISP_MATERIAL_LABELS[materialType]}`,
+          icon: 'none',
+        })
+        const filePath = await chooseNispFile(materialType)
+        if (!filePath) return
+
+        Taro.showLoading({ title: '上传中', mask: true })
+        const uploaded = await nispService.uploadMaterial(filePath, materialType)
+        payload[materialType] = uploaded.storage_key
+      }
+
+      await nispService.resubmitMaterials(registration.id, {
+        id_card_both_sides_key: payload.id_card_both_sides ?? null,
+        portrait_photo_key: payload.portrait_photo ?? null,
+        xuexin_report_key: payload.xuexin_report ?? null,
+        application_form_key: payload.application_form ?? null,
+      })
+      Taro.showToast({ title: '补交成功', icon: 'success' })
+      setSelected(null)
+      load()
+    } catch (err) {
+      if (isUserCancelled(err)) return
+      Taro.showToast({
+        title: err instanceof Error ? err.message : '补交失败，请重试',
+        icon: 'none',
+        duration: 3000,
+      })
+    } finally {
+      Taro.hideLoading()
+    }
+  }
+
+  const upload = async (registration: UnifiedRegistration) => {
+    if (registration.type === 'H3C') {
+      await uploadH3c(registration)
+      return
+    }
+    await uploadNisp(registration)
+  }
+
+  const cancelPayment = async (registration: UnifiedRegistration) => {
     Taro.showModal({
       title: '取消报名',
       content: `确定要取消报名 ${registration.registration_no} 吗？`,
@@ -174,21 +249,41 @@ export default function MyRegistrationsPage() {
       success: async (res) => {
         if (!res.confirm) return
         try {
-          await h3cService.cancelPayment(registration.id)
+          if (registration.type === 'H3C') {
+            await h3cService.cancelPayment(registration.id)
+          } else {
+            await nispService.cancelPayment(registration.id)
+          }
           Taro.showToast({ title: '已取消', icon: 'success' })
           setSelected(null)
           load()
         } catch (err) {
-          Taro.showToast({ title: err instanceof Error ? err.message : '取消失败', icon: 'none' })
+          Taro.showToast({
+            title: err instanceof Error ? err.message : '取消失败',
+            icon: 'none',
+          })
         }
       },
     })
   }
 
-  const snapshotEntries = (reg: H3cRegistration) =>
-    Object.entries(reg.candidate_snapshot)
-      .filter(([key]) => FIELD_LABELS[key])
+  const snapshotEntries = (registration: UnifiedRegistration) =>
+    Object.entries(registration.candidate_snapshot)
+      .filter(([key]) => key !== 'exam_date' && key !== 'exam_location' && FIELD_LABELS[key])
       .map(([key, value]) => ({ label: FIELD_LABELS[key], value: String(value ?? '-') }))
+
+  const registrationTypeLabel = (registration: UnifiedRegistration) => (
+    registration.type === 'H3C'
+      ? TYPE_LABELS[registration.registration_type] || registration.registration_type
+      : `NISP ${registration.levelLabel}`
+  )
+
+  const selectedExamDate = selected?.type === 'H3C'
+    ? selected.exam_date
+    : snapshotText(selected?.candidate_snapshot, 'exam_date')
+  const selectedExamLocation = selected?.type === 'H3C'
+    ? selected.exam_location
+    : snapshotText(selected?.candidate_snapshot, 'exam_location')
 
   return (
     <AuthGuard>
@@ -217,10 +312,12 @@ export default function MyRegistrationsPage() {
           {!loading && !error && items.map((item) => {
             const cfg = STATUS_CONFIG[item.status]
             return (
-              <View key={item.id} className={styles.card} onClick={() => openDetail(item)}>
+              <View key={`${item.type}-${item.id}`} className={styles.card} onClick={() => openDetail(item)}>
                 <View className={styles.cardHeader}>
                   <Text className={styles.title}>{item.registration_no}</Text>
-                  <Text className={styles.typeBadge}>{item.type}{item.level ? ` ${item.level}` : ''}</Text>
+                  <Text className={styles.typeBadge}>
+                    {item.type}{item.type === 'NISP' ? ` ${item.levelLabel}` : ''}
+                  </Text>
                 </View>
                 <View className={styles.row}>
                   <Text className={styles.label}>状态</Text>
@@ -230,9 +327,7 @@ export default function MyRegistrationsPage() {
                 </View>
                 <View className={styles.row}>
                   <Text className={styles.label}>类型</Text>
-                  <Text className={styles.value}>
-                    {TYPE_LABELS[item.registration_type] || item.registration_type}
-                  </Text>
+                  <Text className={styles.value}>{registrationTypeLabel(item)}</Text>
                 </View>
                 <View className={styles.row}>
                   <Text className={styles.label}>金额</Text>
@@ -260,19 +355,19 @@ export default function MyRegistrationsPage() {
                 </View>
               )}
 
-              {selected.status === 'approved' && (selected.exam_date || selected.exam_location) && (
+              {selected.status === 'approved' && (selectedExamDate || selectedExamLocation) && (
                 <>
                   <Text className={styles.sectionTitle}>考试安排</Text>
-                  {selected.exam_date && (
+                  {selectedExamDate && (
                     <View className={styles.row}>
                       <Text className={styles.label}>考试时间</Text>
-                      <Text className={styles.value}>{formatExamDate(selected.exam_date)}</Text>
+                      <Text className={styles.value}>{formatExamDate(selectedExamDate)}</Text>
                     </View>
                   )}
-                  {selected.exam_location && (
+                  {selectedExamLocation && (
                     <View className={styles.row}>
                       <Text className={styles.label}>考试地点</Text>
-                      <Text className={styles.value}>{selected.exam_location}</Text>
+                      <Text className={styles.value}>{selectedExamLocation}</Text>
                     </View>
                   )}
                 </>

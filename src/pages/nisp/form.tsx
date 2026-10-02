@@ -5,7 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { nispService } from '@/services/nispService'
-import type { NispBatch, NispOrderCreatePayload } from '@/services/nispService'
+import type { NispBatch, NispMaterialType, NispOrderCreatePayload } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
 import styles from './nisp.module.scss'
 
@@ -59,12 +59,11 @@ export default function NispFormPage() {
 
   const uploadFile = async (
     setter: (key: string) => void,
-    fileType: 'image' | 'pdf',
-    materialType: 'id_card_both_sides' | 'portrait_photo' | 'xuexin_report' | 'application_form',
+    fileType: NispMaterialType,
   ) => {
     try {
       let filePath = ''
-      if (fileType === 'image') {
+      if (fileType === 'portrait_photo') {
         const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
         filePath = result.tempFilePaths[0]
       } else {
@@ -74,27 +73,9 @@ export default function NispFormPage() {
       if (!filePath) return
 
       Taro.showLoading({ title: '上传中', mask: true })
-      // Upload to server which stores to OSS
-      const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
-      const token = Taro.getStorageSync('access_token') || ''
-      const uploadResult = await Taro.uploadFile({
-        url: `${baseUrl}/api/nisp/materials/upload`,
-        filePath,
-        name: 'file',
-        formData: { material_type: materialType },
-        header: { Authorization: token ? `Bearer ${token}` : '' },
-      })
+      const uploaded = await nispService.uploadMaterial(filePath, fileType)
       Taro.hideLoading()
-
-      const payload = JSON.parse(uploadResult.data) as {
-        code: number
-        data?: { storage_key: string }
-        message: string
-      }
-      if (payload.code !== 0 || !payload.data?.storage_key) {
-        throw new Error(payload.message || '上传失败')
-      }
-      setter(payload.data.storage_key)
+      setter(uploaded.storage_key)
     } catch (error) {
       Taro.hideLoading()
       if ((error as { errMsg?: string })?.errMsg?.includes('cancel')) return
@@ -214,7 +195,12 @@ export default function NispFormPage() {
       <Picker
         mode='selector'
         range={options}
-        onChange={(e) => setField(key, options[e.detail.value])}
+        onChange={(e) => {
+          const index = Number(e.detail.value)
+          if (Number.isInteger(index) && index >= 0 && index < options.length) {
+            setField(key, options[index])
+          }
+        }}
       >
         <View className={styles.input} style={{ display: 'flex', alignItems: 'center' }}>
           <Text style={{ color: form[key] ? '#17233d' : '#98a2b3' }}>
@@ -259,7 +245,7 @@ export default function NispFormPage() {
             </View>
             <View
               className={`${styles.uploadBox} ${idCardKey ? styles.uploaded : ''}`}
-              onClick={() => uploadFile(setIdCardKey, 'pdf', 'id_card_both_sides')}
+              onClick={() => uploadFile(setIdCardKey, 'id_card_both_sides')}
             >
               <Text>{idCardKey ? '已上传' : '点击上传（以姓名命名，PDF格式）'}</Text>
             </View>
@@ -272,7 +258,7 @@ export default function NispFormPage() {
             </View>
             <View
               className={`${styles.uploadBox} ${portraitKey ? styles.uploaded : ''}`}
-              onClick={() => uploadFile(setPortraitKey, 'image', 'portrait_photo')}
+              onClick={() => uploadFile(setPortraitKey, 'portrait_photo')}
             >
               <Text>{portraitKey ? '已上传' : '点击上传（30KB-200KB，2寸蓝底证件照）'}</Text>
             </View>
@@ -287,7 +273,7 @@ export default function NispFormPage() {
                 </View>
                 <View
                   className={`${styles.uploadBox} ${xuexinKey ? styles.uploaded : ''}`}
-                  onClick={() => uploadFile(setXuexinKey, 'pdf', 'xuexin_report')}
+                  onClick={() => uploadFile(setXuexinKey, 'xuexin_report')}
                 >
                   <Text>{xuexinKey ? '已上传' : '点击上传（教育部学籍在线验证报告）'}</Text>
                 </View>
@@ -300,7 +286,7 @@ export default function NispFormPage() {
                 </View>
                 <View
                   className={`${styles.uploadBox} ${appFormKey ? styles.uploaded : ''}`}
-                  onClick={() => uploadFile(setAppFormKey, 'pdf', 'application_form')}
+                  onClick={() => uploadFile(setAppFormKey, 'application_form')}
                 >
                   <Text>{appFormKey ? '已上传' : '点击上传（下载模板填写后上传）'}</Text>
                 </View>

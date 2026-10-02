@@ -20,3 +20,14 @@ test('NISP pages are registered in the subpackage and reachable via ROUTES', asy
   const categoryPage = await readFile(file('pages/registration/category.tsx'), 'utf8')
   assert.match(categoryPage, /ROUTES\.NISP_INDEX/)
 })
+
+test('NISP form uploads each material with its own backend material type', async () => {
+  const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
+
+  assert.match(form, /uploadFile\(setIdCardKey, 'id_card_both_sides'\)/)
+  assert.match(form, /uploadFile\(setPortraitKey, 'portrait_photo'\)/)
+  assert.match(form, /uploadFile\(setXuexinKey, 'xuexin_report'\)/)
+  assert.match(form, /uploadFile\(setAppFormKey, 'application_form'\)/)
+  assert.match(form, /nispService\.uploadMaterial\(filePath, fileType\)/)
+  assert.equal(form.includes("fileType === 'image' ? 'portrait_photo' : 'id_card_both_sides'"), false)
+})
