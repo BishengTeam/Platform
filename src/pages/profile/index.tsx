@@ -1,22 +1,20 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
-import { KingKongZone } from '@/components/KingKongZone'
-import type { KingKongItem } from '@/components/KingKongZone'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import { profileGridItems, profileListItems } from '@/constants/mock/profile'
+import { profileGridItems, profileListGroups } from '@/constants/mock/profile'
+import type { ProfileMenuItem } from '@/types'
 import { getUserProfile } from '@/services/dataService'
 import styles from './index.module.scss'
 
 export default function ProfilePage() {
   const [userName, setUserName] = useState<string>(STRINGS.PROFILE_MOCK_NAME)
   const [userStatus, setUserStatus] = useState<string>(STRINGS.PROFILE_MOCK_STATUS)
-  const [avatar, setAvatar] = useState('')
 
   useEffect(() => {
     getUserProfile().then(profile => {
@@ -34,17 +32,13 @@ export default function ProfilePage() {
     Taro.navigateTo({ url: `/${route}` })
   }
 
-  const handleGridItemClick = useCallback((item: KingKongItem) => {
-    handleNavigate(item.url || undefined)
-  }, [])
-
-  const gridItems: KingKongItem[] = useMemo(() => profileGridItems.map((item) => ({
-    name: item.label,
-    bg: 'transparent',
-    iconColor: '#1677FF',
-    icon: item.icon,
-    url: item.route || '',
-  })), [])
+  const handleGridItemClick = (item: ProfileMenuItem) => {
+    if (item.comingSoon) {
+      Taro.showToast({ title: STRINGS.INDEX_ACTIVITY_COMING_SOON, icon: 'none' })
+      return
+    }
+    handleNavigate(item.route)
+  }
 
   return (
     <AuthGuard>
@@ -52,52 +46,65 @@ export default function ProfilePage() {
         <PageHeader title={STRINGS.TAB_PROFILE} />
 
         <View className={styles.main}>
+          {/* ---- Header 个人信息区：渐变蓝底 + 白边头像 + 身份胶囊 ---- */}
           <View
             className={styles.headerBanner}
             onClick={() => handleNavigate(ROUTES.MINE_PROFILE)}
           >
             <View className={styles.avatar}>
-              {avatar ? (
-                <Icon name='user' size={56} color='#1677FF' />
-              ) : (
-                <Icon name='user' size={56} color='#1677FF' />
-              )}
+              <Icon name='user' size={56} color='#FFFFFF' />
             </View>
             <View className={styles.headerInfo}>
               <Text className={styles.name}>{userName}</Text>
-              <Text className={styles.status}>{userStatus}</Text>
+              <View className={styles.identityBadge}>
+                <Text className={styles.identityText}>{userStatus}</Text>
+              </View>
             </View>
             <Icon name='chevron-right' size={22} color='rgba(255,255,255,0.7)' className={styles.bannerArrow} />
           </View>
 
-          <View className={`${styles.card} ${styles.cardOverlap}`}>
-            <KingKongZone items={gridItems} onItemClick={handleGridItemClick} columns={4} variant='tab' className={styles.profileGrid} />
-          </View>
-
-          <View className={`${styles.card} ${styles.cardList}`}>
-            {profileListItems.map((item, index) => (
-              <View key={item.label}>
-                {index > 0 && <View className={styles.divider} />}
-                <View className={styles.listItem} onClick={() => handleNavigate(item.route)}>
-                  <View className={styles.listLeft}>
-                    <Icon name={item.icon} size={28} color='#666666' />
-                    <Text className={styles.listLabel}>{item.label}</Text>
+          {/* ---- 快捷金刚区：浮动白卡，4 列网格（含 2 个敬请期待占位） ---- */}
+          <View className={`${styles.card} ${styles.gridCard}`}>
+            <View className={styles.grid}>
+              {profileGridItems.map((item, index) => (
+                <View
+                  key={`${item.label}-${index}`}
+                  className={`${styles.gridItem} ${item.comingSoon ? styles.gridItemComingSoon : ''}`}
+                  onClick={() => handleGridItemClick(item)}
+                >
+                  {item.comingSoon && (
+                    <View className={styles.comingSoonBadge}>
+                      <Text className={styles.comingSoonBadgeText}>{STRINGS.PROFILE_GRID_COMING_SOON_BADGE}</Text>
+                    </View>
+                  )}
+                  <View className={styles.iconBase} style={{ background: item.iconBg }}>
+                    <Icon name={item.icon} size={40} color={item.iconColor || '#1677FF'} />
                   </View>
-                  <Icon name='chevron-right' size={22} color='#CCCCCC' />
+                  <Text className={styles.gridLabel}>{item.label}</Text>
                 </View>
-              </View>
-            ))}
-          </View>
-
-          <View className={`${styles.card} ${styles.cardSettings}`}>
-            <View className={styles.listItem} onClick={() => handleNavigate('pages/mine/profile')}>
-              <View className={styles.listLeft}>
-                <Icon name='settings' size={28} color='#666666' />
-                <Text className={styles.listLabel}>{STRINGS.PROFILE_SETTINGS}</Text>
-              </View>
-              <Icon name='chevron-right' size={22} color='#CCCCCC' />
+              ))}
             </View>
           </View>
+
+          {/* ---- 功能列表：分组白卡 ---- */}
+          {profileListGroups.map((group, groupIndex) => (
+            <View key={groupIndex} className={`${styles.card} ${styles.listCard}`}>
+              {group.map((item, index) => (
+                <View key={item.label}>
+                  {index > 0 && <View className={styles.divider} />}
+                  <View className={styles.listItem} onClick={() => handleNavigate(item.route)}>
+                    <View className={styles.listLeft}>
+                      <View className={styles.iconChip} style={{ background: item.iconBg }}>
+                        <Icon name={item.icon} size={28} color={item.iconColor || '#666666'} />
+                      </View>
+                      <Text className={styles.listLabel}>{item.label}</Text>
+                    </View>
+                    <Icon name='chevron-right' size={22} color='#C9CDD4' />
+                  </View>
+                </View>
+              ))}
+            </View>
+          ))}
         </View>
 
         <CustomTabBar activeTabKey='pages/profile/index' onSwitch={(url) => Taro.switchTab({ url })} />

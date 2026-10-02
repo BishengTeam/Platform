@@ -14,6 +14,12 @@ export interface ProfileMenuItem {
   icon: string
   label: string
   route?: string
+  /** 图标底座背景色（个人中心宫格/列表色彩系统） */
+  iconBg?: string
+  /** 图标前景色 */
+  iconColor?: string
+  /** 功能尚未上线：点击只弹提示，不跳转 */
+  comingSoon?: boolean
 }
 
 /** 对应后端 GET /api/user/profile 返回值 (UserProfileDetail schema) */

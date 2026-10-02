@@ -1,11 +1,12 @@
 @use '../../styles/variables' as *;
 
+// ---- 页面骨架：Swiss 极简，浅灰底 ----
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg-secondary;
+  background: #F7F8FA;
 }
 
 .main {
@@ -13,109 +14,207 @@
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: 40px;
 }
 
-// ---- Header Banner ----
+// ---- Header 个人信息区 ----
 .headerBanner {
-  padding: $spacing-4xl $spacing-lg $spacing-4xl;
-  background: $gradient-blue;
+  padding: 48px 32px 104px;
+  // 渐变蓝：blue-600 -> indigo-700
+  background: linear-gradient(to right, #2563EB, #4338CA);
   display: flex;
-  align-items: flex-start;
-  gap: $spacing-md;
+  align-items: center;
+  gap: 24px;
 }
 
 .avatar {
-  width: $avatar-xl;
-  height: $avatar-xl;
+  width: 128px;
+  height: 128px;
   flex-shrink: 0;
-  background: rgba($color-white, 0.25);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 50%;
+  // 2px 白色边框（375 设计稿换算为 4px）+ 浅阴影
+  border: 4px solid #FFFFFF;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.32), 0 4px 10px rgba(15, 23, 42, 0.10);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba($color-white, 0.3);
 }
 
 .headerInfo {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: $avatar-xl;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .name {
-  font-size: $font-3xl;
+  font-size: 36px; // 18px
   font-weight: 700;
   color: $color-white;
-  line-height: 1;
-  padding-top: 10px;
+  line-height: 1.2;
 }
 
-.status {
-  font-size: $font-base;
-  color: rgba($color-white, 0.75);
-  padding-bottom: 8px;
+.identityBadge {
+  padding: 4px 18px;
+  border-radius: $radius-full;
+  background: rgba(191, 219, 254, 0.26);
+  border: 1PX solid rgba(219, 234, 254, 0.38);
+}
+
+.identityText {
+  font-size: 22px;
+  color: #DBEAFE;
+  line-height: 1.5;
 }
 
 .bannerArrow {
-  margin-left: auto;
-  align-self: flex-end;
-  margin-bottom: 48px;
+  align-self: center;
   flex-shrink: 0;
 }
 
-// ---- Card ----
+// ---- 通用卡片 ----
 .card {
-  margin: $spacing-md $spacing-md 0;
+  margin: 0 24px;
   background: $color-white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  border-radius: 32px; // rounded-2xl (16px)
 }
 
-.cardOverlap {
-  margin-top: -24px;
+// ---- 快捷金刚区：向上重叠的浮动卡 ----
+.gridCard {
+  margin-top: -56px;
   position: relative;
   z-index: 10;
+  padding: 32px 12px 28px;
+  box-shadow: 0 4px 16px rgba(17, 24, 39, 0.06); // shadow-sm
 }
 
-// ---- KingKongZone Override ----
-.profileGrid {
-  padding: 0;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px 8px;
 }
 
-// ---- List Group ----
+.gridItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  transition: transform $motion-duration-press $motion-ease-out;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.iconBase {
+  width: 88px;
+  height: 88px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gridLabel {
+  font-size: 24px; // 12px
+  font-weight: 500;
+  color: #1D2129;
+  text-align: center;
+  line-height: 1.3;
+}
+
+// 敬请期待占位：置灰/半透明
+.gridItemComingSoon {
+  opacity: 0.72;
+
+  .gridLabel {
+    color: #86909C;
+  }
+}
+
+.comingSoonBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 1;
+  padding: 2px 10px;
+  border-radius: $radius-full;
+  background: #EEF0F4;
+  border: 1PX solid #E3E6EB;
+}
+
+.comingSoonBadgeText {
+  font-size: 18px; // 微型 9px
+  color: #86909C;
+  line-height: 1.4;
+}
+
+// ---- 功能列表：分组卡片 ----
+.listCard {
+  margin-top: 24px;
+  border: 1PX solid #F1F5F9; // border-slate-100
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.03);
+}
+
 .listItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px $spacing-md;
+  padding: 26px 32px;
+  transition: background-color $motion-duration-state $motion-ease-out;
+
+  &:active {
+    background: #F7F8FA;
+  }
 }
 
 .listLeft {
   display: flex;
   align-items: center;
-  gap: $spacing-md;
+  gap: 20px;
+  min-width: 0;
+}
+
+.iconChip {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .listLabel {
-  font-size: $font-lg;
-  color: $color-text;
+  font-size: 28px; // 14px
+  font-weight: 500;
+  color: #1D2129;
+  line-height: 1.4;
 }
 
 .divider {
-  height: 1px;
-  background: #f5f5f5;
-  margin: 0 $spacing-md;
+  height: 1PX;
+  background: #F1F5F9;
+  // 与文字左缘对齐（列表内边距 32 + 色块 60 + 间距 20）
+  margin: 0 32px 0 112px;
 }
 
-// ---- Bottom Padding for List Card ----
-.cardList {
-  padding-bottom: 24px;
-}
+@media (prefers-reduced-motion: reduce) {
+  .gridItem {
+    transition-property: background-color;
 
-// ---- Settings Card ----
-.cardSettings {
-  padding-top: 8px;
-  padding-bottom: 0;
+    &:active {
+      transform: none;
+    }
+  }
+
+  .listItem {
+    transition-property: background-color;
+  }
 }

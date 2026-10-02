@@ -63,8 +63,8 @@ export const STRINGS = {
   SERVICE_WECHAT_QR_HINT: '长按识别二维码，添加官方客服',
 
   // ---- Profile Page ----
-  PROFILE_MOCK_NAME: '同学',
-  PROFILE_MOCK_STATUS: 'H3CNE 备考中',
+  PROFILE_MOCK_NAME: 'koko',
+  PROFILE_MOCK_STATUS: 'student',
   PROFILE_ORDERS: '我的订单',
   PROFILE_ALL_ORDERS: '全部订单',
   PROFILE_LOGOUT: '退出登录',
@@ -73,6 +73,8 @@ export const STRINGS = {
   PROFILE_GRID_MY_COURSES: '我的课程',
   PROFILE_GRID_MY_FAVORITES: '我的收藏',
   PROFILE_GRID_MY_CLASSROOMS: '我的课堂',
+  PROFILE_GRID_COMING_SOON_TITLE: '敬请期待',
+  PROFILE_GRID_COMING_SOON_BADGE: '即将上线',
   PROFILE_LIST_ORDERS: '我的订单',
   PROFILE_LIST_REGISTRATIONS: '我的报名',
   PROFILE_LIST_SERVICE: '客服中心',
