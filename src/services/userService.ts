@@ -485,13 +485,13 @@ export async function getCoupons(): Promise<Array<{ id: string; name: string; di
   }))
 }
 
-export async function getTickets(): Promise<Array<{ id: string; title: string; status: string; created_at: string }>> {
+export async function getTickets(): Promise<Array<{ id: string; content: string; status: string; created_at: string }>> {
   if (USE_MOCK) return []
-  const res = await get<{ items?: Array<{ id: number; content: string; status: string; created_at: string }> }>('/api/tickets')
+  const res = await get<{ items?: Array<{ id: number; content: string | null; status: string; created_at: string }> }>('/api/tickets')
   const data = res.data
   return (data?.items ?? []).map((t) => ({
     id: String(t.id),
-    title: t.content?.slice(0, 50) || '',
+    content: t.content || '',
     status: t.status,
     created_at: t.created_at,
   }))

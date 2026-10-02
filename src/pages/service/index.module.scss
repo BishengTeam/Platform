@@ -1,123 +1,421 @@
 @use '../../styles/variables' as *;
 
+/* 现代极简科技风：浅灰背景 + 白底圆角卡片 + 极浅边框与弥散阴影 */
+$card-border: #F1F5F9;
+$page-bg: #F7F8FA;
+$tint-blue: rgba(22, 119, 255, 0.08);
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg-secondary;
+  background: $page-bg;
 }
 
 .body {
   flex: 1;
   width: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
+}
+
+/* 微信 scroll-view 直接带 padding 时右内边距不可靠，边距放在内层容器 */
+.bodyInner {
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;
 }
 
-.card {
+.card,
+.assistantCard,
+.ticketCard {
   background: $color-white;
-  border-radius: $radius-xl;
-  padding: $spacing-xl;
+  border: $border-thin solid $card-border;
+  border-radius: $radius-lg;
   box-shadow: $shadow-sm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-.avatar {
-  width: $avatar-xl;
-  height: $avatar-xl;
-  background: $color-primary;
-  border-radius: 50%;
+// ---- 顶部客服助手 ----
+.assistantCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+}
+
+.assistantAvatar {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $color-white;
-  font-weight: bold;
-  font-size: $font-3xl;
-  margin-bottom: $spacing-sm;
+  background: #FFFFFF;
+  border: $border-thin solid $card-border;
+  border-radius: $radius-md;
 }
 
-.cardTitle {
-  font-size: $font-xl;
-  font-weight: 600;
-  color: $color-text;
-  margin-bottom: $spacing-2xs;
+.assistantLogo {
+  width: 72px;
+  height: 72px;
 }
 
-.ticketsHeader {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: $spacing-sm;
-  margin-bottom: $spacing-sm;
+.onlineDot {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 20px;
+  height: 20px;
+  background: $color-success;
+  border: 4px solid #FFFFFF;
+  border-radius: 50%;
+  box-sizing: content-box;
 }
 
-.ticketsHeader .cardTitle {
-  margin-bottom: 0;
-}
-
-.cardSubtitle {
-  font-size: $font-base;
-  color: $color-text-tertiary;
-  margin-bottom: $spacing-md;
-}
-
-.contacts {
-  width: 100%;
+.assistantInfo {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $spacing-2xs;
+}
+
+.assistantName {
+  font-size: $font-lg;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.onlineRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+}
+
+.onlineText {
+  font-size: $font-sm;
+  color: $color-success;
+}
+
+// ---- 联系方式卡片 ----
+.card {
+  padding: 0 $spacing-md;
+}
+
+.divider {
+  height: 1px;
+  background: $card-border;
 }
 
 .contactItem {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: $spacing-sm;
-  background: $color-bg-secondary;
-  border-radius: $radius-sm;
-
-  &:active {
-    background: $color-border;
-  }
-}
-
-.contactLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
 }
 
 .contactIcon {
-  width: $avatar-sm;
-  height: $avatar-sm;
-  background: $color-white;
-  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: $tint-blue;
+  border-radius: $radius-sm;
 }
 
-.contactLabel {
+.contactMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contactTitle {
   font-size: $font-base;
+  font-weight: 600;
   color: $color-text;
 }
 
 .contactValue {
   font-size: $font-sm;
   color: $color-text-tertiary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contactAction {
+  flex-shrink: 0;
+  padding: $spacing-2xs $spacing-sm;
+  background: $tint-blue;
+  border-radius: $radius-full;
+
+  &:active {
+    background: rgba(22, 119, 255, 0.16);
+  }
+}
+
+.contactActionText {
   font-size: $font-sm;
   color: $color-primary;
-  border: $border-thin solid $color-primary;
-  padding: $spacing-2xs $spacing-sm;
+}
+
+// ---- 我的工单 ----
+.ticketsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  margin: $spacing-xs 0 0;
+}
+
+.ticketsTitle {
+  font-size: $font-lg;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.ticketsHint {
+  display: block;
+  padding: $spacing-lg 0;
+  text-align: center;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.ticketCard {
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+
+  &:active {
+    background: #FBFCFE;
+  }
+}
+
+.ticketHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.typeTag {
+  padding: 4px 12px;
+  background: $tint-blue;
+  border-radius: $radius-sm;
+  font-size: $font-2xs;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.statusBadge {
+  padding: 4px 12px;
   border-radius: $radius-full;
+  font-size: $font-2xs;
+  font-weight: 600;
+}
+
+.status_pending {
+  color: #64748B;
+  background: #F1F5F9;
+}
+
+.status_processing {
+  color: $color-warning;
+  background: rgba(250, 140, 22, 0.12);
+}
+
+.status_resolved {
+  color: $color-success;
+  background: rgba(7, 193, 96, 0.12);
+}
+
+.ticketBody {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: $font-sm;
+  line-height: 1.5;
+  color: $color-text-secondary;
+  word-break: break-all;
+}
+
+.imageTag {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: $tint-blue;
+  border-radius: $radius-sm;
+}
+
+.imageTagText {
+  font-size: $font-2xs;
+  color: $color-primary;
+}
+
+.ticketFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding-top: $spacing-xs;
+  border-top: $border-thin solid $card-border;
+}
+
+.ticketTime {
+  font-size: $font-2xs;
+  color: $color-text-tertiary;
+}
+
+.ticketMore {
+  font-size: $font-2xs;
+  color: $color-primary;
+}
+
+// ---- 工单详情弹层 ----
+.detailSheet {
+  display: flex;
+  flex-direction: column;
+  max-height: 76vh;
+  padding: $spacing-lg $spacing-lg calc(#{$spacing-lg} + #{$safe-bottom});
+  background: $color-white;
+  border-radius: $radius-lg $radius-lg 0 0;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.detailTitle {
+  font-size: $font-lg;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.detailClose {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.detailBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.detailHint {
+  padding: $spacing-lg 0;
+  text-align: center;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.detailMetaRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.detailContent {
+  padding: $spacing-sm;
+  background: $page-bg;
+  border-radius: $radius-sm;
+  font-size: $font-sm;
+  line-height: 1.6;
+  color: $color-text;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.detailImages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.detailImage {
+  width: 192px;
+  height: 192px;
+  border-radius: $radius-sm;
+  background: $page-bg;
+}
+
+.detailTimeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.detailTimeLabel {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.detailTimeValue {
+  font-size: $font-sm;
+  color: $color-text-secondary;
+}
+
+// ---- 微信客服二维码弹层 ----
+.qrSheet {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding: $spacing-lg $spacing-lg calc(#{$spacing-lg} + #{$safe-bottom});
+  background: $color-white;
+  border-radius: $radius-lg $radius-lg 0 0;
+}
+
+.qrImageWrap {
+  align-self: center;
+  padding: $spacing-sm;
+  background: $color-white;
+  border: $border-thin solid $card-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-xs;
+}
+
+.qrImage {
+  width: 560px;
+  height: 560px;
+  display: block;
+}
+
+.qrHint {
+  text-align: center;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.qrIdRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  background: $page-bg;
+  border-radius: $radius-sm;
+}
+
+.qrIdMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
