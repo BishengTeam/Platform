@@ -141,7 +141,12 @@ export default function H3CFormPage() {
     const subscribeTemplateId = process.env.TARO_APP_H3C_SUBSCRIBE_TMPL_ID || ''
     if (subscribeTemplateId) {
       try {
-        await Taro.requestSubscribeMessage({ tmplIds: [subscribeTemplateId] })
+        // Taro 4.2's cross-platform declaration incorrectly makes the Alipay-only
+        // entityIds field mandatory for the WeChat tmplIds form as well.
+        const option = { tmplIds: [subscribeTemplateId] } as unknown as Parameters<
+          typeof Taro.requestSubscribeMessage
+        >[0]
+        await Taro.requestSubscribeMessage(option)
       } catch {
         // User may decline; proceed regardless.
       }
