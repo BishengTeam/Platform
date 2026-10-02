@@ -75,6 +75,24 @@ export const STRINGS = {
   SETTINGS_PERSONAL_INFO_LIST: '个人信息收集清单',
   SETTINGS_SWITCH_ACCOUNT: '切换账号',
 
+  // ---- Feedback Page ----
+  MINE_FEEDBACK_TITLE: '意见反馈',
+  FEEDBACK_TYPE_LABEL: '反馈类型',
+  FEEDBACK_DESCRIPTION_LABEL: '问题描述',
+  FEEDBACK_DESCRIPTION_PLACEHOLDER: '请描述遇到的问题或建议，至少 5 个字',
+  FEEDBACK_DESCRIPTION_HINT: '请填写 5-500 字的问题说明',
+  FEEDBACK_IMAGES_LABEL: '截图（可选）',
+  FEEDBACK_IMAGE_ADD: '添加图片',
+  FEEDBACK_IMAGE_LIMIT_HINT: '最多 3 张，每张不超过 5MB',
+  FEEDBACK_IMAGE_TOO_LARGE: '单张图片不能超过 5MB',
+  FEEDBACK_IMAGE_UPLOADING: '上传中',
+  FEEDBACK_IMAGE_RETRY: '上传失败，点击重试',
+  FEEDBACK_IMAGE_WAITING: '图片上传中，请稍候再提交',
+  FEEDBACK_IMAGE_HAS_FAILED: '有图片上传失败，请重试或删除',
+  FEEDBACK_SUBMIT: '提交反馈',
+  FEEDBACK_SUBMITTED: '已提交，感谢反馈',
+  SERVICE_TICKETS_ACTION: '提交反馈',
+
   // ---- Orders Page ----
   ORDERS_TITLE: '我的订单',
   ORDERS_TAG_ALL: '全部',

@@ -40,6 +40,7 @@ export const ROUTES = {
   QUIZ_QUESTION_SELECT: 'pages/quiz/question-select',
   MINE_COURSES: 'pages/mine/courses',
   MINE_PROFILE: 'pages/mine/profile',
+  MINE_FEEDBACK: 'pages/mine/feedback',
   MINE_PERSONAL_INFO: 'pages/mine/personal-info',
   MINE_EDIT_PROFILE: 'pages/mine/edit-profile',
   MINE_POINTS: 'pages/mine/points',

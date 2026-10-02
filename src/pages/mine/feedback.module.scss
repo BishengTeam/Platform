@@ -1,0 +1,185 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 微信 scroll-view 直接带 padding 时右内边距不可靠，边距放在内层容器 */
+.bodyInner {
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.section {
+  margin-bottom: $spacing-md;
+}
+
+.sectionLast {
+  margin-bottom: 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-xs;
+}
+
+.sectionLabel {
+  color: $color-text-secondary;
+  font-size: $font-sm;
+  font-weight: 600;
+}
+
+.counter {
+  color: $color-text-tertiary;
+  font-size: $font-2xs;
+}
+
+.typeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.typeChip {
+  padding: $spacing-xs $spacing-sm;
+  color: $color-text-secondary;
+  font-size: $font-sm;
+  background: $color-bg-secondary;
+  border: $border-thin solid transparent;
+  border-radius: $radius-full;
+
+  &:active {
+    background: $color-border;
+  }
+}
+
+.typeChipActive {
+  color: $color-primary;
+  font-weight: 600;
+  background: rgba(22, 119, 255, 0.08);
+  border-color: $color-primary;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: $spacing-sm;
+  box-sizing: border-box;
+  color: $color-text;
+  font-size: $font-sm;
+  line-height: 1.5;
+  background: $color-bg-secondary;
+  border-radius: $radius-sm;
+}
+
+.textareaPlaceholder {
+  color: $color-text-tertiary;
+}
+
+.imageGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.imageTile,
+.imageAdd {
+  position: relative;
+  width: calc((100% - #{$spacing-xs} * 2) / 3);
+  height: 176px;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.imageThumb {
+  width: 100%;
+  height: 100%;
+}
+
+.imageMask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-2xs;
+  background: rgba(0, 0, 0, 0.55);
+  box-sizing: border-box;
+}
+
+.imageMaskText {
+  color: $color-white;
+  font-size: $font-2xs;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.imageRemove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 50%;
+}
+
+.imageAdd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-2xs;
+  background: $color-bg-secondary;
+  border: $border-thin dashed $color-border;
+  box-sizing: border-box;
+
+  &:active {
+    background: $color-border-lighter;
+  }
+}
+
+.imageAddText {
+  color: $color-text-tertiary;
+  font-size: $font-2xs;
+}
+
+.limitHint {
+  display: block;
+  margin-top: $spacing-xs;
+  color: $color-text-tertiary;
+  font-size: $font-2xs;
+}
+
+.btnSection {
+  display: flex;
+
+  :global(.nut-button) {
+    flex: 1;
+  }
+}

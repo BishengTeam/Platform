@@ -1,9 +1,10 @@
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
+import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getContactList, getTickets } from '@/services/dataService'
@@ -20,15 +21,24 @@ export default function ServicePage() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [ticketsLoaded, setTicketsLoaded] = useState(false)
 
-  useEffect(() => {
+  const loadTickets = useCallback(() => {
     getTickets().then(data => {
       setTickets(data)
       setTicketsLoaded(true)
     }).catch(() => {})
   }, [])
 
+  // 从意见反馈页返回时刷新工单列表
+  useDidShow(() => {
+    loadTickets()
+  })
+
   const handleBack = useCallback(() => {
     Taro.switchTab({ url: `/${ROUTES.INDEX}` })
+  }, [])
+
+  const openFeedback = useCallback(() => {
+    Taro.navigateTo({ url: `/${ROUTES.MINE_FEEDBACK}` })
   }, [])
 
   return (
@@ -64,30 +74,31 @@ export default function ServicePage() {
             </View>
           </View>
 
-          {ticketsLoaded && (
-            <View className={styles.card}>
+          <View className={styles.card}>
+            <View className={styles.ticketsHeader}>
               <View className={styles.cardTitle}>{STRINGS.SERVICE_TICKETS_TITLE}</View>
-              {tickets.length === 0 ? (
-                <View className={styles.cardSubtitle}>{STRINGS.SERVICE_TICKETS_EMPTY}</View>
-              ) : (
-                <View className={styles.contacts}>
-                  {tickets.map(ticket => (
-                    <View key={ticket.id} className={styles.contactItem}>
-                      <View className={styles.contactLeft}>
-                        <View>
-                          <View className={styles.contactLabel}>{ticket.title}</View>
-                          <View className={styles.contactValue}>
-                            {STRINGS.SERVICE_TICKETS_STATUS} {ticket.status}
-                          </View>
+              <Button size='sm' onClick={openFeedback}>{STRINGS.SERVICE_TICKETS_ACTION}</Button>
+            </View>
+            {ticketsLoaded && (tickets.length === 0 ? (
+              <View className={styles.cardSubtitle}>{STRINGS.SERVICE_TICKETS_EMPTY}</View>
+            ) : (
+              <View className={styles.contacts}>
+                {tickets.map(ticket => (
+                  <View key={ticket.id} className={styles.contactItem}>
+                    <View className={styles.contactLeft}>
+                      <View>
+                        <View className={styles.contactLabel}>{ticket.title}</View>
+                        <View className={styles.contactValue}>
+                          {STRINGS.SERVICE_TICKETS_STATUS} {ticket.status}
                         </View>
                       </View>
-                      <View className={styles.contactAction}>{ticket.created_at}</View>
                     </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
+                    <View className={styles.contactAction}>{ticket.created_at}</View>
+                  </View>
+                ))}
+              </View>
+            ))}
+          </View>
         </View>
       </View>
     </AuthGuard>

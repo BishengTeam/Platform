@@ -20,7 +20,7 @@ const menuItems: MenuItem[] = [
   { label: STRINGS.MINE_PROFILE_TITLE, route: ROUTES.MINE_PERSONAL_INFO },
   { label: STRINGS.MINE_AGREEMENTS_TITLE, route: ROUTES.MINE_AGREEMENTS },
   { icon: 'info', label: STRINGS.SETTINGS_ABOUT_US },
-  { icon: 'edit', label: STRINGS.SETTINGS_FEEDBACK },
+  { icon: 'edit', label: STRINGS.SETTINGS_FEEDBACK, route: ROUTES.MINE_FEEDBACK },
   { icon: 'list', label: STRINGS.SETTINGS_PERSONAL_INFO_LIST },
   { icon: 'alert-circle', label: STRINGS.MINE_DEACTIVATE_TITLE, route: ROUTES.MINE_DEACTIVATE },
 ]
