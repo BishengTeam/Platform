@@ -5,11 +5,11 @@
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg;
+  background: #F7F8FA;
 }
 
 .tabBar {
-  background: $color-bg;
+  background: #F7F8FA;
   padding: $spacing-md $spacing-lg 0;
   border-bottom: $border-thin solid $color-border;
   display: flex;
@@ -157,45 +157,72 @@
   color: $color-white;
 }
 
-// ---- Quiz Vendor Buttons ----
-.vendorRow {
+// ---- Practice Assistant ----
+.practiceLayout {
   display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-md $spacing-lg;
+}
+
+.vendorCard,
+.practiceCard,
+.emptyCard {
+  background: $color-white;
+  border: 1PX solid #F1F5F9;
+  border-radius: $radius-xl;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.vendorCard {
+  padding: $spacing-sm;
+}
+
+.vendorRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: $spacing-xs;
-  margin: $spacing-md $spacing-lg 0;
 }
 
 .vendorButton {
-  flex: 1;
   min-width: 0;
-  height: 156px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $spacing-xs;
+  gap: 10px;
   padding: $spacing-sm $spacing-2xs;
   box-sizing: border-box;
-  background: $color-white;
-  border: 2PX solid transparent;
-  border-radius: $radius-md;
-  box-shadow: $shadow-xs;
+  background: #F8FAFC;
+  border: 1PX solid transparent;
+  border-radius: $radius-lg;
+  transition:
+    transform $motion-duration-state $motion-ease-out,
+    background-color $motion-duration-state $motion-ease-out,
+    border-color $motion-duration-state $motion-ease-out,
+    box-shadow $motion-duration-state $motion-ease-out;
 
   &:active {
-    opacity: 0.85;
+    transform: scale(0.97);
   }
 }
 
 .vendorButtonActive {
-  border-color: $color-primary;
-  background: $color-blue-light;
+  background: rgba(239, 246, 255, 0.5);
+  border-color: #165DFF;
+  box-shadow: 0 10px 22px rgba(22, 93, 255, 0.12);
+  transform: translateY(-4px);
 }
 
 .vendorLogoBox {
-  width: 100%;
-  height: 72px;
+  width: 112px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  background: $color-white;
+  border-radius: $radius-md;
 }
 
 .vendorLogo {
@@ -204,132 +231,218 @@
 }
 
 .vendorLabel {
-  font-size: $font-xs;
-  color: $color-text-tertiary;
+  font-size: 22px;
+  line-height: 30px;
+  color: #64748B;
 }
 
 .vendorLabelActive {
-  font-size: $font-xs;
+  font-size: 22px;
+  line-height: 30px;
   font-weight: 600;
-  color: $color-primary;
+  color: #165DFF;
 }
 
-// ---- Quiz Selector ----
-.quizSelector {
+.emptyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px $spacing-lg;
+  text-align: center;
+}
+
+.emptyIllustration {
+  width: 240px;
+  height: 168px;
+}
+
+.emptyTitle {
+  margin-top: $spacing-sm;
+  font-size: $font-base;
+  font-weight: 600;
+  line-height: 42px;
+  color: #1E293B;
+}
+
+.emptyDesc {
+  margin-top: $spacing-2xs;
+  font-size: $font-xs;
+  line-height: 34px;
+  color: #64748B;
+}
+
+.emptyAction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 64px;
+  margin-top: $spacing-sm;
+  padding: 12px 24px;
+  background: rgba(22, 93, 255, 0.08);
+  border: 1PX solid rgba(22, 93, 255, 0.16);
+  border-radius: $radius-full;
+
+  &:active {
+    background: rgba(22, 93, 255, 0.14);
+  }
+}
+
+.emptyActionText {
+  font-size: $font-xs;
+  font-weight: 500;
+  color: #165DFF;
+}
+
+.practiceCard {
+  padding: $spacing-md;
+}
+
+.scopeSelector {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: $spacing-md $spacing-lg;
-  padding: $spacing-md $spacing-md;
-  background: $color-white;
-  border-radius: $radius-md;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.quizSelectorInfo {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-xs;
-}
-
-.quizSelectorTitle {
-  font-size: $font-lg;
-  font-weight: 600;
-  color: $color-text;
-}
-
-.quizSelectorHint {
-  font-size: $font-xs;
-  color: $color-text-tertiary;
-}
-
-.quizSelectorArrow {
-  font-size: 28px;
-  color: $color-text-tertiary;
-}
-
-// ---- Stats Card ----
-.statsCard {
-  margin: 0 $spacing-lg $spacing-md;
-  padding: $spacing-4xl $spacing-md;
-  background: $color-white;
-  border-radius: $radius-md;
-  box-shadow: $shadow-sm;
-}
-
-.statsRow {
-  display: flex;
-  justify-content: space-around;
-  padding-bottom: $spacing-xl;
-}
-
-.statsItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: $spacing-sm;
+  padding: $spacing-sm;
+  background: #F8FAFC;
+  border: 1PX solid #F1F5F9;
+  border-radius: $radius-lg;
+
+  &:active {
+    background: #F1F5F9;
+  }
 }
 
-.statsValue {
-  font-size: $font-3xl;
-  font-weight: 700;
-  color: $color-text;
-}
-
-.statsLabel {
-  font-size: $font-sm;
-  color: $color-text-tertiary;
-}
-
-.statsCta {
+.scopeInfo {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: $spacing-lg $spacing-sm;
-  background: $color-primary;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scopeLabel {
+  font-size: 20px;
+  line-height: 28px;
+  color: #94A3B8;
+}
+
+.scopeTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: $font-base;
+  font-weight: 600;
+  line-height: 42px;
+  color: #1E293B;
+}
+
+.scopeHint {
+  font-size: 20px;
+  line-height: 30px;
+  color: #64748B;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: $spacing-md 0;
+  padding: 32px 0;
+  background: #F8FAFC;
+  border: 1PX solid #F1F5F9;
   border-radius: $radius-lg;
 }
 
-.statsCtaDisabled {
-  background: $color-primary-light;
-  opacity: 0.6;
+.statsItem {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+
+  & + & {
+    border-left: 1PX solid #E2E8F0;
+  }
 }
 
-.statsCtaText {
+.statsValue {
+  max-width: 100%;
+  font-family: 'DIN Alternate', 'DIN Condensed', Bahnschrift, 'Roboto Condensed', sans-serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 62px;
+  color: #0F172A;
+  font-variant-numeric: tabular-nums;
+}
+
+.statsLabel {
+  font-size: 20px;
+  line-height: 30px;
+  color: #64748B;
+}
+
+.practiceCta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  background: #165DFF;
+  border-radius: $radius-full;
+  box-shadow: 0 12px 24px rgba(22, 93, 255, 0.22);
+  transition:
+    transform $motion-duration-press $motion-ease-out,
+    box-shadow $motion-duration-state $motion-ease-out,
+    opacity $motion-duration-state $motion-ease-out;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 8px 18px rgba(22, 93, 255, 0.18);
+  }
+}
+
+.practiceCtaDisabled {
+  background: #94B4F4;
+  box-shadow: none;
+  opacity: 0.72;
+}
+
+.practiceCtaText {
   font-size: $font-base;
   font-weight: 600;
   color: $color-white;
 }
 
-// ---- Quiz Bottom Row ----
-.quizBottomRow {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 $spacing-lg $spacing-md;
-  gap: $spacing-sm;
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-xs;
 }
 
-.quizBottomItem {
-  flex: 1;
+.quickItem {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 16px;
+}
+
+.quickIconWrap {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: $spacing-xs;
-  padding: $spacing-md $spacing-sm;
-  background: $color-white;
-  border-radius: $radius-md;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  width: 88px;
+  height: 88px;
+  border-radius: $radius-lg;
 }
 
-.quizBottomIcon {
-  font-size: 36px;
-}
-
-.quizBottomLabel {
-  font-size: $font-sm;
-  font-weight: 500;
-  color: $color-text;
+.quickLabel {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 24px;
+  line-height: 34px;
+  color: #4E5969;
 }
 
 @media (prefers-reduced-motion: reduce) {

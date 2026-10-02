@@ -5,12 +5,11 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { Icon } from '@/components/Icon'
-import { QuizBottomNav } from '@/components/QuizBottomNav'
 import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
-import type { QuizBottomItem } from '@/constants/quiz'
+import { toBase64 } from '@/utils/base64'
 import { getCourseList, getQuizLibrary, getQuizStats, listQuizLibraries } from '@/services/dataService'
 import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
 import type { CourseBrief } from '@/types'
@@ -20,11 +19,19 @@ import styles from './index.module.scss'
 // 在线课程暂时隐藏，只显示练习助手
 const MAIN_TABS = [STRINGS.TRAINING_TAB_QUIZ]
 
-const TRAINING_QUIZ_BOTTOM: QuizBottomItem[] = [
-  { label: '模拟考试', icon: 'clipboard', color: '#1677FF', route: ROUTES.QUIZ_MOCK },
-  { label: '练习历史', icon: 'file-text', color: '#722ED1', route: ROUTES.QUIZ_HISTORY },
-  { label: '错题', icon: 'book-open', color: '#FF4D4F', route: ROUTES.QUIZ_WRONG_BOOK },
-  { label: '收藏', icon: 'star', color: '#FA8C16', route: ROUTES.QUIZ_COLLECTIONS },
+interface QuickAction {
+  label: string
+  icon: string
+  route: string
+  iconBg: string
+  iconColor: string
+}
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { label: '模拟考试', icon: 'clipboard', route: ROUTES.QUIZ_MOCK, iconBg: '#EFF6FF', iconColor: '#2563EB' },
+  { label: '练习历史', icon: 'file-text', route: ROUTES.QUIZ_HISTORY, iconBg: '#F5F3FF', iconColor: '#7C3AED' },
+  { label: '错题本', icon: 'book-open', route: ROUTES.QUIZ_WRONG_BOOK, iconBg: '#FEF2F2', iconColor: '#DC2626' },
+  { label: '我的收藏', icon: 'star', route: ROUTES.QUIZ_COLLECTIONS, iconBg: '#FEFCE8', iconColor: '#EA580C' },
 ]
 
 // 题库厂商筛选：默认 H3C；none 归入「其他」，保证四个页签覆盖全部题库。
@@ -36,6 +43,21 @@ const VENDOR_TABS: Array<{ tag: QuizVendorTag; label: string; logo?: string }> =
 ]
 
 const DEFAULT_VENDOR_TAG: QuizVendorTag = 'h3c'
+
+const EMPTY_STATE_ILLUSTRATION = `data:image/svg+xml;base64,${toBase64(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="160" height="112" viewBox="0 0 160 112" fill="none">
+    <defs>
+      <linearGradient id="g" x1="24" y1="12" x2="136" y2="100" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#EAF2FF"/><stop offset="1" stop-color="#F7F8FA"/>
+      </linearGradient>
+    </defs>
+    <rect x="18" y="16" width="124" height="80" rx="16" fill="url(#g)" stroke="#C9D8F5"/>
+    <path d="M42 42h44M42 58h76M42 74h28" stroke="#94B4F4" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="118" cy="72" r="15" fill="#fff" stroke="#BFDBFE" stroke-width="4"/>
+    <path d="M116 66.5h4M118 70v5M116 78h4" stroke="#165DFF" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M30 20l4 8 8 4-8 4-4 8-4-8-8-4 8-4z" fill="#DBEAFE"/>
+  </svg>
+`.trim())}`
 
 interface TrainingScope {
   type: QuizPracticeScopeType
@@ -210,9 +232,21 @@ export default function TrainingPage() {
     setScopePickerVisible(false)
   }, [])
 
-  const handleQuizBottomNav = useCallback((item: QuizBottomItem) => {
+  const handleQuickActionClick = useCallback((item: QuickAction) => {
     Taro.navigateTo({ url: `/${item.route}` })
   }, [])
+
+  const handleSwitchToAvailableVendor = useCallback(() => {
+    const availableVendor = VENDOR_TABS.find(vendor => (
+      vendor.tag !== activeVendor &&
+      quizLibraries.some(library => library.vendor_tag === vendor.tag)
+    ))
+    if (!availableVendor) {
+      Taro.showToast({ title: '其他厂商题库筹备中', icon: 'none' })
+      return
+    }
+    handleVendorChange(availableVendor.tag)
+  }, [activeVendor, handleVendorChange, quizLibraries])
 
   const handleCourseClick = useCallback((course: CourseBrief) => {
     Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })
@@ -279,68 +313,98 @@ export default function TrainingPage() {
 
   const renderQuizTab = () => (
     <View>
-      <View className={styles.vendorRow}>
-        {VENDOR_TABS.map(vendor => {
-          const active = vendor.tag === activeVendor
-          return (
-            <View
-              key={vendor.tag}
-              className={`${styles.vendorButton} ${active ? styles.vendorButtonActive : ''}`}
-              onClick={() => handleVendorChange(vendor.tag)}
-            >
-              <View className={styles.vendorLogoBox}>
-                {vendor.logo
-                  ? <Image className={styles.vendorLogo} src={vendor.logo} mode='aspectFit' />
-                  : <Icon name='book-open' size={44} color={active ? '#1677FF' : '#8c8c8c'} />}
-              </View>
-              <Text className={active ? styles.vendorLabelActive : styles.vendorLabel}>{vendor.label}</Text>
+      <View className={styles.practiceLayout}>
+        <View className={styles.vendorCard}>
+          <View className={styles.vendorRow}>
+            {VENDOR_TABS.map(vendor => {
+              const active = vendor.tag === activeVendor
+              return (
+                <View
+                  key={vendor.tag}
+                  className={`${styles.vendorButton} ${active ? styles.vendorButtonActive : ''}`}
+                  onClick={() => handleVendorChange(vendor.tag)}
+                >
+                  <View className={styles.vendorLogoBox}>
+                    {vendor.logo
+                      ? <Image className={styles.vendorLogo} src={vendor.logo} mode='aspectFit' />
+                      : <Icon name='book-open' size={24} color={active ? '#165DFF' : '#8c8c8c'} />}
+                  </View>
+                  <Text className={active ? styles.vendorLabelActive : styles.vendorLabel}>{vendor.label}</Text>
+                </View>
+              )
+            })}
+          </View>
+        </View>
+
+        {vendorLibraries.length === 0 ? (
+          <View className={styles.emptyCard}>
+            <Image className={styles.emptyIllustration} src={EMPTY_STATE_ILLUSTRATION} mode='aspectFit' />
+            <Text className={styles.emptyTitle}>该厂商题库筹备中</Text>
+            <Text className={styles.emptyDesc}>题库上架后将展示练习范围、答题进度与正确率</Text>
+            <View className={styles.emptyAction} onClick={handleSwitchToAvailableVendor}>
+              <Text className={styles.emptyActionText}>切换到其他厂商</Text>
+              <Icon name='chevron-right' size={14} color='#165DFF' />
             </View>
-          )
-        })}
-      </View>
-
-      <View className={styles.quizSelector} onClick={handleQuizSelect}>
-        <View className={styles.quizSelectorInfo}>
-          <Text className={styles.quizSelectorTitle}>{selectedScope?.name || selectedLibrary?.name || '该厂商暂无可练习题库'}</Text>
-          <Text className={styles.quizSelectorHint}>
-            {vendorLibraries.length === 0 ? '可切换上方其他厂商查看题库' : '点击按题库、模块或知识点选择范围'}
-          </Text>
-        </View>
-        {vendorLibraries.length > 0 && <Text className={styles.quizSelectorArrow}>▼</Text>}
-      </View>
-
-      <View className={styles.statsCard}>
-        <View className={styles.statsRow}>
-          <View className={styles.statsItem}>
-            <Text className={styles.statsValue}>
-              {(() => {
-                return selectedScope?.questionCount ?? '-'
-              })()}
-            </Text>
-            <Text className={styles.statsLabel}>范围全部题量</Text>
           </View>
-          <View className={styles.statsItem}>
-            <Text className={styles.statsValue}>
-              {quizStats ? quizStats.practice.answered_questions : '-'}
-            </Text>
-            <Text className={styles.statsLabel}>范围已答题目</Text>
+        ) : (
+          <View className={styles.practiceCard}>
+            <View className={styles.scopeSelector} onClick={handleQuizSelect}>
+              <View className={styles.scopeInfo}>
+                <Text className={styles.scopeLabel}>练习范围</Text>
+                <Text className={styles.scopeTitle}>
+                  {selectedScope?.name || selectedLibrary?.name || '题库目录加载中'}
+                </Text>
+                <Text className={styles.scopeHint}>按题库、模块或知识点选择</Text>
+              </View>
+              <Icon name='chevron-right' size={18} color='#94A3B8' />
+            </View>
+
+            <View className={styles.statsGrid}>
+              <View className={styles.statsItem}>
+                <Text className={styles.statsValue}>{selectedScope?.questionCount ?? '-'}</Text>
+                <Text className={styles.statsLabel}>全部题量</Text>
+              </View>
+              <View className={styles.statsItem}>
+                <Text className={styles.statsValue}>
+                  {quizStats ? quizStats.practice.answered_questions : '-'}
+                </Text>
+                <Text className={styles.statsLabel}>已答题目</Text>
+              </View>
+              <View className={styles.statsItem}>
+                <Text className={styles.statsValue}>
+                  {quizStats ? `${quizStats.practice.accuracy}%` : '-'}
+                </Text>
+                <Text className={styles.statsLabel}>首答正确率</Text>
+              </View>
+            </View>
+
+            <View
+              className={`${styles.practiceCta} ${selectedScope ? '' : styles.practiceCtaDisabled}`}
+              onClick={() => selectedScope && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PREPARE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}` })}
+            >
+              <Text className={styles.practiceCtaText}>开始练习</Text>
+            </View>
           </View>
-          <View className={styles.statsItem}>
-            <Text className={styles.statsValue}>
-              {quizStats ? `${quizStats.practice.accuracy}%` : '-'}
-            </Text>
-            <Text className={styles.statsLabel}>范围首答正确率</Text>
-          </View>
-        </View>
-        <View
-          className={`${styles.statsCta} ${selectedScope ? '' : styles.statsCtaDisabled}`}
-          onClick={() => selectedScope && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PREPARE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}` })}
-        >
-          <Text className={styles.statsCtaText}>开始练习</Text>
+        )}
+
+        <View className={styles.quickGrid}>
+          {QUICK_ACTIONS.map(action => (
+            <View
+              key={action.route}
+              className={styles.quickItem}
+              onClick={() => handleQuickActionClick(action)}
+            >
+              <View
+                className={styles.quickIconWrap}
+                style={{ background: action.iconBg }}
+              >
+                <Icon name={action.icon} size={24} color={action.iconColor} />
+              </View>
+              <Text className={styles.quickLabel}>{action.label}</Text>
+            </View>
+          ))}
         </View>
       </View>
-
-      <QuizBottomNav items={TRAINING_QUIZ_BOTTOM} onItemClick={handleQuizBottomNav} iconSize={32} />
     </View>
   )
 
