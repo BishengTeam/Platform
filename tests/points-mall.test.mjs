@@ -4,7 +4,7 @@ import {
   COUPON_CATEGORY_TABS,
   formatMinimumSpend,
   getCouponCategory,
-} from '../src/pages/points/mallUtils.ts'
+} from '../src/pages/mine/mallUtils.ts'
 
 test('coupon categories prioritize course scope before discount type', () => {
   assert.deepEqual(COUPON_CATEGORY_TABS.map(tab => tab.key), ['all', 'fixed', 'percent', 'course'])

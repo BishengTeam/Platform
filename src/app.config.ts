@@ -58,10 +58,6 @@ export default defineAppConfig({
       pages: ['index', 'questions', 'practice', 'prepare', 'history', 'mock', 'exam-history', 'wrong-book', 'collections', 'checkin', 'stats', 'question-select'],
     },
     {
-      root: 'pages/points',
-      pages: ['mall', 'coupons'],
-    },
-    {
       root: 'pages/mine',
       pages: ['courses', 'profile', 'feedback', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations', 'points-history'],
     },

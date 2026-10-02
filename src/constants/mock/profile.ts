@@ -13,7 +13,7 @@ export const profileFunctions: ProfileFunction[] = []
 // 金刚区固定 4 列：已上线功能在前，未上线位置用置灰占位卡保持网格完整。
 export const profileGridItems: ProfileMenuItem[] = [
   { icon: 'star', label: STRINGS.MINE_POINTS_TITLE, route: 'pages/mine/points', iconBg: '#EFF6FF', iconColor: '#2563EB' },
-  { icon: 'gift', label: '积分商城', route: 'pages/points/mall', iconBg: '#FFF7ED', iconColor: '#EA580C' },
+  { icon: 'gift', label: STRINGS.PROFILE_GRID_COMING_SOON_TITLE, iconBg: '#F2F3F5', iconColor: '#A9AEB8', comingSoon: true },
   { icon: 'sparkles', label: STRINGS.PROFILE_GRID_COMING_SOON_TITLE, iconBg: '#F2F3F5', iconColor: '#A9AEB8', comingSoon: true },
   { icon: 'compass', label: STRINGS.PROFILE_GRID_COMING_SOON_TITLE, iconBg: '#F2F3F5', iconColor: '#A9AEB8', comingSoon: true },
 ]
