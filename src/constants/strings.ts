@@ -108,8 +108,8 @@ export const STRINGS = {
 
 
   // ---- Auth Page ----
-  AUTH_APP_NAME: 'H3CNE 数字世界',
-  AUTH_APP_DESC: '开启您的网络工程师认证之旅',
+  AUTH_APP_NAME: '智优学',
+  AUTH_APP_SUBTITLE: 'IT 职业认证在线学习平台',
   AUTH_WECHAT_BTN: '微信用户一键登录',
   AUTH_PHONE_BTN: '手机号快捷登录',
   AUTH_AGREEMENT_PREFIX: '我已阅读并同意',

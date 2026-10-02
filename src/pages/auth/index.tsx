@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { wxLogin, acceptLoginAgreements } from '@/services/dataService'
 import { setAuthTokens } from '@/utils/request'
@@ -60,48 +60,51 @@ export default function AuthPage() {
       <View className={styles.bgDecor} />
 
       <View className={styles.content}>
-        <View className='fade-in-up delay-0'>
-          <View className={styles.logo}>
-            <Icon name='award' size={48} color='#ffffff' />
-          </View>
+        <View className={`${styles.brand} fade-in-up delay-0`}>
+          <Image className={styles.logo} src='/assets/logo/zhi-tian-yuan.svg' mode='aspectFit' />
           <View className={styles.appName}>{STRINGS.AUTH_APP_NAME}</View>
-          <View className={styles.appDesc}>{STRINGS.AUTH_APP_DESC}</View>
+          <View className={styles.appSubtitle}>{STRINGS.AUTH_APP_SUBTITLE}</View>
         </View>
 
         <View className={`${styles.actions} fade-in-up delay-1`}>
-          <View className={styles.wechatBtn} onClick={handleLogin}>
+          <View
+            className={`${styles.wechatBtn} ${isLoggingIn ? styles.wechatBtnLoading : ''}`}
+            onClick={handleLogin}
+          >
             <Icon name='message-circle' size={20} color='#ffffff' />
             <Text className={styles.wechatBtnText}>{isLoggingIn ? '登录中...' : STRINGS.AUTH_WECHAT_BTN}</Text>
           </View>
-        </View>
 
-        <AgreementCheckbox
-          className={`${isShaking ? 'shake' : ''} fade-in delay-2`}
-          agreed={isAgreed}
-          onChange={setIsAgreed}
-        >
-          {STRINGS.AUTH_AGREEMENT_PREFIX}
-          <Text
-            className={styles.link}
-            onClick={(e) => {
-              e.stopPropagation()
-              Taro.navigateTo({ url: '/pages/agreement/view?type=user_terms' })
-            }}
-          >
-            {STRINGS.AUTH_AGREEMENT_TERMS}
-          </Text>
-          {STRINGS.AUTH_AGREEMENT_AND}
-          <Text
-            className={styles.link}
-            onClick={(e) => {
-              e.stopPropagation()
-              Taro.navigateTo({ url: '/pages/agreement/view?type=privacy' })
-            }}
-          >
-            {STRINGS.AUTH_AGREEMENT_PRIVACY}
-          </Text>
-          {STRINGS.AUTH_AGREEMENT_SUFFIX}
-        </AgreementCheckbox>
+          <View className={`${styles.agreementRow} ${isShaking ? 'shake' : ''} fade-in delay-2`}>
+            <AgreementCheckbox
+              className={styles.agreement}
+              agreed={isAgreed}
+              onChange={setIsAgreed}
+            >
+              {STRINGS.AUTH_AGREEMENT_PREFIX}
+              <Text
+                className={styles.link}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  Taro.navigateTo({ url: '/pages/agreement/view?type=user_terms' })
+                }}
+              >
+                {STRINGS.AUTH_AGREEMENT_TERMS}
+              </Text>
+              {STRINGS.AUTH_AGREEMENT_AND}
+              <Text
+                className={styles.link}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  Taro.navigateTo({ url: '/pages/agreement/view?type=privacy' })
+                }}
+              >
+                {STRINGS.AUTH_AGREEMENT_PRIVACY}
+              </Text>
+              {STRINGS.AUTH_AGREEMENT_SUFFIX}
+            </AgreementCheckbox>
+          </View>
+        </View>
       </View>
     </View>
   )

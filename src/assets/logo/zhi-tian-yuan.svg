@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" width="106.698mm" height="98.5147mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 6830 6306">
+ <defs>
+  <style type="text/css">
+       .fil1 {fill:#3685CF}
+    .fil2 {fill:#3E91DE}
+    .fil3 {fill:#5AA3E8}
+    .fil4 {fill:#78B6F0}
+    .fil5 {fill:#80B8ED}
+    .fil6 {fill:#99CAF7}
+    .fil8 {fill:#9EC9F2}
+    .fil9 {fill:#A4CCF2}
+    .fil7 {fill:#A6D0F7}
+    .fil10 {fill:#B3D4F2}
+    .fil12 {fill:#BAD7F2}
+    .fil11 {fill:#C6DFF7}
+    .fil13 {fill:#C8E2FA}
+    .fil14 {fill:#C9E0F5}
+    .fil15 {fill:#CDE3F7}
+    .fil0 {fill:url(#id0)}
+    .fil16 {fill:url(#id1)}
+  </style>
+  <linearGradient id="id0" gradientUnits="userSpaceOnUse" x1="1160.32" y1="1005" x2="4926.35" y2="3359.06">
+   <stop offset="0" style="stop-opacity:1; stop-color:#45AAE8" />
+   <stop offset="0.439216" style="stop-opacity:1; stop-color:#0D58A7" />
+   <stop offset="0.729412" style="stop-opacity:1; stop-color:#000066" />
+   <stop offset="1" style="stop-opacity:1; stop-color:#00003D" />
+  </linearGradient>
+  <linearGradient id="id1" gradientUnits="userSpaceOnUse" xlink:href="#id0" x1="5669.23" y1="5301.11" x2="1903.19" y2="2947.05">
+  </linearGradient>
+  </defs>
+ <g id="图层_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer" />
+  <g id="_976404912">
+   <g>
+    <path class="fil0" d="M3006 4364c0,0 2179,-1253 2303,-2823 124,-1569 -1333,-1651 -1948,-1476 -615,175 -1767,776 -2591,2103l1073 785c0,0 1592,-2292 2585,-1773 994,519 -1422,3184 -1422,3184zm-2236 -2196l28 190 187 -33 29 188 184 -27 41 184 188 -22 41 184 175 -26 51 189 149 -42 -1073 -785z" />
+    <polygon class="fil1" points="615,2420 780,2392 809,2557 643,2585 " />
+    <polygon class="fil1" points="831,2574 997,2546 1025,2711 860,2740 " />
+    <polygon class="fil1" points="1058,2736 1223,2707 1252,2873 1086,2901 " />
+    <polygon class="fil1" points="1289,2895 1454,2867 1483,3032 1317,3060 " />
+    <polygon class="fil1" points="1519,3058 1684,3029 1712,3195 1547,3223 " />
+    <polygon class="fil2" points="422,2750 570,2699 620,2847 472,2898 " />
+    <polygon class="fil2" points="674,2891 823,2841 872,2989 724,3039 " />
+    <polygon class="fil2" points="897,3043 1041,2981 1103,3125 959,3186 " />
+    <polygon class="fil2" points="1136,3179 1283,3124 1337,3271 1191,3325 " />
+    <polygon class="fil2" points="1377,3311 1527,3266 1572,3415 1423,3461 " />
+    <polygon class="fil3" points="306,3057 413,3013 457,3120 349,3164 " />
+    <polygon class="fil3" points="548,3197 656,3154 699,3261 592,3304 " />
+    <polygon class="fil3" points="795,3328 904,3289 944,3398 835,3437 " />
+    <polygon class="fil3" points="1024,3463 1133,3424 1171,3534 1062,3572 " />
+    <polygon class="fil3" points="1272,3575 1382,3538 1419,3648 1309,3685 " />
+    <polygon class="fil4" points="182,3396 267,3354 309,3439 224,3481 " />
+    <polygon class="fil4" points="439,3503 523,3459 567,3543 483,3587 " />
+    <polygon class="fil5" points="686,3611 769,3566 814,3649 731,3694 " />
+    <polygon class="fil6" points="944,3720 1027,3674 1073,3757 990,3803 " />
+    <polygon class="fil7" points="1189,3794 1277,3761 1310,3850 1221,3883 " />
+    <polygon class="fil8" points="81,3725 140,3692 173,3751 114,3784 " />
+    <polygon class="fil8" points="358,3818 416,3783 451,3841 393,3876 " />
+    <polygon class="fil9" points="621,3904 679,3869 714,3927 657,3962 " />
+    <polygon class="fil10" points="893,3992 950,3956 986,4013 929,4049 " />
+    <polygon class="fil11" points="1128,4047 1190,4021 1216,4083 1154,4110 " />
+    <polygon class="fil12" points="0,4072 36,4044 64,4081 28,4109 " />
+    <polygon class="fil12" points="272,4120 308,4091 337,4127 301,4156 " />
+    <polygon class="fil13" points="553,4159 589,4129 618,4165 583,4194 " />
+    <polygon class="fil14" points="840,4210 875,4180 905,4215 870,4245 " />
+    <polygon class="fil15" points="1093,4250 1132,4226 1156,4265 1117,4289 " />
+   </g>
+   <g>
+    <path class="fil16" d="M3824 1942c0,0 -2179,1253 -2304,2823 -124,1569 1333,1651 1949,1476 615,-175 1766,-776 2590,-2103l-1072 -785c0,0 -1592,2293 -2586,1773 -993,-519 1423,-3184 1423,-3184zm2235 2196l-27 -190 -187 33 -30 -188 -183 28 -42 -185 -187 22 -41 -184 -175 26 -51 -189 -149 43 1072 784z" />
+    <polygon class="fil1" points="6214,3886 6049,3915 6021,3749 6186,3721 " />
+    <polygon class="fil1" points="5998,3732 5833,3760 5805,3595 5970,3567 " />
+    <polygon class="fil1" points="5771,3570 5606,3599 5578,3433 5743,3405 " />
+    <polygon class="fil1" points="5540,3411 5375,3439 5347,3274 5512,3246 " />
+    <polygon class="fil1" points="5311,3249 5146,3277 5117,3111 5283,3083 " />
+    <polygon class="fil2" points="6407,3556 6260,3607 6209,3459 6357,3408 " />
+    <polygon class="fil2" points="6155,3415 6007,3465 5957,3317 6105,3267 " />
+    <polygon class="fil2" points="5932,3263 5788,3325 5727,3181 5871,3120 " />
+    <polygon class="fil2" points="5693,3127 5547,3182 5492,3035 5639,2981 " />
+    <polygon class="fil2" points="5452,2995 5303,3040 5257,2891 5407,2845 " />
+    <polygon class="fil3" points="6524,3250 6416,3293 6373,3186 6480,3142 " />
+    <polygon class="fil3" points="6281,3109 6174,3153 6130,3045 6238,3002 " />
+    <polygon class="fil3" points="6034,2978 5925,3017 5886,2908 5995,2869 " />
+    <polygon class="fil3" points="5806,2844 5697,2882 5658,2773 5768,2734 " />
+    <polygon class="fil3" points="5558,2731 5448,2768 5411,2658 5521,2621 " />
+    <polygon class="fil4" points="6647,2910 6562,2952 6521,2867 6605,2825 " />
+    <polygon class="fil4" points="6390,2803 6306,2847 6262,2763 6346,2719 " />
+    <polygon class="fil5" points="6144,2695 6060,2740 6015,2657 6098,2612 " />
+    <polygon class="fil6" points="5886,2586 5803,2632 5757,2549 5840,2503 " />
+    <polygon class="fil7" points="5641,2512 5552,2545 5520,2456 5609,2423 " />
+    <polygon class="fil8" points="6748,2581 6689,2614 6656,2555 6715,2522 " />
+    <polygon class="fil8" points="6471,2488 6413,2523 6379,2465 6437,2430 " />
+    <polygon class="fil9" points="6208,2402 6151,2437 6115,2379 6173,2344 " />
+    <polygon class="fil10" points="5937,2315 5880,2351 5844,2293 5901,2257 " />
+    <polygon class="fil11" points="5702,2259 5640,2285 5613,2223 5675,2197 " />
+    <polygon class="fil12" points="6830,2234 6793,2262 6765,2225 6801,2197 " />
+    <polygon class="fil12" points="6558,2186 6522,2215 6493,2179 6529,2150 " />
+    <polygon class="fil13" points="6276,2147 6241,2177 6211,2142 6247,2112 " />
+    <polygon class="fil14" points="5989,2096 5954,2126 5925,2091 5959,2061 " />
+    <polygon class="fil15" points="5736,2056 5697,2080 5673,2041 5712,2017 " />
+   </g>
+  </g>
+  </g>
+</svg>

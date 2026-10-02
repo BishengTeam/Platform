@@ -1,96 +1,135 @@
 @use '../../styles/variables' as *;
 
+// Login cover brand tokens
+$auth-primary: #1875D2;
+$auth-primary-deep: #0B43A4;
+$auth-bg-start: #F2F7FF;
+$auth-title: #1D2129;
+$auth-muted: #86909C;
+$auth-button-shadow: 0 12px 28px rgba($auth-primary, 0.28);
+
 .page {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-white;
-  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, $auth-bg-start 0%, $color-white 72%);
 }
 
 .bgDecor {
   position: absolute;
   top: 0;
+  right: 0;
+  bottom: 0;
   left: 0;
-  width: 100%;
-  min-height: 60vh;
-  background: linear-gradient(to bottom, $color-auth-gradient-start, $color-white);
   pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 12%, rgba($auth-primary, 0.12), transparent 32%),
+    radial-gradient(circle at 88% 8%, rgba($auth-primary-deep, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba($auth-bg-start, 0.9) 0%, rgba($color-white, 0) 68%);
   z-index: 0;
 }
 
 .content {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-top: 256px;
-  padding-left: $spacing-3xl;
-  padding-right: $spacing-3xl;
-  position: relative;
-  z-index: 10;
+  padding: 144px $spacing-3xl calc(40px + #{$safe-bottom});
+}
+
+.brand {
+  margin-top: 146px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .logo {
-  width: $logo-size;
+  // SVG 原始比例：106.698mm × 98.5147mm。
+  display: block;
+  width: 176px;
   max-width: 100%;
-  height: $logo-size;
-  background: $color-primary-gradient;
-  border-radius: $spacing-xl;
-  box-shadow: 0 4px 16px rgba($color-primary, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto $spacing-md;
+  height: 163px;
+  margin: 0 auto;
 }
 
 .appName {
-  font-size: $font-3xl;
-  font-weight: bold;
-  color: $color-text;
-  text-align: center;
-  margin-bottom: $spacing-xs;
+  margin-top: 36px;
+  color: $auth-title;
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 68px;
+  letter-spacing: 2px;
 }
 
-.appDesc {
+.appSubtitle {
+  max-width: 520px;
+  margin-top: 12px;
+  color: $auth-muted;
   font-size: $font-base;
-  color: $color-text-tertiary;
-  text-align: center;
+  line-height: 40px;
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 24px;
   margin-top: auto;
-  margin-bottom: $spacing-lg;
 }
 
 .wechatBtn {
-  width: 100%;
-  height: $button-height;
-  background: $color-success;
-  color: $color-white;
-  border-radius: $radius-lg;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $spacing-xs;
-  box-shadow: 0 4px 12px rgba($color-success, 0.2);
-  transition: transform $motion-duration-press $motion-ease-out;
+  width: 100%;
+  height: 104px;
+  color: $color-white;
+  background: linear-gradient(135deg, $auth-primary 0%, $auth-primary-deep 100%);
+  border-radius: $radius-lg;
+  box-shadow: $auth-button-shadow;
+  transition:
+    transform $motion-duration-press $motion-ease-out,
+    box-shadow $motion-duration-state $motion-ease-out,
+    opacity $motion-duration-state $motion-ease-out;
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.98);
+    box-shadow: 0 8px 20px rgba($auth-primary, 0.22);
   }
 }
 
+.wechatBtnLoading {
+  opacity: 0.78;
+}
+
 .wechatBtnText {
+  color: $color-white;
   font-size: $font-lg;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 40px;
+}
+
+.agreementRow {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 $spacing-xs;
+}
+
+.agreement {
+  max-width: 100%;
 }
 
 .link {
-  color: $color-primary;
+  color: $auth-primary;
 }
 
 @media (prefers-reduced-motion: reduce) {
