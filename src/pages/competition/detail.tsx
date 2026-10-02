@@ -4,6 +4,7 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { getCompetitionList, signupCompetition } from '@/services/zoneService'
+import { resolveMediaUrl } from '@/utils/media'
 import type { CompetitionBrief, CompetitionTrackBrief } from '@/types'
 import styles from './detail.module.scss'
 
@@ -263,7 +264,7 @@ export default function CompetitionDetailPage() {
       {!loading && competition && (
         <View className={styles.detail}>
           {competition.cover_url && (
-            <Image className={styles.cover} src={competition.cover_url} mode='aspectFill' />
+            <Image className={styles.cover} src={resolveMediaUrl(competition.cover_url)} mode='aspectFill' />
           )}
           <View className={styles.title}>{competition.name}</View>
 

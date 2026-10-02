@@ -16,6 +16,7 @@ import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
 import { getHomeAggregation } from '@/services/dataService'
+import { resolveMediaUrl } from '@/utils/media'
 import type { HomeAggregationResponse } from '@/types'
 import type { CertificationResponse } from '@/types'
 import styles from './index.module.scss'
@@ -186,7 +187,7 @@ export default function IndexPage() {
             <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
               id: b.id,
               title: '',
-              image_url: b.image_url,
+              image_url: resolveMediaUrl(b.image_url),
               jump_link: b.jump_link,
             }))} />
           </View>
@@ -234,7 +235,7 @@ export default function IndexPage() {
                 id: comp.id,
                 title: comp.name,
                 description: comp.description ?? '',
-                cover_url: comp.cover_url,
+                cover_url: resolveMediaUrl(comp.cover_url),
                 tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
                 tagColor: '#FA8C16',
               }))}

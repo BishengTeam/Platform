@@ -16,6 +16,7 @@ import {
 import type { ActivityBrief, CompetitionBrief, JobBrief, ZoneBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import type { HomeAggregationResponse } from '@/types'
+import { resolveMediaUrl } from '@/utils/media'
 import styles from './index.module.scss'
 
 type MainTab = 'activity' | 'competition' | 'employment'
@@ -184,7 +185,7 @@ export default function ActivityZonePage() {
                 gradient: mainTab === 'employment' ? 'gradient-teal' : mainTab === 'competition' ? 'gradient-orange' : 'gradient-purple',
                 buttonText: '查看详情',
                 buttonColor: '#ffffff',
-                image_url: currentBanner.cover_url ?? undefined,
+                image_url: resolveMediaUrl(currentBanner.cover_url),
               }]} />
             ) : null}
           </View>
@@ -248,7 +249,7 @@ export default function ActivityZonePage() {
                       title={comp.name}
                       subtitle={comp.description ?? ''}
                       tags={[`赛道 ${comp.tracks.length} 个`, deadline ? `报名截止 ${deadline}` : '']}
-                      coverUrl={comp.cover_url ?? undefined}
+                      coverUrl={resolveMediaUrl(comp.cover_url)}
                       buttonText='查看详情'
                       buttonVariant='primary'
                       buttonColor='#FA8C16'

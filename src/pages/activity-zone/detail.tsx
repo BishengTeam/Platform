@@ -4,6 +4,7 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { getActivityList, getCertificationList, enrollActivity, remindActivity } from '@/services/zoneService'
+import { resolveMediaUrl } from '@/utils/media'
 import type { ActivityBrief } from '@/types'
 import styles from './detail.module.scss'
 
@@ -113,7 +114,7 @@ export default function ActivityDetailPage() {
       {!loading && activity && (
         <View className={styles.detail}>
           {activity.cover_url && (
-            <Image className={styles.cover} src={activity.cover_url} mode='aspectFill' />
+            <Image className={styles.cover} src={resolveMediaUrl(activity.cover_url)} mode='aspectFill' />
           )}
           <View className={styles.title}>{activity.title}</View>
 
