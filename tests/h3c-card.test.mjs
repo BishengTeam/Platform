@@ -9,7 +9,7 @@ test('H3C exam batch card separates prices and highlights urgent quota', async (
   assert.match(page, /type: 'student', label: '学生价'/)
   assert.match(page, /type: 'coupon', label: '考券价'/)
   assert.match(page, /const formatPrice = \(batch: H3cExamBatch, type: H3cRegistrationType\)/)
-  assert.match(page, /仅剩 \{batch\.remaining_count\} 名/)
+  assert.match(page, /仅剩 \$\{batch\.remaining_count\} 名/)
   assert.match(page, /🕒/)
   assert.match(page, /👥/)
   assert.equal(page.includes("join(' / ')"), false)
@@ -24,4 +24,18 @@ test('H3C exam batch card separates prices and highlights urgent quota', async (
   assert.match(stylesheet, /background: #165dff;/)
   assert.match(stylesheet, /border-radius: 999px;/)
   assert.match(stylesheet, /\.actionButton:active\s*\{[^}]*opacity: \.92;/)
+})
+
+test('H3C cards stay visible after enrollment closes or exam finishes', async () => {
+  const page = await readFile('src/pages/h3c/index.tsx', 'utf8')
+
+  assert.match(page, /published: \{ label: '报名中', buttonLabel: '立即报名'/)
+  assert.match(page, /registration_closed: \{ label: '报名已关闭', buttonLabel: '报名已关闭'/)
+  assert.match(page, /finalized: \{ label: '已结束', buttonLabel: '已结束'/)
+  assert.match(page, /const canRegister = batch\.status === 'published'/)
+  assert.match(page, /disabled=\{!canRegister\}/)
+  assert.match(page, /\{statusMeta\.buttonLabel\}/)
+  assert.match(page, /color=\{canRegister \? '#165DFF' : '#94A3B8'\}/)
+  assert.match(page, /\{canRegister \? `仅剩 \$\{batch\.remaining_count\} 名` : `\$\{batch\.remaining_count\} 名`\}/)
+  assert.equal(page.includes('暂无可报名考试'), false)
 })

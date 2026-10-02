@@ -92,6 +92,15 @@
   line-height: 1.4;
 }
 
+.statusBadge {
+  flex-shrink: 0;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .examInfoList {
   margin-top: 24px;
 }
@@ -204,6 +213,12 @@
 .actionButton:active {
   opacity: .92;
   box-shadow: 0 4px 14px rgba(22, 93, 255, .2);
+}
+
+.actionButtonDisabled {
+  background: #e5e6eb !important;
+  color: #86909c !important;
+  box-shadow: none;
 }
 
 .empty {
