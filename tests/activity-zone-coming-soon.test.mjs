@@ -23,6 +23,10 @@ test('home activity and employment surfaces follow backend content visibility', 
   // 岗位不设金刚区入口，就业走首页瀑布流与活动 tab 子页。
   assert.match(source, /if \(activities\.length > 0\)[\s\S]*?tab: 'activity'/)
   assert.match(source, /\} else \{[\s\S]*?INDEX_ZONE_COMING_SOON/)
+  assert.match(
+    source,
+    /INDEX_ZONE_COMING_SOON,[\s\S]*?bg: '#F9F0FF',[\s\S]*?iconColor: '#722ED1'/
+  )
   const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
   assert.doesNotMatch(activeSource, /tab: 'employment'/)
   // 首页瀑布流：活动/就业均按内容有无整块显示/隐藏。
@@ -36,6 +40,17 @@ test('home king-kong grid keeps the study zone entry visible', async () => {
   assert.match(source, /name: STRINGS\.INDEX_ZONE_STUDY,[\s\S]*?url: '\/pages\/training\/index'/)
   // 2026-10-01 甲方要求：学习专区入口不再隐藏，金刚区保持 2x2 填满。
   assert.doesNotMatch(source, /学习专区暂时隐藏/)
+})
+
+test('home certification waterfall renders active certification products', async () => {
+  const source = await readFile(file('pages/index/index.tsx'), 'utf8')
+
+  // /api/zones 的认证数据来自 CertProduct，并放在 certifications 字段；
+  // items 是旧 Zone 卡片配置，生产环境为空，不能作为开放报名的数据源。
+  assert.match(source, /zones\['cert'\]\?\.certifications/)
+  assert.doesNotMatch(source, /zones\['cert'\]\?\.items/)
+  assert.match(source, /title: cert\.chinese_name \|\| cert\.name/)
+  assert.match(source, /certificationCards\.length > 0 && \(/)
 })
 
 test('ai consult no longer advertises unavailable activities or jobs', async () => {

@@ -11,11 +11,13 @@ import { HomeCard } from '@/components/HomeCard'
 import { ZoneBanner } from '@/components/ZoneBanner'
 import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
+import type { HomeCardItem } from '@/components/HomeCard'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
 import { getHomeAggregation } from '@/services/dataService'
 import type { HomeAggregationResponse } from '@/types'
+import type { CertificationResponse } from '@/types'
 import styles from './index.module.scss'
 
 const BASE_KING_KONG_ITEMS: KingKongItem[] = [
@@ -42,6 +44,48 @@ const BASE_KING_KONG_ITEMS: KingKongItem[] = [
     tab: 'competition',
   },
 ]
+
+const CERT_CARD_META: Record<string, { gradient: string; icon: string; tagColor: string }> = {
+  'H3C': {
+    gradient: 'linear-gradient(135deg, #1677FF 0%, #0B43A4 100%)',
+    icon: 'award',
+    tagColor: '#1677FF',
+  },
+  '深信服': {
+    gradient: 'linear-gradient(135deg, #52C41A 0%, #237804 100%)',
+    icon: 'shield',
+    tagColor: '#52C41A',
+  },
+  'NISP': {
+    gradient: 'linear-gradient(135deg, #FA8C16 0%, #AD4E00 100%)',
+    icon: 'terminal',
+    tagColor: '#FA8C16',
+  },
+  '人社': {
+    gradient: 'linear-gradient(135deg, #EB2F96 0%, #9E1068 100%)',
+    icon: 'file-text',
+    tagColor: '#EB2F96',
+  },
+}
+
+const DEFAULT_CERT_CARD_META = {
+  gradient: 'linear-gradient(135deg, #1677FF 0%, #0B43A4 100%)',
+  icon: 'award',
+  tagColor: '#1677FF',
+}
+
+function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
+  const meta = CERT_CARD_META[cert.vendor] ?? DEFAULT_CERT_CARD_META
+  return {
+    id: cert.id,
+    title: cert.chinese_name || cert.name,
+    description: `认证代码：${cert.code}`,
+    gradient: meta.gradient,
+    icon: meta.icon,
+    tag: cert.vendor,
+    tagColor: meta.tagColor,
+  }
+}
 
 export default function IndexPage() {
   const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
@@ -101,6 +145,9 @@ export default function IndexPage() {
   // 活动/就业瀑布流由后台内容驱动：管理端上架才出现，下架自动隐藏。
   const activities = homeData?.zones['activity']?.activities ?? []
   const employmentJobs = homeData?.zones['employment']?.jobs ?? []
+  const certificationCards = useMemo(() => {
+    return (homeData?.zones['cert']?.certifications ?? []).map(toCertHomeCard)
+  }, [homeData])
 
   const kingKongItems = useMemo(() => {
     const items = [...BASE_KING_KONG_ITEMS]
@@ -118,8 +165,9 @@ export default function IndexPage() {
     } else {
       items.push({
         name: STRINGS.INDEX_ZONE_COMING_SOON,
-        bg: '#F5F5F5',
-        iconColor: '#999999',
+        // 与前三格的浅蓝/浅绿/浅橙形成同饱和度的四色宫格。
+        bg: '#F9F0FF',
+        iconColor: '#722ED1',
         icon: 'sparkles',
         url: '',
         comingSoon: true,
@@ -172,10 +220,12 @@ export default function IndexPage() {
             </View>
           )}
 
-          <View className={styles.section}>
-            <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
-            <HomeCard items={homeData?.zones['cert']?.items ?? []} onCardClick={handleGoCertZone} />
-          </View>
+          {certificationCards.length > 0 && (
+            <View className={styles.section}>
+              <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
+              <HomeCard items={certificationCards} onCardClick={handleGoCertZone} />
+            </View>
+          )}
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[2]} onViewAll={handleGoCompetitionZone} />
