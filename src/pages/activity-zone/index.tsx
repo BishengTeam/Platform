@@ -17,6 +17,7 @@ import type { ActivityBrief, CompetitionBrief, JobBrief, ZoneBrief } from '@/typ
 import type { TagFilterItem } from '@/types/registration'
 import type { HomeAggregationResponse } from '@/types'
 import { resolveMediaUrl } from '@/utils/media'
+import { formatDate } from '@/utils/format'
 import styles from './index.module.scss'
 
 type MainTab = 'activity' | 'competition' | 'employment'
@@ -104,6 +105,21 @@ export default function ActivityZonePage() {
       return { text: STRINGS.ACTIVITY_REMIND, variant: 'primary' as const }
     }
     return { text: STRINGS.ACTIVITY_JOIN, variant: 'primary' as const }
+  }
+
+  // 竞赛状态：比赛结束 > 报名截止 > 报名中（已截止/已结束的赛事仍展示，仅标记状态）
+  const getCompetitionStatusInfo = (comp: CompetitionBrief) => {
+    const now = new Date()
+    if (comp.end_time && new Date(comp.end_time) <= now) {
+      return { label: STRINGS.COMPETITION_ENDED, color: '#999999' }
+    }
+    const deadlinePassed = comp.registration_deadline
+      ? new Date(comp.registration_deadline) <= now
+      : false
+    if (deadlinePassed) {
+      return { label: STRINGS.COMPETITION_REGISTRATION_CLOSED, color: '#FA541C' }
+    }
+    return { label: STRINGS.COMPETITION_STATUS_REGISTERING, color: '#52C41A' }
   }
 
   const getEmploymentButton = (item: JobBrief) => {
@@ -242,13 +258,16 @@ export default function ActivityZonePage() {
             {mainTab === 'competition' && (
               <View className={styles.cardList}>
                 {competitionData.map((comp) => {
-                  const deadline = comp.registration_deadline?.slice(0, 10)
+                  const deadline = formatDate(comp.registration_deadline, '')
+                  const status = getCompetitionStatusInfo(comp)
                   return (
                     <ZoneCard
                       key={`comp-${comp.id}`}
                       title={comp.name}
                       subtitle={comp.description ?? ''}
                       tags={[`赛道 ${comp.tracks.length} 个`, deadline ? `报名截止 ${deadline}` : '']}
+                      statusLabel={status.label}
+                      statusColor={status.color}
                       coverUrl={resolveMediaUrl(comp.cover_url)}
                       buttonText='查看详情'
                       buttonVariant='primary'

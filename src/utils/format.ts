@@ -15,6 +15,32 @@ export function formatPrice(priceInFen: number, prefix = '¥'): string {
   return `${prefix}${(priceInFen / 100).toFixed(2)}`
 }
 
+// ---- 日期格式化 ----
+
+function pad(n: number): string {
+  return n < 10 ? `0${n}` : String(n)
+}
+
+/**
+ * 后端 ISO 8601 时间（UTC）转本地日期。
+ * 不要直接 slice(0, 10)：UTC 字符串截断后日期可能比北京时间早一天，
+ * 会让「报名截止 10-03 00:00」显示成「10-02」，被误读为已截止。
+ */
+export function formatDate(iso: string | null | undefined, fallback = '待定'): string {
+  if (!iso) return fallback
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return fallback
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+/** 后端 ISO 8601 时间（UTC）转本地「YYYY-MM-DD HH:mm」 */
+export function formatDateTime(iso: string | null | undefined, fallback = '待定'): string {
+  if (!iso) return fallback
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return fallback
+  return `${formatDate(iso, fallback)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 // ---- Category 中文映射 ----
 
 /** 后端英文 category → 前端中文标签 */

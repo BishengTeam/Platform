@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { getCompetitionList, signupCompetition } from '@/services/zoneService'
 import { resolveMediaUrl } from '@/utils/media'
+import { formatDate, formatDateTime } from '@/utils/format'
 import type { CompetitionBrief, CompetitionTrackBrief } from '@/types'
 import styles from './detail.module.scss'
 
@@ -18,11 +19,6 @@ interface CustomField {
   max_length?: number | null
   options?: string[] | null
   sort_order: number
-}
-
-function fmtDate(iso: string | null): string {
-  if (!iso) return '待定'
-  return iso.slice(0, 10)
 }
 
 export default function CompetitionDetailPage() {
@@ -56,6 +52,11 @@ export default function CompetitionDetailPage() {
     if (!competition?.registration_deadline) return false
     return new Date(competition.registration_deadline) <= new Date()
   })()
+  const eventEnded = (() => {
+    if (!competition?.end_time) return false
+    return new Date(competition.end_time) <= new Date()
+  })()
+  const registrationClosed = deadlinePassed || eventEnded
 
   const setCustomValue = (key: string, value: string | string[]): void => {
     setCustomValues((prev: Record<string, string | string[]>) => ({ ...prev, [key]: value }))
@@ -272,15 +273,13 @@ export default function CompetitionDetailPage() {
             <View className={styles.metaItem}>
               <Text className={styles.metaLabel}>比赛时间</Text>
               <Text className={styles.metaValue}>
-                {fmtDate(competition.start_time)} ~ {fmtDate(competition.end_time)}
+                {formatDate(competition.start_time)} ~ {formatDate(competition.end_time)}
               </Text>
             </View>
             <View className={styles.metaItem}>
               <Text className={styles.metaLabel}>报名截止</Text>
               <Text className={styles.metaValue}>
-                {competition.registration_deadline
-                  ? competition.registration_deadline.slice(0, 16).replace('T', ' ')
-                  : '不限（赛前均可报）'}
+                {formatDateTime(competition.registration_deadline, '不限（赛前均可报）')}
               </Text>
             </View>
           </View>
@@ -294,14 +293,14 @@ export default function CompetitionDetailPage() {
 
           <View className={styles.section}>
             <View className={styles.sectionTitle}>选择赛道报名</View>
-            {deadlinePassed && (
-              <View className={styles.closedTip}>报名已截止</View>
+            {registrationClosed && (
+              <View className={styles.closedTip}>{eventEnded ? '比赛已结束' : '报名已截止'}</View>
             )}
             <View className={styles.trackList}>
               {competition.tracks.map((t) => {
                 const enrolled = enrolledTrackIds.includes(t.id)
                 const full = trackFull(t)
-                const disabled = enrolled || full || deadlinePassed
+                const disabled = enrolled || full || registrationClosed
                 return (
                   <View key={t.id} className={styles.trackItem}>
                     <View className={styles.trackInfo}>
@@ -318,7 +317,7 @@ export default function CompetitionDetailPage() {
                       onClick={() => setEnrollTrack(t)}
                       className={styles.trackBtn}
                     >
-                      {enrolled ? '已报名' : full ? '已满' : deadlinePassed ? '已截止' : '报名'}
+                      {enrolled ? '已报名' : full ? '已满' : eventEnded ? '已结束' : deadlinePassed ? '已截止' : '报名'}
                     </Button>
                   </View>
                 )
