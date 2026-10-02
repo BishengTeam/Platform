@@ -143,7 +143,12 @@ export default function CompetitionDetailPage() {
             mode='selector'
             range={options}
             value={selectedIndex >= 0 ? selectedIndex : 0}
-            onChange={(e) => setCustomValue(field.key, options[e.detail.value])}
+            onChange={(e) => {
+              const index = Number(e.detail.value)
+              if (Number.isInteger(index) && index >= 0 && index < options.length) {
+                setCustomValue(field.key, options[index])
+              }
+            }}
           >
             <View className={styles.fieldInput} style={{ display: 'flex', alignItems: 'center' }}>
               <Text style={{ color: value ? '#17233d' : '#98a2b3' }}>
