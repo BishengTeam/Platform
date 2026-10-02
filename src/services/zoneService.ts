@@ -17,7 +17,7 @@ import {
   examBannerItems,
 } from '@/constants/mock'
 
-import { get, post, resolveUrl } from '@/utils/request'
+import { get, post, put, resolveUrl } from '@/utils/request'
 
 /**
  * 递归遍历 API 响应，将 image_url / cover_url 的相对路径转为完整 URL。
@@ -47,6 +47,7 @@ import type {
   CourseBrief,
   ActivityBrief,
   CompetitionBrief,
+  CompetitionMyRegistration,
   JobBrief,
   CertificationResponse,
 } from '@/types'
@@ -210,4 +211,30 @@ export async function getCompetitionList(): Promise<CompetitionBrief[]> {
   if (USE_MOCK) return []
   const res = await get<CompetitionBrief[]>('/api/competition/list')
   return res.data ?? []
+}
+
+/** GET /api/competition/my-registrations — 我的竞赛报名 */
+export async function getMyCompetitionRegistrations(): Promise<CompetitionMyRegistration[]> {
+  if (USE_MOCK) return []
+  const res = await get<CompetitionMyRegistration[]>('/api/competition/my-registrations')
+  return res.data ?? []
+}
+
+/** PUT /api/competition/registrations/{id} — 报名截止前修改我的报名信息 */
+export async function updateCompetitionRegistration(
+  registrationId: number,
+  payload: {
+    school: string
+    real_name: string
+    phone: string
+    custom_field_values?: Record<string, string | string[]>
+  },
+): Promise<void> {
+  if (USE_MOCK) return
+  await put(`/api/competition/registrations/${registrationId}`, {
+    school: payload.school,
+    real_name: payload.real_name,
+    phone: payload.phone,
+    custom_field_values: payload.custom_field_values,
+  })
 }

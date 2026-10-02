@@ -81,6 +81,25 @@ export interface CompetitionBrief {
   created_at: string
 }
 
+/** 我的竞赛报名（GET /api/competition/my-registrations） */
+export interface CompetitionMyRegistration {
+  id: number
+  competition_id: number | null
+  competition_name: string
+  track_id: number | null
+  track: string | null
+  school: string
+  real_name: string | null
+  phone: string | null
+  custom_field_values: Record<string, string | string[]> | null
+  registration_deadline: string | null
+  end_time: string | null
+  custom_fields: CompetitionCustomField[] | null
+  /** 报名截止前为 true；截止/结束后仅可查看 */
+  editable: boolean
+  created_at: string | null
+}
+
 /** 活动简要 */
 export interface ActivityBrief {
   id: number

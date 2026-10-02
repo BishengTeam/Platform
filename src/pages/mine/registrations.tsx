@@ -3,13 +3,24 @@ import { ScrollView, Text, View } from '@tarojs/components'
 import Taro, { usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
+import {
+  CompetitionRegForm,
+  validateCompetitionRegForm,
+  type CompetitionRegFormValues,
+} from '@/components/CompetitionRegForm'
 import { h3cService } from '@/services/h3cService'
+import {
+  getMyCompetitionRegistrations,
+  updateCompetitionRegistration,
+} from '@/services/zoneService'
+import { formatDateTime } from '@/utils/format'
 import {
   nispService,
   type NispMaterialType,
   type NispRegistration,
 } from '@/services/nispService'
 import type { H3cRegistration } from '@/types/h3c'
+import type { CompetitionMyRegistration } from '@/types'
 import styles from './registrations.module.scss'
 
 type H3cRegistrationCard = H3cRegistration & { type: 'H3C' }
@@ -105,7 +116,11 @@ async function chooseNispFile(materialType: NispMaterialType): Promise<string> {
 
 export default function MyRegistrationsPage() {
   const [items, setItems] = useState<UnifiedRegistration[]>([])
+  const [compRegs, setCompRegs] = useState<CompetitionMyRegistration[]>([])
   const [selected, setSelected] = useState<UnifiedRegistration | null>(null)
+  const [editingReg, setEditingReg] = useState<CompetitionMyRegistration | null>(null)
+  const [editValues, setEditValues] = useState<CompetitionRegFormValues>({ school: '', real_name: '', phone: '', custom: {} })
+  const [savingEdit, setSavingEdit] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
@@ -123,8 +138,12 @@ export default function MyRegistrationsPage() {
           levelLabel: item.level === '1' ? '一级' : '二级',
         })))
         .catch(() => [] as NispRegistrationCard[]),
+      getMyCompetitionRegistrations().catch(() => [] as CompetitionMyRegistration[]),
     ])
-      .then(([h3cItems, nispItems]) => setItems([...h3cItems, ...nispItems]))
+      .then(([h3cItems, nispItems, competitionItems]) => {
+        setItems([...h3cItems, ...nispItems])
+        setCompRegs(competitionItems)
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -151,6 +170,48 @@ export default function MyRegistrationsPage() {
         levelLabel: detail.level === '1' ? '一级' : '二级',
       }))
       .catch(() => Taro.showToast({ title: '加载详情失败', icon: 'none' }))
+  }
+
+  const openCompReg = (reg: CompetitionMyRegistration) => {
+    setEditingReg(reg)
+    setEditValues({
+      school: reg.school || '',
+      real_name: reg.real_name || '',
+      phone: reg.phone || '',
+      custom: { ...(reg.custom_field_values || {}) },
+    })
+  }
+
+  const closeCompEdit = () => setEditingReg(null)
+
+  const saveCompEdit = async () => {
+    if (!editingReg || savingEdit) return
+    const error = validateCompetitionRegForm(editValues, editingReg.custom_fields)
+    if (error) {
+      Taro.showToast({ title: error, icon: 'none' })
+      return
+    }
+    setSavingEdit(true)
+    try {
+      await updateCompetitionRegistration(editingReg.id, {
+        school: editValues.school.trim(),
+        real_name: editValues.real_name.trim(),
+        phone: editValues.phone.trim(),
+        custom_field_values:
+          Object.keys(editValues.custom).length > 0 ? editValues.custom : undefined,
+      })
+      Taro.showToast({ title: '已保存', icon: 'success' })
+      setEditingReg(null)
+      load()
+    } catch (err) {
+      Taro.showToast({
+        title: err instanceof Error ? err.message : '保存失败',
+        icon: 'none',
+        duration: 3000,
+      })
+    } finally {
+      setSavingEdit(false)
+    }
   }
 
   const uploadH3c = async (registration: H3cRegistrationCard) => {
@@ -302,12 +363,36 @@ export default function MyRegistrationsPage() {
             </View>
           )}
 
-          {!loading && !error && items.length === 0 && (
+          {!loading && !error && items.length === 0 && compRegs.length === 0 && (
             <View className={styles.empty}>
               <Text>暂无报名记录</Text>
               <Text className={styles.emptyHint}>去认证专区选择认证开始报名</Text>
             </View>
           )}
+
+          {!loading && !error && compRegs.length > 0 && (
+            <Text className={styles.sectionTitle}>竞赛报名</Text>
+          )}
+          {!loading && !error && compRegs.map((reg) => (
+            <View key={`comp-${reg.id}`} className={styles.card} onClick={() => openCompReg(reg)}>
+              <View className={styles.cardHeader}>
+                <Text className={styles.title}>{reg.competition_name}</Text>
+                <Text className={styles.typeBadge}>{reg.track || '竞赛'}</Text>
+              </View>
+              <View className={styles.row}>
+                <Text className={styles.label}>姓名</Text>
+                <Text className={styles.value}>{reg.real_name || '-'}</Text>
+              </View>
+              <View className={styles.row}>
+                <Text className={styles.label}>学校</Text>
+                <Text className={styles.value}>{reg.school}</Text>
+              </View>
+              <View className={styles.row}>
+                <Text className={styles.label}>报名时间</Text>
+                <Text className={styles.value}>{formatDateTime(reg.created_at, '-')}</Text>
+              </View>
+            </View>
+          ))}
 
           {!loading && !error && items.map((item) => {
             const cfg = STATUS_CONFIG[item.status]
@@ -410,6 +495,67 @@ export default function MyRegistrationsPage() {
                     <Text>取消报名</Text>
                   </View>
                 </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {editingReg && (
+          <View className={styles.detailMask} onClick={closeCompEdit}>
+            <View className={styles.detailSheet} onClick={(e) => e.stopPropagation()}>
+              <View className={styles.detailBar} onClick={closeCompEdit} />
+              <Text className={styles.detailTitle}>{editingReg.competition_name}</Text>
+              <Text className={styles.detailSubtitle}>{editingReg.track || '竞赛报名'}</Text>
+
+              {editingReg.editable ? (
+                <>
+                  <CompetitionRegForm
+                    fields={editingReg.custom_fields}
+                    values={editValues}
+                    onChange={setEditValues}
+                  />
+                  <View className={styles.actionRow}>
+                    <View
+                      className={`${styles.actionBtn} ${styles.actionPrimary}`}
+                      onClick={saveCompEdit}
+                    >
+                      <Text>{savingEdit ? '保存中…' : '保存修改'}</Text>
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Text className={styles.sectionTitle}>报名信息</Text>
+                  <View className={styles.row}>
+                    <Text className={styles.label}>学校</Text>
+                    <Text className={styles.value}>{editingReg.school}</Text>
+                  </View>
+                  <View className={styles.row}>
+                    <Text className={styles.label}>姓名</Text>
+                    <Text className={styles.value}>{editingReg.real_name || '-'}</Text>
+                  </View>
+                  <View className={styles.row}>
+                    <Text className={styles.label}>手机号</Text>
+                    <Text className={styles.value}>{editingReg.phone || '-'}</Text>
+                  </View>
+                  {Object.entries(editingReg.custom_field_values || {}).map(([key, value]) => {
+                    const label = editingReg.custom_fields?.find((f) => f.key === key)?.label || key
+                    const text = Array.isArray(value) ? value.join('、') : String(value ?? '-')
+                    return (
+                      <View className={styles.row} key={key}>
+                        <Text className={styles.label}>{label}</Text>
+                        <Text className={styles.value}>{text}</Text>
+                      </View>
+                    )
+                  })}
+                  <View className={styles.row}>
+                    <Text className={styles.label}>报名时间</Text>
+                    <Text className={styles.value}>{formatDateTime(editingReg.created_at, '-')}</Text>
+                  </View>
+                  <View className={styles.rejectReason}>
+                    <Text>报名已截止，信息仅可查看；如需修改请联系管理员</Text>
+                  </View>
+                </>
               )}
             </View>
           </View>
