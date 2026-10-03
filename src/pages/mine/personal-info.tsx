@@ -7,6 +7,10 @@ import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getUserProfile, hasAcceptedLatest } from '@/services/dataService'
+import {
+  getVerificationMaterialSignedUrl,
+  type IdentityMaterialKind,
+} from '@/services/identityMaterialService'
 import type { UserProfileAggregated } from '@/types/profile'
 import styles from './personal-info.module.scss'
 
@@ -27,6 +31,8 @@ function fmtTime(t: string | null): string {
 export default function PersonalInfoPage() {
   const [profile, setProfile] = useState<UserProfileAggregated | null>(null)
   const [loading, setLoading] = useState(true)
+  // 二寸照存的是私有 OSS 键（renshe/source/...），必须换签名链接才能渲染
+  const [avatarUrl, setAvatarUrl] = useState('')
 
   // ---- 驳回弹窗 ----
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
@@ -45,6 +51,11 @@ export default function PersonalInfoPage() {
       setProfile(p)
       identityVerifiedRef.current = p.realname?.identity_status === 'verified'
       void checkIdentityAgreement()
+      if (p.realname?.avatar_oss) {
+        getVerificationMaterialSignedUrl('portrait' as IdentityMaterialKind)
+          .then((result) => setAvatarUrl(result.url))
+          .catch(() => setAvatarUrl(''))
+      }
 
       // 收集驳回信息，弹出浮窗
       const reasons: { section: string, reason: string }[] = []
@@ -110,7 +121,7 @@ export default function PersonalInfoPage() {
           <View className={styles.headerPanel}>
             <Image
               className={styles.headerAvatar}
-              src={realname?.avatar_oss || ''}
+              src={avatarUrl}
               mode='aspectFill'
             />
             <View className={styles.headerInfo}>
