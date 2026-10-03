@@ -6,7 +6,7 @@ export const STRINGS = {
   TAB_PROFILE: '我的',
 
   // ---- Index Page ----
-  INDEX_PAGE_TITLE: '智天远小程序',
+  INDEX_PAGE_TITLE: '智优学',
   INDEX_NAV_TITLE: '智能助手',
   INDEX_WELCOME_TITLE: '欢迎来到数字世界！',
   INDEX_WELCOME_SUB: '您可以直接向我提问，或者探索下方专区。',
