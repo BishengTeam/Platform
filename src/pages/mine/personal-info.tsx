@@ -1,16 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { View, Text, ScrollView, Image } from '@tarojs/components'
+import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getUserProfile, hasAcceptedLatest } from '@/services/dataService'
-import {
-  getVerificationMaterialSignedUrl,
-  type IdentityMaterialKind,
-} from '@/services/identityMaterialService'
 import type { UserProfileAggregated } from '@/types/profile'
 import styles from './personal-info.module.scss'
 
@@ -31,8 +28,6 @@ function fmtTime(t: string | null): string {
 export default function PersonalInfoPage() {
   const [profile, setProfile] = useState<UserProfileAggregated | null>(null)
   const [loading, setLoading] = useState(true)
-  // 二寸照存的是私有 OSS 键（renshe/source/...），必须换签名链接才能渲染
-  const [avatarUrl, setAvatarUrl] = useState('')
 
   // ---- 驳回弹窗 ----
   const [rejectModalVisible, setRejectModalVisible] = useState(false)
@@ -51,11 +46,6 @@ export default function PersonalInfoPage() {
       setProfile(p)
       identityVerifiedRef.current = p.realname?.identity_status === 'verified'
       void checkIdentityAgreement()
-      if (p.realname?.avatar_oss) {
-        getVerificationMaterialSignedUrl('portrait' as IdentityMaterialKind)
-          .then((result) => setAvatarUrl(result.url))
-          .catch(() => setAvatarUrl(''))
-      }
 
       // 收集驳回信息，弹出浮窗
       const reasons: { section: string, reason: string }[] = []
@@ -119,11 +109,9 @@ export default function PersonalInfoPage() {
           {/* 个人主页头部 */}
           {/* ============================================================ */}
           <View className={styles.headerPanel}>
-            <Image
-              className={styles.headerAvatar}
-              src={avatarUrl}
-              mode='aspectFill'
-            />
+            <View className={styles.headerAvatar}>
+              <Icon name='user' size={44} color='#FFFFFF' />
+            </View>
             <View className={styles.headerInfo}>
               <Text className={styles.headerNickname}>{l1.nickname || '未设置昵称'}</Text>
               <Text className={styles.headerMeta}>注册于 {fmtTime(created_at)}</Text>
