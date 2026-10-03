@@ -71,13 +71,9 @@
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  // 与个人中心页默认头像视觉一致：白色边框 + 半透明白底 + 居中白剪影
-  border: 4px solid #FFFFFF;
-  background: rgba(255, 255, 255, 0.18);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .headerInfo {

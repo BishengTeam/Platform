@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import { View, Text, Image } from '@tarojs/components'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
@@ -10,19 +10,33 @@ import { ROUTES } from '@/constants/routes'
 import { profileGridItems, profileListGroups } from '@/constants/mock/profile'
 import type { ProfileMenuItem } from '@/types'
 import { getUserProfile } from '@/services/dataService'
+import { getVerificationMaterialSignedUrl } from '@/services/identityMaterialService'
 import styles from './index.module.scss'
 
 export default function ProfilePage() {
   const [userName, setUserName] = useState<string>(STRINGS.PROFILE_MOCK_NAME)
   const [userStatus, setUserStatus] = useState<string>(STRINGS.PROFILE_MOCK_STATUS)
+  // 二寸照存的是私有 OSS 键，需换取短时签名链接渲染；与个人资料页保持一致
+  const [avatarUrl, setAvatarUrl] = useState('')
 
-  useEffect(() => {
+  const loadProfile = () => {
     getUserProfile().then(profile => {
       setUserName(profile.profile.nickname || STRINGS.PROFILE_MOCK_NAME)
       setUserStatus(profile.realname?.user_type || STRINGS.PROFILE_MOCK_STATUS)
-      // avatar 字段已从后端 UserProfile 移除，使用默认头像
+      if (profile.realname?.avatar_oss) {
+        getVerificationMaterialSignedUrl('portrait')
+          .then((result) => setAvatarUrl(result.url))
+          .catch(() => setAvatarUrl(''))
+      } else {
+        setAvatarUrl('')
+      }
     }).catch(() => {})
-  }, [])
+  }
+
+  useEffect(() => { loadProfile() }, [])
+
+  // Tab 页常驻：签名链接 5 分钟过期、编辑资料后也需刷新，每次显示时重取
+  useDidShow(() => { loadProfile() })
 
   const handleNavigate = (route?: string) => {
     if (!route) {
@@ -52,7 +66,9 @@ export default function ProfilePage() {
             onClick={() => handleNavigate(ROUTES.MINE_PROFILE)}
           >
             <View className={styles.avatar}>
-              <Icon name='user' size={56} color='#FFFFFF' />
+              {avatarUrl
+                ? <Image className={styles.avatarImage} src={avatarUrl} mode='aspectFill' />
+                : <Icon name='user' size={56} color='#FFFFFF' />}
             </View>
             <View className={styles.headerInfo}>
               <Text className={styles.name}>{userName}</Text>

@@ -1,5 +1,5 @@
 import Taro from '@tarojs/taro'
-import { getToken } from '../utils/request.ts'
+import { get, getToken } from '../utils/request.ts'
 
 export type IdentityMaterialKind = 'id_card_front' | 'id_card_back' | 'portrait'
 
@@ -10,6 +10,12 @@ export interface IdentityMaterialUploadResult {
   content_type: string
   size_bytes: number
   sha256: string
+}
+
+export interface IdentityMaterialSignedUrl {
+  url: string
+  /** 签名有效期（秒），后端上限 300 */
+  expires_in: number
 }
 
 /**
@@ -41,3 +47,17 @@ export async function uploadIdentityMaterial(
   return payload.data
 }
 
+/**
+ * GET /api/renshe/verification-materials/{kind}/signed-url
+ * 本人私有材料的短时预览链接（头像等展示必须走此接口，OSS 键不可直接渲染）。
+ */
+export async function getVerificationMaterialSignedUrl(
+  kind: IdentityMaterialKind,
+  download = false,
+): Promise<IdentityMaterialSignedUrl> {
+  const res = await get<IdentityMaterialSignedUrl>(
+    `/api/renshe/verification-materials/${kind}/signed-url`,
+    download ? { download: 'true' } : undefined,
+  )
+  return res.data
+}
