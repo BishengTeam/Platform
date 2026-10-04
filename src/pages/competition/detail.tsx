@@ -83,6 +83,10 @@ export default function CompetitionDetailPage() {
       setEnrollTrack(null)
       setFormValues(emptyCompetitionRegFormValues())
       Taro.showToast({ title: '报名成功', icon: 'success' })
+      // Refresh competition data to update track enrollment counts
+      getCompetitionList()
+        .then((items) => setCompetition(items.find((c) => c.id === competitionId) ?? competition))
+        .catch(() => {})
     } catch (err) {
       Taro.showToast({
         title: err instanceof Error ? err.message : '报名失败',
