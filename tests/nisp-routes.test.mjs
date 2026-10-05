@@ -31,3 +31,10 @@ test('NISP form uploads each material with its own backend material type', async
   assert.match(form, /nispService\.uploadMaterial\(filePath, fileType\)/)
   assert.equal(form.includes("fileType === 'image' ? 'portrait_photo' : 'id_card_both_sides'"), false)
 })
+
+test('NISP order creation goes to the unified payment confirm page with order id', async () => {
+  const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
+
+  assert.match(form, /Taro\.redirectTo\(\{\s*url: `\/\$\{ROUTES\.REGISTRATION_CONFIRM\}\?order_id=\$\{registration\.order_id\}/)
+  assert.doesNotMatch(form, /PAYMENT_RESULT\?order_id=\$\{registration\.id\}/)
+})

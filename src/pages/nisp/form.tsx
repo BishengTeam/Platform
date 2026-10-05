@@ -150,12 +150,10 @@ export default function NispFormPage() {
         } : {}),
       }
       const registration = await nispService.createOrder(payload)
-      Taro.showToast({ title: '报名成功', icon: 'success' })
-      setTimeout(() => {
-        Taro.navigateTo({
-          url: `/${ROUTES.PAYMENT_RESULT}?order_id=${registration.id}&status=success&cert_name=NISP认证`
-        })
-      }, 1500)
+      const certName = level === '1' ? 'NISP一级认证' : 'NISP二级认证'
+      Taro.redirectTo({
+        url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${registration.order_id}&cert_name=${encodeURIComponent(certName)}&price=${price.toFixed(2)}`,
+      })
     } catch (error) {
       Taro.showToast({
         title: error instanceof Error ? error.message : '提交失败，请重试',

@@ -116,6 +116,14 @@ test('pending order detail page is transaction generic and calls unified cancel 
   assert.doesNotMatch(source, /TODO: 调用取消订单 API/)
 })
 
+test('payment result is terminal and never creates a success-order navigation cycle', async () => {
+  const source = await readFile('src/pages/payment/result.tsx', 'utf8')
+
+  assert.match(source, /Taro\.reLaunch\(\{ url: `\/\$\{ROUTES\.ORDER_DETAIL\}\?order_id=\$\{orderId\}` \}\)/)
+  assert.match(source, /onClick=\{handleBackHome\}/)
+  assert.doesNotMatch(source, /handleViewOrder[\s\S]*?Taro\.navigateTo/)
+})
+
 test('orders page navigates with the internal order id', async () => {
   const source = await readFile('src/pages/orders/index.tsx', 'utf8')
 

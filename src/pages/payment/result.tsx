@@ -40,11 +40,13 @@ export default function ResultPage() {
   const displayPrice = orderDetail?.amountPaid || price
 
   const handleViewOrder = () => {
-    Taro.navigateTo({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${orderId}` })
+    // 支付结果是流程终页。这里必须重建页面栈，避免“成功页 ↔ 订单页”循环返回。
+    Taro.reLaunch({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${orderId}` })
   }
 
   const handleRepay = () => {
-    Taro.navigateBack()
+    // 待支付订单详情本身承载继续支付能力，也不依赖上一层页面是否存在。
+    Taro.reLaunch({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${orderId}` })
   }
 
   const handleBackHome = () => {
@@ -89,9 +91,14 @@ export default function ResultPage() {
 
           <View className={styles.actions}>
             {isSuccess ? (
-              <Button variant='gradient' size='lg' onClick={handleViewOrder} className={styles.actionBtn}>
-                {STRINGS.RESULT_VIEW_ORDER}
-              </Button>
+              <>
+                <Button variant='gradient' size='lg' onClick={handleViewOrder} className={styles.actionBtn}>
+                  {STRINGS.RESULT_VIEW_ORDER}
+                </Button>
+                <Button variant='secondary' size='lg' onClick={handleBackHome} className={styles.actionBtnSecondary}>
+                  {STRINGS.RESULT_BACK_HOME}
+                </Button>
+              </>
             ) : (
               <>
                 <Button variant='gradient' size='lg' onClick={handleRepay} className={styles.actionBtn}>
