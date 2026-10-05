@@ -4,6 +4,7 @@ import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { nispService } from '@/services/nispService'
 import type { NispBatch, NispMaterialType, NispOrderCreatePayload } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
@@ -32,6 +33,7 @@ export default function NispFormPage() {
   const [level, setLevel] = useState<'1' | '2'>('1')
   const [batch, setBatch] = useState<NispBatch | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [agreed, setAgreed] = useState(false)
   const [form, setForm] = useState<FormState>({
     name: '', pinyin: '', major: '', school: '',
     id_card: '', phone: '', email: '', province: '',
@@ -126,6 +128,15 @@ export default function NispFormPage() {
 
   const submit = async () => {
     if (!batch || submitting || !validate()) return
+    if (!agreed) {
+      Taro.showToast({
+        title: '请先阅读并同意认证报名信息处理授权协议',
+        icon: 'none',
+        duration: 3000,
+      })
+      return
+    }
+
     if (!(await ensureAgreementSigned(
       'cert_registration',
       STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
@@ -306,7 +317,21 @@ export default function NispFormPage() {
             <Text className={styles.price}>¥{price.toFixed(2)}</Text>
           </View>
 
-          <View style={{ marginTop: 24, marginBottom: 40 }}>
+          <View className={styles.agreementBox}>
+            <AgreementCheckbox agreed={agreed} onChange={setAgreed}>
+              <Text>我已阅读并同意</Text>
+              <Text
+                className={styles.agreementLink}
+                onClick={() => Taro.navigateTo({
+                  url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1`,
+                })}
+              >
+                《{STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION}》
+              </Text>
+            </AgreementCheckbox>
+          </View>
+
+          <View className={styles.submitBox}>
             <Button variant='gradient' size='lg' onClick={submit}>
               {submitting ? '提交中...' : `提交并支付 ¥${price.toFixed(2)}`}
             </Button>

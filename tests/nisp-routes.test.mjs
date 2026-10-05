@@ -42,6 +42,10 @@ test('NISP order creation goes to the unified payment confirm page with order id
 test('NISP submission gates the latest certification registration agreement', async () => {
   const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
 
+  assert.match(form, /const \[agreed, setAgreed\] = useState\(false\)/)
+  assert.match(form, /if \(!agreed\)/)
+  assert.match(form, /<AgreementCheckbox agreed=\{agreed\} onChange=\{setAgreed\}>/)
+  assert.match(form, /AGREEMENT_VIEW\}\?type=cert_registration&requireSign=1/)
   assert.match(form, /ensureAgreementSigned\(\s*'cert_registration'/)
   assert.match(form, /AGREEMENT_TYPE_CERT_REGISTRATION/)
   assert.match(form, /提交认证报名前，请先阅读并同意认证报名信息处理授权协议/)
@@ -50,4 +54,13 @@ test('NISP submission gates the latest certification registration agreement', as
   const createOrderCall = form.indexOf('nispService.createOrder(payload)')
   assert.ok(beforeCreateOrder > -1)
   assert.ok(createOrderCall > beforeCreateOrder)
+})
+
+test('NISP uses only the dedicated batch form route', async () => {
+  const appConfig = await readFile(file('app.config.ts'), 'utf8')
+  const routes = await readFile(file('constants/routes.ts'), 'utf8')
+
+  assert.doesNotMatch(appConfig, /form-nisp/)
+  assert.doesNotMatch(routes, /REGISTRATION_FORM_NISP/)
+  assert.doesNotMatch(routes, /pages\/registration\/form-nisp/)
 })

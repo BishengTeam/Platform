@@ -76,6 +76,16 @@
 }
 .uploaded { color: #16a34a; }
 
+.agreementBox {
+  margin-top: 28px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+}
+
+.agreementLink { color: #1677ff; font-weight: 600; }
+.submitBox { margin-top: 24px; margin-bottom: 40px; }
+
 /* ── 详情弹窗 ── */
 .detailMask {
   position: fixed;

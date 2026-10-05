@@ -12,7 +12,6 @@ export const ROUTES = {
   REGISTRATION_CATEGORY: 'pages/registration/category',
   REGISTRATION_FORM: 'pages/registration/form',
   REGISTRATION_FORM_SANGFOR: 'pages/registration/form-sangfor',
-  REGISTRATION_FORM_NISP: 'pages/registration/form-nisp',
   REGISTRATION_FORM_RENSHE: 'pages/registration/form-renshe',
   REGISTRATION_XUEXIN_GUIDE: 'pages/registration/xuexin-guide',
   REGISTRATION_CONFIRM: 'pages/registration/confirm',
