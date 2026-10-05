@@ -36,7 +36,7 @@ export default function ResultPage() {
 
   // 优先使用 API 返回的订单详情，fallback 到 URL 参数
   const displayOrderId = orderDetail?.outTradeNo || orderDetail?.orderId || orderId
-  const displayCertName = orderDetail?.courseTitle || certName
+  const displayCertName = orderDetail?.productTitle || certName
   const displayPrice = orderDetail?.amountPaid || price
 
   const handleViewOrder = () => {

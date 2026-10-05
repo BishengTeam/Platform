@@ -108,6 +108,12 @@ export async function getOrderDetail(id: number) {
   return toOrderDetail(data)
 }
 
+/** POST /api/orders/{id}/cancel — 取消任意交易类型的待支付订单 */
+export async function cancelOrder(id: number): Promise<OrderDetail> {
+  const res = await post<OrderBackendItem>(`/api/orders/${id}/cancel`)
+  return toOrderDetail(res.data)
+}
+
 export async function getPointsBalance() {
   if (USE_MOCK) return { total: pointsBalance, available: pointsBalance }
   const res = await get<{ balance: number }>(`/api/points`)

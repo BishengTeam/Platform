@@ -11,14 +11,18 @@ export interface Order {
 /** 后端 GET /api/orders 返回的单条订单原始结构 */
 export interface OrderBackendItem {
   id: number
-  order_kind: string
+  order_kind: 'certification' | 'course' | 'quiz_order' | string
   product_type: string
   candidate_name: string | null
   candidate_phone: string | null
   candidate_idcard: string | null
   price: number
+  original_price: number | null
+  discount_amount: number | null
+  coupon_code: string | null
   status: 'pending' | 'paid' | 'completed' | 'refunded' | 'closed'
   out_trade_no: string | null
+  transaction_id: string | null
   inventory_id: number | null
   expires_at: string | null
   closed_at: string | null
@@ -33,14 +37,21 @@ export interface OrderBackendItem {
 export interface OrderDetail {
   orderId: string
   numericId: number
+  orderKind: string
+  productType: string
   status: 'pending' | 'paid' | 'completed' | 'refunded' | 'closed'
   expiresAt: string | null
   outTradeNo: string
-  courseCover: string
-  courseTitle: string
-  courseSubtitle: string
+  transactionId: string | null
+  productTitle: string
+  productDescription: string
+  originalAmount: string
+  discountAmount: string
   amountPaid: string
+  couponCode: string | null
   paymentMethod: string
   paymentTime: string
   orderTime: string
+  closedAt: string
+  closeReason: string | null
 }

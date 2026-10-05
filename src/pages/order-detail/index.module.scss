@@ -3,104 +3,157 @@
 .page {
   min-height: 100vh;
   background: $color-bg;
+  display: flex;
+  flex-direction: column;
 }
 
 .body {
+  flex: 1;
   padding: $spacing-lg;
+  padding-bottom: calc(140px + env(safe-area-inset-bottom));
 }
 
-// ---- Course Info Card ----
-.courseCard {
+/* ── 等待付款头部 ── */
+.payHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px 48px;
+  background: $color-white;
+}
+
+.payTitle {
+  font-size: 44px;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.payCountdown {
+  margin-top: 16px;
+  font-size: 26px;
+  color: $color-text-tertiary;
+}
+
+.payCountdownTime {
+  font-weight: 600;
+  color: $color-price;
+  font-variant-numeric: tabular-nums;
+}
+
+.payCountdownTimeUrgent {
+  color: #ef4444;
+}
+
+/* ── 已过期/非待支付状态 ── */
+.statusHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px 48px;
+  background: $color-white;
+}
+
+.statusText {
+  font-size: 44px;
+  font-weight: 700;
+}
+
+/* ── 商品信息卡片 ── */
+.sectionCard {
   background: $color-white;
   border-radius: $radius-lg;
   padding: $spacing-md;
   margin-bottom: $spacing-sm;
-  display: flex;
-  align-items: center;
-  gap: $spacing-md;
 }
 
-.courseCover {
-  width: 160px;
-  height: 120px;
-  border-radius: $radius-sm;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.coverImg {
-  width: 100%;
-  height: 100%;
-}
-
-.coverPlaceholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #E6F0FF, #F0F5FF);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.coverPlaceholderText {
-  font-size: $font-2xl;
-  font-weight: 700;
-  color: $color-primary-light;
-}
-
-.courseInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-xs;
-  overflow: hidden;
-}
-
-.courseTitle {
-  font-size: $font-lg;
+.sectionTitle {
+  display: block;
+  font-size: $font-base;
   font-weight: 600;
   color: $color-text;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-bottom: $spacing-sm;
 }
 
-.courseSubtitle {
+/* 商品行 */
+.goodsRow {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+}
+
+.goodsInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goodsName {
+  font-size: $font-base;
+  color: $color-text;
+  line-height: 1.4;
+}
+
+.goodsDesc {
   font-size: $font-sm;
   color: $color-text-tertiary;
   line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-// ---- Order Meta Data ----
-.metaCard {
-  background: $color-white;
-  border-radius: $radius-lg;
-  padding: 0 $spacing-md;
-}
-
-.metaRow {
+/* ── 价格卡片 ── */
+.priceRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 28px 0;
+  padding: 10px 0;
+
+  &:last-child {
+    padding-top: 16px;
+    margin-top: 6px;
+    border-top: 1px solid $color-border-light;
+  }
+}
+
+.priceLabel {
+  font-size: $font-base;
+  color: $color-text-secondary;
+}
+
+.priceValue {
+  font-size: $font-xl;
+  font-weight: 700;
+  color: $color-price;
+}
+
+.priceValueDiscount {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-success;
+}
+
+/* ── 订单信息卡片 ── */
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
 
   &:not(:last-child) {
     border-bottom: 1px solid $color-border-light;
   }
 }
 
-.metaLabel {
-  font-size: $font-base;
-  color: $color-text-secondary;
+.infoLabel {
+  font-size: $font-sm;
+  color: $color-text-tertiary;
   flex-shrink: 0;
 }
 
-.metaValue {
-  font-size: $font-base;
+.infoValue {
+  font-size: $font-sm;
   color: $color-text;
   text-align: right;
   min-width: 0;
@@ -109,38 +162,78 @@
   white-space: nowrap;
 }
 
-.metaValueHighlight {
-  font-size: $font-xl;
-  font-weight: 600;
-  color: $color-price;
-  text-align: right;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.metaValueWrap {
+.infoValueWrap {
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: 6px;
   flex: 1;
-  min-width: 0;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .copyBtn {
-  font-size: $font-sm;
-  color: $color-primary;
-  padding: $spacing-2xs $spacing-xs;
+  padding: 4px 12px;
+  border: 1px solid $color-border;
+  border-radius: 8px;
   flex-shrink: 0;
+}
 
-  &:active {
-    opacity: 0.7;
-  }
+.copyBtn:active {
+  opacity: 0.6;
 }
 
 .copyBtnText {
-  font-size: $font-sm;
+  font-size: 22px;
   color: $color-primary;
+}
+
+/* ── 底部操作栏 ── */
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg calc($spacing-md + env(safe-area-inset-bottom));
+  background: $color-white;
+  border-top: 1px solid $color-border-light;
+}
+
+.cancelBtn {
+  flex: 1;
+  height: 88px;
+  border-radius: 44px;
+  background: $color-bg;
+  color: $color-text-secondary;
+  font-size: $font-lg;
+  font-weight: 600;
+  text-align: center;
+  line-height: 88px;
+}
+
+.cancelBtn:active {
+  opacity: 0.7;
+}
+
+.payBtn {
+  flex: 2;
+  height: 88px;
+  border-radius: 44px;
+  background: linear-gradient(135deg, #1677FF, #4096FF);
+  color: #fff;
+  font-size: $font-lg;
+  font-weight: 700;
+  text-align: center;
+  line-height: 88px;
+}
+
+.payBtn:active {
+  opacity: 0.85;
+}
+
+.payBtnDisabled {
+  background: $color-primary-light;
+  opacity: 0.65;
 }

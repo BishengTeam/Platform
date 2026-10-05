@@ -1,17 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { View, Text, Image } from '@tarojs/components'
+import { View, Text } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { EmptyState } from '@/components/EmptyState'
-import { Button } from '@/components/Button'
-import { STRINGS } from '@/constants/strings'
-import { ROUTES } from '@/constants/routes'
-import { getOrderDetail, prepayOrder } from '@/services/dataService'
+import { cancelOrder, getOrderDetail, prepayOrder } from '@/services/dataService'
+import { orderKindLabel } from '@/services/orderMapper'
 import type { OrderDetail } from '@/types'
 import styles from './index.module.scss'
 
-const STATUS_LABELS: Record<string, { text: string; color: string }> = {
+const STATUS_CONFIG: Record<string, { text: string; color: string }> = {
   pending: { text: '待支付', color: '#fa8c16' },
   paid: { text: '已支付', color: '#52c41a' },
   completed: { text: '已完成', color: '#1677ff' },
@@ -20,15 +18,12 @@ const STATUS_LABELS: Record<string, { text: string; color: string }> = {
 }
 
 function formatCountdown(ms: number): string {
-  if (ms <= 0) return '00:00'
+  if (ms <= 0) return '00:00:00'
   const totalSec = Math.floor(ms / 1000)
-  const min = Math.floor(totalSec / 60)
-  const sec = totalSec % 60
-  const h = Math.floor(min / 60)
-  if (h > 0) {
-    return `${String(h).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
-  }
-  return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  const h = Math.floor(totalSec / 3600)
+  const m = Math.floor((totalSec % 3600) / 60)
+  const s = totalSec % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
 export default function OrderDetailPage() {
@@ -36,6 +31,7 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true)
   const [remaining, setRemaining] = useState(0)
   const [paying, setPaying] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loadOrder = useCallback((id: number) => {
@@ -86,7 +82,7 @@ export default function OrderDetailPage() {
     return clearTimer
   }, [detail, startCountdown, clearTimer])
 
-  const isExpired = detail?.status === 'pending' && remaining <= 0
+  const isExpired = detail?.status === 'pending' && Boolean(detail.expiresAt) && remaining <= 0
 
   const handlePay = async () => {
     if (!detail || paying || isExpired) return
@@ -102,15 +98,10 @@ export default function OrderDetailPage() {
           paySign: prepay.pay_sign,
         })
         Taro.showToast({ title: '支付成功', icon: 'success' })
-        setTimeout(() => {
-          loadOrder(detail.numericId)
-        }, 1000)
+        setTimeout(() => loadOrder(detail.numericId), 1000)
       }
     } catch (err) {
-      if ((err as { errMsg?: string })?.errMsg?.includes('cancel')) {
-        // User cancelled payment
-        return
-      }
+      if ((err as { errMsg?: string })?.errMsg?.includes('cancel')) return
       Taro.showToast({
         title: err instanceof Error ? err.message : '支付失败，请重试',
         icon: 'none',
@@ -121,22 +112,58 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleCancel = async () => {
+    if (!detail || cancelling) return
+    const confirmed = await new Promise<boolean>((resolve) => {
+      Taro.showModal({
+        title: '取消订单',
+        content: '确定要取消此订单吗？取消后需重新下单。',
+        confirmText: '取消订单',
+        cancelText: '再想想',
+        success: (res) => resolve(Boolean(res.confirm)),
+        fail: () => resolve(false),
+      })
+    })
+    if (!confirmed) return
+
+    setCancelling(true)
+    try {
+      const closed = await cancelOrder(detail.numericId)
+      setDetail(closed)
+      Taro.showToast({ title: '订单已取消', icon: 'success' })
+      setTimeout(() => Taro.navigateBack(), 1500)
+    } catch (err) {
+      Taro.showToast({
+        title: err instanceof Error ? err.message : '取消订单失败，请重试',
+        icon: 'none',
+        duration: 3000,
+      })
+    } finally {
+      setCancelling(false)
+    }
+  }
+
   const handleCopy = (text: string) => {
     Taro.setClipboardData({
       data: text,
       success: () => {
-        Taro.showToast({ title: STRINGS.ORDER_DETAIL_COPY_SUCCESS, icon: 'success', duration: 1500 })
+        Taro.showToast({ title: '已复制', icon: 'success', duration: 1500 })
       },
     })
   }
 
-  const statusCfg = detail ? STATUS_LABELS[detail.status] : null
-  const showPayBtn = detail?.status === 'pending' && !isExpired
+  const statusCfg = detail ? STATUS_CONFIG[detail.status] : null
+  const isPending = detail?.status === 'pending' && !isExpired
+  const orderNo = detail?.outTradeNo || detail?.orderId || ''
+  const hasDiscount = detail ? Number(detail.discountAmount) > 0 : false
+  const totalPrice = detail
+    ? (hasDiscount ? detail.originalAmount : detail.amountPaid)
+    : '0.00'
 
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title={STRINGS.ORDER_DETAIL_TITLE} shouldShowBack />
+        <PageHeader title='订单详情' shouldShowBack />
 
         {loading ? (
           <View className={styles.body}>
@@ -145,97 +172,125 @@ export default function OrderDetailPage() {
         ) : !detail ? (
           <EmptyState icon='file-text' title='订单不存在' description='未找到该订单信息' />
         ) : (
-          <View className={styles.body}>
-            {/* Status card */}
-            <View className={styles.metaCard} style={{ marginBottom: '24px' }}>
-              {statusCfg && (
-                <View style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '24px 0',
-                }}>
-                  <Text style={{
-                    fontSize: '36rpx', fontWeight: 700, color: statusCfg.color,
-                  }}>
-                    {isExpired ? '订单已过期' : statusCfg.text}
+          <>
+            <View className={styles.body}>
+              {/* 状态头部 */}
+              {isPending ? (
+                <View className={styles.payHeader}>
+                  <Text className={styles.payTitle}>等待付款</Text>
+                  <Text className={styles.payCountdown}>
+                    {detail.expiresAt ? (
+                      <>
+                        还剩{' '}
+                        <Text className={`${styles.payCountdownTime} ${remaining < 5 * 60 * 1000 ? styles.payCountdownTimeUrgent : ''}`}>
+                          {formatCountdown(remaining)}
+                        </Text>{' '}
+                        订单自动取消
+                      </>
+                    ) : '请在订单有效期内完成支付'}
+                  </Text>
+                </View>
+              ) : (
+                <View className={styles.statusHeader}>
+                  <Text className={styles.statusText} style={{ color: statusCfg?.color || '#333' }}>
+                    {isExpired ? '订单已过期' : statusCfg?.text || detail.status}
                   </Text>
                 </View>
               )}
 
-              {showPayBtn && detail.expiresAt && (
-                <View style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 0 20px',
-                }}>
-                  <Text style={{ fontSize: '26rpx', color: '#999', marginRight: '8px' }}>剩余支付时间</Text>
-                  <Text style={{
-                    fontSize: '32rpx', fontWeight: 700,
-                    color: remaining < 5 * 60 * 1000 ? '#ef4444' : '#fa8c16',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}>
-                    {formatCountdown(remaining)}
-                  </Text>
+              {/* 商品信息 */}
+              <View className={styles.sectionCard}>
+                <Text className={styles.sectionTitle}>商品信息</Text>
+                <View className={styles.goodsRow}>
+                  <View className={styles.goodsInfo}>
+                    <Text className={styles.goodsName}>{detail.productTitle}</Text>
+                    <Text className={styles.goodsDesc}>{detail.productDescription}</Text>
+                    <Text className={styles.goodsDesc}>
+                      {orderKindLabel(detail.orderKind)} · {detail.productType}
+                    </Text>
+                  </View>
                 </View>
-              )}
+              </View>
 
-              {showPayBtn && (
-                <View style={{ padding: '0 32px 24px' }}>
-                  <Button variant='gradient' size='lg' onClick={handlePay} disabled={paying}>
-                    {paying ? '支付中...' : `立即支付 ¥${detail.amountPaid}`}
-                  </Button>
+              {/* 商品总价 */}
+              <View className={styles.sectionCard}>
+                <Text className={styles.sectionTitle}>商品总价</Text>
+                <View className={styles.priceRow}>
+                  <Text className={styles.priceLabel}>商品总价</Text>
+                  <Text className={styles.priceValue}>¥{totalPrice}</Text>
                 </View>
-              )}
-            </View>
+                {hasDiscount && (
+                  <View className={styles.priceRow}>
+                    <Text className={styles.priceLabel}>优惠券优惠</Text>
+                    <Text className={styles.priceValueDiscount}>-¥{detail.discountAmount}</Text>
+                  </View>
+                )}
+                <View className={styles.priceRow}>
+                  <Text className={styles.priceLabel}>实付款</Text>
+                  <Text className={styles.priceValue}>¥{detail.amountPaid}</Text>
+                </View>
+              </View>
 
-            {/* Course info */}
-            <View className={styles.courseCard}>
-              <View className={styles.courseCover}>
-                {detail.courseCover ? (
-                  <Image className={styles.coverImg} src={detail.courseCover} mode='aspectFill' />
-                ) : (
-                  <View className={styles.coverPlaceholder}>
-                    <Text className={styles.coverPlaceholderText}>{detail.courseTitle.slice(0, 1)}</Text>
+              {/* 订单信息 */}
+              <View className={styles.sectionCard}>
+                <Text className={styles.sectionTitle}>订单信息</Text>
+                <View className={styles.infoRow}>
+                  <Text className={styles.infoLabel}>订单编号</Text>
+                  <View className={styles.infoValueWrap}>
+                    <Text className={styles.infoValue}>{orderNo}</Text>
+                    <View className={styles.copyBtn} onClick={() => handleCopy(orderNo)}>
+                      <Text className={styles.copyBtnText}>复制</Text>
+                    </View>
+                  </View>
+                </View>
+                <View className={styles.infoRow}>
+                  <Text className={styles.infoLabel}>支付方式</Text>
+                  <Text className={styles.infoValue}>{detail.paymentMethod}</Text>
+                </View>
+                <View className={styles.infoRow}>
+                  <Text className={styles.infoLabel}>支付时间</Text>
+                  <Text className={styles.infoValue}>{detail.paymentTime}</Text>
+                </View>
+                {detail.transactionId && (
+                  <View className={styles.infoRow}>
+                    <Text className={styles.infoLabel}>微信交易号</Text>
+                    <Text className={styles.infoValue}>{detail.transactionId}</Text>
+                  </View>
+                )}
+                <View className={styles.infoRow}>
+                  <Text className={styles.infoLabel}>下单时间</Text>
+                  <Text className={styles.infoValue}>{detail.orderTime}</Text>
+                </View>
+                {detail.closedAt && (
+                  <View className={styles.infoRow}>
+                    <Text className={styles.infoLabel}>关闭时间</Text>
+                    <Text className={styles.infoValue}>{detail.closedAt}</Text>
+                  </View>
+                )}
+                {detail.closeReason && (
+                  <View className={styles.infoRow}>
+                    <Text className={styles.infoLabel}>关闭原因</Text>
+                    <Text className={styles.infoValue}>{detail.closeReason}</Text>
                   </View>
                 )}
               </View>
-              <View className={styles.courseInfo}>
-                <Text className={styles.courseTitle}>{detail.courseTitle}</Text>
-                <Text className={styles.courseSubtitle}>{detail.courseSubtitle}</Text>
-              </View>
             </View>
 
-            {/* Order meta */}
-            <View className={styles.metaCard}>
-              <View className={styles.metaRow}>
-                <Text className={styles.metaLabel}>{STRINGS.ORDER_DETAIL_AMOUNT_PAID}</Text>
-                <Text className={styles.metaValueHighlight}>¥{detail.amountPaid}</Text>
-              </View>
-
-              <View className={styles.metaRow}>
-                <Text className={styles.metaLabel}>{STRINGS.ORDER_DETAIL_ORDER_ID}</Text>
-                <View className={styles.metaValueWrap}>
-                  <Text className={styles.metaValue}>{detail.outTradeNo || detail.orderId}</Text>
-                  <View className={styles.copyBtn} onClick={() => handleCopy(detail.outTradeNo || detail.orderId)}>
-                    <Text className={styles.copyBtnText}>{STRINGS.ORDER_DETAIL_COPY}</Text>
-                  </View>
+            {/* 底部操作栏 */}
+            {isPending && (
+              <View className={styles.bottomBar}>
+                <View className={styles.cancelBtn} onClick={handleCancel}>
+                  <Text>{cancelling ? '取消中...' : '取消订单'}</Text>
+                </View>
+                <View
+                  className={`${styles.payBtn} ${paying || cancelling ? styles.payBtnDisabled : ''}`}
+                  onClick={handlePay}
+                >
+                  <Text>{paying ? '支付中...' : '立即支付'}</Text>
                 </View>
               </View>
-
-              <View className={styles.metaRow}>
-                <Text className={styles.metaLabel}>{STRINGS.ORDER_DETAIL_PAYMENT_METHOD}</Text>
-                <Text className={styles.metaValue}>{detail.paymentMethod}</Text>
-              </View>
-
-              <View className={styles.metaRow}>
-                <Text className={styles.metaLabel}>{STRINGS.ORDER_DETAIL_PAYMENT_TIME}</Text>
-                <Text className={styles.metaValue}>{detail.paymentTime}</Text>
-              </View>
-
-              <View className={styles.metaRow}>
-                <Text className={styles.metaLabel}>{STRINGS.ORDER_DETAIL_ORDER_TIME}</Text>
-                <Text className={styles.metaValue}>{detail.orderTime}</Text>
-              </View>
-            </View>
-          </View>
+            )}
+          </>
         )}
       </View>
     </AuthGuard>

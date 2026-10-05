@@ -82,7 +82,7 @@ export {
 // User & misc
 export {
   getCertifications, getCertDetail, getRegistrationTagFilters,
-  getOrders, getOrderDetail, getPointsBalance, getPointRecords,
+  getOrders, getOrderDetail, cancelOrder, getPointsBalance, getPointRecords,
   getAgreements,
   getMyCollections, getRegisteredExams,
   createOrder, prepayOrder,

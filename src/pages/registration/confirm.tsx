@@ -58,7 +58,7 @@ export default function ConfirmPage() {
     if (id) {
       getOrderDetail(Number(id)).then(order => {
         // getOrderDetail 已通过 toOrderDetail 映射为 OrderDetail 类型，amountPaid 为元
-        setCertName(order?.courseTitle || '')
+        setCertName(order?.productTitle || '')
         setPrice(order?.amountPaid ? parseFloat(order.amountPaid) : 0)
         setLoading(false)
       }).catch(() => {
