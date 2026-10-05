@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { getCourseList, getCourseCategories } from '@/services/dataService'
 import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
@@ -16,10 +17,14 @@ export default function CourseIndexPage() {
   const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
   const [categories, setCategories] = useState<string[]>([])
 
-  useEffect(() => {
-    getCourseList().then(setAllCourses).catch(() => {})
-    getCourseCategories().then(setCategories).catch(() => {})
+  const load = useCallback(() => {
+    return Promise.all([
+      getCourseList().then(setAllCourses).catch(() => {}),
+      getCourseCategories().then(setCategories).catch(() => {}),
+    ])
   }, [])
+
+  useEffect(() => { void load() }, [load])
 
   // 将后端返回的英文 category 转为中文展示标签
   const displayCategories = useMemo(() => {
@@ -42,7 +47,7 @@ export default function CourseIndexPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={STRINGS.COURSE_LIST_TITLE} shouldShowBack />
-        <View className={styles.body}>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           <View className={styles.filterRow}>
             <TagFilter tags={displayCategories} activeTag={activeTag} onChange={setActiveTag} />
           </View>
@@ -60,7 +65,7 @@ export default function CourseIndexPage() {
               />
             ))}
           </View>
-        </View>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

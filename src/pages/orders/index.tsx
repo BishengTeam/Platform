@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro, { useRouter } from '@tarojs/taro'
+import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { EmptyState } from '@/components/EmptyState'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { getOrders } from '@/services/dataService'
@@ -44,13 +45,23 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const hasLoadedRef = useRef(false)
 
-  useEffect(() => {
-    getOrders()
+  const loadOrders = useCallback(() => {
+    const silent = hasLoadedRef.current
+    if (!silent) setLoading(true)
+    setLoadError(false)
+    return getOrders()
       .then(data => setOrders(data))
       .catch(() => setLoadError(true))
-      .finally(() => setLoading(false))
+      .finally(() => {
+        hasLoadedRef.current = true
+        setLoading(false)
+      })
   }, [])
+
+  // 从订单详情/支付流程返回时静默刷新，避免列表仍显示旧的待支付状态。
+  useDidShow(() => { void loadOrders() })
 
   const filteredOrders = activeTag === STRINGS.ORDERS_TAG_ALL
     ? orders
@@ -61,7 +72,7 @@ export default function OrdersPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={STRINGS.ORDERS_TITLE} shouldShowBack />
-        <View className={styles.body}>
+        <RefreshableScrollView className={styles.body} onRefresh={loadOrders}>
           <View className={styles.tabs}>
             {TAG_KEYS.map((tag) => {
               const isActive = activeTag === tag
@@ -121,7 +132,7 @@ export default function OrdersPage() {
             })}
             {!loading && !loadError && filteredOrders.length === 0 && <EmptyState title="暂无订单" />}
           </View>
-        </View>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

@@ -6,6 +6,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getContactList, getTicketDetail, getTickets } from '@/services/dataService'
@@ -39,7 +40,7 @@ export default function ServicePage() {
   const [qrVisible, setQrVisible] = useState(false)
 
   const loadTickets = useCallback(() => {
-    getTickets().then(data => {
+    return getTickets().then(data => {
       setTickets(data)
       setTicketsLoaded(true)
     }).catch(() => setTicketsLoaded(true))
@@ -119,7 +120,7 @@ export default function ServicePage() {
           onBack={handleBack}
         />
 
-        <ScrollView className={styles.body} scrollY>
+        <RefreshableScrollView className={styles.body} onRefresh={loadTickets}>
           <View className={styles.bodyInner}>
             {/* 顶部客服助手 */}
             <View className={styles.assistantCard}>
@@ -207,7 +208,7 @@ export default function ServicePage() {
               )
             })}
           </View>
-        </ScrollView>
+        </RefreshableScrollView>
 
         {/* 工单详情 */}
         <Popup visible={detailVisible} position='bottom' round closeOnOverlayClick onClose={closeDetail}>

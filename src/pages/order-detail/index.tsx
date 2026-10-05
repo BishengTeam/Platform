@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import Taro, { useDidShow, useLoad, usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { EmptyState } from '@/components/EmptyState'
@@ -32,10 +32,12 @@ export default function OrderDetailPage() {
   const [remaining, setRemaining] = useState(0)
   const [paying, setPaying] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const orderIdRef = useRef(0)
+  const skipInitialShowRef = useRef(true)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const loadOrder = useCallback((id: number) => {
-    getOrderDetail(id).then(data => {
+    return getOrderDetail(id).then(data => {
       setDetail(data)
       setLoading(false)
     }).catch(() => setLoading(false))
@@ -69,10 +71,24 @@ export default function OrderDetailPage() {
         setLoading(false)
         return
       }
-      loadOrder(id)
+      orderIdRef.current = id
+      void loadOrder(id)
     } catch {
       setLoading(false)
     }
+  })
+
+  useDidShow(() => {
+    if (skipInitialShowRef.current) {
+      skipInitialShowRef.current = false
+      return
+    }
+    if (orderIdRef.current) void loadOrder(orderIdRef.current)
+  })
+
+  usePullDownRefresh(async () => {
+    if (orderIdRef.current) await loadOrder(orderIdRef.current)
+    Taro.stopPullDownRefresh()
   })
 
   useEffect(() => {
@@ -98,7 +114,7 @@ export default function OrderDetailPage() {
           paySign: prepay.pay_sign,
         })
         Taro.showToast({ title: '支付成功', icon: 'success' })
-        setTimeout(() => loadOrder(detail.numericId), 1000)
+        setTimeout(() => void loadOrder(detail.numericId), 1000)
       }
     } catch (err) {
       if ((err as { errMsg?: string })?.errMsg?.includes('cancel')) return

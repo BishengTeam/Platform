@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Image, ScrollView, Text, View } from '@tarojs/components'
+import { Image, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { CheckinBar } from '@/components/CheckinBar'
 import { PageHeader } from '@/components/PageHeader'
 import { QuizBottomNav } from '@/components/QuizBottomNav'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { QuizGrid } from '@/components/QuizGrid'
 import { QUIZ_BOTTOM, QUIZ_GRID } from '@/constants/quiz'
 import type { QuizBottomItem } from '@/constants/quiz'
@@ -35,7 +36,7 @@ export default function QuizIndexPage() {
 
   const loadPersonal = useCallback(() => {
     if (!isChecked || !isLoggedIn) return
-    Promise.all([getQuizCheckinStatus(), getQuizStats()])
+    return Promise.all([getQuizCheckinStatus(), getQuizStats()])
       .then(([checkin, nextStats]) => {
         setStreakDays(checkin.consecutive_days)
         setStats(nextStats)
@@ -56,14 +57,21 @@ export default function QuizIndexPage() {
     loadProgress(Object.keys(expanded).map(Number))
   }, [expanded, loadProgress])
 
-  useDidShow(() => {
+  const refreshCatalog = useCallback(async () => {
     setLoading(true)
     setCatalogError(false)
-    listQuizLibraries()
-      .then(setLibraries)
-      .catch(() => setCatalogError(true))
-      .finally(() => setLoading(false))
-    loadPersonal()
+    try {
+      setLibraries(await listQuizLibraries())
+    } catch {
+      setCatalogError(true)
+    } finally {
+      setLoading(false)
+    }
+    void loadPersonal()
+  }, [loadPersonal])
+
+  useDidShow(() => {
+    void refreshCatalog()
     loadProgress(Object.keys(expanded).map(Number))
   })
 
@@ -133,7 +141,7 @@ export default function QuizIndexPage() {
   return (
     <View className={styles.page}>
       <PageHeader title={STRINGS.QUIZ_HEADER} shouldShowBack />
-      <ScrollView className={styles.body} scrollY>
+      <RefreshableScrollView className={styles.body} onRefresh={refreshCatalog}>
         {isLoggedIn && (
           <CheckinBar streakDays={streakDays} onCheckin={() => Taro.navigateTo({ url: `/${ROUTES.QUIZ_CHECKIN}` })} />
         )}
@@ -233,7 +241,7 @@ export default function QuizIndexPage() {
           })}
         </View>
         <QuizBottomNav items={QUIZ_BOTTOM} onItemClick={(item: QuizBottomItem) => requireLogin(() => Taro.navigateTo({ url: `/${item.route}` }))} />
-      </ScrollView>
+      </RefreshableScrollView>
     </View>
   )
 }

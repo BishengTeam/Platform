@@ -39,7 +39,7 @@ export default function H3CListPage() {
   const load = useCallback(() => {
     setLoading(true)
     setError(false)
-    h3cService.listBatches()
+    return h3cService.listBatches()
       .then(setBatches)
       .catch(() => {
         setBatches([])
@@ -49,8 +49,8 @@ export default function H3CListPage() {
   }, [])
 
   useLoad(() => load())
-  usePullDownRefresh(() => {
-    load()
+  usePullDownRefresh(async () => {
+    await load()
     Taro.stopPullDownRefresh()
   })
 

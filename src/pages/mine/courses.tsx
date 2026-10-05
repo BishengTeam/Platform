@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { getMyCourses } from '@/services/dataService'
@@ -18,9 +19,11 @@ export default function MyCoursesPage() {
   const [activeStatus, setActiveStatus] = useState<string>(STATUS_TAGS[0])
   const [allCourses, setAllCourses] = useState<MyCourse[]>([])
 
-  useEffect(() => {
-    getMyCourses().then(setAllCourses).catch(() => {})
+  const load = useCallback(() => {
+    return getMyCourses().then(setAllCourses).catch(() => {})
   }, [])
+
+  useEffect(() => { void load() }, [load])
 
   const filtered = useMemo(() => {
     const statusMap: Record<string, string> = {
@@ -35,7 +38,7 @@ export default function MyCoursesPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_COURSES_TITLE} shouldShowBack />
-        <View className={styles.body}>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           <View className={styles.filterRow}>
             <TagFilter tags={STATUS_TAGS} activeTag={activeStatus} onChange={setActiveStatus} />
           </View>
@@ -65,7 +68,7 @@ export default function MyCoursesPage() {
               ))}
             </View>
           )}
-        </View>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

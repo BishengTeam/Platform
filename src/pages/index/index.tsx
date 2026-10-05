@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Avatar } from '@nutui/nutui-react-taro'
@@ -13,6 +13,7 @@ import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
 import type { HomeCardItem } from '@/components/HomeCard'
 import { CustomTabBar } from '@/components/TabBar'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
 import { getHomeAggregation } from '@/services/dataService'
@@ -91,13 +92,15 @@ function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
 export default function IndexPage() {
   const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
 
-  useEffect(() => {
-    getHomeAggregation().then((data) => {
+  const loadHome = useCallback(() => {
+    return getHomeAggregation().then((data) => {
       setHomeData(data)
     }).catch((err) => {
       // 加载失败静默处理，页面展示空状态
     })
   }, [])
+
+  useEffect(() => { void loadHome() }, [loadHome])
 
   const handleGoConsult = () => {
     Taro.navigateTo({ url: `/${ROUTES.AI_CONSULT}` })
@@ -182,7 +185,7 @@ export default function IndexPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.INDEX_PAGE_TITLE} />
 
-        <View className={styles.main}>
+        <RefreshableScrollView className={styles.main} onRefresh={loadHome}>
           <View className={styles.bannerWrap}>
             <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
               id: b.id,
@@ -258,7 +261,7 @@ export default function IndexPage() {
               />
             </View>
           )}
-        </View>
+        </RefreshableScrollView>
 
         <CustomTabBar activeTabKey='pages/index/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>

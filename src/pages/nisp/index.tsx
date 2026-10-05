@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
-import Taro, { usePullDownRefresh } from '@tarojs/taro'
+import { View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { nispService } from '@/services/nispService'
 import type { NispBatch } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
@@ -17,20 +18,19 @@ export default function NispIndexPage() {
   const load = useCallback(() => {
     setLoading(true)
     setError(false)
-    nispService.listBatches()
+    return nispService.listBatches()
       .then(setBatches)
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => { load() }, [load])
-  usePullDownRefresh(() => { load(); Taro.stopPullDownRefresh() })
 
   return (
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title='NISP 认证' shouldShowBack />
-        <ScrollView className={styles.body} scrollY>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           {loading && <View className={styles.empty}>加载中...</View>}
           {error && <View className={styles.empty} onClick={load}>加载失败，点击重试</View>}
           {!loading && !error && batches.length === 0 && (
@@ -94,7 +94,7 @@ export default function NispIndexPage() {
               我的报名
             </Button>
           </View>
-        </ScrollView>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

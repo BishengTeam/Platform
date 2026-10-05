@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ScrollView, Text, View } from '@tarojs/components'
-import Taro, { usePullDownRefresh } from '@tarojs/taro'
+import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { getPointsBalance } from '@/services/dataService'
 import { pointsMallService } from '@/services/pointsMallService'
@@ -49,13 +50,13 @@ export default function PointsPage() {
   const [couponStatus, setCouponStatus] = useState('')
 
   const loadBalance = useCallback(() => {
-    getPointsBalance().then(d => setBalance(d.available ?? 0)).catch(() => {})
+    return getPointsBalance().then(d => setBalance(d.available ?? 0)).catch(() => {})
   }, [])
 
   const loadMall = useCallback(() => {
     setMallLoading(true)
     setMallError(false)
-    pointsMallService.listItems()
+    return pointsMallService.listItems()
       .then(setItems)
       .catch(() => setMallError(true))
       .finally(() => setMallLoading(false))
@@ -64,7 +65,7 @@ export default function PointsPage() {
   const loadCoupons = useCallback((status: string) => {
     setCouponsLoading(true)
     setCouponsError(false)
-    pointsMallService.myCoupons(status || undefined)
+    return pointsMallService.myCoupons(status || undefined)
       .then(setCoupons)
       .catch(() => {
         setCoupons([])
@@ -88,15 +89,12 @@ export default function PointsPage() {
     }
   }, [mainTab, couponsLoaded, couponsLoading, couponStatus, loadCoupons])
 
-  usePullDownRefresh(() => {
-    loadBalance()
-    if (mainTab === 'mall') {
-      loadMall()
-    } else {
-      loadCoupons(couponStatus)
-    }
-    Taro.stopPullDownRefresh()
-  })
+  const refreshCurrentTab = useCallback(async () => {
+    await Promise.all([
+      loadBalance(),
+      mainTab === 'mall' ? loadMall() : loadCoupons(couponStatus),
+    ])
+  }, [couponStatus, loadBalance, loadCoupons, loadMall, mainTab])
 
   const visibleItems = useMemo(() => {
     if (activeCategory === 'all') return items
@@ -153,7 +151,7 @@ export default function PointsPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_POINTS_TITLE} shouldShowBack />
-        <ScrollView className={styles.body} scrollY>
+        <RefreshableScrollView className={styles.body} onRefresh={refreshCurrentTab}>
           <View className={styles.balanceCard}>
             <View className={styles.balanceMain}>
               <Text className={styles.balanceLabel}>{STRINGS.MINE_POINTS_BALANCE}</Text>
@@ -311,7 +309,7 @@ export default function PointsPage() {
               })}
             </View>
           )}
-        </ScrollView>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

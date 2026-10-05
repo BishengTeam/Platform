@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { View, Text, ScrollView, Image } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
@@ -7,6 +7,7 @@ import { TagFilter } from '@/components/TagFilter'
 import { Icon } from '@/components/Icon'
 import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
 import { CustomTabBar } from '@/components/TabBar'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { toBase64 } from '@/utils/base64'
@@ -104,19 +105,23 @@ export default function TrainingPage() {
     })
   }, [])
 
-  useEffect(() => {
-    getCourseList().then((data) => {
+  const loadInitialData = useCallback(() => {
+    return Promise.all([
+      getCourseList().then((data) => {
       setAllCourses(data)
-    }).catch(() => {
-      // 课程数据加载失败静默处理
-    })
-    listQuizLibraries().then((libraries) => {
+      }).catch(() => {
+        // 课程数据加载失败静默处理
+      }),
+      listQuizLibraries().then((libraries) => {
       setQuizLibraries(libraries)
       selectFirstLibrary(libraries.filter(item => item.vendor_tag === DEFAULT_VENDOR_TAG))
-    }).catch(() => {
-      // 无权益时服务端返回空目录；加载失败保持题库区域为空。
-    })
-  }, [])
+      }).catch(() => {
+        // 无权益时服务端返回空目录；加载失败保持题库区域为空。
+      }),
+    ])
+  }, [selectFirstLibrary])
+
+  useEffect(() => { void loadInitialData() }, [loadInitialData])
 
   useEffect(() => {
     if (!selectedScope) {
@@ -415,10 +420,10 @@ export default function TrainingPage() {
         <View className={styles.tabBar}>
           <TagFilter tags={MAIN_TABS} activeTag={mainTab} onChange={setMainTab} variant='underline' />
         </View>
-        <ScrollView className={styles.body} scrollY>
+        <RefreshableScrollView className={styles.body} onRefresh={loadInitialData}>
           {/* 在线课程暂时隐藏：唯一 tab「练习助手」必须渲染练习功能，不能落到课程列表 */}
           {mainTab === MAIN_TABS[0] && renderQuizTab()}
-        </ScrollView>
+        </RefreshableScrollView>
       </AuthGuard>
       <CustomTabBar activeTabKey='pages/training/index' onSwitch={(url: string) => Taro.switchTab({ url })} />
       <QuizCategoryPicker

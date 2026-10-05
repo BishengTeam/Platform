@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
 import { ROUTES } from '@/constants/routes'
@@ -30,11 +31,14 @@ export default function RegistrationIndexPage() {
   const [certifications, setCertifications] = useState<CertificationResponse[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    getCertificationList().then((data) => {
+  const load = useCallback(() => {
+    setLoading(true)
+    return getCertificationList().then((data) => {
       setCertifications(data)
     }).catch(() => {}).finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => { load() }, [load])
 
   const grouped = useMemo(() => {
     const map: Record<string, CertificationResponse[]> = {}
@@ -68,7 +72,7 @@ export default function RegistrationIndexPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={STRINGS.REGISTRATION_TITLE} shouldShowBack />
-        <View className={styles.body}>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           <View className={styles.sectionHeader}>
             <Text className={styles.sectionTitle}>{STRINGS.REGISTRATION_CATEGORY_TITLE}</Text>
           </View>
@@ -100,7 +104,7 @@ export default function RegistrationIndexPage() {
               ))
             )}
           </View>
-        </View>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

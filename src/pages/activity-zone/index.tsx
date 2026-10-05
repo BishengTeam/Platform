@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { useState, useMemo, useEffect, useCallback } from 'react'
+import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
@@ -8,6 +8,7 @@ import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
 import { EmptyState } from '@/components/EmptyState'
 import { CustomTabBar } from '@/components/TabBar'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import {
   getHomeAggregation, getActivityList, getJobList, getCompetitionList,
@@ -45,22 +46,26 @@ export default function ActivityZonePage() {
   const [activitiesLoaded, setActivitiesLoaded] = useState(false)
   const [jobsLoaded, setJobsLoaded] = useState(false)
 
-  useEffect(() => {
-    getHomeAggregation().then((data: HomeAggregationResponse) => {
+  const load = useCallback(() => {
+    return Promise.all([
+      getHomeAggregation().then((data: HomeAggregationResponse) => {
       setCompetitionBanner(data.zones['competition']?.items?.[0] ?? null)
-    }).catch(() => {})
-    getActivityList().then((data) => {
+      }).catch(() => {}),
+      getActivityList().then((data) => {
       setAllActivities(data)
       setActivityBanner(null)
-    }).catch(() => {}).finally(() => setActivitiesLoaded(true))
-    getCompetitionList().then((data) => {
+      }).catch(() => {}).finally(() => setActivitiesLoaded(true)),
+      getCompetitionList().then((data) => {
       setAllCompetitions(data)
-    }).catch(() => {})
-    getJobList().then((data) => {
+      }).catch(() => {}),
+      getJobList().then((data) => {
       setAllJobs(data)
       setEmploymentBanner(null)
-    }).catch(() => {}).finally(() => setJobsLoaded(true))
+      }).catch(() => {}).finally(() => setJobsLoaded(true)),
+    ])
   }, [])
+
+  useEffect(() => { void load() }, [load])
 
   // Activity time-based grouping
   const { ongoingActivities, upcomingActivities, endedActivities } = useMemo(() => {
@@ -191,7 +196,7 @@ export default function ActivityZonePage() {
           ))}
         </View>
 
-        <ScrollView className={styles.body} scrollY>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           <View className={styles.bannerWrap}>
             {currentBanner ? (
               <ZoneBanner items={[{
@@ -322,7 +327,7 @@ export default function ActivityZonePage() {
               )
             )}
           </View>
-          </ScrollView>
+          </RefreshableScrollView>
 
         <CustomTabBar activeTabKey='pages/activity-zone/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>

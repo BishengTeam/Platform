@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ScrollView, Text, View } from '@tarojs/components'
-import Taro, { usePullDownRefresh } from '@tarojs/taro'
+import { Text, View } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import {
   CompetitionRegForm,
   validateCompetitionRegForm,
@@ -127,7 +128,7 @@ export default function MyRegistrationsPage() {
   const load = useCallback(() => {
     setLoading(true)
     setError(false)
-    Promise.all([
+    return Promise.all([
       h3cService.listRegistrations()
         .then(r => r.items.map((item): H3cRegistrationCard => ({ ...item, type: 'H3C' })))
         .catch(() => [] as H3cRegistrationCard[]),
@@ -148,11 +149,6 @@ export default function MyRegistrationsPage() {
   }, [])
 
   useEffect(() => { load() }, [load])
-
-  usePullDownRefresh(() => {
-    load()
-    Taro.stopPullDownRefresh()
-  })
 
   const openDetail = (item: UnifiedRegistration) => {
     setSelected(item)
@@ -350,7 +346,7 @@ export default function MyRegistrationsPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title='我的报名' shouldShowBack />
-        <ScrollView className={styles.body} scrollY>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           {loading && <View className={styles.loading}>加载中...</View>}
 
           {error && (
@@ -421,7 +417,7 @@ export default function MyRegistrationsPage() {
               </View>
             )
           })}
-        </ScrollView>
+        </RefreshableScrollView>
 
         {selected && (
           <View className={styles.detailMask} onClick={() => setSelected(null)}>

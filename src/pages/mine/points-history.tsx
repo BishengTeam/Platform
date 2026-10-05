@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ScrollView, Text, View } from '@tarojs/components'
-import Taro, { usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { getPointRecords } from '@/services/dataService'
 import type { PointRecord } from '@/types/mine'
@@ -16,20 +16,19 @@ export default function PointsHistoryPage() {
   const load = useCallback(() => {
     setLoading(true)
     setError(false)
-    getPointRecords()
+    return getPointRecords()
       .then(setRecords)
       .catch(() => { setRecords([]); setError(true) })
       .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => { load() }, [load])
-  usePullDownRefresh(() => { load(); Taro.stopPullDownRefresh() })
 
   return (
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title='积分记录' shouldShowBack />
-        <ScrollView className={styles.body} scrollY>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           {loading && <View className={styles.empty}>加载中...</View>}
           {error && <View className={styles.empty} onClick={load}>加载失败，点击重试</View>}
           {!loading && !error && records.length === 0 && (
@@ -49,7 +48,7 @@ export default function PointsHistoryPage() {
               </Text>
             </View>
           ))}
-        </ScrollView>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

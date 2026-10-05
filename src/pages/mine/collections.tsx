@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { EmptyState } from '@/components/EmptyState'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { getMyCollections } from '@/services/dataService'
 import { formatPrice } from '@/utils/format'
@@ -16,9 +17,11 @@ export default function MineCollectionsPage() {
   const [activeTab, setActiveTab] = useState<string>(TABS[0])
   const [data, setData] = useState<{ courses: Array<{ id: string; title: string; instructor: string; price: number }>; materials: Array<{ id: string; title: string; type: string }> }>({ courses: [], materials: [] })
 
-  useEffect(() => {
-    getMyCollections().then(setData).catch(() => {})
+  const load = useCallback(() => {
+    return getMyCollections().then(setData).catch(() => {})
   }, [])
+
+  useEffect(() => { void load() }, [load])
 
   const items = activeTab === TABS[0] ? data.courses : data.materials
 
@@ -26,7 +29,7 @@ export default function MineCollectionsPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_COLLECTIONS_TITLE} shouldShowBack />
-        <View className={styles.body}>
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           <View className={styles.filterRow}>
             <TagFilter tags={TABS} activeTag={activeTab} onChange={setActiveTab} />
           </View>
@@ -49,7 +52,7 @@ export default function MineCollectionsPage() {
               ))}
             </View>
           )}
-        </View>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )
