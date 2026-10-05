@@ -7,6 +7,8 @@ import { Button } from '@/components/Button'
 import { nispService } from '@/services/nispService'
 import type { NispBatch, NispMaterialType, NispOrderCreatePayload } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
+import { STRINGS } from '@/constants/strings'
+import { ensureAgreementSigned } from '@/utils/agreementGate'
 import styles from './nisp.module.scss'
 
 const PROVINCES = [
@@ -124,6 +126,12 @@ export default function NispFormPage() {
 
   const submit = async () => {
     if (!batch || submitting || !validate()) return
+    if (!(await ensureAgreementSigned(
+      'cert_registration',
+      STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
+      '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
+    ))) return
+
     setSubmitting(true)
     try {
       const payload: NispOrderCreatePayload = {

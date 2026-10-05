@@ -38,3 +38,16 @@ test('NISP order creation goes to the unified payment confirm page with order id
   assert.match(form, /Taro\.redirectTo\(\{\s*url: `\/\$\{ROUTES\.REGISTRATION_CONFIRM\}\?order_id=\$\{registration\.order_id\}/)
   assert.doesNotMatch(form, /PAYMENT_RESULT\?order_id=\$\{registration\.id\}/)
 })
+
+test('NISP submission gates the latest certification registration agreement', async () => {
+  const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
+
+  assert.match(form, /ensureAgreementSigned\(\s*'cert_registration'/)
+  assert.match(form, /AGREEMENT_TYPE_CERT_REGISTRATION/)
+  assert.match(form, /提交认证报名前，请先阅读并同意认证报名信息处理授权协议/)
+
+  const beforeCreateOrder = form.indexOf('ensureAgreementSigned')
+  const createOrderCall = form.indexOf('nispService.createOrder(payload)')
+  assert.ok(beforeCreateOrder > -1)
+  assert.ok(createOrderCall > beforeCreateOrder)
+})
