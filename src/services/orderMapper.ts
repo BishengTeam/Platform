@@ -55,6 +55,9 @@ export function toOrder(item: OrderBackendItem): Order {
 export function toOrderDetail(item: OrderBackendItem): OrderDetail {
   return {
     orderId: String(item.id),
+    numericId: item.id,
+    status: item.status,
+    expiresAt: item.expires_at || null,
     outTradeNo: item.out_trade_no || String(item.id),
     courseCover: '',
     courseTitle: orderTitle(item),

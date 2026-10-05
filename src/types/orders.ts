@@ -32,6 +32,9 @@ export interface OrderBackendItem {
 
 export interface OrderDetail {
   orderId: string
+  numericId: number
+  status: 'pending' | 'paid' | 'completed' | 'refunded' | 'closed'
+  expiresAt: string | null
   outTradeNo: string
   courseCover: string
   courseTitle: string
