@@ -46,34 +46,36 @@ export default function NispIndexPage() {
                 </Text>
               </View>
 
-              {batch.exam_date && (
-                <View className={styles.row}>
-                  <Text className={styles.label}>考试时间</Text>
-                  <Text className={styles.value}>{batch.exam_date.slice(0, 10)}</Text>
+              <View className={styles.infoGrid}>
+                {batch.exam_date && (
+                  <View className={styles.infoItem}>
+                    <Text className={styles.infoLabel}>考试时间</Text>
+                    <Text className={styles.infoValue}>{batch.exam_date.slice(0, 10)}</Text>
+                  </View>
+                )}
+                <View className={styles.infoItem}>
+                  <Text className={styles.infoLabel}>剩余名额</Text>
+                  <Text className={styles.infoValue}>
+                    {batch.remaining_count === -1 ? '不限' : `${batch.remaining_count} 人`}
+                  </Text>
                 </View>
-              )}
-              {batch.exam_location && (
-                <View className={styles.row}>
-                  <Text className={styles.label}>考试地点</Text>
-                  <Text className={styles.value}>{batch.exam_location}</Text>
+                {batch.exam_location && (
+                  <View className={`${styles.infoItem} ${styles.infoItemFull}`}>
+                    <Text className={styles.infoLabel}>考试地点</Text>
+                    <Text className={styles.infoValue}>{batch.exam_location}</Text>
+                  </View>
+                )}
+                <View className={`${styles.infoItem} ${styles.infoItemFull}`}>
+                  <Text className={styles.infoLabel}>
+                    {batch.level === '1' ? '一级报名费' : '二级报名费'}
+                  </Text>
+                  <Text className={styles.infoValue}>
+                    ¥{((batch.level === '1' ? batch.level1_price_cents : batch.level2_price_cents) / 100).toFixed(2)}
+                  </Text>
                 </View>
-              )}
-              <View className={styles.row}>
-                <Text className={styles.label}>剩余名额</Text>
-                <Text className={styles.value}>
-                  {batch.remaining_count === -1 ? '不限' : batch.remaining_count}
-                </Text>
-              </View>
-              <View className={styles.row}>
-                <Text className={styles.label}>
-                  {batch.level === '1' ? '一级价格' : '二级价格'}
-                </Text>
-                <Text className={styles.price}>
-                  ¥{((batch.level === '1' ? batch.level1_price_cents : batch.level2_price_cents) / 100).toFixed(2)}
-                </Text>
               </View>
 
-              <View style={{ marginTop: 24 }}>
+              <View className={styles.actionRow}>
                 <Button
                   variant='gradient'
                   onClick={() => Taro.navigateTo({
@@ -86,7 +88,7 @@ export default function NispIndexPage() {
             </View>
           ))}
 
-          <View style={{ marginTop: 12 }}>
+          <View className={styles.secondaryAction}>
             <Button
               variant='secondary'
               onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_REGISTRATIONS}` })}

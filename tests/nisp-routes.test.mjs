@@ -64,3 +64,16 @@ test('NISP uses only the dedicated batch form route', async () => {
   assert.doesNotMatch(routes, /REGISTRATION_FORM_NISP/)
   assert.doesNotMatch(routes, /pages\/registration\/form-nisp/)
 })
+
+test('NISP pages keep symmetric margins and use compact field groups', async () => {
+  const styles = await readFile(file('pages/nisp/nisp.module.scss'), 'utf8')
+  const body = styles.match(/\.body \{[\s\S]*?\}/)?.[0] ?? ''
+
+  assert.match(body, /box-sizing:\s*border-box/)
+  assert.match(body, /width:\s*100%/)
+  assert.match(body, /overflow-x:\s*hidden/)
+  assert.match(body, /padding:\s*\$spacing-md \$spacing-lg/)
+  assert.match(styles, /\.fieldGrid,[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
+  assert.match(styles, /\.uploadGrid[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
+  assert.match(styles, /\.fieldWide \{ grid-column: 1 \/ -1; \}/)
+})

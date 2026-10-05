@@ -187,8 +187,14 @@ export default function NispFormPage() {
     ? (level === '1' ? batch.level1_price_cents : batch.level2_price_cents) / 100
     : 0
 
-  const inputField = (key: keyof FormState, label: string, placeholder: string, required = false) => (
-    <View className={styles.field} key={key}>
+  const inputField = (
+    key: keyof FormState,
+    label: string,
+    placeholder: string,
+    required = false,
+    wide = false,
+  ) => (
+    <View className={`${styles.field} ${wide ? styles.fieldWide : ''}`} key={key}>
       <View className={styles.labelRow}>
         {required && <Text className={styles.required}>*</Text>}
         <Text className={styles.label}>{label}</Text>
@@ -203,8 +209,13 @@ export default function NispFormPage() {
     </View>
   )
 
-  const pickerField = (key: keyof FormState, label: string, options: string[]) => (
-    <View className={styles.field} key={key}>
+  const pickerField = (
+    key: keyof FormState,
+    label: string,
+    options: string[],
+    wide = false,
+  ) => (
+    <View className={`${styles.field} ${wide ? styles.fieldWide : ''}`} key={key}>
       <View className={styles.labelRow}>
         <Text className={styles.required}>*</Text>
         <Text className={styles.label}>{label}</Text>
@@ -219,8 +230,8 @@ export default function NispFormPage() {
           }
         }}
       >
-        <View className={styles.input} style={{ display: 'flex', alignItems: 'center' }}>
-          <Text style={{ color: form[key] ? '#17233d' : '#98a2b3' }}>
+        <View className={`${styles.input} ${styles.pickerValue}`}>
+          <Text className={styles.pickerText} style={{ color: form[key] ? '#17233d' : '#98a2b3' }}>
             {form[key] || `请选择${label}`}
           </Text>
         </View>
@@ -233,108 +244,144 @@ export default function NispFormPage() {
       <View className={styles.page}>
         <PageHeader title={`NISP${level === '1' ? '一级' : '二级'}报名`} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
-          {/* 基本信息 */}
-          {inputField('name', '姓名', '请输入真实姓名', true)}
-          {inputField('pinyin', '拼音', '如：ZHANG SAN', true)}
-          {inputField('major', '专业', '如：信息安全', true)}
-          {inputField('school', '学校/单位名称', '如：成都工业职业技术学院', true)}
-          {inputField('id_card', '身份证号', '18位身份证号', true)}
-          {inputField('phone', '手机号码', '11位手机号', true)}
-          {inputField('email', '邮箱', '用于接收考试通知', true)}
-          {pickerField('province', '报考省份', PROVINCES)}
+          <View className={styles.summaryCard}>
+            <View className={styles.summaryHead}>
+              <Text className={`${styles.levelBadge} ${level === '1' ? styles.level1 : styles.level2}`}>
+                NISP{level === '1' ? '一级' : '二级'}
+              </Text>
+              <Text className={styles.price}>¥{price.toFixed(2)}</Text>
+            </View>
+            <Text className={styles.batchName}>{batch?.name || '加载考试批次中...'}</Text>
+            <View className={styles.summaryGrid}>
+              <View className={styles.summaryItem}>
+                <Text className={styles.summaryLabel}>考试时间</Text>
+                <Text className={styles.summaryValue}>
+                  {batch?.exam_date ? batch.exam_date.slice(0, 10) : '以批次安排为准'}
+                </Text>
+              </View>
+              <View className={styles.summaryItem}>
+                <Text className={styles.summaryLabel}>考试地点</Text>
+                <Text className={styles.summaryValue}>{batch?.exam_location || '以批次安排为准'}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View className={styles.sectionCard}>
+            <Text className={styles.sectionTitle}>基础信息</Text>
+            <View className={styles.fieldGrid}>
+              {inputField('name', '姓名', '真实姓名', true)}
+              {inputField('pinyin', '拼音', 'ZHANG SAN', true)}
+              {inputField('major', '专业', '信息安全', true)}
+              {pickerField('province', '报考省份', PROVINCES)}
+              {inputField('school', '学校/单位', '学校或单位全称', true, true)}
+              {inputField('id_card', '身份证号', '18位身份证号', true, true)}
+              {inputField('phone', '手机号码', '11位手机号', true)}
+              {inputField('email', '邮箱', '用于考试通知', true)}
+            </View>
+          </View>
 
           {/* 二级额外字段 */}
           {level === '2' && (
-            <>
+            <View className={styles.sectionCard}>
+              <Text className={styles.sectionTitle}>二级补充信息</Text>
+              <View className={styles.fieldGrid}>
               {pickerField('gender', '性别', GENDERS)}
               {inputField('age', '年龄', '如：22', true)}
               {pickerField('education', '最高学历', EDUCATIONS)}
-              {inputField('address', '通信地址', '省市区街道', true)}
-              {inputField('zip_code', '邮编', '6位邮政编码', true)}
-            </>
+                {inputField('zip_code', '邮编', '6位', true)}
+                {inputField('address', '通信地址', '省市区街道', true, true)}
+              </View>
+            </View>
           )}
 
           {/* 材料上传 */}
-          <View className={styles.field}>
-            <View className={styles.labelRow}>
-              <Text className={styles.required}>*</Text>
-              <Text className={styles.label}>身份证双面（PDF）</Text>
-            </View>
-            <View
-              className={`${styles.uploadBox} ${idCardKey ? styles.uploaded : ''}`}
-              onClick={() => uploadFile(setIdCardKey, 'id_card_both_sides')}
-            >
-              <Text>{idCardKey ? '已上传' : '点击上传（以姓名命名，PDF格式）'}</Text>
-            </View>
-          </View>
-
-          <View className={styles.field}>
-            <View className={styles.labelRow}>
-              <Text className={styles.required}>*</Text>
-              <Text className={styles.label}>寸照（JPG）</Text>
-            </View>
-            <View
-              className={`${styles.uploadBox} ${portraitKey ? styles.uploaded : ''}`}
-              onClick={() => uploadFile(setPortraitKey, 'portrait_photo')}
-            >
-              <Text>{portraitKey ? '已上传' : '点击上传（30KB-200KB，2寸蓝底证件照）'}</Text>
-            </View>
-          </View>
-
-          {level === '2' && (
-            <>
+          <View className={styles.sectionCard}>
+            <Text className={styles.sectionTitle}>报名材料</Text>
+            <View className={styles.uploadGrid}>
               <View className={styles.field}>
                 <View className={styles.labelRow}>
                   <Text className={styles.required}>*</Text>
-                  <Text className={styles.label}>学籍报告（PDF）</Text>
+                  <Text className={styles.label}>身份证双面</Text>
                 </View>
                 <View
-                  className={`${styles.uploadBox} ${xuexinKey ? styles.uploaded : ''}`}
-                  onClick={() => uploadFile(setXuexinKey, 'xuexin_report')}
+                  className={`${styles.uploadBox} ${idCardKey ? styles.uploaded : ''}`}
+                  onClick={() => uploadFile(setIdCardKey, 'id_card_both_sides')}
                 >
-                  <Text>{xuexinKey ? '已上传' : '点击上传（教育部学籍在线验证报告）'}</Text>
+                  <Text>{idCardKey ? '已上传' : 'PDF\n以姓名命名'}</Text>
                 </View>
               </View>
 
               <View className={styles.field}>
                 <View className={styles.labelRow}>
                   <Text className={styles.required}>*</Text>
-                  <Text className={styles.label}>NISP二级申请表</Text>
+                  <Text className={styles.label}>证件照</Text>
                 </View>
                 <View
-                  className={`${styles.uploadBox} ${appFormKey ? styles.uploaded : ''}`}
-                  onClick={() => uploadFile(setAppFormKey, 'application_form')}
+                  className={`${styles.uploadBox} ${portraitKey ? styles.uploaded : ''}`}
+                  onClick={() => uploadFile(setPortraitKey, 'portrait_photo')}
                 >
-                  <Text>{appFormKey ? '已上传' : '点击上传（下载模板填写后上传）'}</Text>
+                  <Text>{portraitKey ? '已上传' : 'JPG\n二寸蓝底'}</Text>
                 </View>
               </View>
-            </>
-          )}
+
+              {level === '2' && (
+                <>
+                  <View className={styles.field}>
+                    <View className={styles.labelRow}>
+                      <Text className={styles.required}>*</Text>
+                      <Text className={styles.label}>学籍报告</Text>
+                    </View>
+                    <View
+                      className={`${styles.uploadBox} ${xuexinKey ? styles.uploaded : ''}`}
+                      onClick={() => uploadFile(setXuexinKey, 'xuexin_report')}
+                    >
+                      <Text>{xuexinKey ? '已上传' : 'PDF\n学籍验证'}</Text>
+                    </View>
+                  </View>
+
+                  <View className={styles.field}>
+                    <View className={styles.labelRow}>
+                      <Text className={styles.required}>*</Text>
+                      <Text className={styles.label}>二级申请表</Text>
+                    </View>
+                    <View
+                      className={`${styles.uploadBox} ${appFormKey ? styles.uploaded : ''}`}
+                      onClick={() => uploadFile(setAppFormKey, 'application_form')}
+                    >
+                      <Text>{appFormKey ? '已上传' : 'PDF\n填写后上传'}</Text>
+                    </View>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
 
           {/* 价格和提交 */}
-          <View className={styles.row} style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid #f2f4f7' }}>
-            <Text className={styles.label}>报名费用</Text>
-            <Text className={styles.price}>¥{price.toFixed(2)}</Text>
-          </View>
+          <View className={styles.footerCard}>
+            <View className={styles.row}>
+              <Text className={styles.label}>报名费用</Text>
+              <Text className={styles.price}>¥{price.toFixed(2)}</Text>
+            </View>
 
-          <View className={styles.agreementBox}>
-            <AgreementCheckbox agreed={agreed} onChange={setAgreed}>
-              <Text>我已阅读并同意</Text>
-              <Text
-                className={styles.agreementLink}
-                onClick={() => Taro.navigateTo({
-                  url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1`,
-                })}
-              >
-                《{STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION}》
-              </Text>
-            </AgreementCheckbox>
-          </View>
+            <View className={styles.agreementBox}>
+              <AgreementCheckbox agreed={agreed} onChange={setAgreed}>
+                <Text>我已阅读并同意</Text>
+                <Text
+                  className={styles.agreementLink}
+                  onClick={() => Taro.navigateTo({
+                    url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1`,
+                  })}
+                >
+                  《{STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION}》
+                </Text>
+              </AgreementCheckbox>
+            </View>
 
-          <View className={styles.submitBox}>
-            <Button variant='gradient' size='lg' onClick={submit}>
-              {submitting ? '提交中...' : `提交并支付 ¥${price.toFixed(2)}`}
-            </Button>
+            <View className={styles.submitBox}>
+              <Button variant='gradient' size='lg' onClick={submit}>
+                {submitting ? '提交中...' : `提交并支付 ¥${price.toFixed(2)}`}
+              </Button>
+            </View>
           </View>
         </ScrollView>
       </View>
