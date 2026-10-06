@@ -13,6 +13,7 @@ import { STRINGS } from '@/constants/strings'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizLibraryProgress, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import { useAuth } from '@/hooks/useAuth'
 import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries } from '@/services/dataService'
+import { splitBilingualQuizTitle } from '@/utils/quizView'
 import styles from './index.module.scss'
 
 interface StatCard { label: string; value: string; color: string; onClick?: () => void }
@@ -189,11 +190,19 @@ export default function QuizIndexPage() {
                     </View>
                     {detail.modules.map(module => {
                       const moduleProgress = libraryProgress?.modules.find(item => item.module_id === module.id)
+                      const moduleTitle = splitBilingualQuizTitle(module.name)
                       return (
                       <View key={module.id} className={styles.moduleBlock}>
                         <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('module', module.id) }))}>
                           <View className={styles.scopeMain}>
-                            <Text className={styles.moduleName}>{module.name} · {module.question_count} 题</Text>
+                            <View className={styles.moduleTitleGroup}>
+                              <Text className={styles.moduleName}>{moduleTitle.primary}</Text>
+                              <Text className={styles.moduleSubname}>
+                                {[moduleTitle.secondary, `${module.question_count} 题`]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </Text>
+                            </View>
                             {moduleProgress && <Text className={styles.scopeMeta}>{progressLabel(moduleProgress)}</Text>}
                           </View>
                           <View className={styles.scopeActions}>

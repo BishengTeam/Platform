@@ -44,6 +44,7 @@ export default function ActivityZonePage() {
   const [allCompetitions, setAllCompetitions] = useState<CompetitionBrief[]>([])
   const [allJobs, setAllJobs] = useState<JobBrief[]>([])
   const [activitiesLoaded, setActivitiesLoaded] = useState(false)
+  const [competitionsLoaded, setCompetitionsLoaded] = useState(false)
   const [jobsLoaded, setJobsLoaded] = useState(false)
 
   const load = useCallback(() => {
@@ -56,8 +57,8 @@ export default function ActivityZonePage() {
       setActivityBanner(null)
       }).catch(() => {}).finally(() => setActivitiesLoaded(true)),
       getCompetitionList().then((data) => {
-      setAllCompetitions(data)
-      }).catch(() => {}),
+        setAllCompetitions(data)
+      }).catch(() => {}).finally(() => setCompetitionsLoaded(true)),
       getJobList().then((data) => {
       setAllJobs(data)
       setEmploymentBanner(null)
@@ -129,7 +130,7 @@ export default function ActivityZonePage() {
 
   const getEmploymentButton = (item: JobBrief) => {
     return {
-      text: item.contact_info ? `联系：${item.contact_info}` : '暂无联系方式',
+      text: item.contact_info ? '复制联系方式' : '暂无联系方式',
       variant: 'secondary' as const,
     }
   }
@@ -175,9 +176,12 @@ export default function ActivityZonePage() {
   ]
 
   const showActivityEmpty = activitiesLoaded && allActivities.length === 0
+  const showCompetitionEmpty = competitionsLoaded && allCompetitions.length === 0
   const showEmploymentEmpty = jobsLoaded && allJobs.length === 0
-  // 活动空态时隐藏筛选标签，避免出现一排筛选 + 空白列表
-  const showTagFilter = mainTab === 'competition' || (mainTab === 'activity' && !showActivityEmpty)
+  // 空态时隐藏筛选标签，避免出现一排筛选 + 空白列表
+  const showTagFilter =
+    (mainTab === 'competition' && !showCompetitionEmpty) ||
+    (mainTab === 'activity' && !showActivityEmpty)
 
   return (
     <AuthGuard>
@@ -227,12 +231,16 @@ export default function ActivityZonePage() {
                 {activityData.map((item) => {
                   const status = getActivityStatusInfo(item)
                   const btn = getActivityButton(item)
+                  const activityTime = [
+                    formatDate(item.start_time, ''),
+                    formatDate(item.end_time, ''),
+                  ].filter(Boolean).join(' ~ ')
                   return (
                     <ZoneCard
                       key={item.id}
                       title={item.title}
                       subtitle={item.description ?? ''}
-                      tags={[item.location ?? '', `${item.start_time ?? ''}-${item.end_time ?? ''}`]}
+                      tags={[item.location ?? '', activityTime]}
                       statusLabel={status.label}
                       statusColor={status.color}
                       buttonText={btn.text}
@@ -251,7 +259,10 @@ export default function ActivityZonePage() {
                             await remindActivity(item.id)
                             Taro.showToast({ title: '已设置提醒', icon: 'success' })
                           }
-                        } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '报名失败', icon: 'none', duration: 3000 }) }
+                        } catch (error) {
+                          const fallback = btn.text === STRINGS.ACTIVITY_REMIND ? '设置提醒失败' : '报名失败'
+                          Taro.showToast({ title: error instanceof Error ? error.message : fallback, icon: 'none', duration: 3000 })
+                        }
                       }}
                     />
                   )
@@ -261,32 +272,40 @@ export default function ActivityZonePage() {
             )}
 
             {mainTab === 'competition' && (
-              <View className={styles.cardList}>
-                {competitionData.map((comp) => {
-                  const deadline = formatDate(comp.registration_deadline, '')
-                  const status = getCompetitionStatusInfo(comp)
-                  return (
-                    <ZoneCard
-                      key={`comp-${comp.id}`}
-                      title={comp.name}
-                      subtitle={comp.description ?? ''}
-                      tags={[`赛道 ${comp.tracks.length} 个`, deadline ? `报名截止 ${deadline}` : '']}
-                      statusLabel={status.label}
-                      statusColor={status.color}
-                      coverUrl={resolveMediaUrl(comp.cover_url)}
-                      buttonText='查看详情'
-                      buttonVariant='primary'
-                      buttonColor='#FA8C16'
-                      onCardClick={() => {
-                        Taro.navigateTo({ url: `/pages/competition/detail?id=${comp.id}` })
-                      }}
-                      onButtonClick={() => {
-                        Taro.navigateTo({ url: `/pages/competition/detail?id=${comp.id}` })
-                      }}
-                    />
-                  )
-                })}
-              </View>
+              showCompetitionEmpty ? (
+                <EmptyState
+                  icon='trophy'
+                  title={STRINGS.COMPETITION_EMPTY_TITLE}
+                  description={STRINGS.COMPETITION_EMPTY_DESC}
+                />
+              ) : (
+                <View className={styles.cardList}>
+                  {competitionData.map((comp) => {
+                    const deadline = formatDate(comp.registration_deadline, '')
+                    const status = getCompetitionStatusInfo(comp)
+                    return (
+                      <ZoneCard
+                        key={`comp-${comp.id}`}
+                        title={comp.name}
+                        subtitle={comp.description ?? ''}
+                        tags={[`赛道 ${comp.tracks.length} 个`, deadline ? `报名截止 ${deadline}` : '']}
+                        statusLabel={status.label}
+                        statusColor={status.color}
+                        coverUrl={resolveMediaUrl(comp.cover_url)}
+                        buttonText='查看详情'
+                        buttonVariant='primary'
+                        buttonColor='#FA8C16'
+                        onCardClick={() => {
+                          Taro.navigateTo({ url: `/pages/competition/detail?id=${comp.id}` })
+                        }}
+                        onButtonClick={() => {
+                          Taro.navigateTo({ url: `/pages/competition/detail?id=${comp.id}` })
+                        }}
+                      />
+                    )
+                  })}
+                </View>
+              )
             )}
 
             {mainTab === 'employment' && (
@@ -305,7 +324,7 @@ export default function ActivityZonePage() {
                       key={job.id}
                       title={job.title}
                       subtitle={job.company}
-                      tags={[job.location ?? '', job.salary_range ?? '']}
+                      tags={[job.location ?? '']}
                       price={job.salary_range ?? ''}
                       buttonText={btn.text}
                       buttonVariant={btn.variant}

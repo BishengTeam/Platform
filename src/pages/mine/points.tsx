@@ -222,7 +222,6 @@ export default function PointsPage() {
                     <Text className={styles.couponSubtitle}>
                       {item.scope_label} · 满{formatMinimumSpend(item.min_order_amount_cents)}元可用
                     </Text>
-                    {item.description && <Text className={styles.couponDesc}>{item.description}</Text>}
                   </View>
                   <View className={styles.actionArea}>
                     <View className={styles.pointsCost}>

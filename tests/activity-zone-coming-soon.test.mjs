@@ -10,11 +10,24 @@ test('activity zone defaults to competition and shows preparing empty states', a
   const source = await readFile(file('pages/activity-zone/index.tsx'), 'utf8')
   assert.match(source, /useState<MainTab>\('competition'\)/)
   assert.match(source, /showActivityEmpty = activitiesLoaded && allActivities\.length === 0/)
+  assert.match(source, /showCompetitionEmpty = competitionsLoaded && allCompetitions\.length === 0/)
   assert.match(source, /showEmploymentEmpty = jobsLoaded && allJobs\.length === 0/)
-  // 活动空态时不得再渲染“全部/进行中/即将开始/已结束”筛选标签
-  assert.match(source, /showTagFilter = mainTab === 'competition' \|\| \(mainTab === 'activity' && !showActivityEmpty\)/)
+  // 活动/竞赛空态时不得再渲染“全部/进行中/即将开始/已结束”筛选标签
+  assert.match(source, /showTagFilter =\s*\(mainTab === 'competition' && !showCompetitionEmpty\) \|\|\s*\(mainTab === 'activity' && !showActivityEmpty\)/)
   assert.match(source, /title=\{STRINGS\.ACTIVITY_EMPTY_TITLE\}/)
+  assert.match(source, /title=\{STRINGS\.COMPETITION_EMPTY_TITLE\}/)
   assert.match(source, /title=\{STRINGS\.EMPLOYMENT_EMPTY_TITLE\}/)
+  // 薪资只保留价格槽位；联系方式不再塞进按钮文案导致按钮过长。
+  assert.match(source, /tags=\{\[job\.location \?\? ''\]\}/)
+  assert.match(source, /price=\{job\.salary_range \?\? ''\}/)
+  assert.match(source, /text: item\.contact_info \? '复制联系方式' : '暂无联系方式'/)
+  assert.doesNotMatch(source, /`联系：\$\{item\.contact_info\}`/)
+  // 活动卡片时间必须经过本地日期格式化，不能透出后端 ISO 原文。
+  assert.match(source, /const activityTime = \[[\s\S]*?formatDate\(item\.start_time, ''\)[\s\S]*?formatDate\(item\.end_time, ''\)[\s\S]*?\]\.filter\(Boolean\)\.join\(' ~ '\)/)
+  assert.doesNotMatch(source, /\$\{item\.start_time[^}]*\}-\$\{item\.end_time/)
+  // 预约提醒失败不能回落成“报名失败”，操作文案必须与按钮语义一致。
+  assert.match(source, /const fallback = btn\.text === STRINGS\.ACTIVITY_REMIND \? '设置提醒失败' : '报名失败'/)
+  assert.doesNotMatch(source, /error\.message : '报名失败', icon: 'none', duration: 3000/)
 })
 
 test('home activity and employment surfaces follow backend content visibility', async () => {

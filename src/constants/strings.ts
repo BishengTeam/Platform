@@ -145,6 +145,8 @@ export const STRINGS = {
   COMPETITION_SIGNUP: '立即报名',
   COMPETITION_SIGNUP_ENDED: '报名结束',
   COMPETITION_ENTER: '进入赛场',
+  COMPETITION_EMPTY_TITLE: '竞赛筹备中',
+  COMPETITION_EMPTY_DESC: '敬请期待',
 
   // ---- Activity Zone ----
   ACTIVITY_TITLE: '活动专区',

@@ -38,9 +38,9 @@ test('practice assistant body follows the Swiss card redesign', async () => {
     readFile(file('pages/training/index.module.scss'), 'utf8'),
   ])
 
-  // 顶部业务 Tab 保持原结构，只重构主体内容。
+  // 在线课程下线后学习页只保留练习助手，不再保留孤立业务 Tab。
   assert.match(source, /<PageHeader title=\{STRINGS\.STUDY_TITLE\}/)
-  assert.match(source, /<TagFilter tags=\{MAIN_TABS\}/)
+  assert.doesNotMatch(source, /MAIN_TABS|TagFilter/)
 
   // 空状态与数据状态互斥；空状态不再渲染禁用按钮和数据面板。
   assert.match(source, /vendorLibraries\.length === 0 \? \(/)

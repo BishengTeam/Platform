@@ -259,8 +259,10 @@
 
 .amountType {
   margin-top: 8px;
-  color: #98a2b3;
-  font-size: $font-2xs;
+  color: #667085;
+  font-size: $font-sm;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 .infoArea {
@@ -286,21 +288,8 @@
 .couponSubtitle {
   margin-top: 8px;
   color: #667085;
-  font-size: $font-xs;
+  font-size: $font-sm;
   line-height: 1.4;
-}
-
-.couponDesc {
-  display: -webkit-box;
-  overflow: hidden;
-  margin-top: 6px;
-  color: #98a2b3;
-  font-size: $font-2xs;
-  line-height: 1.4;
-  text-overflow: ellipsis;
-  word-break: break-all;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 
 .actionArea {

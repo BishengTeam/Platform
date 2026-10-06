@@ -3,7 +3,6 @@ import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { TagFilter } from '@/components/TagFilter'
 import { Icon } from '@/components/Icon'
 import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
 import { CustomTabBar } from '@/components/TabBar'
@@ -11,14 +10,11 @@ import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { toBase64 } from '@/utils/base64'
-import { getCourseList, getQuizLibrary, getQuizStats, listQuizLibraries } from '@/services/dataService'
-import { formatPrice, formatCategory, CATEGORY_LABEL_MAP } from '@/utils/format'
-import type { CourseBrief } from '@/types'
+import { getQuizLibrary, getQuizStats, listQuizLibraries } from '@/services/dataService'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType, QuizStats, QuizVendorTag } from '@/contracts/quiz'
 import styles from './index.module.scss'
 
-// 在线课程暂时隐藏，只显示练习助手
-const MAIN_TABS = [STRINGS.TRAINING_TAB_QUIZ]
+// 在线课程已下线，学习页仅承载练习助手。
 
 interface QuickAction {
   label: string
@@ -73,11 +69,6 @@ interface TrainingScopePickerNode extends TrainingScope {
 }
 
 export default function TrainingPage() {
-  const [mainTab, setMainTab] = useState<string>(MAIN_TABS[0])
-  const [techTag, setTechTag] = useState<string>(STRINGS.STUDY_TAG_ALL)
-
-  const [allCourses, setAllCourses] = useState<CourseBrief[]>([])
-  const [failedCovers, setFailedCovers] = useState<Set<number>>(new Set())
   const [quizLibraries, setQuizLibraries] = useState<QuizLibraryCatalogItem[]>([])
   const [activeVendor, setActiveVendor] = useState<QuizVendorTag>(DEFAULT_VENDOR_TAG)
   const [selectedLibrary, setSelectedLibrary] = useState<QuizLibraryCatalogDetail | null>(null)
@@ -106,19 +97,12 @@ export default function TrainingPage() {
   }, [])
 
   const loadInitialData = useCallback(() => {
-    return Promise.all([
-      getCourseList().then((data) => {
-      setAllCourses(data)
-      }).catch(() => {
-        // 课程数据加载失败静默处理
-      }),
-      listQuizLibraries().then((libraries) => {
+    return listQuizLibraries().then((libraries) => {
       setQuizLibraries(libraries)
       selectFirstLibrary(libraries.filter(item => item.vendor_tag === DEFAULT_VENDOR_TAG))
-      }).catch(() => {
-        // 无权益时服务端返回空目录；加载失败保持题库区域为空。
-      }),
-    ])
+    }).catch(() => {
+      // 无权益时服务端返回空目录；加载失败保持题库区域为空。
+    })
   }, [selectFirstLibrary])
 
   useEffect(() => { void loadInitialData() }, [loadInitialData])
@@ -139,27 +123,6 @@ export default function TrainingPage() {
       })
     return () => { active = false }
   }, [selectedScope?.id, selectedScope?.type])
-
-
-  // 从课程数据动态提取分类标签，统一使用品牌蓝/灰配色
-  const courseTags = useMemo(() => {
-    const categories = [...new Set(allCourses.map(c => c.category).filter(Boolean))]
-    const tagStyle = { activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F5F5F5' }
-    return [
-      { label: STRINGS.STUDY_TAG_ALL, ...tagStyle },
-      ...categories.map((cat) => ({
-        label: formatCategory(cat),
-        ...tagStyle,
-      })),
-    ]
-  }, [allCourses])
-
-  const techCourses = useMemo(() => {
-    if (techTag === STRINGS.STUDY_TAG_ALL) return allCourses
-    const eng = CATEGORY_LABEL_MAP[techTag] || techTag
-    const lower = eng.toLowerCase()
-    return allCourses.filter(c => c.category?.toLowerCase() === lower)
-  }, [techTag, allCourses])
 
   const vendorLibraries = useMemo(
     () => quizLibraries.filter(item => item.vendor_tag === activeVendor),
@@ -252,69 +215,6 @@ export default function TrainingPage() {
     }
     handleVendorChange(availableVendor.tag)
   }, [activeVendor, handleVendorChange, quizLibraries])
-
-  const handleCourseClick = useCallback((course: CourseBrief) => {
-    Taro.navigateTo({ url: `/pages/course/detail?id=${course.id}` })
-  }, [])
-
-  const handleCoverError = useCallback((courseId: number) => {
-    setFailedCovers(prev => new Set(prev).add(courseId))
-  }, [])
-
-  const renderTechTab = () => (
-    <View>
-      <View className={styles.filterRow}>
-        <TagFilter tags={courseTags} activeTag={techTag} onChange={setTechTag} className={styles.tagSm} />
-      </View>
-      <View className={styles.cardList}>
-        {techCourses.map(course => (
-          <View
-            key={course.id}
-            className={styles.courseCard}
-            hoverClass={styles.courseCardActive}
-            onClick={() => handleCourseClick(course)}
-          >
-            <View className={styles.coverWrap}>
-              {course.cover_url && !failedCovers.has(course.id) ? (
-                <Image
-                  className={styles.coverImage}
-                  src={course.cover_url}
-                  mode='aspectFill'
-                  onError={() => handleCoverError(course.id)}
-                />
-              ) : (
-                <View className={styles.coverPlaceholder}>
-                  <Icon name='play-circle' size={32} color='#1677FF' />
-                </View>
-              )}
-            </View>
-            <View className={styles.courseInfo}>
-              <View className={styles.courseHeader}>
-                <Text className={styles.courseTitle}>{course.title}</Text>
-                {course.category && (
-                  <Text className={styles.courseTag}>{formatCategory(course.category)}</Text>
-                )}
-              </View>
-
-              <Text className={styles.courseDesc}>
-                {[course.teacher_name && `${STRINGS.COURSE_INSTRUCTOR}: ${course.teacher_name}`, course.description].filter(Boolean).join(' | ')}
-              </Text>
-
-              <View className={styles.courseFooter}>
-                <Text className={styles.coursePrice}>
-                  {course.price === 0 ? STRINGS.ORDERS_FREE : formatPrice(course.price)}
-                </Text>
-                <View className={styles.studyBtn}>
-                  <Icon name='play-circle' size={14} color='#ffffff' />
-                  <Text className={styles.studyBtnText}>{STRINGS.STUDY_ENROLL}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        ))}
-      </View>
-    </View>
-  )
 
   const renderQuizTab = () => (
     <View>
@@ -417,12 +317,8 @@ export default function TrainingPage() {
     <View className={styles.page}>
       <AuthGuard>
         <PageHeader title={STRINGS.STUDY_TITLE} shouldShowBack={false} />
-        <View className={styles.tabBar}>
-          <TagFilter tags={MAIN_TABS} activeTag={mainTab} onChange={setMainTab} variant='underline' />
-        </View>
         <RefreshableScrollView className={styles.body} onRefresh={loadInitialData}>
-          {/* 在线课程暂时隐藏：唯一 tab「练习助手」必须渲染练习功能，不能落到课程列表 */}
-          {mainTab === MAIN_TABS[0] && renderQuizTab()}
+          {renderQuizTab()}
         </RefreshableScrollView>
       </AuthGuard>
       <CustomTabBar activeTabKey='pages/training/index' onSwitch={(url: string) => Taro.switchTab({ url })} />

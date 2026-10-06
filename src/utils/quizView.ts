@@ -64,6 +64,23 @@ export function quizTypeLabel(type: QuizQuestionType): string {
   return '单选题'
 }
 
+export function splitBilingualQuizTitle(title: string): { primary: string; secondary: string | null } {
+  const englishPhrase = title.match(
+    /[A-Za-z][A-Za-z0-9&'/.()+-]*(?: [A-Za-z0-9&'/.()+-]+)+/
+  )?.[0]
+  if (!englishPhrase) return { primary: title, secondary: null }
+
+  const primary = title
+    .replace(englishPhrase, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  // 只有中英混排标题才拆副行；纯英文或纯中文保持原标题，避免误伤专有名词。
+  if (!primary || !/[\u4e00-\u9fff]/.test(primary)) {
+    return { primary: title, secondary: null }
+  }
+  return { primary, secondary: englishPhrase }
+}
+
 export function isMultipleChoice(type: QuizQuestionType): boolean {
   return type === 'multiple_choice'
 }

@@ -32,3 +32,17 @@ test('payment confirm page loads usable coupons after order detail', async () =>
   assert.match(source, /setUsableCoupons\(/)
   assert.match(source, /applyCouponToOrder\(Number\(orderId\), coupon\?\.coupon_code \|\| ''\)/)
 })
+
+test('mall coupon card keeps essential labels readable', async () => {
+  const [source, style] = await Promise.all([
+    readFile(new URL('../src/pages/mine/points.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/pages/mine/points.module.scss', import.meta.url), 'utf8'),
+  ])
+
+  // 券类型与使用范围是兑换决策信息，统一提升到正文字号；
+  // 后台 description 属于营销补充文案，不再挤在兑换卡里展示。
+  assert.match(style, /\.amountType\s*\{[\s\S]*?font-size: \$font-sm/)
+  assert.match(style, /\.couponSubtitle\s*\{[\s\S]*?font-size: \$font-sm/)
+  assert.doesNotMatch(source, /styles\.couponDesc/)
+  assert.doesNotMatch(style, /\.couponDesc/)
+})
