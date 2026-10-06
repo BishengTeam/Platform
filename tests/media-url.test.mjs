@@ -20,7 +20,10 @@ test('legacy admin-host media urls are rewritten to the api base', () => {
 
 test('third-party absolute urls pass through untouched', () => {
   const ossUrl = 'https://materials-20260909-1.oss-cn-chengdu.aliyuncs.com/course/a/covers/b.jpg?sig=1'
+  const externalBannerUrl = 'https://dummyimage.com/750x300/1677FF/FFFFFF.png?text=Banner'
+
   assert.equal(resolveMediaUrl(ossUrl), ossUrl)
+  assert.equal(resolveMediaUrl(externalBannerUrl), externalBannerUrl)
 })
 
 test('empty values resolve to an empty string for fallback rendering', () => {

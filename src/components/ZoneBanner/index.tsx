@@ -71,13 +71,18 @@ export function ZoneBanner({ items, onButtonClick }: ZoneBannerProps) {
             {item.image_url ? (
               <View
                 className={styles.slide}
-                style={{ backgroundImage: `url(${item.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                style={{ background: GRADIENTS[item.gradient ?? 'gradient-blue'] || GRADIENTS['gradient-blue'] }}
                 onClick={() => {
                   if (item.jump_link) {
                     navigateToUrl(item.jump_link)
                   }
                 }}
               >
+                <Image
+                  className={styles.slideImage}
+                  src={item.image_url}
+                  mode='aspectFill'
+                />
                 <View className={styles.content}>
                   <View className={styles.title}>{item.title}</View>
                   {item.description ? <View className={styles.desc}>{item.description}</View> : null}

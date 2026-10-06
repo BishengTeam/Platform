@@ -34,11 +34,7 @@ export function HomeCard({ items, onCardClick }: Props) {
         : (rowIndex % 2 === 1)
     const coverCls = isTall ? styles.coverTall : styles.coverShort
     const coverStyle: Record<string, string> = {}
-    if (item.cover_url) {
-      coverStyle.backgroundImage = `url(${item.cover_url})`
-      coverStyle.backgroundSize = 'cover'
-      coverStyle.backgroundPosition = 'center'
-    } else if (item.gradient) {
+    if (!item.cover_url && item.gradient) {
       coverStyle.background = item.gradient
     }
     return (
@@ -51,6 +47,13 @@ export function HomeCard({ items, onCardClick }: Props) {
           className={`${styles.cover} ${coverCls}`}
           style={coverStyle}
         >
+          {item.cover_url ? (
+            <Image
+              className={styles.coverImage}
+              src={item.cover_url}
+              mode='aspectFill'
+            />
+          ) : null}
           {item.icon ? (
             <Icon name={item.icon} size={isTall ? 40 : 32} color='rgba(255,255,255,0.85)' />
           ) : null}
