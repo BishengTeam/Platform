@@ -1,4 +1,5 @@
 import { View, Text, Image } from '@tarojs/components'
+import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import styles from './index.module.scss'
 
@@ -12,6 +13,7 @@ export interface HomeCardItem {
   tag?: string
   tagColor?: string
   tall?: boolean
+  actionText?: string
 }
 
 interface Props {
@@ -61,6 +63,17 @@ export function HomeCard({ items, onCardClick }: Props) {
         <View className={styles.info}>
           <Text className={styles.title}>{item.title}</Text>
           <Text className={styles.desc}>{item.description ?? ''}</Text>
+          {item.actionText ? (
+            <View className={styles.footer}>
+              <Button
+                variant='secondary'
+                size='sm'
+                className={styles.actionButton}
+              >
+                {item.actionText}
+              </Button>
+            </View>
+          ) : null}
         </View>
       </View>
     )

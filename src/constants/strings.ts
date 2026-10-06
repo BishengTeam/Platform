@@ -302,7 +302,7 @@ export const STRINGS = {
   INDEX_ZONE_TRAINING_TAG: '即将上线',
   INDEX_ZONE_TRAINING_META: '敬请期待',
   INDEX_AI_NAME: '智小通',
-  INDEX_AI_DESC: '您的专属 H3CNE 学习助手',
+  INDEX_AI_DESC: '您的专属 IT 学习助手',
   INDEX_AI_CONSULT_BTN: '去咨询',
 
   // ---- AI Consult Page ----

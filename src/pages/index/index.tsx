@@ -86,6 +86,7 @@ function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
     icon: meta.icon,
     tag: cert.vendor,
     tagColor: meta.tagColor,
+    actionText: '报名入口',
   }
 }
 

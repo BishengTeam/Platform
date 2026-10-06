@@ -44,13 +44,18 @@ test('home king-kong grid keeps the study zone entry visible', async () => {
 
 test('home certification waterfall renders active certification products', async () => {
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
+  const homeCard = await readFile(file('components/HomeCard/index.tsx'), 'utf8')
 
   // /api/zones 的认证数据来自 CertProduct，并放在 certifications 字段；
   // items 是旧 Zone 卡片配置，生产环境为空，不能作为开放报名的数据源。
   assert.match(source, /zones\['cert'\]\?\.certifications/)
   assert.doesNotMatch(source, /zones\['cert'\]\?\.items/)
   assert.match(source, /title: cert\.chinese_name \|\| cert\.name/)
+  assert.match(source, /actionText: '报名入口'/)
   assert.match(source, /certificationCards\.length > 0 && \(/)
+  // 认证卡 CTA 使用统一胶囊按钮语言，不再使用早期网页风的 “>>” 文本箭头。
+  assert.match(homeCard, /<Button[\s\S]*?className=\{styles\.actionButton\}/)
+  assert.equal(homeCard.includes('>>'), false)
 })
 
 test('ai consult no longer advertises unavailable activities or jobs', async () => {
