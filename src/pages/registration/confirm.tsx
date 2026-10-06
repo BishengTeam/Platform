@@ -56,12 +56,42 @@ export default function ConfirmPage() {
     const id = options?.order_id || ''
     setOrderId(id)
     if (id) {
-      getOrderDetail(Number(id)).then(order => {
+      getOrderDetail(Number(id)).then(async order => {
         // getOrderDetail 已通过 toOrderDetail 映射为 OrderDetail 类型，amountPaid 为元
+        const finalPrice = Number(order?.amountPaid || 0)
+        const initialOriginalPrice = Number(order?.originalAmount || finalPrice)
         setCertName(order?.productTitle || '')
-        setPrice(order?.amountPaid ? parseFloat(order.amountPaid) : 0)
+        setPrice(finalPrice)
+        setOriginalPrice(initialOriginalPrice)
+
+        const coupons = await pointsMallService.usableCoupons({
+          order_amount_cents: Math.round(initialOriginalPrice * 100),
+          product_type: order?.productType || '',
+          product_category: 'certification',
+        }).catch(() => [] as UsableCoupon[])
+
+        let selected: UsableCoupon | null = null
+        if (order?.couponCode) {
+          const mine = await pointsMallService.myCoupons().catch(() => [])
+          const current = mine.find(coupon => coupon.coupon_code === order.couponCode)
+          if (current) {
+            selected = {
+              ...current,
+              discounted_price_cents: Math.round(finalPrice * 100),
+              discount_amount_cents: Math.round((initialOriginalPrice - finalPrice) * 100),
+            }
+          }
+        }
+
+        setUsableCoupons(
+          selected
+            ? [selected, ...coupons.filter(coupon => coupon.coupon_code !== selected?.coupon_code)]
+            : coupons,
+        )
+        setSelectedCoupon(selected)
         setLoading(false)
       }).catch(() => {
+        setUsableCoupons([])
         setLoading(false)
       })
     } else {

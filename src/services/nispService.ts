@@ -124,13 +124,28 @@ export const nispService = {
       name: 'file',
       formData: { material_type: materialType },
       header: { Authorization: token ? `Bearer ${token}` : '' },
+      timeout: 60000,
     })
-    const payload = JSON.parse(response.data) as {
-      code: number
-      data: NispMaterialUploadResult
-      message: string
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw new Error(`材料上传失败(${response.statusCode})`)
+    }
+
+    let rawPayload: unknown = response.data
+    if (typeof rawPayload === 'string') {
+      try {
+        rawPayload = JSON.parse(rawPayload)
+      } catch {
+        throw new Error('材料上传响应格式错误')
+      }
+    }
+
+    const payload = rawPayload as {
+      code?: number
+      data?: NispMaterialUploadResult
+      message?: string
     }
     if (payload.code !== 0) throw new Error(payload.message || '材料上传失败')
+    if (!payload.data?.storage_key) throw new Error('材料上传结果无效')
     return payload.data
   },
 

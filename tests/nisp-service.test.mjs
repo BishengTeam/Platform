@@ -58,11 +58,48 @@ test('NISP material upload and resubmission use the backend contract', async () 
 
   assert.equal(uploaded.material_type, 'xuexin_report')
   assert.equal(upload.url.endsWith('/api/nisp/materials/upload'), true)
+  assert.equal(upload.timeout, 60000)
   assert.equal(upload.formData.material_type, 'xuexin_report')
   assert.equal(upload.header.Authorization, 'Bearer access-token')
   assert.equal(resubmitted.status, 'pending_review')
   assert.equal(calls[0].url.endsWith('/api/nisp/registrations/7/materials'), true)
   assert.deepEqual(calls[0].data, { xuexin_report_key: uploaded.storage_key })
   assert.equal(calls[0].header.Authorization, 'Bearer access-token')
+  clearAuthTokens()
+})
+
+test('NISP material upload reports transport and envelope failures clearly', async () => {
+  installStorage()
+  setAuthTokens('access-token', 'refresh-token')
+
+  Taro.uploadFile = async () => ({
+    statusCode: 413,
+    data: '',
+    errMsg: 'ok',
+  })
+  await assert.rejects(
+    () => nispService.uploadMaterial('/tmp/report.pdf', 'xuexin_report'),
+    /材料上传失败\(413\)/,
+  )
+
+  Taro.uploadFile = async () => ({
+    statusCode: 200,
+    data: '<html>bad gateway</html>',
+    errMsg: 'ok',
+  })
+  await assert.rejects(
+    () => nispService.uploadMaterial('/tmp/report.pdf', 'xuexin_report'),
+    /材料上传响应格式错误/,
+  )
+
+  Taro.uploadFile = async () => ({
+    statusCode: 200,
+    data: JSON.stringify({ code: 40001, message: '仅支持PDF', data: null }),
+    errMsg: 'ok',
+  })
+  await assert.rejects(
+    () => nispService.uploadMaterial('/tmp/report.docx', 'xuexin_report'),
+    /仅支持PDF/,
+  )
   clearAuthTokens()
 })

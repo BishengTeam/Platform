@@ -111,7 +111,11 @@ async function chooseNispFile(materialType: NispMaterialType): Promise<string> {
     return result.tempFilePaths[0] || ''
   }
 
-  const result = await Taro.chooseMessageFile({ count: 1, type: 'file' })
+  const result = await Taro.chooseMessageFile({
+    count: 1,
+    type: 'file',
+    extension: ['pdf'],
+  })
   return result.tempFiles[0]?.path || ''
 }
 

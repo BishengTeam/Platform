@@ -21,6 +21,7 @@ const PROVINCES = [
 
 const EDUCATIONS = ['高中', '中专', '大专', '本科', '硕士', '博士']
 const GENDERS = ['男', '女']
+const DEFAULT_MATERIAL_MAX_BYTES = 10 * 1024 * 1024
 
 interface FormState {
   name: string; pinyin: string; major: string; school: string;
@@ -67,14 +68,32 @@ export default function NispFormPage() {
   ) => {
     try {
       let filePath = ''
+      let fileSize = 0
       if (fileType === 'portrait_photo') {
         const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
-        filePath = result.tempFilePaths[0]
+        filePath = result.tempFilePaths[0] || ''
+        fileSize = result.tempFiles[0]?.size || 0
       } else {
-        const result = await Taro.chooseMessageFile({ count: 1, type: 'file' })
-        filePath = result.tempFiles[0].path
+        const result = await Taro.chooseMessageFile({
+          count: 1,
+          type: 'file',
+          extension: ['pdf'],
+        })
+        const selected = result.tempFiles[0]
+        filePath = selected?.path || ''
+        fileSize = selected?.size || 0
       }
       if (!filePath) return
+
+      const maxBytes = batch?.max_material_bytes || DEFAULT_MATERIAL_MAX_BYTES
+      if (fileSize > maxBytes) {
+        Taro.showToast({
+          title: `文件不能超过${Math.floor(maxBytes / 1024 / 1024)}MB`,
+          icon: 'none',
+          duration: 3000,
+        })
+        return
+      }
 
       Taro.showLoading({ title: '上传中', mask: true })
       const uploaded = await nispService.uploadMaterial(filePath, fileType)
