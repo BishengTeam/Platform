@@ -15,7 +15,6 @@
   width: 100%;
   height: 100%;
   border-radius: $radius-lg;
-  padding: $spacing-lg;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -36,7 +35,10 @@
 .content {
   position: relative;
   z-index: 10;
-  padding-right: $spacing-3xl;
+  // Keep the text inset that used to come from .slide padding there.
+  // Padding on .slide shifts absolutely-positioned images in WeChat, making
+  // banner content appear offset from the cropped source image.
+  padding: $spacing-lg $spacing-3xl $spacing-lg $spacing-lg;
 }
 
 .title {

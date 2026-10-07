@@ -19,4 +19,11 @@ test('network banners and home card covers use native image components', async (
   assert.match(homeStyle, /\.coverImage\s*\{[\s\S]*?position: absolute/)
   assert.equal(zoneBanner.includes('backgroundImage'), false)
   assert.equal(homeCard.includes('backgroundImage'), false)
+
+  const slideStyle = zoneStyle.match(/\.slide\s*\{[\s\S]*?\}/)?.[0] ?? ''
+  assert.doesNotMatch(slideStyle, /padding:/)
+  assert.match(
+    zoneStyle,
+    /\.content\s*\{[\s\S]*?padding: \$spacing-lg \$spacing-3xl \$spacing-lg \$spacing-lg/,
+  )
 })
