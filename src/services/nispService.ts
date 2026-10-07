@@ -7,6 +7,8 @@ export type NispMaterialType =
   | 'xuexin_report'
   | 'application_form'
 
+export type NispLevel = '1' | '2'
+
 export interface NispMaterialUploadResult {
   material_type: NispMaterialType
   storage_key: string
@@ -93,8 +95,8 @@ export interface PageData<T> {
 }
 
 export const nispService = {
-  async listBatches(): Promise<NispBatch[]> {
-    return (await get<NispBatch[]>('/api/nisp/batches')).data
+  async listBatches(level?: NispLevel): Promise<NispBatch[]> {
+    return (await get<NispBatch[]>('/api/nisp/batches', level ? { level } : undefined)).data
   },
 
   async createOrder(payload: NispOrderCreatePayload): Promise<NispRegistration> {
@@ -162,4 +164,8 @@ export const nispService = {
   async cancelPayment(id: number): Promise<NispRegistration> {
     return (await post<NispRegistration>(`/api/nisp/registrations/${id}/cancel-payment`)).data
   },
+}
+
+export function getNispLevelFromCertCode(code: string): NispLevel {
+  return code.trim().toUpperCase().endsWith('-2') ? '2' : '1'
 }

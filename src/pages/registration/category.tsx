@@ -8,6 +8,7 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
+import { getNispLevelFromCertCode } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
 import type { CertificationResponse } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
@@ -91,7 +92,8 @@ export default function RegistrationCategoryPage() {
       return
     }
     if (cert.vendor === 'NISP') {
-      Taro.navigateTo({ url: `/${ROUTES.NISP_INDEX}` })
+      const level = getNispLevelFromCertCode(cert.code)
+      Taro.navigateTo({ url: `/${ROUTES.NISP_INDEX}?level=${level}` })
       return
     }
     Taro.navigateTo({ url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}` })

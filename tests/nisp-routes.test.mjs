@@ -67,6 +67,28 @@ test('NISP uses only the dedicated batch form route', async () => {
   assert.doesNotMatch(routes, /pages\/registration\/form-nisp/)
 })
 
+test('NISP level entry isolates batches while preserving the legacy all-level route', async () => {
+  const service = await readFile(file('services/nispService.ts'), 'utf8')
+  const index = await readFile(file('pages/nisp/index.tsx'), 'utf8')
+  const category = await readFile(file('pages/registration/category.tsx'), 'utf8')
+  const activityDetail = await readFile(file('pages/activity-zone/detail.tsx'), 'utf8')
+
+  assert.match(service, /async listBatches\(level\?: NispLevel\)/)
+  assert.match(service, /level \? \{ level \} : undefined/)
+  assert.match(service, /getNispLevelFromCertCode/)
+
+  assert.match(index, /const routeLevel = params\?\.level/)
+  assert.match(index, /routeLevel === '1' \|\| routeLevel === '2'/)
+  assert.match(index, /nispService\.listBatches\(level\)/)
+  assert.match(index, /level === '1' \? 'NISP 一级' : level === '2' \? 'NISP 二级' : 'NISP 认证'/)
+  assert.match(index, /该级别批次暂未开放，敬请期待/)
+
+  for (const page of [category, activityDetail]) {
+    assert.match(page, /getNispLevelFromCertCode\(cert\.code\)/)
+    assert.match(page, /ROUTES\.NISP_INDEX\}\?level=\$\{level\}/)
+  }
+})
+
 test('NISP pages keep symmetric margins and use compact field groups', async () => {
   const styles = await readFile(file('pages/nisp/nisp.module.scss'), 'utf8')
   const body = styles.match(/\.body \{[\s\S]*?\}/)?.[0] ?? ''

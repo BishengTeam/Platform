@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -11,6 +11,9 @@ import { ROUTES } from '@/constants/routes'
 import styles from './nisp.module.scss'
 
 export default function NispIndexPage() {
+  const { params } = useRouter()
+  const routeLevel = params?.level
+  const level = routeLevel === '1' || routeLevel === '2' ? routeLevel : undefined
   const [batches, setBatches] = useState<NispBatch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -18,23 +21,28 @@ export default function NispIndexPage() {
   const load = useCallback(() => {
     setLoading(true)
     setError(false)
-    return nispService.listBatches()
+    return nispService.listBatches(level)
       .then(setBatches)
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [])
+  }, [level])
 
   useEffect(() => { load() }, [load])
 
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title='NISP 认证' shouldShowBack />
+        <PageHeader
+          title={level === '1' ? 'NISP 一级' : level === '2' ? 'NISP 二级' : 'NISP 认证'}
+          shouldShowBack
+        />
         <RefreshableScrollView className={styles.body} onRefresh={load}>
           {loading && <View className={styles.empty}>加载中...</View>}
           {error && <View className={styles.empty} onClick={load}>加载失败，点击重试</View>}
           {!loading && !error && batches.length === 0 && (
-            <View className={styles.empty}>暂无可报名的考试批次</View>
+            <View className={styles.empty}>
+              {level ? '该级别批次暂未开放，敬请期待' : '暂无可报名的考试批次'}
+            </View>
           )}
 
           {!loading && !error && batches.map((batch) => (

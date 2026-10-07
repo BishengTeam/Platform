@@ -4,6 +4,8 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { getActivityList, getCertificationList, enrollActivity, remindActivity } from '@/services/zoneService'
+import { getNispLevelFromCertCode } from '@/services/nispService'
+import { ROUTES } from '@/constants/routes'
 import { goBackToActivityZone } from '@/utils/navigation'
 import { resolveMediaUrl } from '@/utils/media'
 import type { ActivityBrief } from '@/types'
@@ -75,6 +77,11 @@ export default function ActivityDetailPage() {
       }
       if (cert.vendor === 'H3C') {
         Taro.navigateTo({ url: '/pages/h3c/index' })
+        return
+      }
+      if (cert.vendor === 'NISP') {
+        const level = getNispLevelFromCertCode(cert.code)
+        Taro.navigateTo({ url: `/${ROUTES.NISP_INDEX}?level=${level}` })
         return
       }
       Taro.navigateTo({
