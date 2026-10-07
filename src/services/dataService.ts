@@ -62,7 +62,7 @@ export {
   getJobList, getCertificationList, getCompetitionList,
   enrollActivity, remindActivity, signupCompetition,
   getZoneIcons, getQuickQuestions, getInitialMessages,
-  getContactList, getOrderItems, getProfileFunctions, getExamBannerItems,
+  getContactList, getOrderItems, getProfileFunctions,
 } from './zoneService'
 
 // Course

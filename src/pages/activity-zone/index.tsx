@@ -3,7 +3,6 @@ import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { ZoneBanner } from '@/components/ZoneBanner'
 import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
 import { EmptyState } from '@/components/EmptyState'
@@ -11,12 +10,11 @@ import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import {
-  getHomeAggregation, getActivityList, getJobList, getCompetitionList,
+  getActivityList, getJobList, getCompetitionList,
   remindActivity,
 } from '@/services/dataService'
-import type { ActivityBrief, CompetitionBrief, JobBrief, ZoneBrief } from '@/types'
+import type { ActivityBrief, CompetitionBrief, JobBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
-import type { HomeAggregationResponse } from '@/types'
 import { resolveMediaUrl } from '@/utils/media'
 import { formatDate } from '@/utils/format'
 import styles from './index.module.scss'
@@ -37,9 +35,6 @@ export default function ActivityZonePage() {
   const [activityTag, setActivityTag] = useState<string>(STRINGS.ACTIVITY_TAG_ALL)
   const [competitionTag, setCompetitionTag] = useState<string>(STRINGS.COMPETITION_TAG_ALL)
 
-  const [activityBanner, setActivityBanner] = useState<ZoneBrief | null>(null)
-  const [competitionBanner, setCompetitionBanner] = useState<ZoneBrief | null>(null)
-  const [employmentBanner, setEmploymentBanner] = useState<ZoneBrief | null>(null)
   const [allActivities, setAllActivities] = useState<ActivityBrief[]>([])
   const [allCompetitions, setAllCompetitions] = useState<CompetitionBrief[]>([])
   const [allJobs, setAllJobs] = useState<JobBrief[]>([])
@@ -49,19 +44,14 @@ export default function ActivityZonePage() {
 
   const load = useCallback(() => {
     return Promise.all([
-      getHomeAggregation().then((data: HomeAggregationResponse) => {
-      setCompetitionBanner(data.zones['competition']?.items?.[0] ?? null)
-      }).catch(() => {}),
       getActivityList().then((data) => {
-      setAllActivities(data)
-      setActivityBanner(null)
+        setAllActivities(data)
       }).catch(() => {}).finally(() => setActivitiesLoaded(true)),
       getCompetitionList().then((data) => {
         setAllCompetitions(data)
       }).catch(() => {}).finally(() => setCompetitionsLoaded(true)),
       getJobList().then((data) => {
-      setAllJobs(data)
-      setEmploymentBanner(null)
+        setAllJobs(data)
       }).catch(() => {}).finally(() => setJobsLoaded(true)),
     ])
   }, [])
@@ -135,12 +125,6 @@ export default function ActivityZonePage() {
     }
   }
 
-  const currentBanner = mainTab === 'activity'
-    ? activityBanner
-    : mainTab === 'competition'
-      ? competitionBanner
-      : employmentBanner
-
   const currentActiveTag = mainTab === 'activity'
     ? activityTag
     : competitionTag
@@ -201,19 +185,6 @@ export default function ActivityZonePage() {
         </View>
 
         <RefreshableScrollView className={styles.body} onRefresh={load}>
-          <View className={styles.bannerWrap}>
-            {currentBanner ? (
-              <ZoneBanner items={[{
-                id: currentBanner.id,
-                title: currentBanner.title,
-                description: currentBanner.description ?? '',
-                gradient: mainTab === 'employment' ? 'gradient-teal' : mainTab === 'competition' ? 'gradient-orange' : 'gradient-purple',
-                buttonText: '查看详情',
-                buttonColor: '#ffffff',
-                image_url: resolveMediaUrl(currentBanner.cover_url),
-              }]} />
-            ) : null}
-          </View>
           <View className={styles.content}>
             {showTagFilter && (
               <TagFilter tags={currentTagFilters} activeTag={currentActiveTag} onChange={onTagChange} />

@@ -1,13 +1,3 @@
-export interface EmploymentBannerItem {
-  id: string | number
-  title: string
-  description: string
-  gradient: string
-  icon: string
-  buttonText: string
-  buttonColor: string
-}
-
 export interface Job {
   id: number
   title: string

@@ -1,11 +1,5 @@
 import { STRINGS } from '@/constants/strings'
-import type { ExamBannerItem, ExamCard, ExamTagFilter } from '@/types'
-
-export const examBannerItems: ExamBannerItem[] = [
-  { id: 1, title: 'H3CNE 认证考试季', description: '报名立享8折优惠，通过率高达95%', gradient: 'gradient-blue', icon: 'award', buttonText: STRINGS.EXAM_VIEW, buttonColor: '#ffffff' },
-  { id: 2, title: '软考中级网络工程师', description: '2024年最新考纲，全套备考资料免费领取', gradient: 'gradient-purple', icon: 'award', buttonText: STRINGS.EXAM_VIEW, buttonColor: '#ffffff' },
-  { id: 3, title: '华为认证HCIA', description: '零基础入门到精通，实战项目贯穿全程', gradient: 'gradient-orange', icon: 'award', buttonText: STRINGS.EXAM_VIEW, buttonColor: '#ffffff' },
-]
+import type { ExamCard, ExamTagFilter } from '@/types'
 
 export const examCards: ExamCard[] = [
   { id: 1, title: 'H3CNE 认证考试', description: '构建中小企业网络，开启网络工程师之路', price: '¥6xx', originalPrice: '¥8xx', duration: '120分钟', questions: '100道题', passingScore: '60分及格', tag: '新华三', tagColor: '#FF4D4F' },

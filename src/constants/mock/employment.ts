@@ -1,12 +1,5 @@
 import { STRINGS } from '@/constants/strings'
-import type { EmploymentBannerItem, Job, EmploymentTagFilter } from '@/types'
-
-export const employmentBannerItems: EmploymentBannerItem[] = [
-  { id: 'profile', title: STRINGS.EMPLOYMENT_BANNER_TITLE, description: STRINGS.EMPLOYMENT_BANNER_DESC, gradient: 'gradient-teal', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_MY_JOBS, buttonColor: '#ffffff' },
-  { id: 1, title: '网络工程师', description: '华为技术有限公司 · 深圳 · 1-3年经验', gradient: 'gradient-red', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_APPLY, buttonColor: '#ffffff' },
-  { id: 2, title: '网络安全工程师', description: '阿里巴巴集团 · 杭州 · 3-5年经验', gradient: 'gradient-orange', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_APPLY, buttonColor: '#ffffff' },
-  { id: 3, title: '网络安全顾问', description: '奇安信科技集团 · 北京 · 5-10年经验', gradient: 'gradient-purple', icon: 'briefcase', buttonText: STRINGS.EMPLOYMENT_APPLY, buttonColor: '#ffffff' },
-]
+import type { Job, EmploymentTagFilter } from '@/types'
 
 export const jobList: Job[] = [
   { id: 1, title: '网络工程师', company: '华为技术有限公司', location: '深圳', salary: '1x-2xK', originalPrice: '￥1500', experience: '1-3年', education: '本科' },

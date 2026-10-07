@@ -1,13 +1,3 @@
-export interface ActivityBannerItem {
-  id: string | number
-  title: string
-  description: string
-  gradient: string
-  icon: string
-  buttonText: string
-  buttonColor: string
-}
-
 export interface Activity {
   id: number
   title: string

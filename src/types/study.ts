@@ -1,13 +1,3 @@
-export interface StudyBannerItem {
-  id: string | number
-  title: string
-  description: string
-  gradient: string
-  icon: string
-  buttonText: string
-  buttonColor: string
-}
-
 export interface Course {
   id: number
   title: string

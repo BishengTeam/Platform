@@ -10,11 +10,9 @@ import {
   homeCourses,
   homeActivities,
   courseList,
-  competitionBannerItems,
   contactList,
   orderItems,
   profileFunctions,
-  examBannerItems,
 } from '@/constants/mock'
 
 import { get, post, put, resolveUrl } from '@/utils/request'
@@ -64,7 +62,6 @@ export function getInitialMessages() { return initialMessages }
 export function getContactList() { return contactList }
 export function getOrderItems() { return orderItems }
 export function getProfileFunctions() { return profileFunctions }
-export function getExamBannerItems() { return examBannerItems }
 
 // ================================================================
 // Zone 聚合端点（2026-06-03 重构）
@@ -74,14 +71,7 @@ export function getExamBannerItems() { return examBannerItems }
 export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
   if (USE_MOCK) {
     return {
-      banners: competitionBannerItems.map((item, idx) => ({
-        id: idx + 1,
-        image_url: '',
-        jump_link: null,
-        target_type: null,
-        target_id: null,
-        sort: idx,
-      })),
+      banners: [],
       zones: {
         cert: {
           items: [

@@ -1,13 +1,3 @@
-export interface ExamBannerItem {
-  id: number
-  title: string
-  description: string
-  gradient: string
-  icon: string
-  buttonText: string
-  buttonColor: string
-}
-
 export interface ExamCard {
   id: number
   title: string

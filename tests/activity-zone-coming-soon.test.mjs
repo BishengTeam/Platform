@@ -17,6 +17,8 @@ test('activity zone defaults to competition and shows preparing empty states', a
   assert.match(source, /title=\{STRINGS\.ACTIVITY_EMPTY_TITLE\}/)
   assert.match(source, /title=\{STRINGS\.COMPETITION_EMPTY_TITLE\}/)
   assert.match(source, /title=\{STRINGS\.EMPLOYMENT_EMPTY_TITLE\}/)
+  // 竞赛子页不展示运营横幅，列表内容直接从筛选区开始。
+  assert.doesNotMatch(source, /ZoneBanner|currentBanner|bannerWrap/)
   // 薪资只保留价格槽位；联系方式不再塞进按钮文案导致按钮过长。
   assert.match(source, /tags=\{\[job\.location \?\? ''\]\}/)
   assert.match(source, /price=\{job\.salary_range \?\? ''\}/)

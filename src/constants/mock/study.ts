@@ -1,12 +1,5 @@
 import { STRINGS } from '@/constants/strings'
-import type { StudyBannerItem, Course, StudyTagFilter } from '@/types'
-
-export const studyBannerItems: StudyBannerItem[] = [
-  { id: 'profile', title: '学习成就未来', description: '海量优质课程，助你成为网络技术专家', gradient: 'gradient-green', icon: 'book-open', buttonText: STRINGS.STUDY_VIEW_MY, buttonColor: '#ffffff' },
-  { id: 1, title: '网络工程师入门到精通', description: '零基础学习网络基础知识，TCP/IP协议，路由交换技术', gradient: 'gradient-red', icon: 'book-open', buttonText: STRINGS.STUDY_ENROLL, buttonColor: '#ffffff' },
-  { id: 2, title: 'H3CNE认证全程班', description: '针对华三认证考试的全套课程，包含题库和模拟考试', gradient: 'gradient-blue', icon: 'book-open', buttonText: STRINGS.STUDY_ENROLL, buttonColor: '#ffffff' },
-  { id: 3, title: '华为HCIA认证培训', description: '华为官方认证课程，讲师均为华为认证HCIE专家', gradient: 'gradient-orange', icon: 'book-open', buttonText: STRINGS.STUDY_ENROLL, buttonColor: '#ffffff' },
-]
+import type { Course, StudyTagFilter } from '@/types'
 
 export const courseList: Course[] = [
   { id: 1, title: '网络工程师入门到精通', description: '零基础学习网络基础知识，TCP/IP协议，路由交换技术', price: '¥2xx', originalPrice: '¥3xx', duration: '48小时', tag: '热门' },

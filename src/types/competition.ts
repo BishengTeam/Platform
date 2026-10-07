@@ -1,13 +1,3 @@
-export interface CompetitionBannerItem {
-  id: string | number
-  title: string
-  description: string
-  gradient: string
-  icon: string
-  buttonText: string
-  buttonColor: string
-}
-
 export interface Competition {
   id: number
   title: string

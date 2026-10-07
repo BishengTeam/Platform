@@ -1,12 +1,6 @@
-import type { CompetitionBannerItem, Competition, CompetitionTagFilter } from '@/types'
+import type { Competition, CompetitionTagFilter } from '@/types'
 import { STRINGS } from '@/constants/strings'
 
-export const competitionBannerItems: CompetitionBannerItem[] = [
-  { id: 'profile', title: '以赛促学 技创未来', description: '参与技术竞赛，展示你的实力，赢取丰厚奖励', gradient: 'gradient-orange', icon: 'trophy', buttonText: STRINGS.COMPETITION_BANNER_VIEW_MY, buttonColor: '#ffffff' },
-  { id: 1, title: '2024全国大学生网络技术大赛', description: '面向全国大学生的网络技术竞赛，展示技术实力，赢取丰厚奖金', gradient: 'gradient-red', icon: 'trophy', buttonText: STRINGS.COMPETITION_SIGNUP, buttonColor: '#ffffff' },
-  { id: 2, title: '华为ICT大赛2024', description: '华为官方举办的全球性ICT技术竞赛，获奖可获得华为就业绿色通道', gradient: 'gradient-blue', icon: 'trophy', buttonText: STRINGS.COMPETITION_SIGNUP, buttonColor: '#ffffff' },
-  { id: 3, title: '网络安全攻防大赛', description: '实战型网络安全竞赛，考验真实攻防能力', gradient: 'gradient-purple', icon: 'trophy', buttonText: STRINGS.COMPETITION_ENTER, buttonColor: '#ffffff' },
-]
 
 export const ongoingCompetitions: Competition[] = [
   { id: 1, title: '2024全国大学生网络技术大赛', description: '面向全国大学生的网络技术竞赛，展示技术实力，赢取丰厚奖金', prize: '总奖金¥1xx万', startTime: '2024-05-01', endTime: '2024-05-10', status: STRINGS.COMPETITION_STATUS_REGISTERING },
