@@ -209,6 +209,7 @@ export default function ActivityZonePage() {
                   return (
                     <ZoneCard
                       key={item.id}
+                      coverUrl={resolveMediaUrl(item.cover_url)}
                       title={item.title}
                       subtitle={item.description ?? ''}
                       tags={[item.location ?? '', activityTime]}

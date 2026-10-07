@@ -27,6 +27,8 @@ test('activity zone defaults to competition and shows preparing empty states', a
   // 活动卡片时间必须经过本地日期格式化，不能透出后端 ISO 原文。
   assert.match(source, /const activityTime = \[[\s\S]*?formatDate\(item\.start_time, ''\)[\s\S]*?formatDate\(item\.end_time, ''\)[\s\S]*?\]\.filter\(Boolean\)\.join\(' ~ '\)/)
   assert.doesNotMatch(source, /\$\{item\.start_time[^}]*\}-\$\{item\.end_time/)
+  // 活动封面与竞赛一致：列表卡片直接渲染后台配置图。
+  assert.match(source, /coverUrl=\{resolveMediaUrl\(item\.cover_url\)\}/)
   // 预约提醒失败不能回落成“报名失败”，操作文案必须与按钮语义一致。
   assert.match(source, /const fallback = btn\.text === STRINGS\.ACTIVITY_REMIND \? '设置提醒失败' : '报名失败'/)
   assert.doesNotMatch(source, /error\.message : '报名失败', icon: 'none', duration: 3000/)
