@@ -20,6 +20,7 @@ import {
   submitQuizExam,
 } from '@/services/dataService'
 import { ApiError } from '@/utils/request'
+import { safeNavigateBack } from '@/utils/navigation'
 import {
   cacheExamId,
   cachePendingExamAbandonId,
@@ -512,9 +513,7 @@ export default function QuizMockPage() {
       allowUnloadRef.current = true
       try { Taro.disableAlertBeforeUnload() } catch { /* unsupported platform */ }
       if (action.status === 'abandoned' || action.status === 'completed' || action.status === 'timed_out') {
-        const pages = Taro.getCurrentPages()
-        if (pages.length > 1) await Taro.navigateBack()
-        else await Taro.switchTab({ url: '/pages/training/index' })
+        await safeNavigateBack({ fallbackUrl: '/pages/training/index' })
       }
     } catch (error) {
       Taro.showToast({ title: `放弃考试失败：${messageOf(error)}`, icon: 'none', duration: 2500 })

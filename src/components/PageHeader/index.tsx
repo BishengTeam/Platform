@@ -1,28 +1,30 @@
 import type { ReactNode } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
+import { safeNavigateBack } from '@/utils/navigation'
 import styles from './index.module.scss'
 
 interface PageHeaderProps {
   title: string
   shouldShowBack?: boolean
   onBack?: () => void
+  fallbackUrl?: string
   rightContent?: ReactNode
 }
 
-export function PageHeader({ title, shouldShowBack = false, onBack, rightContent }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  shouldShowBack = false,
+  onBack,
+  fallbackUrl,
+  rightContent,
+}: PageHeaderProps) {
   const handleBack = () => {
     if (onBack) {
       onBack()
       return
     }
-    const pages = Taro.getCurrentPages()
-    if (pages.length > 1) {
-      Taro.navigateBack()
-    } else {
-      Taro.switchTab({ url: '/pages/index/index' })
-    }
+    void safeNavigateBack({ fallbackUrl })
   }
 
   return (

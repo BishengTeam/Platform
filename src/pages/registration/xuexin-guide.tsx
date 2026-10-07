@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { STRINGS } from '@/constants/strings'
+import { safeNavigateBack } from '@/utils/navigation'
 import styles from './xuexin-guide.module.scss'
 
 const STEPS = [
@@ -25,7 +26,7 @@ export default function XuexinGuidePage() {
       return
     }
     Taro.setStorageSync('xuexin_verification_code', code.trim())
-    Taro.navigateBack()
+    void safeNavigateBack({ fallbackUrl: '/pages/registration/category' })
   }, [code])
 
   return (

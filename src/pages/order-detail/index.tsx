@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { EmptyState } from '@/components/EmptyState'
 import { cancelOrder, getOrderDetail, prepayOrder } from '@/services/dataService'
 import { orderKindLabel } from '@/services/orderMapper'
+import { safeNavigateBack } from '@/utils/navigation'
 import type { OrderDetail } from '@/types'
 import styles from './index.module.scss'
 
@@ -147,7 +148,9 @@ export default function OrderDetailPage() {
       const closed = await cancelOrder(detail.numericId)
       setDetail(closed)
       Taro.showToast({ title: '订单已取消', icon: 'success' })
-      setTimeout(() => Taro.navigateBack(), 1500)
+      setTimeout(() => {
+        void safeNavigateBack({ fallbackUrl: '/pages/orders/index' })
+      }, 1500)
     } catch (err) {
       Taro.showToast({
         title: err instanceof Error ? err.message : '取消订单失败，请重试',

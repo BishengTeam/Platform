@@ -4,6 +4,7 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { getJobList } from '@/services/zoneService'
+import { goBackToActivityZone } from '@/utils/navigation'
 import type { JobBrief } from '@/types'
 import styles from './detail.module.scss'
 
@@ -34,7 +35,11 @@ export default function JobDetailPage() {
 
   return (
     <View className={styles.container}>
-      <PageHeader title='岗位详情' shouldShowBack onBack={() => Taro.navigateBack()} />
+      <PageHeader
+        title='岗位详情'
+        shouldShowBack
+        onBack={() => void goBackToActivityZone('employment')}
+      />
 
       {loading && <View className={styles.placeholder}>加载中…</View>}
 

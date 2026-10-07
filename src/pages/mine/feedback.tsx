@@ -7,6 +7,7 @@ import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import { STRINGS } from '@/constants/strings'
 import { createTicket, uploadFile } from '@/services/dataService'
+import { safeNavigateBack } from '@/utils/navigation'
 import styles from './feedback.module.scss'
 
 // 协议值与 Admin 工单解析保持同源：content 中的「类型：」必须使用这些原文。
@@ -119,12 +120,7 @@ export default function FeedbackPage() {
   }, [images])
 
   const goBack = useCallback(() => {
-    const pages = Taro.getCurrentPages()
-    if (pages.length > 1) {
-      Taro.navigateBack()
-    } else {
-      Taro.switchTab({ url: '/pages/index/index' })
-    }
+    void safeNavigateBack()
   }, [])
 
   const handleSubmit = useCallback(async () => {

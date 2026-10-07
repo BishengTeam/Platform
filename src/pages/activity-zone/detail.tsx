@@ -4,6 +4,7 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { getActivityList, getCertificationList, enrollActivity, remindActivity } from '@/services/zoneService'
+import { goBackToActivityZone } from '@/utils/navigation'
 import { resolveMediaUrl } from '@/utils/media'
 import type { ActivityBrief } from '@/types'
 import styles from './detail.module.scss'
@@ -103,7 +104,11 @@ export default function ActivityDetailPage() {
 
   return (
     <View className={styles.container}>
-      <PageHeader title='活动详情' shouldShowBack onBack={() => Taro.navigateBack()} />
+      <PageHeader
+        title='活动详情'
+        shouldShowBack
+        onBack={() => void goBackToActivityZone('activity')}
+      />
 
       {loading && <View className={styles.placeholder}>加载中…</View>}
 

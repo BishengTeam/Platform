@@ -8,6 +8,7 @@ import { STRINGS } from '@/constants/strings'
 import { getAgreementTemplate, acceptAgreements } from '@/services/dataService'
 import type { AgreementType, AgreementTemplate } from '@/services/dataService'
 import { normalizeAgreementHtml } from '@/utils/agreementHtml'
+import { safeNavigateBack } from '@/utils/navigation'
 import styles from './view.module.scss'
 
 const TYPE_TITLES: Record<string, string> = {
@@ -69,9 +70,7 @@ export default function AgreementViewPage() {
       await acceptAgreements([{ type, version: template.version }])
       Taro.showToast({ title: STRINGS.AGREEMENT_SIGN_SUCCESS, icon: 'success' })
       setTimeout(() => {
-        Taro.navigateBack({
-          fail: () => Taro.reLaunch({ url: '/pages/index/index' }),
-        })
+        void safeNavigateBack()
       }, 600)
     } catch (error) {
       Taro.showToast({

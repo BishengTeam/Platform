@@ -16,6 +16,7 @@ import {
 } from '@/services/zoneService'
 import { resolveMediaUrl } from '@/utils/media'
 import { formatDate, formatDateTime } from '@/utils/format'
+import { goBackToActivityZone } from '@/utils/navigation'
 import type { CompetitionBrief, CompetitionTrackBrief } from '@/types'
 import styles from './detail.module.scss'
 
@@ -102,7 +103,11 @@ export default function CompetitionDetailPage() {
 
   return (
     <View className={styles.container}>
-      <PageHeader title='赛事详情' shouldShowBack onBack={() => Taro.navigateBack()} />
+      <PageHeader
+        title='赛事详情'
+        shouldShowBack
+        onBack={() => void goBackToActivityZone('competition')}
+      />
 
       {loading && <View className={styles.placeholder}>加载中…</View>}
       {!loading && !competition && <View className={styles.placeholder}>赛事不存在或未发布</View>}

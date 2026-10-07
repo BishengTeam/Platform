@@ -4,6 +4,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { STRINGS } from '@/constants/strings'
+import { safeNavigateBack } from '@/utils/navigation'
 import styles from './index.module.scss'
 
 const POSTERS = [
@@ -66,7 +67,7 @@ export default function LoginPosterPage() {
           ))}
 
           <View className={styles.btnWrap}>
-            <Button variant='secondary' size='lg' onClick={() => Taro.navigateBack()}>
+            <Button variant='secondary' size='lg' onClick={() => void safeNavigateBack()}>
               {STRINGS.LOGIN_POSTER_CLOSE}
             </Button>
           </View>

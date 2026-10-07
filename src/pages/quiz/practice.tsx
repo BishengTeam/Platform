@@ -39,6 +39,7 @@ import {
 } from '@/utils/quizRuntime'
 import { ApiError } from '@/utils/request'
 import { answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
+import { safeNavigateBack } from '@/utils/navigation'
 import styles from './practice.module.scss'
 
 const LEGACY_QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -519,7 +520,7 @@ export default function QuizPracticePage() {
     return (
       <AuthGuard><View className={styles.page}><PageHeader title={sessionTitle(session, requestedMode)} shouldShowBack /><View className={styles.resultBody}>
         <View className={styles.resultCard}><Text className={styles.resultScore}>本轮练习已暂停</Text><Text className={styles.resultHint}>{session.pause_reason === 'quiz_entitlement_inactive' ? '课程题库权益当前不可用' : '题库当前暂停开放'}；暂停期间不消耗 7 天有效期，恢复后会自动顺延。</Text></View>
-        <View className={styles.resultActions}><Button variant='secondary' size='lg' onClick={() => void refreshSession()}>检查是否恢复</Button><Button variant='secondary' size='lg' onClick={() => Taro.navigateBack()}>返回题库</Button></View>
+        <View className={styles.resultActions}><Button variant='secondary' size='lg' onClick={() => void refreshSession()}>检查是否恢复</Button><Button variant='secondary' size='lg' onClick={() => void safeNavigateBack({ fallbackUrl: '/pages/training/index' })}>返回题库</Button></View>
       </View></View></AuthGuard>
     )
   }

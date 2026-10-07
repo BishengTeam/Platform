@@ -13,6 +13,7 @@ import {
 } from '@/constants/keywords'
 import { getInitialMessages, fetchQuickQuestions } from '@/services/dataService'
 import { sendChatMessage } from '@/services/dataService'
+import { safeNavigateBack } from '@/utils/navigation'
 import type { Message } from '@/types'
 import styles from './index.module.scss'
 
@@ -108,7 +109,9 @@ export default function AiConsultPage() {
 
   const handleSendEmpty = useCallback(() => handleSend(), [handleSend])
   const handleQuickTap = useCallback((q: string) => handleSend(q), [handleSend])
-  const handleBack = useCallback(() => Taro.navigateBack(), [])
+  const handleBack = useCallback(() => {
+    void safeNavigateBack()
+  }, [])
 
   const handleCardTap = useCallback((zoneKey: string) => {
     const route = ZONE_ROUTES[zoneKey]

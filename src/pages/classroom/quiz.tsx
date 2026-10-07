@@ -11,6 +11,7 @@ import {
   getQuizPaper,
   submitQuiz,
 } from '@/services/classroomService'
+import { safeNavigateBack } from '@/utils/navigation'
 import type { ClassroomAttachmentItem, ClassroomQuizPaper } from '@/types/classroom'
 import styles from './quiz.module.scss'
 
@@ -299,7 +300,9 @@ export default function ClassroomQuizPage() {
     try {
       await submitQuiz(quizId, answers, attachmentPayload)
       Taro.showToast({ title: '已提交，等待老师批改', icon: 'success' })
-      setTimeout(() => Taro.navigateBack(), 1200)
+      setTimeout(() => {
+        void safeNavigateBack()
+      }, 1200)
     } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) } finally {
       setSubmitting(false)
     }

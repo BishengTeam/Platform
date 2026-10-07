@@ -1,4 +1,4 @@
-import { STRINGS } from '@/constants/strings'
+import { STRINGS } from './strings.ts'
 
 export const ROUTES = {
   AUTH: 'pages/auth/index',
