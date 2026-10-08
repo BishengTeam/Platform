@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { h3cService } from '@/services/h3cService'
+import {
+  H3C_XUEXIN_VERIFICATION_GUIDE_KEY,
+  getDocument,
+} from '@/services/documentService'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
@@ -87,6 +91,29 @@ export default function H3CFormPage() {
   }, [batchId])
 
   const update = (key: string, value: string) => setForm((old) => ({ ...old, [key]: value }))
+
+  const openXuexinGuide = useCallback(async () => {
+    try {
+      const document = await getDocument(H3C_XUEXIN_VERIFICATION_GUIDE_KEY)
+      const downloaded = await Taro.downloadFile({ url: document.download_url })
+      if (downloaded.statusCode !== 200 || !downloaded.tempFilePath) {
+        throw new Error(downloaded.errMsg || '教程文件下载失败')
+      }
+      await Taro.openDocument({
+        filePath: downloaded.tempFilePath,
+        fileType: 'pdf',
+        showMenu: true,
+      })
+    } catch (error) {
+      Taro.showToast({
+        title: error instanceof Error && error.message
+          ? error.message
+          : '教程文档暂未配置，请联系管理员',
+        icon: 'none',
+        duration: 3000,
+      })
+    }
+  }, [])
 
   const chooseMaterial = async (materialType: 'coupon_proof' | 'student_proof') => {
     const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
@@ -270,12 +297,15 @@ export default function H3CFormPage() {
                   value={form.verify_code}
                   onInput={(event) => update('verify_code', event.detail.value)}
                 />
-                <Text className={styles.remark}>必须提供，且需与学生证明图片同时提交</Text>
+                <View className={styles.guideLink} onClick={openXuexinGuide}>
+                  <Text>查看《如何查询学籍在线验证码》PDF</Text>
+                </View>
+                <Text className={styles.remark}>学信网在线验证码必填；请先按教程查询并复制验证码。</Text>
               </View>
               <View className={styles.uploadBox} onClick={() => chooseMaterial('student_proof')}>
                 <Text className={studentKey ? styles.uploaded : ''}>{studentKey ? '学生证明已上传' : '上传 JPG 学生证明'}</Text>
               </View>
-              <Text className={styles.remark}>如无学信网在线验证码，请上传有学院盖章的学籍证明图片；如提供验证码，请上传身份证人像一面清晰图片，JPG 格式</Text>
+              <Text className={styles.remark}>请上传身份证人像面清晰图片，JPG 格式，用于学生身份核验。</Text>
             </View>
           )}
 
