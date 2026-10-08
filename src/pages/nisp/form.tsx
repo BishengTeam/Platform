@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { View, Text, ScrollView, Input, Picker } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -7,6 +7,15 @@ import { Button } from '@/components/Button'
 import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { nispService } from '@/services/nispService'
 import type { NispBatch, NispMaterialType, NispOrderCreatePayload } from '@/services/nispService'
+import {
+  DEFAULT_NISP_APPLICATION_FORM_ENTRY_TEXT,
+  DEFAULT_NISP_EDUCATION_REPORT_ENTRY_TEXT,
+  NISP_EDUCATION_REPORT_GUIDE_SCENE,
+  NISP_LEVEL2_APPLICATION_FORM_SCENE,
+  getDocument,
+  getDocumentScene,
+} from '@/services/documentService'
+import type { DocumentSceneSlot } from '@/services/documentService'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
@@ -44,6 +53,8 @@ export default function NispFormPage() {
   const [portraitKey, setPortraitKey] = useState('')
   const [xuexinKey, setXuexinKey] = useState('')
   const [appFormKey, setAppFormKey] = useState('')
+  const [educationGuideSlot, setEducationGuideSlot] = useState<DocumentSceneSlot | null>(null)
+  const [applicationFormSlot, setApplicationFormSlot] = useState<DocumentSceneSlot | null>(null)
 
   useLoad((options) => {
     setBatchId(Number(options?.batch_id || 0))
@@ -58,9 +69,45 @@ export default function NispFormPage() {
     }).catch(() => {})
   }, [batchId])
 
+  useEffect(() => {
+    if (level !== '2') return
+    getDocumentScene(NISP_EDUCATION_REPORT_GUIDE_SCENE)
+      .then(setEducationGuideSlot)
+      .catch(() => setEducationGuideSlot(null))
+    getDocumentScene(NISP_LEVEL2_APPLICATION_FORM_SCENE)
+      .then(setApplicationFormSlot)
+      .catch(() => setApplicationFormSlot(null))
+  }, [level])
+
   const setField = (key: keyof FormState, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }))
   }
+
+  const openManagedDocument = useCallback(async (slot: DocumentSceneSlot | null) => {
+    try {
+      if (!slot?.document) {
+        throw new Error('文档暂未配置，请联系管理员')
+      }
+      const document = await getDocument(slot.document.document_key)
+      const downloaded = await Taro.downloadFile({ url: document.download_url })
+      if (downloaded.statusCode !== 200 || !downloaded.tempFilePath) {
+        throw new Error(downloaded.errMsg || '文档下载失败')
+      }
+      await Taro.openDocument({
+        filePath: downloaded.tempFilePath,
+        fileType: 'pdf',
+        showMenu: true,
+      })
+    } catch (error) {
+      Taro.showToast({
+        title: error instanceof Error && error.message
+          ? error.message
+          : '文档下载失败，请稍后重试',
+        icon: 'none',
+        duration: 3000,
+      })
+    }
+  }, [])
 
   const uploadFile = async (
     setter: (key: string) => void,
@@ -141,7 +188,7 @@ export default function NispFormPage() {
       return false
     }
     if (level === '2' && !xuexinKey) {
-      Taro.showToast({ title: '请上传学籍报告', icon: 'none' })
+      Taro.showToast({ title: '请上传学籍验证报告', icon: 'none' })
       return false
     }
     if (level === '2' && !appFormKey) {
@@ -354,13 +401,21 @@ export default function NispFormPage() {
                   <View className={styles.field}>
                     <View className={styles.labelRow}>
                       <Text className={styles.required}>*</Text>
-                      <Text className={styles.label}>学籍报告</Text>
+                      <Text className={styles.label}>学籍验证报告</Text>
                     </View>
                     <View
                       className={`${styles.uploadBox} ${xuexinKey ? styles.uploaded : ''}`}
                       onClick={() => uploadFile(setXuexinKey, 'xuexin_report')}
                     >
                       <Text>{xuexinKey ? '已上传' : 'PDF\n导出命名为姓名-学籍报告'}</Text>
+                    </View>
+                    <View
+                      className={styles.guideLink}
+                      onClick={() => void openManagedDocument(educationGuideSlot)}
+                    >
+                      <Text>
+                        {educationGuideSlot?.entry_text || DEFAULT_NISP_EDUCATION_REPORT_ENTRY_TEXT}
+                      </Text>
                     </View>
                   </View>
 
@@ -374,6 +429,14 @@ export default function NispFormPage() {
                       onClick={() => uploadFile(setAppFormKey, 'application_form')}
                     >
                       <Text>{appFormKey ? '已上传' : 'PDF\n导出时保留原文件名'}</Text>
+                    </View>
+                    <View
+                      className={styles.guideLink}
+                      onClick={() => void openManagedDocument(applicationFormSlot)}
+                    >
+                      <Text>
+                        {applicationFormSlot?.entry_text || DEFAULT_NISP_APPLICATION_FORM_ENTRY_TEXT}
+                      </Text>
                     </View>
                   </View>
                 </>

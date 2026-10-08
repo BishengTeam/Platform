@@ -3,6 +3,10 @@ import { get } from '../utils/request.ts'
 export const H3C_XUEXIN_VERIFICATION_GUIDE_KEY = 'h3c.xuexin_verification_guide'
 export const H3C_STUDENT_XUEXIN_GUIDE_SCENE = 'h3c_student_xuexin_guide'
 export const DEFAULT_H3C_XUEXIN_GUIDE_ENTRY_TEXT = '查看《如何查询学籍在线验证码》PDF'
+export const NISP_EDUCATION_REPORT_GUIDE_SCENE = 'nisp_education_report_guide'
+export const NISP_LEVEL2_APPLICATION_FORM_SCENE = 'nisp_level2_application_form'
+export const DEFAULT_NISP_EDUCATION_REPORT_ENTRY_TEXT = '查看《学历证书电子注册备案表》查询步骤PDF'
+export const DEFAULT_NISP_APPLICATION_FORM_ENTRY_TEXT = '下载《NISP二级考试报名申请表》PDF'
 
 export type DocumentEntryMode = 'required' | 'optional'
 

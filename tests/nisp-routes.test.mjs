@@ -34,6 +34,25 @@ test('NISP form uploads each material with its own backend material type', async
   assert.equal(form.includes("fileType === 'image' ? 'portrait_photo' : 'id_card_both_sides'"), false)
 })
 
+test('NISP level-two form exposes managed report guide and application template', async () => {
+  const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
+  const service = await readFile(file('services/documentService.ts'), 'utf8')
+  const styles = await readFile(file('pages/nisp/nisp.module.scss'), 'utf8')
+
+  assert.match(service, /NISP_EDUCATION_REPORT_GUIDE_SCENE = 'nisp_education_report_guide'/)
+  assert.match(service, /NISP_LEVEL2_APPLICATION_FORM_SCENE = 'nisp_level2_application_form'/)
+  assert.match(form, /getDocumentScene\(NISP_EDUCATION_REPORT_GUIDE_SCENE\)/)
+  assert.match(form, /getDocumentScene\(NISP_LEVEL2_APPLICATION_FORM_SCENE\)/)
+  assert.match(form, /DEFAULT_NISP_EDUCATION_REPORT_ENTRY_TEXT/)
+  assert.match(form, /DEFAULT_NISP_APPLICATION_FORM_ENTRY_TEXT/)
+  assert.match(form, /Taro\.downloadFile\(\{ url: document\.download_url \}\)/)
+  assert.match(form, /Taro\.openDocument\(/)
+  assert.match(form, /文档暂未配置，请联系管理员/)
+  assert.match(service, /查看《学历证书电子注册备案表》查询步骤PDF/)
+  assert.match(service, /下载《NISP二级考试报名申请表》PDF/)
+  assert.match(styles, /\.guideLink\s*\{/)
+})
+
 test('NISP order creation goes to the unified payment confirm page with order id', async () => {
   const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
 
