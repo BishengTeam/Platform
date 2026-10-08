@@ -11,7 +11,10 @@ export type NispLevel = '1' | '2'
 
 export interface NispMaterialUploadResult {
   material_type: NispMaterialType
+  material_id: number
   storage_key: string
+  original_filename: string | null
+  content_type: string | null
   size_bytes: number
   sha256: string
 }
@@ -117,6 +120,7 @@ export const nispService = {
   async uploadMaterial(
     filePath: string,
     materialType: NispMaterialType,
+    originalFilename?: string,
   ): Promise<NispMaterialUploadResult> {
     const baseUrl = (process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')
     const token = getToken()
@@ -124,7 +128,10 @@ export const nispService = {
       url: `${baseUrl}/api/nisp/materials/upload`,
       filePath,
       name: 'file',
-      formData: { material_type: materialType },
+      formData: {
+        material_type: materialType,
+        ...(originalFilename ? { original_filename: originalFilename } : {}),
+      },
       header: { Authorization: token ? `Bearer ${token}` : '' },
       timeout: 60000,
     })

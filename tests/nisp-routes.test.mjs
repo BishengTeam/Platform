@@ -28,7 +28,7 @@ test('NISP form uploads each material with its own backend material type', async
   assert.match(form, /uploadFile\(setPortraitKey, 'portrait_photo'\)/)
   assert.match(form, /uploadFile\(setXuexinKey, 'xuexin_report'\)/)
   assert.match(form, /uploadFile\(setAppFormKey, 'application_form'\)/)
-  assert.match(form, /nispService\.uploadMaterial\(filePath, fileType\)/)
+  assert.match(form, /nispService\.uploadMaterial\(\s*filePath,\s*fileType,\s*originalFilename,/)
   assert.match(form, /extension: \['pdf'\]/)
   assert.match(form, /batch\?\.max_material_bytes/)
   assert.equal(form.includes("fileType === 'image' ? 'portrait_photo' : 'id_card_both_sides'"), false)

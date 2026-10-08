@@ -69,6 +69,7 @@ export default function NispFormPage() {
     try {
       let filePath = ''
       let fileSize = 0
+      let originalFilename = ''
       if (fileType === 'portrait_photo') {
         const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
         filePath = result.tempFilePaths[0] || ''
@@ -82,6 +83,7 @@ export default function NispFormPage() {
         const selected = result.tempFiles[0]
         filePath = selected?.path || ''
         fileSize = selected?.size || 0
+        originalFilename = selected?.name || ''
       }
       if (!filePath) return
 
@@ -96,7 +98,11 @@ export default function NispFormPage() {
       }
 
       Taro.showLoading({ title: '上传中', mask: true })
-      const uploaded = await nispService.uploadMaterial(filePath, fileType)
+      const uploaded = await nispService.uploadMaterial(
+        filePath,
+        fileType,
+        originalFilename,
+      )
       Taro.hideLoading()
       setter(uploaded.storage_key)
     } catch (error) {
@@ -354,7 +360,7 @@ export default function NispFormPage() {
                       className={`${styles.uploadBox} ${xuexinKey ? styles.uploaded : ''}`}
                       onClick={() => uploadFile(setXuexinKey, 'xuexin_report')}
                     >
-                      <Text>{xuexinKey ? '已上传' : 'PDF\n学籍验证'}</Text>
+                      <Text>{xuexinKey ? '已上传' : 'PDF\n导出命名为姓名-学籍报告'}</Text>
                     </View>
                   </View>
 
@@ -367,7 +373,7 @@ export default function NispFormPage() {
                       className={`${styles.uploadBox} ${appFormKey ? styles.uploaded : ''}`}
                       onClick={() => uploadFile(setAppFormKey, 'application_form')}
                     >
-                      <Text>{appFormKey ? '已上传' : 'PDF\n填写后上传'}</Text>
+                      <Text>{appFormKey ? '已上传' : 'PDF\n导出时保留原文件名'}</Text>
                     </View>
                   </View>
                 </>
