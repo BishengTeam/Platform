@@ -242,6 +242,12 @@ export default function NispFormPage() {
       }
       const registration = await nispService.createOrder(payload)
       const certName = level === '1' ? 'NISP一级认证' : 'NISP二级认证'
+      if (registration.price_cents === 0 && registration.status === 'pending_review') {
+        Taro.redirectTo({
+          url: `/${ROUTES.PAYMENT_RESULT}?order_id=${registration.order_id}&status=success&cert_name=${encodeURIComponent(certName)}&price=0`,
+        })
+        return
+      }
       Taro.redirectTo({
         url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${registration.order_id}&cert_name=${encodeURIComponent(certName)}&price=${price.toFixed(2)}`,
       })
