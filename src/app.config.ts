@@ -50,16 +50,12 @@ export default defineAppConfig({
       pages: ['index'],
     },
     {
-      root: 'pages/course',
-      pages: ['index', 'detail', 'content'],
-    },
-    {
       root: 'pages/quiz',
       pages: ['index', 'questions', 'practice', 'prepare', 'history', 'mock', 'exam-history', 'wrong-book', 'collections', 'checkin', 'stats', 'question-select'],
     },
     {
       root: 'pages/mine',
-      pages: ['courses', 'profile', 'feedback', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations', 'points-history'],
+      pages: ['profile', 'feedback', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations', 'points-history', 'video-codes'],
     },
     {
       root: 'pages/employment-zone',

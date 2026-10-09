@@ -10,7 +10,6 @@ test('internal scroll lists use a real ScrollView refresher instead of dead page
     'pages/index/index.tsx',
     'pages/activity-zone/index.tsx',
     'pages/training/index.tsx',
-    'pages/course/index.tsx',
     'pages/quiz/index.tsx',
     'pages/service/index.tsx',
     'pages/orders/index.tsx',
@@ -19,8 +18,8 @@ test('internal scroll lists use a real ScrollView refresher instead of dead page
     'pages/mine/points.tsx',
     'pages/mine/points-history.tsx',
     'pages/mine/registrations.tsx',
-    'pages/mine/courses.tsx',
     'pages/mine/collections.tsx',
+    'pages/mine/video-codes.tsx',
   ]
 
   assert.match(component, /refresherEnabled/)

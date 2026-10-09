@@ -1,0 +1,92 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.bodyInner {
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.courseTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.badge {
+  flex-shrink: 0;
+  border-radius: $radius-sm;
+  padding: 3px 8px;
+  font-size: $font-sm;
+}
+
+.badgeIssued {
+  color: $color-primary;
+  background: rgba(22, 119, 255, 0.08);
+}
+
+.badgeRedeemed {
+  color: $color-success;
+  background: rgba(7, 193, 96, 0.08);
+}
+
+.badgeInvalid {
+  color: $color-text-tertiary;
+  background: $color-bg;
+}
+
+.codeRow {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-sm;
+  background: $color-bg;
+}
+
+.codeText {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: $color-primary;
+  letter-spacing: 1px;
+}
+
+.meta {
+  margin-top: $spacing-sm;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+}
+
+.copyButton {
+  margin-top: $spacing-sm;
+}

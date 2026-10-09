@@ -747,6 +747,19 @@ export const STRINGS = {
   // ---- Courses Page ----
   MINE_COURSES_UNIT: '节',
 
+  // ---- VideoWeb Codes Page ----
+  MINE_VIDEO_CODES_TITLE: '我的兑换码',
+  MINE_VIDEO_CODES_STATUS_ISSUED: '待兑换',
+  MINE_VIDEO_CODES_STATUS_REDEEMED: '已兑换',
+  MINE_VIDEO_CODES_STATUS_REVOKED: '已撤销',
+  MINE_VIDEO_CODES_STATUS_REFUNDED: '已退款回收',
+  MINE_VIDEO_CODES_COURSE: '课程',
+  MINE_VIDEO_CODES_GENERATED_AT: '生成于 ',
+  MINE_VIDEO_CODES_COPY: '复制兑换码',
+  MINE_VIDEO_CODES_COPIED: '兑换码已复制',
+  MINE_VIDEO_CODES_EMPTY: '暂无课程兑换码',
+  MINE_VIDEO_CODES_LOAD_FAILED: '兑换码加载失败',
+
   // ---- Login Poster ----
   LOGIN_POSTER_TITLE: '活动推荐',
   LOGIN_POSTER_CLOSE: '关闭',

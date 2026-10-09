@@ -90,11 +90,6 @@ export default function ActivityDetailPage() {
     } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) }
   }
 
-  const goRelatedCourse = () => {
-    if (!activity?.related_course_id) return
-    Taro.navigateTo({ url: `/pages/course/detail?id=${activity.related_course_id}` })
-  }
-
   const copyLiveUrl = () => {
     if (!activity?.live_url) return
     Taro.setClipboardData({ data: activity.live_url })
@@ -175,18 +170,13 @@ export default function ActivityDetailPage() {
             </View>
           )}
 
-          {(activity.related_cert_id || activity.related_course_id) && (
+          {activity.related_cert_id && (
             <View className={styles.section}>
               <View className={styles.sectionTitle}>活动推荐</View>
               <View className={styles.entryRow}>
                 {activity.related_cert_id && (
                   <Button variant='primary' onClick={goRelatedCert} className={styles.entryBtn}>
                     立即报名认证
-                  </Button>
-                )}
-                {activity.related_course_id && (
-                  <Button variant='secondary' onClick={goRelatedCourse} className={styles.entryBtn}>
-                    查看课程
                   </Button>
                 )}
               </View>
