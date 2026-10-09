@@ -760,6 +760,19 @@ export const STRINGS = {
   MINE_VIDEO_CODES_EMPTY: '暂无课程兑换码',
   MINE_VIDEO_CODES_LOAD_FAILED: '兑换码加载失败',
 
+  // ---- VideoWeb Login Code Page ----
+  MINE_VIDEO_LOGIN_TITLE: '网站登录码',
+  MINE_VIDEO_LOGIN_DESC: '在课程视频中心登录页输入一次性登录码，5 分钟内有效且只能使用一次。',
+  MINE_VIDEO_LOGIN_GENERATE: '生成登录码',
+  MINE_VIDEO_LOGIN_REGENERATE: '重新生成',
+  MINE_VIDEO_LOGIN_GENERATING: '生成中...',
+  MINE_VIDEO_LOGIN_COPY: '复制登录码',
+  MINE_VIDEO_LOGIN_COPIED: '登录码已复制',
+  MINE_VIDEO_LOGIN_EXPIRED: '登录码已过期，请重新生成',
+  MINE_VIDEO_LOGIN_SECONDS: ' 秒后过期',
+  MINE_VIDEO_LOGIN_FAILED: '登录码生成失败',
+  MINE_VIDEO_LOGIN_TIP: '请勿将登录码转发给他人。',
+
   // ---- Login Poster ----
   LOGIN_POSTER_TITLE: '活动推荐',
   LOGIN_POSTER_CLOSE: '关闭',

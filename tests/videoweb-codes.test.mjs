@@ -21,6 +21,23 @@ test('mini program replaces old course playback with managed video codes', async
   assert.match(page, /RefreshableScrollView/)
 })
 
+test('mini program issues and displays a one-time website login code', async () => {
+  const appConfig = await read('src/app.config.ts')
+  const routes = await read('src/constants/routes.ts')
+  const profile = await read('src/constants/mock/profile.ts')
+  const service = await read('src/services/videoWebService.ts')
+  const page = await read('src/pages/mine/video-login.tsx')
+
+  assert.match(appConfig, /'video-login'/)
+  assert.match(routes, /MINE_VIDEO_LOGIN:/)
+  assert.match(profile, /MINE_VIDEO_LOGIN_TITLE/)
+  assert.match(service, /\/api\/videoweb\/login-code/)
+  assert.match(page, /createVideoWebLoginCode/)
+  assert.match(page, /setInterval/)
+  assert.match(page, /setClipboardData/)
+  assert.doesNotMatch(page, /user[_ ]?id/i)
+})
+
 test('course playback pages are removed and no runtime route remains', async () => {
   const routes = await read('src/constants/routes.ts')
   const activityDetail = await read('src/pages/activity-zone/detail.tsx')

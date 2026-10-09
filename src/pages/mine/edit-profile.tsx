@@ -240,7 +240,6 @@ export default function EditProfilePage() {
       await updateUserProfile({
         nickname: nickname.trim() || undefined,
         email: email.trim() || undefined,
-        phone: phone.trim() || undefined,
         province: province.trim() || undefined,
         city: city.trim() || undefined,
         address: address.trim() || undefined,

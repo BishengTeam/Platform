@@ -22,6 +22,7 @@ export const profileGridItems: ProfileMenuItem[] = [
 export const profileListGroups: ProfileMenuItem[][] = [
   [
     { icon: 'file-text', label: STRINGS.PROFILE_LIST_ORDERS, route: 'pages/orders/index', iconBg: '#EFF6FF', iconColor: '#2563EB' },
+    { icon: 'compass', label: STRINGS.MINE_VIDEO_LOGIN_TITLE, route: 'pages/mine/video-login', iconBg: '#ECFEFF', iconColor: '#0891B2' },
     { icon: 'award', label: STRINGS.MINE_VIDEO_CODES_TITLE, route: 'pages/mine/video-codes', iconBg: '#FFF7ED', iconColor: '#EA580C' },
     { icon: 'award', label: STRINGS.PROFILE_LIST_REGISTRATIONS, route: 'pages/mine/registrations', iconBg: '#F5F3FF', iconColor: '#7C3AED' },
     { icon: 'search', label: STRINGS.MINE_EXAM_QUERY_TITLE, route: 'pages/mine/exam-query', iconBg: '#F0FDFA', iconColor: '#0D9488' },

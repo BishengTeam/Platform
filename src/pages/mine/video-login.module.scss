@@ -1,0 +1,82 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-bg;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-lg;
+  padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
+}
+
+.card {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg;
+}
+
+.title {
+  font-size: $font-xl;
+  font-weight: 700;
+  color: $color-text;
+  text-align: center;
+}
+
+.desc {
+  margin-top: $spacing-sm;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.codeWrap {
+  margin-top: $spacing-xl;
+  padding: $spacing-lg 0;
+  border-radius: $radius-md;
+  background: rgba(22, 119, 255, 0.06);
+}
+
+.code {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: $color-primary;
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.codeExpired {
+  color: $color-text-tertiary;
+}
+
+.status {
+  margin-top: $spacing-sm;
+  font-size: $font-sm;
+  color: $color-text-tertiary;
+  text-align: center;
+}
+
+.statusActive {
+  color: $color-success;
+}
+
+.actions {
+  margin-top: $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.tip {
+  margin-top: $spacing-md;
+  font-size: $font-sm;
+  color: $color-warning;
+  text-align: center;
+}

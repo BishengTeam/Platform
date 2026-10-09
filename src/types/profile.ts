@@ -60,7 +60,6 @@ export interface UserProfileDetail {
 export interface UserProfileUpdatePayload {
   nickname?: string
   email?: string
-  phone?: string
   province?: string
   city?: string
   address?: string

@@ -1,4 +1,4 @@
-import { get } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 export interface VideoWebCode {
   id: number
@@ -15,4 +15,14 @@ export async function getMyVideoWebCodes(): Promise<VideoWebCode[]> {
   const data = response.data
   if (Array.isArray(data)) return data
   return data?.items ?? []
+}
+
+export interface VideoWebLoginCode {
+  login_code: string
+  expires_in: number
+}
+
+export async function createVideoWebLoginCode(): Promise<VideoWebLoginCode> {
+  const response = await post<VideoWebLoginCode>('/api/videoweb/login-code', undefined, false)
+  return response.data
 }

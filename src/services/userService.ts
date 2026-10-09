@@ -429,12 +429,12 @@ export async function getUserProfile(): Promise<UserProfileAggregated> {
   }
 }
 
-/** PUT /api/user/profile — 更新用户资料（重构后仅 Level-1 字段：nickname, email, phone） */
+/** PUT /api/user/profile — 更新用户资料（重构后仅 Level-1 字段，手机号走独立授权/验证链路） */
 export async function updateUserProfile(data: UserProfileUpdatePayload): Promise<UserProfileAggregated> {
   if (USE_MOCK) return {
     openid: 'mock-openid',
     created_at: new Date(0).toISOString(),
-    profile: { nickname: data.nickname || '张三', email: data.email || 'zhangsan@example.com', phone: data.phone || '138****1234', province: data.province || null, city: data.city || null, address: data.address || null },
+    profile: { nickname: data.nickname || '张三', email: data.email || 'zhangsan@example.com', phone: '138****1234', province: data.province || null, city: data.city || null, address: data.address || null },
     realname: { user_type: 'student', real_name: '张三', id_card: '110101********1234', id_card_front_oss: null, id_card_back_oss: null, gender: '男', age: 35, census_register: '北京', identity_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', id_card_raw: '110101199001011234', last_name_zh: null, first_name_zh: null, last_name_en: null, first_name_en: null, avatar_oss: null, birth_date: null, zip_code: null, political_status: null, ethnicity: null },
     student: { education: '本科', school: '清华大学', major: '计算机科学与技术', student_card_oss: null, student_status: 'verified', reject_reason: null, verified_at: '2026-06-01T00:00:00Z', enrollment_pdf_oss: null, degree_cert_oss: null },
     level2_edit_count: 0,
