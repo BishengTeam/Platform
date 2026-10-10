@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { usePhoneDecrypt } from '@/hooks/usePhoneDecrypt'
 import { STRINGS } from '@/constants/strings'
 import { getCertDetail, uploadFile, createOrder, getUserProfile } from '@/services/dataService'
+import { getNispLevelFromCertCode } from '@/services/nispService'
+import { ROUTES } from '@/constants/routes'
 import type { CertificationDetail } from '@/types'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { validateName, validatePhone, validateIdCard, validateEmail, validateRequired } from '@/utils/validator'
@@ -38,6 +40,18 @@ export default function RegistrationFormPage() {
     if (!id) return
     getCertDetail(id).then(setCert).catch(() => {})
   }, [certId])
+
+  useEffect(() => {
+    if (cert?.vendor === 'H3C') {
+      Taro.redirectTo({ url: `/${ROUTES.H3C_INDEX}` })
+      return
+    }
+    if (cert?.vendor === 'NISP') {
+      Taro.redirectTo({
+        url: `/${ROUTES.NISP_INDEX}?level=${getNispLevelFromCertCode(cert.code)}`,
+      })
+    }
+  }, [cert])
 
   // ---- 手机号解密 ----
   const { decrypting, handleGetPhoneNumber } = usePhoneDecrypt()

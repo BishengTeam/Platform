@@ -10,6 +10,7 @@ export type H3cRegistrationStatus =
   | 'cancelled'
 
 export interface H3cProfileDefaults {
+  identity_status: string | null
   candidate_name: string | null
   gender: string | null
   candidate_idcard: string | null

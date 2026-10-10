@@ -40,9 +40,9 @@ interface H3cFieldDef {
 }
 
 const BASE_FIELDS: H3cFieldDef[] = [
-  { key: 'candidate_name', label: '姓名', required: true, placeholder: '如：王小二' },
+  { key: 'candidate_name', label: '姓名', required: true, placeholder: '实名认证姓名', remark: '来自实名认证，不可修改' },
   { key: 'gender', label: '性别', required: true, placeholder: '男 / 女', remark: '可选值：男、女' },
-  { key: 'candidate_idcard', label: '身份证号', required: true, placeholder: '请输入身份证号', remark: '18位居民身份证号码' },
+  { key: 'candidate_idcard', label: '身份证号', required: true, placeholder: '实名认证身份证号', remark: '来自实名认证，不可修改' },
   { key: 'school', label: '单位/学校', required: true, placeholder: '请输入学校或单位全称' },
   { key: 'address', label: '通信地址', required: true, placeholder: '请输入详细通信地址' },
   { key: 'phone', label: '手机号', required: true, placeholder: '如：188XXXX8888' },
@@ -65,11 +65,20 @@ export default function H3CFormPage() {
   const [studentKey, setStudentKey] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [guideSlot, setGuideSlot] = useState<DocumentSceneSlot | null>(null)
+  const [identityVerified, setIdentityVerified] = useState(false)
 
   useLoad((options) => setBatchId(Number(options?.batch_id || 0)))
 
   useEffect(() => {
     h3cService.profileDefaults().then((data: H3cProfileDefaults) => {
+      const verified =
+        data.identity_status === 'verified' &&
+        Boolean(data.candidate_name && data.candidate_idcard)
+      setIdentityVerified(verified)
+      if (!verified) {
+        Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2500 })
+        return
+      }
       setForm((old) => ({
         ...old,
         candidate_name: data.candidate_name || '',
@@ -84,7 +93,8 @@ export default function H3CFormPage() {
         last_name_en: data.last_name_en || '',
       }))
     }).catch(() => {
-      Taro.showToast({ title: '加载个人信息失败，请手动填写', icon: 'none' })
+      setIdentityVerified(false)
+      Taro.showToast({ title: '加载实名信息失败，请先完成实名认证', icon: 'none' })
     })
   }, [])
 
@@ -150,6 +160,11 @@ export default function H3CFormPage() {
 
   const submit = async () => {
     if (!batch || submitting) return
+    if (!identityVerified) {
+      Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2000 })
+      setTimeout(() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` }), 500)
+      return
+    }
     if (BASE_FIELDS.some((field) => !form[field.key])) {
       Taro.showToast({ title: '请完整填写报名信息', icon: 'none' })
       return
@@ -263,10 +278,15 @@ export default function H3CFormPage() {
                   <Text className={styles.label}>{field.label}</Text>
                 </View>
                 <Input
-                  className={styles.input}
+                  className={`${styles.input} ${
+                    field.key === 'candidate_name' || field.key === 'candidate_idcard'
+                      ? styles.inputDisabled
+                      : ''
+                  }`}
                   placeholder={field.placeholder}
                   placeholderClass={styles.placeholder}
                   value={form[field.key]}
+                  disabled={field.key === 'candidate_name' || field.key === 'candidate_idcard'}
                   onInput={(event) => update(field.key, event.detail.value)}
                 />
                 {field.remark && <Text className={styles.remark}>{field.remark}</Text>}
@@ -327,8 +347,15 @@ export default function H3CFormPage() {
             </View>
           )}
 
-          <Button variant='gradient' size='lg' onClick={submit}>
-            {submitting ? '提交中...' : `提交并支付 ${(price / 100).toFixed(2)} 元`}
+          <Button
+            variant='gradient'
+            size='lg'
+            disabled={!identityVerified || submitting}
+            onClick={submit}
+          >
+            {identityVerified
+              ? submitting ? '提交中...' : `提交并支付 ${(price / 100).toFixed(2)} 元`
+              : '请先完成实名认证'}
           </Button>
         </View>
       </View>

@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { nispService } from '@/services/nispService'
+import { getUserProfile } from '@/services/userService'
 import type { NispBatch, NispMaterialType, NispOrderCreatePayload } from '@/services/nispService'
 import {
   DEFAULT_NISP_APPLICATION_FORM_ENTRY_TEXT,
@@ -55,11 +56,40 @@ export default function NispFormPage() {
   const [appFormKey, setAppFormKey] = useState('')
   const [educationGuideSlot, setEducationGuideSlot] = useState<DocumentSceneSlot | null>(null)
   const [applicationFormSlot, setApplicationFormSlot] = useState<DocumentSceneSlot | null>(null)
+  const [identityVerified, setIdentityVerified] = useState(false)
 
   useLoad((options) => {
     setBatchId(Number(options?.batch_id || 0))
     setLevel((options?.level as '1' | '2') || '1')
   })
+
+  useEffect(() => {
+    getUserProfile().then(profile => {
+      const realname = profile.realname
+      const verified =
+        realname?.identity_status === 'verified' &&
+        Boolean(realname.real_name && realname.id_card_raw)
+      setIdentityVerified(verified)
+      if (!verified || !realname) {
+        Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2500 })
+        return
+      }
+      setForm(old => ({
+        ...old,
+        name: realname.real_name || '',
+        id_card: realname.id_card_raw || '',
+        gender: realname.gender || '',
+        age: realname.age === null || realname.age === undefined ? '' : String(realname.age),
+        zip_code: realname.zip_code || '',
+        major: profile.student?.major || old.major,
+        school: profile.student?.school || old.school,
+        education: profile.student?.education || old.education,
+      }))
+    }).catch(() => {
+      setIdentityVerified(false)
+      Taro.showToast({ title: '加载实名信息失败，请先完成实名认证', icon: 'none' })
+    })
+  }, [])
 
   useEffect(() => {
     if (!batchId) return
@@ -199,6 +229,11 @@ export default function NispFormPage() {
   }
 
   const submit = async () => {
+    if (!identityVerified) {
+      Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2000 })
+      setTimeout(() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` }), 500)
+      return
+    }
     if (!batch || submitting || !validate()) return
     if (!agreed) {
       Taro.showToast({
@@ -271,6 +306,7 @@ export default function NispFormPage() {
     placeholder: string,
     required = false,
     wide = false,
+    readonly = false,
   ) => (
     <View className={`${styles.field} ${wide ? styles.fieldWide : ''}`} key={key}>
       <View className={styles.labelRow}>
@@ -278,8 +314,9 @@ export default function NispFormPage() {
         <Text className={styles.label}>{label}</Text>
       </View>
       <Input
-        className={styles.input}
+        className={`${styles.input} ${readonly ? styles.inputDisabled : ''}`}
         value={form[key]}
+        disabled={readonly}
         onInput={(e) => setField(key, e.detail.value)}
         placeholder={placeholder}
         placeholderClass={styles.remark}
@@ -347,12 +384,12 @@ export default function NispFormPage() {
           <View className={styles.sectionCard}>
             <Text className={styles.sectionTitle}>基础信息</Text>
             <View className={styles.fieldGrid}>
-              {inputField('name', '姓名', '真实姓名', true)}
+              {inputField('name', '姓名', '实名认证姓名', true, false, true)}
               {inputField('pinyin', '拼音', 'ZHANG SAN', true)}
               {inputField('major', '专业', '信息安全', true)}
               {pickerField('province', '报考省份', PROVINCES)}
               {inputField('school', '学校/单位', '学校或单位全称', true, true)}
-              {inputField('id_card', '身份证号', '18位身份证号', true, true)}
+              {inputField('id_card', '身份证号', '实名认证身份证号', true, true, true)}
               {inputField('phone', '手机号码', '11位手机号', true)}
               {inputField('email', '邮箱', '用于考试通知', true)}
             </View>
@@ -472,8 +509,15 @@ export default function NispFormPage() {
             </View>
 
             <View className={styles.submitBox}>
-              <Button variant='gradient' size='lg' onClick={submit}>
-                {submitting ? '提交中...' : `提交并支付 ¥${price.toFixed(2)}`}
+              <Button
+                variant='gradient'
+                size='lg'
+                disabled={!identityVerified || submitting}
+                onClick={submit}
+              >
+                {identityVerified
+                  ? submitting ? '提交中...' : `提交并支付 ¥${price.toFixed(2)}`
+                  : '请先完成实名认证'}
               </Button>
             </View>
           </View>
