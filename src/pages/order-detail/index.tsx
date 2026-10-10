@@ -100,9 +100,14 @@ export default function OrderDetailPage() {
   }, [detail, startCountdown, clearTimer])
 
   const isExpired = detail?.status === 'pending' && Boolean(detail.expiresAt) && remaining <= 0
+  const isVirtualOrder = detail?.orderKind === 'course' || detail?.orderKind === 'quiz_order'
 
   const handlePay = async () => {
     if (!detail || paying || isExpired) return
+    if (isVirtualOrder) {
+      Taro.showToast({ title: '课程/题库订单已停止支付', icon: 'none', duration: 3000 })
+      return
+    }
     setPaying(true)
     try {
       const prepay = await prepayOrder(detail.numericId)
@@ -302,10 +307,10 @@ export default function OrderDetailPage() {
                   <Text>{cancelling ? '取消中...' : '取消订单'}</Text>
                 </View>
                 <View
-                  className={`${styles.payBtn} ${paying || cancelling ? styles.payBtnDisabled : ''}`}
+                  className={`${styles.payBtn} ${isVirtualOrder || paying || cancelling ? styles.payBtnDisabled : ''}`}
                   onClick={handlePay}
                 >
-                  <Text>{paying ? '支付中...' : '立即支付'}</Text>
+                  <Text>{isVirtualOrder ? '无法支付' : paying ? '支付中...' : '立即支付'}</Text>
                 </View>
               </View>
             )}

@@ -71,7 +71,6 @@ export {
   getCourseCategories,
   getCourseById,
   getMyCourses,
-  purchaseCourse,
   getCourseChapters,
   getChapterPlaybackUrl,
   getCourseProgress,

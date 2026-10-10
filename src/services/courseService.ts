@@ -8,7 +8,6 @@ import type {
   CourseChapters,
   CourseDetail,
   CourseChapterProgress,
-  CoursePurchaseResponse,
 } from '@/types'
 
 export async function getCourseList(): Promise<CourseBrief[]> {
@@ -64,14 +63,6 @@ export async function saveCourseProgress(
     last_position_seconds: Math.max(0, Math.floor(lastPositionSeconds)),
     is_completed: isCompleted,
   })
-}
-
-export async function purchaseCourse(courseId: number): Promise<CoursePurchaseResponse> {
-  const res = await post<CoursePurchaseResponse>(`/api/courses/${courseId}/purchase`)
-  if (res.code !== 0 || !res.data) {
-    throw new Error(res.message || '课程购买请求失败')
-  }
-  return res.data
 }
 
 const POLL_INTERVAL_MS = 2000
