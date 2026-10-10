@@ -6,6 +6,7 @@ export type H3cRegistrationStatus =
   | 'pending_refund_confirmation'
   | 'refund_processing'
   | 'approved'
+  | 'final_approved'
   | 'refunded_closed'
   | 'cancelled'
 

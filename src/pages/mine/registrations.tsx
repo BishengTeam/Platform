@@ -38,6 +38,7 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   pending_refund_confirmation: { label: '待确认退款', cls: styles.statusPending },
   refund_processing: { label: '退款中', cls: styles.statusPending },
   approved: { label: '审核通过', cls: styles.statusApproved },
+  final_approved: { label: '终审通过', cls: styles.statusApproved },
   refunded_closed: { label: '已退款关闭', cls: styles.statusNeutral },
   cancelled: { label: '已取消', cls: styles.statusNeutral },
 }
