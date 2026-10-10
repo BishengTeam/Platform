@@ -20,6 +20,17 @@ export interface NispMaterialUploadResult {
 }
 
 export interface NispResubmitPayload {
+  pinyin?: string | null
+  phone?: string | null
+  email?: string | null
+  school?: string | null
+  major?: string | null
+  province?: string | null
+  gender?: string | null
+  age?: number | null
+  education?: string | null
+  address?: string | null
+  zip_code?: string | null
   id_card_both_sides_key?: string | null
   portrait_photo_key?: string | null
   xuexin_report_key?: string | null
@@ -64,6 +75,14 @@ export interface NispRegistration {
     reason_detail: string | null
     rejected_material_types: string[] | null
   } | null
+  pending_correction?: {
+    allowed_fields: string[]
+    allowed_material_types: string[] | null
+    reason_detail: string | null
+    due_at: string
+    status: string
+  } | null
+  versions?: Array<{ version_no: number; is_current: boolean; submitted_at: string }>
   created_at: string
   updated_at: string
 }

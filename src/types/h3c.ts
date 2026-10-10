@@ -83,6 +83,14 @@ export interface H3cRegistration {
   exam_date: string | null
   exam_location: string | null
   materials: H3cMaterial[]
+  pending_correction?: {
+    allowed_fields: string[]
+    allowed_material_types: string[] | null
+    reason_detail: string | null
+    due_at: string
+    status: string
+  } | null
+  versions?: Array<{ version_no: number; is_current: boolean; submitted_at: string }>
   latest_review: {
     decision: string
     reason_code: string | null

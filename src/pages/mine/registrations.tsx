@@ -214,83 +214,125 @@ export default function MyRegistrationsPage() {
     }
   }
 
-  const uploadH3c = async (registration: H3cRegistrationCard) => {
-    const materialType = registration.latest_review?.rejected_material_types?.[0]
-    if (materialType !== 'coupon_proof' && materialType !== 'student_proof') return
-
-    try {
-      const result = await Taro.chooseImage({
-        count: 1,
-        sizeType: ['compressed'],
-        sourceType: ['album', 'camera'],
-      })
-      const filePath = result.tempFilePaths[0]
-      if (!filePath) return
-
-      Taro.showLoading({ title: '上传中', mask: true })
-      const uploaded = await h3cService.uploadMaterial(
-        filePath,
-        registration.batch_id,
-        materialType,
-      )
-      await h3cService.resubmitMaterials(registration.id, {
-        coupon_proof_key: materialType === 'coupon_proof' ? uploaded.storage_key : null,
-        student_proof_key: materialType === 'student_proof' ? uploaded.storage_key : null,
-      })
-      Taro.showToast({ title: '补交成功', icon: 'success' })
-      setSelected(null)
-      load()
-    } catch (err) {
-      if (isUserCancelled(err)) return
-      Taro.showToast({
-        title: err instanceof Error ? err.message : '补交失败，请重试',
-        icon: 'none',
-        duration: 3000,
-      })
-    } finally {
-      Taro.hideLoading()
+  const promptCorrectionField = async (
+    field: string,
+    currentValue: string,
+  ): Promise<string | null> => {
+    const labels: Record<string, string> = {
+      phone: '手机号', email: '邮箱', school: '学校/单位', address: '通信地址',
+      verify_code: '学籍验证码', pinyin: '拼音', major: '专业', province: '报考省份',
+      gender: '性别', age: '年龄', education: '最高学历', zip_code: '邮编',
     }
+    const result = await Taro.showModal({
+      title: `补正${labels[field] || field}`,
+      editable: true,
+      placeholderText: `请输入正确的${labels[field] || field}`,
+      content: currentValue,
+      confirmText: '确定',
+      cancelText: '取消',
+    } as never)
+    const editableResult = result as unknown as { confirm?: boolean; content?: string }
+    if (!editableResult.confirm) return null
+    return String(editableResult.content || '').trim()
+  }
+
+  const uploadH3c = async (registration: H3cRegistrationCard) => {
+    const correction = registration.pending_correction
+    const fieldValues: Record<string, string> = {}
+    for (const field of correction?.allowed_fields || []) {
+      const value = await promptCorrectionField(
+        field,
+        String(registration.candidate_snapshot[field] ?? ''),
+      )
+      if (value === null || !value) return
+      fieldValues[field] = value
+    }
+
+    const materialTypes = (
+      correction?.allowed_material_types
+      ?? registration.latest_review?.rejected_material_types
+      ?? []
+    ).filter(type => type === 'coupon_proof' || type === 'student_proof')
+    const materialValues: Record<string, string> = {}
+    for (const materialType of materialTypes) {
+      try {
+        const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
+        const filePath = result.tempFilePaths[0]
+        if (!filePath) return
+        Taro.showLoading({ title: '上传中', mask: true })
+        const uploaded = await h3cService.uploadMaterial(
+          filePath, registration.batch_id, materialType,
+        )
+        materialValues[materialType] = uploaded.storage_key
+      } catch (err) {
+        if (isUserCancelled(err)) return
+        throw err
+      } finally {
+        Taro.hideLoading()
+      }
+    }
+
+    await h3cService.resubmitMaterials(registration.id, {
+      phone: fieldValues.phone ?? null,
+      email: fieldValues.email ?? null,
+      school: fieldValues.school ?? null,
+      address: fieldValues.address ?? null,
+      verify_code: fieldValues.verify_code ?? null,
+      coupon_proof_key: materialValues.coupon_proof ?? null,
+      student_proof_key: materialValues.student_proof ?? null,
+    })
+    Taro.showToast({ title: '补正已提交', icon: 'success' })
+    setSelected(null)
+    load()
   }
 
   const uploadNisp = async (registration: NispRegistrationCard) => {
-    const rejectedMaterials = (registration.latest_review?.rejected_material_types ?? [])
-      .filter((type): type is NispMaterialType => type in NISP_MATERIAL_LABELS)
-    if (rejectedMaterials.length === 0) return
-
-    try {
-      const payload: Partial<Record<NispMaterialType, string>> = {}
-      for (const materialType of rejectedMaterials) {
-        Taro.showToast({
-          title: `请选择${NISP_MATERIAL_LABELS[materialType]}`,
-          icon: 'none',
-        })
-        const filePath = await chooseNispFile(materialType)
-        if (!filePath) return
-
-        Taro.showLoading({ title: '上传中', mask: true })
-        const uploaded = await nispService.uploadMaterial(filePath, materialType)
-        payload[materialType] = uploaded.storage_key
-      }
-
-      await nispService.resubmitMaterials(registration.id, {
-        id_card_both_sides_key: payload.id_card_both_sides ?? null,
-        portrait_photo_key: payload.portrait_photo ?? null,
-        xuexin_report_key: payload.xuexin_report ?? null,
-        application_form_key: payload.application_form ?? null,
-      })
-      Taro.showToast({ title: '补交成功', icon: 'success' })
-      setSelected(null)
-      load()
-    } catch (err) {
-      if (isUserCancelled(err)) return
-      Taro.showToast({
-        title: err instanceof Error ? err.message : '补交失败，请重试',
-        icon: 'none',
-        duration: 3000,
-      })
-    } finally {
-      Taro.hideLoading()
+    const correction = registration.pending_correction
+    const fieldValues: Record<string, string> = {}
+    for (const field of correction?.allowed_fields || []) {
+      const value = await promptCorrectionField(
+        field,
+        String(registration.candidate_snapshot[field] ?? ''),
+      )
+      if (value === null || !value) return
+      fieldValues[field] = value
     }
+
+    const materialTypes = (
+      correction?.allowed_material_types
+      ?? registration.latest_review?.rejected_material_types
+      ?? []
+    ).filter((type): type is NispMaterialType => type in NISP_MATERIAL_LABELS)
+    const payload: Partial<Record<NispMaterialType, string>> = {}
+    for (const materialType of materialTypes) {
+      Taro.showToast({ title: `请选择${NISP_MATERIAL_LABELS[materialType]}`, icon: 'none' })
+      const filePath = await chooseNispFile(materialType)
+      if (!filePath) return
+      Taro.showLoading({ title: '上传中', mask: true })
+      const uploaded = await nispService.uploadMaterial(filePath, materialType)
+      payload[materialType] = uploaded.storage_key
+    }
+
+    await nispService.resubmitMaterials(registration.id, {
+      pinyin: fieldValues.pinyin ?? null,
+      phone: fieldValues.phone ?? null,
+      email: fieldValues.email ?? null,
+      school: fieldValues.school ?? null,
+      major: fieldValues.major ?? null,
+      province: fieldValues.province ?? null,
+      gender: fieldValues.gender ?? null,
+      age: fieldValues.age ? Number(fieldValues.age) : null,
+      education: fieldValues.education ?? null,
+      address: fieldValues.address ?? null,
+      zip_code: fieldValues.zip_code ?? null,
+      id_card_both_sides_key: payload.id_card_both_sides ?? null,
+      portrait_photo_key: payload.portrait_photo ?? null,
+      xuexin_report_key: payload.xuexin_report ?? null,
+      application_form_key: payload.application_form ?? null,
+    })
+    Taro.showToast({ title: '补正已提交', icon: 'success' })
+    setSelected(null)
+    load()
   }
 
   const upload = async (registration: UnifiedRegistration) => {
@@ -481,7 +523,7 @@ export default function MyRegistrationsPage() {
                     className={`${styles.actionBtn} ${styles.actionPrimary}`}
                     onClick={() => upload(selected)}
                   >
-                    <Text>补交材料</Text>
+                    <Text>{selected.pending_correction ? '提交补正' : '补交材料'}</Text>
                   </View>
                 </View>
               )}

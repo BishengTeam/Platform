@@ -64,7 +64,15 @@ export const h3cService = {
   },
   async resubmitMaterials(
     id: number,
-    payload: { coupon_proof_key?: string | null; student_proof_key?: string | null },
+    payload: {
+      phone?: string | null
+      email?: string | null
+      school?: string | null
+      address?: string | null
+      verify_code?: string | null
+      coupon_proof_key?: string | null
+      student_proof_key?: string | null
+    },
   ): Promise<H3cRegistration> {
     return (await post<H3cRegistration>(
       `/api/h3c/registrations/${id}/materials`,
