@@ -45,45 +45,47 @@ export function ZoneCard({
       {coverUrl && (
         <Image className={styles.cover} src={coverUrl} mode='aspectFill' />
       )}
-      <View className={styles.header}>
-        <View className={styles.title}>{title}</View>
-        {statusLabel && (
-          <View className={styles.statusTag} style={statusColor ? { color: statusColor, borderColor: statusColor } : undefined}>
-            {statusLabel}
+      <View className={styles.content}>
+        <View className={styles.header}>
+          <View className={styles.title}>{title}</View>
+          {statusLabel && (
+            <View className={styles.statusTag} style={statusColor ? { color: statusColor, borderColor: statusColor } : undefined}>
+              {statusLabel}
+            </View>
+          )}
+        </View>
+        {subtitle && <View className={styles.subtitle}>{subtitle}</View>}
+        {tags.length > 0 && (
+          <View className={styles.tags}>
+            {tags.map((tag, i) => (
+              <View key={i} className={styles.tag}>{tag}</View>
+            ))}
+          </View>
+        )}
+        {buttonText && (
+          <View className={styles.bottom}>
+            {price ? (
+              <View className={styles.priceRow}>
+                <View className={styles.price}>{price}</View>
+                {originalPrice && (
+                  <View className={styles.originalPrice}>{originalPrice}</View>
+                )}
+              </View>
+            ) : (
+              <View />
+            )}
+            <Button
+              variant={buttonVariant}
+              color={buttonColor}
+              size='sm'
+              className={styles.btn}
+              onClick={onButtonClick}
+            >
+              {buttonText}
+            </Button>
           </View>
         )}
       </View>
-      {subtitle && <View className={styles.subtitle}>{subtitle}</View>}
-      {tags.length > 0 && (
-        <View className={styles.tags}>
-          {tags.map((tag, i) => (
-            <View key={i} className={styles.tag}>{tag}</View>
-          ))}
-        </View>
-      )}
-      {buttonText && (
-        <View className={styles.bottom}>
-          {price ? (
-            <View className={styles.priceRow}>
-              <View className={styles.price}>{price}</View>
-              {originalPrice && (
-                <View className={styles.originalPrice}>{originalPrice}</View>
-              )}
-            </View>
-          ) : (
-            <View />
-          )}
-          <Button
-            variant={buttonVariant}
-            color={buttonColor}
-            size='sm'
-            className={styles.btn}
-            onClick={onButtonClick}
-          >
-            {buttonText}
-          </Button>
-        </View>
-      )}
     </View>
   )
 }

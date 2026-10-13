@@ -1,11 +1,15 @@
 @use '../../styles/variables' as *;
 
 .card {
-  max-width: 95%;
+  // 显式宽度：flex 列容器中 auto margin 会取消 stretch、使卡片按内容收缩，
+  // 故不能依赖 max-width + stretch，需写死 width 才能宽度稳定且水平居中
+  width: 95%;
+  margin: 0 auto;
   border-radius: $radius-lg;
-  padding: $spacing-md;
   background: $color-white;
   box-shadow: $shadow-sm;
+  // 封面贴边展示，由卡片自身裁出圆角
+  overflow: hidden;
   transition:
     transform $motion-duration-press $motion-ease-out,
     opacity $motion-duration-press $motion-ease-out;
@@ -17,11 +21,15 @@
 }
 
 .cover {
+  display: block;
   width: 100%;
   // 封面规范为 1404×640（宽高比 2.19），卡片宽约 667rpx，等比完整展示需高约 304rpx；
   // 固定高度不足时 aspectFill 会裁掉封面上下的标题文字
   height: 304px;
-  border-radius: $radius-md;
+}
+
+.content {
+  padding: $spacing-sm $spacing-md $spacing-md;
 }
 
 .faded {

@@ -9,14 +9,10 @@ import { EmptyState } from '@/components/EmptyState'
 import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
-import {
-  getActivityList, getJobList, getCompetitionList,
-  remindActivity,
-} from '@/services/dataService'
+import { getActivityList, getJobList, getCompetitionList } from '@/services/dataService'
 import type { ActivityBrief, CompetitionBrief, JobBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import { resolveMediaUrl } from '@/utils/media'
-import { formatDate } from '@/utils/format'
 import styles from './index.module.scss'
 
 type MainTab = 'activity' | 'competition' | 'employment'
@@ -91,16 +87,6 @@ export default function ActivityZonePage() {
       return { label: STRINGS.ACTIVITY_UPCOMING, color: '#FA8C16' }
     }
     return { label: STRINGS.ACTIVITY_ENDED, color: '#999999' }
-  }
-
-  const getActivityButton = (item: ActivityBrief) => {
-    if (endedActivities.some(a => a.id === item.id)) {
-      return { text: STRINGS.ACTIVITY_VIEW_DETAIL, variant: 'secondary' as const }
-    }
-    if (upcomingActivities.some(a => a.id === item.id)) {
-      return { text: STRINGS.ACTIVITY_REMIND, variant: 'primary' as const }
-    }
-    return { text: STRINGS.ACTIVITY_JOIN, variant: 'primary' as const }
   }
 
   // 竞赛状态：比赛结束 > 报名截止 > 报名中（已截止/已结束的赛事仍展示，仅标记状态）
@@ -201,40 +187,16 @@ export default function ActivityZonePage() {
               <View className={styles.cardList}>
                 {activityData.map((item) => {
                   const status = getActivityStatusInfo(item)
-                  const btn = getActivityButton(item)
-                  const activityTime = [
-                    formatDate(item.start_time, ''),
-                    formatDate(item.end_time, ''),
-                  ].filter(Boolean).join(' ~ ')
                   return (
                     <ZoneCard
                       key={item.id}
                       coverUrl={resolveMediaUrl(item.cover_url)}
                       title={item.title}
-                      subtitle={item.description ?? ''}
-                      tags={[item.location ?? '', activityTime]}
                       statusLabel={status.label}
                       statusColor={status.color}
-                      buttonText={btn.text}
-                      buttonVariant={btn.variant}
-                      buttonColor='#722ED1'
                       isFaded={status.label === STRINGS.ACTIVITY_ENDED}
                       onCardClick={() => {
                         Taro.navigateTo({ url: `/pages/activity-zone/detail?id=${item.id}` })
-                      }}
-                      onButtonClick={async () => {
-                        try {
-                          if (btn.text === STRINGS.ACTIVITY_JOIN || btn.text === STRINGS.ACTIVITY_VIEW_DETAIL) {
-                            // 报名需收集姓名/电话，统一在详情页表单完成
-                            Taro.navigateTo({ url: `/pages/activity-zone/detail?id=${item.id}` })
-                          } else if (btn.text === STRINGS.ACTIVITY_REMIND) {
-                            await remindActivity(item.id)
-                            Taro.showToast({ title: '已设置提醒', icon: 'success' })
-                          }
-                        } catch (error) {
-                          const fallback = btn.text === STRINGS.ACTIVITY_REMIND ? '设置提醒失败' : '报名失败'
-                          Taro.showToast({ title: error instanceof Error ? error.message : fallback, icon: 'none', duration: 3000 })
-                        }
                       }}
                     />
                   )

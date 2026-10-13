@@ -24,14 +24,15 @@ test('activity zone defaults to competition and shows preparing empty states', a
   assert.match(source, /price=\{job\.salary_range \?\? ''\}/)
   assert.match(source, /text: item\.contact_info \? '复制联系方式' : '暂无联系方式'/)
   assert.doesNotMatch(source, /`联系：\$\{item\.contact_info\}`/)
-  // 活动卡片时间必须经过本地日期格式化，不能透出后端 ISO 原文。
-  assert.match(source, /const activityTime = \[[\s\S]*?formatDate\(item\.start_time, ''\)[\s\S]*?formatDate\(item\.end_time, ''\)[\s\S]*?\]\.filter\(Boolean\)\.join\(' ~ '\)/)
+  // 活动卡片与竞赛卡片同构：仅封面 + 标题 + 状态角标，明细（时间/地点/描述）一律进详情页。
+  // 断言限定在活动区块内，就业卡片的按钮不受影响。
+  const activityBlock = source.match(/mainTab === 'activity' && \([\s\S]*?mainTab === 'competition'/)?.[0] ?? ''
+  assert.ok(activityBlock, 'activity list block should exist')
+  assert.doesNotMatch(activityBlock, /subtitle=|tags=\{|buttonText=|remindActivity/)
+  assert.match(activityBlock, /coverUrl=\{resolveMediaUrl\(item\.cover_url\)\}/)
+  // 已结束活动保留淡化样式标识。
+  assert.match(activityBlock, /isFaded=\{status\.label === STRINGS\.ACTIVITY_ENDED\}/)
   assert.doesNotMatch(source, /\$\{item\.start_time[^}]*\}-\$\{item\.end_time/)
-  // 活动封面与竞赛一致：列表卡片直接渲染后台配置图。
-  assert.match(source, /coverUrl=\{resolveMediaUrl\(item\.cover_url\)\}/)
-  // 预约提醒失败不能回落成“报名失败”，操作文案必须与按钮语义一致。
-  assert.match(source, /const fallback = btn\.text === STRINGS\.ACTIVITY_REMIND \? '设置提醒失败' : '报名失败'/)
-  assert.doesNotMatch(source, /error\.message : '报名失败', icon: 'none', duration: 3000/)
 })
 
 test('home activity and employment surfaces follow backend content visibility', async () => {
