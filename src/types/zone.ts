@@ -67,6 +67,12 @@ export interface CompetitionCustomField {
   sort_order: number
 }
 
+/** 在线查阅附件（PDF 转页图，仅可见不可下载；详情接口返回） */
+export interface CompetitionAttachment {
+  title: string
+  pages: string[]
+}
+
 export interface CompetitionBrief {
   id: number
   name: string
@@ -74,6 +80,10 @@ export interface CompetitionBrief {
   cover_url: string | null
   /** 首页竞赛专区竖版封面（686×680）；空则回退 cover_url */
   home_cover_url: string | null
+  /** 详情页长图海报（完整展示不裁切）；仅详情接口返回，空则回退 cover_url */
+  poster_url?: string | null
+  /** 在线查阅附件；仅详情接口返回 */
+  attachments?: CompetitionAttachment[] | null
   start_time: string | null
   end_time: string | null
   registration_deadline: string | null

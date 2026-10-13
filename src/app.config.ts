@@ -63,7 +63,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/competition',
-      pages: ['detail'],
+      pages: ['detail', 'attachment'],
     },
     {
       root: 'pages/classroom',

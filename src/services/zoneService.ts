@@ -203,6 +203,13 @@ export async function getCompetitionList(): Promise<CompetitionBrief[]> {
   return res.data ?? []
 }
 
+/** GET /api/competition/{id} — 赛事详情（海报 + 在线查阅附件；列表接口不携带） */
+export async function getCompetitionDetail(id: number): Promise<CompetitionBrief | null> {
+  if (USE_MOCK) return null
+  const res = await get<CompetitionBrief>(`/api/competition/${id}`)
+  return res.data ?? null
+}
+
 /** GET /api/competition/my-registrations — 我的竞赛报名 */
 export async function getMyCompetitionRegistrations(): Promise<CompetitionMyRegistration[]> {
   if (USE_MOCK) return []

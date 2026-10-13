@@ -20,6 +20,38 @@
   border-radius: 16px;
 }
 
+// 详情长图海报：完整展示不裁切；不开启长按菜单等任何保存入口
+.poster {
+  display: block;
+  width: 100%;
+  border-radius: 16px;
+}
+
+.attachmentList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.attachmentItem {
+  padding: 20px 24px;
+  background: #F5F7FA;
+  border-radius: 14px;
+}
+
+.attachmentName {
+  font-size: 28px;
+  font-weight: 500;
+  color: #1A1A1A;
+}
+
+.attachmentMeta {
+  display: block;
+  margin-top: 8px;
+  font-size: 22px;
+  color: #999;
+}
+
 .title {
   margin-top: 24px;
   font-size: 40px;

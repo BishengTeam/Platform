@@ -10,7 +10,7 @@ import {
   type CompetitionRegFormValues,
 } from '@/components/CompetitionRegForm'
 import {
-  getCompetitionList,
+  getCompetitionDetail,
   getMyCompetitionRegistrations,
   signupCompetition,
 } from '@/services/zoneService'
@@ -38,8 +38,9 @@ export default function CompetitionDetailPage() {
       setLoading(false)
       return
     }
-    getCompetitionList()
-      .then((items) => setCompetition(items.find((c) => c.id === competitionId) ?? null))
+    // 详情接口独有海报长图与在线查阅附件；列表接口不携带
+    getCompetitionDetail(competitionId)
+      .then((detail) => setCompetition(detail))
       .catch(() => setCompetition(null))
       .finally(() => setLoading(false))
     // 进入页面即恢复“已报名”状态（此前仅内存记录，重进页面会丢失）
@@ -85,8 +86,8 @@ export default function CompetitionDetailPage() {
       setFormValues(emptyCompetitionRegFormValues())
       Taro.showToast({ title: '报名成功', icon: 'success' })
       // Refresh competition data to update track enrollment counts
-      getCompetitionList()
-        .then((items) => setCompetition(items.find((c) => c.id === competitionId) ?? competition))
+      getCompetitionDetail(competitionId)
+        .then((detail) => setCompetition(detail ?? competition))
         .catch(() => {})
     } catch (err) {
       Taro.showToast({
@@ -114,8 +115,13 @@ export default function CompetitionDetailPage() {
 
       {!loading && competition && (
         <View className={styles.detail}>
-          {competition.cover_url && (
-            <Image className={styles.cover} src={resolveMediaUrl(competition.cover_url)} mode='aspectFill' />
+          {competition.poster_url ? (
+            // 长图海报完整展示；不接预览/长按菜单，配合附件页落实「不可下载」
+            <Image className={styles.poster} src={resolveMediaUrl(competition.poster_url)} mode='widthFix' />
+          ) : (
+            competition.cover_url && (
+              <Image className={styles.cover} src={resolveMediaUrl(competition.cover_url)} mode='aspectFill' />
+            )
           )}
           <View className={styles.title}>{competition.name}</View>
 
@@ -138,6 +144,30 @@ export default function CompetitionDetailPage() {
             <View className={styles.section}>
               <View className={styles.sectionTitle}>赛事介绍</View>
               <View className={styles.sectionBody}>{competition.description}</View>
+            </View>
+          )}
+
+          {(competition.attachments?.length ?? 0) > 0 && (
+            <View className={styles.section}>
+              <View className={styles.sectionTitle}>在线查阅附件</View>
+              <View className={styles.attachmentList}>
+                {competition.attachments!.map((att, index) => (
+                  <View
+                    key={`${index}-${att.title}`}
+                    className={styles.attachmentItem}
+                    onClick={() => {
+                      Taro.navigateTo({
+                        url: `/pages/competition/attachment?id=${competitionId}&att=${index}`,
+                      })
+                    }}
+                  >
+                    <View className={styles.attachmentName}>{att.title}</View>
+                    <Text className={styles.attachmentMeta}>
+                      {att.pages.length} 页 · 仅限在线查看
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
 
