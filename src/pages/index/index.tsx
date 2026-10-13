@@ -238,8 +238,11 @@ export default function IndexPage() {
               items={(homeData?.zones['competition']?.competitions ?? []).map((comp) => ({
                 id: comp.id,
                 title: comp.name,
-                description: comp.description ?? '',
-                cover_url: resolveMediaUrl(comp.cover_url),
+                description: null,
+                // 竖版封面（686×680 ≈ 卡片 343×340rpx）优先，未配置时回退横版封面裁中
+                cover_url: resolveMediaUrl(comp.home_cover_url || comp.cover_url),
+                // 竖版封面按固定 1:1 裁剪，全部用高卡保证所见即所得
+                tall: true,
                 tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
                 tagColor: '#FA8C16',
               }))}

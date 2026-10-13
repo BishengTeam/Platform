@@ -11,7 +11,7 @@ interface ZoneCardProps {
   originalPrice?: string
   statusLabel?: string
   statusColor?: string
-  buttonText: string
+  buttonText?: string
   buttonVariant?: 'primary' | 'secondary' | 'gradient'
   buttonColor?: string
   onButtonClick?: () => void
@@ -61,27 +61,29 @@ export function ZoneCard({
           ))}
         </View>
       )}
-      <View className={styles.bottom}>
-        {price ? (
-          <View className={styles.priceRow}>
-            <View className={styles.price}>{price}</View>
-            {originalPrice && (
-              <View className={styles.originalPrice}>{originalPrice}</View>
-            )}
-          </View>
-        ) : (
-          <View />
-        )}
-        <Button
-          variant={buttonVariant}
-          color={buttonColor}
-          size='sm'
-          className={styles.btn}
-          onClick={onButtonClick}
-        >
-          {buttonText}
-        </Button>
-      </View>
+      {buttonText && (
+        <View className={styles.bottom}>
+          {price ? (
+            <View className={styles.priceRow}>
+              <View className={styles.price}>{price}</View>
+              {originalPrice && (
+                <View className={styles.originalPrice}>{originalPrice}</View>
+              )}
+            </View>
+          ) : (
+            <View />
+          )}
+          <Button
+            variant={buttonVariant}
+            color={buttonColor}
+            size='sm'
+            className={styles.btn}
+            onClick={onButtonClick}
+          >
+            {buttonText}
+          </Button>
+        </View>
+      )}
     </View>
   )
 }

@@ -72,6 +72,8 @@ export interface CompetitionBrief {
   name: string
   description: string | null
   cover_url: string | null
+  /** 首页竞赛专区竖版封面（686×680）；空则回退 cover_url */
+  home_cover_url: string | null
   start_time: string | null
   end_time: string | null
   registration_deadline: string | null

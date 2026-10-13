@@ -253,24 +253,15 @@ export default function ActivityZonePage() {
               ) : (
                 <View className={styles.cardList}>
                   {competitionData.map((comp) => {
-                    const deadline = formatDate(comp.registration_deadline, '')
                     const status = getCompetitionStatusInfo(comp)
                     return (
                       <ZoneCard
                         key={`comp-${comp.id}`}
                         title={comp.name}
-                        subtitle={comp.description ?? ''}
-                        tags={[`赛道 ${comp.tracks.length} 个`, deadline ? `报名截止 ${deadline}` : '']}
                         statusLabel={status.label}
                         statusColor={status.color}
                         coverUrl={resolveMediaUrl(comp.cover_url)}
-                        buttonText='查看详情'
-                        buttonVariant='primary'
-                        buttonColor='#FA8C16'
                         onCardClick={() => {
-                          Taro.navigateTo({ url: `/pages/competition/detail?id=${comp.id}` })
-                        }}
-                        onButtonClick={() => {
                           Taro.navigateTo({ url: `/pages/competition/detail?id=${comp.id}` })
                         }}
                       />

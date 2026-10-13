@@ -18,8 +18,10 @@
 
 .cover {
   width: 100%;
-  height: 180px;
-  border-radius: $radius-md $radius-md 0 0;
+  // 封面规范为 1404×640（宽高比 2.19），卡片宽约 667rpx，等比完整展示需高约 304rpx；
+  // 固定高度不足时 aspectFill 会裁掉封面上下的标题文字
+  height: 304px;
+  border-radius: $radius-md;
 }
 
 .faded {
@@ -37,9 +39,10 @@
   font-size: $font-lg;
   font-weight: bold;
   color: $color-text;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   flex: 1;
   min-width: 0;
 }
@@ -57,9 +60,10 @@
 .subtitle {
   font-size: $font-sm;
   color: $color-text-secondary;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   margin-top: $spacing-2xs;
 }
 

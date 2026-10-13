@@ -5,6 +5,8 @@ import test from 'node:test'
 test('marketing banner rendering is limited to the home page', async () => {
   const root = new URL('../src/', import.meta.url)
   const files = (await readdir(root, { recursive: true, encoding: 'utf8' }))
+    // Windows 下 readdir recursive 返回反斜杠路径，统一为 POSIX 风格便于断言
+    .map(file => file.replaceAll('\\', '/'))
     .filter(file => file.endsWith('.tsx'))
   const bannerPages = []
 
