@@ -1,0 +1,89 @@
+.page {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.body {
+  height: calc(100vh - 88px - env(safe-area-inset-top));
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.bodyWithFooter {
+  padding-bottom: calc(136px + env(safe-area-inset-bottom));
+}
+
+.contentCard {
+  padding: 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  color: #17233d;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.subtitle {
+  display: block;
+  margin-top: 8px;
+  color: #667085;
+  font-size: 25px;
+}
+
+.trackBadge {
+  flex-shrink: 0;
+  max-width: 220px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: #eef4ff;
+  color: #3366ff;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  padding: 120px 32px;
+  color: #8091a5;
+  text-align: center;
+  font-size: 28px;
+}
+
+.retryBtn {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 12px 40px;
+  border: 1px solid #3366ff;
+  border-radius: 999px;
+  color: #3366ff;
+  font-size: 26px;
+}
+
+.actionFooter {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px calc(20px + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, .06);
+}
