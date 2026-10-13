@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Text, View } from '@tarojs/components'
+import { Image, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
@@ -22,6 +22,7 @@ import {
 } from '@/services/nispService'
 import type { H3cRegistration } from '@/types/h3c'
 import type { CompetitionMyRegistration } from '@/types'
+import { resolveMediaUrl } from '@/utils/media'
 import styles from './registrations.module.scss'
 
 type H3cRegistrationCard = H3cRegistration & { type: 'H3C' }
@@ -184,6 +185,22 @@ export default function MyRegistrationsPage() {
   }
 
   const closeCompEdit = () => setEditingReg(null)
+
+  const previewNispQrcode = async (url: string) => {
+    try {
+      await Taro.previewImage({ urls: [url] })
+    } catch {
+      Taro.showToast({ title: '二维码预览失败', icon: 'none' })
+    }
+  }
+
+  const copyNispLoginPhone = async (phone: string) => {
+    try {
+      await Taro.setClipboardData({ data: phone })
+    } catch {
+      Taro.showToast({ title: '复制失败，请手动记录', icon: 'none' })
+    }
+  }
 
   const saveCompEdit = async () => {
     if (!editingReg || savingEdit) return
@@ -388,6 +405,12 @@ export default function MyRegistrationsPage() {
   const selectedExamLocation = selected?.type === 'H3C'
     ? selected.exam_location
     : snapshotText(selected?.candidate_snapshot, 'exam_location')
+  const selectedNispPhone = selected?.type === 'NISP'
+    ? snapshotText(selected.candidate_snapshot, 'phone')
+    : null
+  const selectedNispQrcodeUrl = selected?.type === 'NISP'
+    ? resolveMediaUrl(selected.consultation_group_qrcode_url)
+    : ''
 
   return (
     <AuthGuard>
@@ -480,6 +503,48 @@ export default function MyRegistrationsPage() {
                   <Text>
                     拒绝原因：{selected.latest_review.reason_detail || selected.latest_review.reason_code || '请联系客服'}
                   </Text>
+                </View>
+              )}
+
+              {selected.type === 'NISP' && selected.status === 'final_approved' && (
+                <View className={styles.finalApprovedCard}>
+                  <Text className={styles.finalApprovedTitle}>终审已通过</Text>
+                  <Text className={styles.finalApprovedText}>
+                    请前往 NISP 官网 www.cisp.cn 登录并查询证书信息。登录账号为报名时填写的手机号。
+                  </Text>
+                  <View className={styles.loginAccountRow}>
+                    <Text className={styles.loginAccountLabel}>NISP 官网</Text>
+                    <Text className={styles.loginAccountValue}>www.cisp.cn</Text>
+                  </View>
+                  <View className={styles.loginAccountRow}>
+                    <Text className={styles.loginAccountLabel}>官网登录账号（手机号）</Text>
+                    <Text className={styles.loginAccountValue}>{selectedNispPhone || '-'}</Text>
+                    {selectedNispPhone && (
+                      <View
+                        className={styles.copyPhoneBtn}
+                        onClick={() => copyNispLoginPhone(selectedNispPhone)}
+                      >
+                        <Text>复制</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text className={styles.qrcodeTitle}>批次咨询群聊码</Text>
+                  <View
+                    className={styles.qrcodeWrap}
+                    onClick={() => selectedNispQrcodeUrl
+                      && previewNispQrcode(selectedNispQrcodeUrl)}
+                  >
+                    {selectedNispQrcodeUrl ? (
+                      <Image
+                        className={styles.qrcodeImage}
+                        src={selectedNispQrcodeUrl}
+                        mode='aspectFit'
+                      />
+                    ) : (
+                      <Text className={styles.qrcodeEmpty}>咨询群聊码未配置</Text>
+                    )}
+                  </View>
+                  <Text className={styles.qrcodeHint}>点击二维码可放大，长按识别加入本批次咨询群</Text>
                 </View>
               )}
 

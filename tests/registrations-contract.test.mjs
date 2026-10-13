@@ -14,6 +14,14 @@ test('my registrations dispatches details and actions by certification vendor', 
   assert.match(page, /nispService\.cancelPayment\(registration\.id\)/)
   assert.match(page, /nispService\.resubmitMaterials\(registration\.id/)
   assert.match(page, /snapshotText\(selected\?\.candidate_snapshot, 'exam_date'\)/)
+  assert.match(page, /selected\.type === 'NISP' && selected\.status === 'final_approved'/)
+  assert.match(page, /www\.cisp\.cn/)
+  assert.match(page, /官网登录账号/)
+  assert.match(page, /snapshotText\(selected\.candidate_snapshot, 'phone'\)/)
+  assert.match(page, /resolveMediaUrl\(selected\.consultation_group_qrcode_url\)/)
+  assert.match(page, /批次咨询群聊码/)
+  assert.match(page, /加入本批次咨询群/)
+  assert.match(page, /<Image[\s\S]*?src=\{selectedNispQrcodeUrl\}[\s\S]*?mode='aspectFit'/)
 })
 
 test('NISP picker indexes options with a validated numeric index', async () => {
