@@ -20,6 +20,8 @@ import type { DocumentSceneSlot } from '@/services/documentService'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
+import { formatDate } from '@/utils/format'
+import { formatNispApplyRange } from '@/utils/nisp'
 import styles from './nisp.module.scss'
 
 const PROVINCES = [
@@ -368,10 +370,16 @@ export default function NispFormPage() {
             </View>
             <Text className={styles.batchName}>{batch?.name || '加载考试批次中...'}</Text>
             <View className={styles.summaryGrid}>
+              <View className={styles.summaryItemFull}>
+                <Text className={styles.summaryLabel}>报名时间</Text>
+                <Text className={styles.summaryValue}>
+                  {batch ? formatNispApplyRange(batch) : '以批次安排为准'}
+                </Text>
+              </View>
               <View className={styles.summaryItem}>
                 <Text className={styles.summaryLabel}>考试时间</Text>
                 <Text className={styles.summaryValue}>
-                  {batch?.exam_date ? batch.exam_date.slice(0, 10) : '以批次安排为准'}
+                  {batch?.exam_date ? formatDate(batch.exam_date) : '以批次安排为准'}
                 </Text>
               </View>
               <View className={styles.summaryItem}>

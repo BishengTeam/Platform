@@ -8,6 +8,8 @@ import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { nispService } from '@/services/nispService'
 import type { NispBatch } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
+import { formatDate } from '@/utils/format'
+import { formatNispApplyRange } from '@/utils/nisp'
 import styles from './nisp.module.scss'
 
 export default function NispIndexPage() {
@@ -55,10 +57,14 @@ export default function NispIndexPage() {
               </View>
 
               <View className={styles.infoGrid}>
+                <View className={styles.infoItemFull}>
+                  <Text className={styles.infoLabel}>报名时间</Text>
+                  <Text className={styles.infoValue}>{formatNispApplyRange(batch)}</Text>
+                </View>
                 {batch.exam_date && (
                   <View className={styles.infoItem}>
                     <Text className={styles.infoLabel}>考试时间</Text>
-                    <Text className={styles.infoValue}>{batch.exam_date.slice(0, 10)}</Text>
+                    <Text className={styles.infoValue}>{formatDate(batch.exam_date)}</Text>
                   </View>
                 )}
                 <View className={styles.infoItem}>
