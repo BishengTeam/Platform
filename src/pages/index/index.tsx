@@ -160,6 +160,8 @@ export default function IndexPage() {
   // 活动/就业板块由后台内容驱动：管理端上架才出现，下架自动隐藏。
   const activities = homeData?.zones['activity']?.activities ?? []
   const employmentJobs = homeData?.zones['employment']?.jobs ?? []
+  // 在线课程同为主页内容驱动板块：后台配置了课程才显示
+  const studyCourses = homeData?.zones['study']?.courses ?? []
   const certificationCards = useMemo(() => {
     return (homeData?.zones['cert']?.certifications ?? []).map(toCertHomeCard)
   }, [homeData])
@@ -222,12 +224,6 @@ export default function IndexPage() {
 
           <KingKongZone items={kingKongItems} onItemClick={handleKingKongClick} />
 
-          {/* 在线课程暂时隐藏 */}
-          {/* <View className={styles.section}>
-            <SectionHeader title={STRINGS.INDEX_ONLINE_COURSES} onViewAll={handleGoStudyZone} />
-            <HomeCard items={homeData?.zones['study']?.courses ?? []} onCardClick={handleGoStudyZone} />
-          </View> */}
-
           {activities.length > 0 && (
             <View className={styles.section}>
               <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
@@ -239,6 +235,14 @@ export default function IndexPage() {
             <View className={styles.section}>
               <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
               <HomeCard items={certificationCards} onCardClick={handleCertCardClick} />
+            </View>
+          )}
+
+          {/* 在线课程 2026-10-15 按甲方要求恢复展示，位置在认证专区之下；内容驱动，无课不出现 */}
+          {studyCourses.length > 0 && (
+            <View className={styles.section}>
+              <SectionHeader title={STRINGS.INDEX_ONLINE_COURSES} onViewAll={handleGoStudyZone} />
+              <HomeCard items={studyCourses} onCardClick={handleGoStudyZone} />
             </View>
           )}
 
