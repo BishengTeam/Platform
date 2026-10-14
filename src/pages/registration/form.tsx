@@ -50,6 +50,10 @@ export default function RegistrationFormPage() {
       Taro.redirectTo({
         url: `/${ROUTES.NISP_INDEX}?level=${getNispLevelFromCertCode(cert.code)}`,
       })
+      return
+    }
+    if (cert?.vendor === '人社') {
+      Taro.redirectTo({ url: `/${ROUTES.RENSHE_INDEX}` })
     }
   }, [cert])
 

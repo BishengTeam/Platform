@@ -21,13 +21,18 @@ import {
   type NispMaterialType,
   type NispRegistration,
 } from '@/services/nispService'
+import {
+  rensheService,
+  type RensheApplicationDetail,
+  type RenshePlan,
+} from '@/services/rensheService'
 import type { H3cRegistration } from '@/types/h3c'
 import type { CompetitionMyRegistration } from '@/types'
 import { resolveMediaUrl } from '@/utils/media'
 import sharedStyles from './registrations.module.scss'
 import styles from './registration-detail.module.scss'
 
-type RegistrationKind = 'h3c' | 'nisp' | 'competition'
+type RegistrationKind = 'h3c' | 'nisp' | 'competition' | 'renshe'
 type H3cRegistrationDetail = H3cRegistration & { kind: 'H3C' }
 type NispRegistrationDetail = NispRegistration & {
   kind: 'NISP'
@@ -45,6 +50,13 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   final_approved: { label: '终审通过', cls: sharedStyles.statusApproved },
   refunded_closed: { label: '已退款关闭', cls: sharedStyles.statusNeutral },
   cancelled: { label: '已取消', cls: sharedStyles.statusNeutral },
+  draft: { label: '草稿', cls: sharedStyles.statusNeutral },
+  pending_initial_review: { label: '待初审', cls: sharedStyles.statusReview },
+  initial_rejected: { label: '待补正 · 初审退回', cls: sharedStyles.statusRejected },
+  pending_external_review: { label: '待外审', cls: sharedStyles.statusReview },
+  external_rejected: { label: '待补正 · 外审退回', cls: sharedStyles.statusRejected },
+  external_approved: { label: '外审通过', cls: sharedStyles.statusApproved },
+  closed: { label: '已关闭', cls: sharedStyles.statusNeutral },
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -84,7 +96,12 @@ const NISP_MATERIAL_LABELS: Record<NispMaterialType, string> = {
 }
 
 function parseRegistrationKind(value: string | undefined): RegistrationKind | null {
-  if (value === 'h3c' || value === 'nisp' || value === 'competition') return value
+  if (
+    value === 'h3c'
+    || value === 'nisp'
+    || value === 'competition'
+    || value === 'renshe'
+  ) return value
   return null
 }
 
@@ -152,6 +169,8 @@ export default function RegistrationDetailPage() {
   const registrationId = Number(params?.id)
 
   const [certRegistration, setCertRegistration] = useState<CertificationRegistrationDetail | null>(null)
+  const [rensheRegistration, setRensheRegistration] = useState<RensheApplicationDetail | null>(null)
+  const [renshePlan, setRenshePlan] = useState<RenshePlan | null>(null)
   const [competitionRegistration, setCompetitionRegistration] = useState<CompetitionMyRegistration | null>(null)
   const [editValues, setEditValues] = useState<CompetitionRegFormValues>({
     school: '',
@@ -171,6 +190,8 @@ export default function RegistrationDetailPage() {
     if (!kind || !Number.isInteger(registrationId) || registrationId <= 0) {
       setCertRegistration(null)
       setCompetitionRegistration(null)
+      setRensheRegistration(null)
+      setRenshePlan(null)
       setError('报名链接无效')
       setLoading(false)
       return
@@ -193,6 +214,14 @@ export default function RegistrationDetailPage() {
           kind: 'NISP',
           levelLabel: detail.level === '1' ? '一级' : '二级',
         })
+        return
+      }
+
+      if (kind === 'renshe') {
+        const detail = await rensheService.getApplication(registrationId)
+        const plan = await rensheService.getBatch(detail.plan_id).catch(() => null)
+        setRensheRegistration(detail)
+        setRenshePlan(plan)
         return
       }
 
@@ -375,7 +404,7 @@ export default function RegistrationDetailPage() {
       content: `确定要取消报名 ${certRegistration.registration_no} 吗？`,
       confirmText: '确定取消',
       cancelText: '再想想',
-      success: async (res) => {
+      success: async (res: { confirm?: boolean; content?: string }) => {
         if (!res.confirm) return
         setActionLoading(true)
         try {
@@ -431,6 +460,69 @@ export default function RegistrationDetailPage() {
     }
   }
 
+  const cancelRenshePayment = () => {
+    if (!rensheRegistration || actionLoading) return
+    Taro.showModal({
+      title: '取消待支付报名',
+      content: '确定取消本次人社认证报名吗？已填写的版本历史会保留。',
+      confirmText: '确定取消',
+      cancelText: '再想想',
+      success: async (res) => {
+        if (!res.confirm || !rensheRegistration) return
+        setActionLoading(true)
+        try {
+          await rensheService.cancelPayment(rensheRegistration.id)
+          Taro.showToast({ title: '已取消', icon: 'success' })
+          await load()
+        } catch (error) {
+          Taro.showToast({
+            title: error instanceof Error ? error.message : '取消失败',
+            icon: 'none',
+          })
+        } finally {
+          setActionLoading(false)
+        }
+      },
+    })
+  }
+
+  const requestRensheRefund = () => {
+    if (!rensheRegistration || actionLoading) return
+    Taro.showModal({
+      title: '申请人社报名退款',
+      editable: true,
+      placeholderText: '请填写退款原因',
+      confirmText: '提交申请',
+      cancelText: '取消',
+      success: async (res: { confirm?: boolean; content?: string }) => {
+        if (!res.confirm || !rensheRegistration) return
+        const reason = String((res as unknown as { content?: string }).content || '').trim()
+        if (!reason) {
+          Taro.showToast({ title: '请填写退款原因', icon: 'none' })
+          return
+        }
+        setActionLoading(true)
+        try {
+          await rensheService.requestRefund(
+            rensheRegistration.id,
+            reason,
+            rensheRegistration.status === 'external_approved' ? 'exception' : 'normal',
+          )
+          Taro.showToast({ title: '退款申请已提交', icon: 'success' })
+          await load()
+        } catch (error) {
+          Taro.showToast({
+            title: error instanceof Error ? error.message : '退款申请失败',
+            icon: 'none',
+            duration: 3000,
+          })
+        } finally {
+          setActionLoading(false)
+        }
+      },
+    } as never)
+  }
+
   const previewNispQrcode = async (url: string) => {
     try {
       await Taro.previewImage({ urls: [url] })
@@ -469,17 +561,37 @@ export default function RegistrationDetailPage() {
   const showCorrectionAction = certRegistration?.status === 'rejected_awaiting_resubmission'
   const showCancelAction = certRegistration?.status === 'pending_payment'
   const showCompetitionSave = Boolean(competitionRegistration?.editable)
+  const showRensheCorrection = Boolean(
+    rensheRegistration
+    && (rensheRegistration.status === 'initial_rejected'
+      || rensheRegistration.status === 'external_rejected'),
+  )
+  const showRensheCancel = rensheRegistration?.status === 'pending_payment'
+  const showRenshePay = rensheRegistration?.status === 'pending_payment'
+    && Boolean(rensheRegistration.current_order_id)
+  const showRensheRefund = Boolean(
+    rensheRegistration
+    && rensheRegistration.current_order_status
+    && ['paid', 'completed'].includes(rensheRegistration.current_order_status)
+    && rensheRegistration.status !== 'closed'
+    && !['requested', 'approved', 'processing', 'failed']
+      .includes(rensheRegistration.current_refund_status || ''),
+  )
   const showActionFooter = Boolean(
     showCorrectionAction
     || showCancelAction
-    || showCompetitionSave,
+    || showCompetitionSave
+    || showRensheCorrection
+    || showRensheCancel
+    || showRenshePay
+    || showRensheRefund,
   )
 
   return (
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader
-          title={kind === 'competition' ? '竞赛报名详情' : '认证报名详情'}
+          title={kind === 'competition' ? '竞赛报名详情' : kind === 'renshe' ? '人社报名详情' : '认证报名详情'}
           shouldShowBack
           fallbackUrl={`/${ROUTES.MINE_REGISTRATIONS}`}
         />
@@ -613,6 +725,109 @@ export default function RegistrationDetailPage() {
             </View>
           )}
 
+          {!loading && !error && rensheRegistration && (
+            <View className={styles.contentCard}>
+              <View className={styles.header}>
+                <Text className={styles.title}>
+                  {renshePlan?.name || `人社认证报名 #${rensheRegistration.id}`}
+                </Text>
+                <Text className={`${sharedStyles.status} ${STATUS_CONFIG[rensheRegistration.status]?.cls || ''}`}>
+                  {STATUS_CONFIG[rensheRegistration.status]?.label || rensheRegistration.status}
+                </Text>
+              </View>
+              <Text className={styles.subtitle}>
+                {renshePlan?.occupation_name || '职业技能等级认证'}
+              </Text>
+
+              {rensheRegistration.latest_rejection_reason && (
+                <View className={sharedStyles.rejectReason}>
+                  <Text>
+                    {rensheRegistration.latest_rejection_stage === 'external' ? '外审退回' : '初审退回'}：
+                    {rensheRegistration.latest_rejection_reason}
+                  </Text>
+                </View>
+              )}
+              {Boolean(rensheRegistration.required_changes?.length) && (
+                <View className={sharedStyles.rejectReason}>
+                  <Text>待修改项：{rensheRegistration.required_changes?.join('、')}</Text>
+                </View>
+              )}
+
+              <Text className={sharedStyles.sectionTitle}>报名信息</Text>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>联系电话</Text>
+                <Text className={sharedStyles.value}>
+                  {rensheRegistration.draft_data?.contact_phone || '-'}
+                </Text>
+              </View>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>电子邮箱</Text>
+                <Text className={sharedStyles.value}>
+                  {rensheRegistration.draft_data?.email || '-'}
+                </Text>
+              </View>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>通讯地址</Text>
+                <Text className={sharedStyles.value}>
+                  {rensheRegistration.draft_data?.mailing_address || '-'}
+                </Text>
+              </View>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>当前版本</Text>
+                <Text className={sharedStyles.value}>
+                  {rensheRegistration.current_version_id ? '已生成 immutable 版本' : '草稿'}
+                </Text>
+              </View>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>提交时间</Text>
+                <Text className={sharedStyles.value}>
+                  {formatDateTime(rensheRegistration.submitted_at, '-')}
+                </Text>
+              </View>
+
+              <Text className={sharedStyles.sectionTitle}>支付与退款</Text>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>订单状态</Text>
+                <Text className={sharedStyles.value}>
+                  {rensheRegistration.current_order_status || '-'}
+                </Text>
+              </View>
+              {rensheRegistration.current_refund_status && (
+                <>
+                  <View className={sharedStyles.row}>
+                    <Text className={sharedStyles.label}>退款状态</Text>
+                    <Text className={sharedStyles.value}>
+                      {rensheRegistration.current_refund_status}
+                    </Text>
+                  </View>
+                  {rensheRegistration.current_refund_retry_count != null && (
+                    <View className={sharedStyles.row}>
+                      <Text className={sharedStyles.label}>重试次数</Text>
+                      <Text className={sharedStyles.value}>
+                        {rensheRegistration.current_refund_retry_count}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+              {rensheRegistration.frozen_at && (
+                <View className={sharedStyles.rejectReason}>
+                  <Text>退款处理中，报名资料已冻结：{rensheRegistration.freeze_reason || '-'}</Text>
+                </View>
+              )}
+
+              <Text className={sharedStyles.sectionTitle}>版本记录</Text>
+              {rensheRegistration.versions.map(version => (
+                <View className={sharedStyles.row} key={version.id}>
+                  <Text className={sharedStyles.label}>V{version.version_no}</Text>
+                  <Text className={sharedStyles.value}>
+                    {formatDateTime(version.submitted_at, '-')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           {!loading && !error && competitionRegistration && (
             <View className={styles.contentCard}>
               <View className={styles.header}>
@@ -704,6 +919,46 @@ export default function RegistrationDetailPage() {
                 onClick={() => { void saveCompetitionEdit() }}
               >
                 <Text>{savingEdit ? '保存中…' : '保存修改'}</Text>
+              </View>
+            )}
+
+            {showRensheCorrection && rensheRegistration && (
+              <View
+                className={`${sharedStyles.actionBtn} ${sharedStyles.actionPrimary}`}
+                onClick={() => Taro.navigateTo({
+                  url: `/${ROUTES.RENSHE_FORM}?plan_id=${rensheRegistration.plan_id}&application_id=${rensheRegistration.id}`,
+                })}
+              >
+                <Text>重新提交审核</Text>
+              </View>
+            )}
+
+            {showRenshePay && rensheRegistration?.current_order_id && (
+              <View
+                className={`${sharedStyles.actionBtn} ${sharedStyles.actionPrimary}`}
+                onClick={() => Taro.navigateTo({
+                  url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${rensheRegistration.current_order_id}`,
+                })}
+              >
+                <Text>继续支付</Text>
+              </View>
+            )}
+
+            {showRensheCancel && (
+              <View
+                className={`${sharedStyles.actionBtn} ${sharedStyles.actionSecondary}`}
+                onClick={cancelRenshePayment}
+              >
+                <Text>{actionLoading ? '处理中…' : '取消报名'}</Text>
+              </View>
+            )}
+
+            {showRensheRefund && (
+              <View
+                className={`${sharedStyles.actionBtn} ${sharedStyles.actionSecondary}`}
+                onClick={requestRensheRefund}
+              >
+                <Text>{actionLoading ? '提交中…' : '申请退款'}</Text>
               </View>
             )}
           </View>

@@ -23,7 +23,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/registration',
-      pages: ['index', 'category', 'form', 'form-sangfor', 'form-renshe', 'xuexin-guide', 'confirm'],
+      pages: ['index', 'category', 'form', 'form-sangfor', 'xuexin-guide', 'confirm'],
     },
     {
       root: 'pages/h3c',
@@ -31,6 +31,10 @@ export default defineAppConfig({
     },
     {
       root: 'pages/nisp',
+      pages: ['index', 'form'],
+    },
+    {
+      root: 'pages/renshe',
       pages: ['index', 'form'],
     },
     {

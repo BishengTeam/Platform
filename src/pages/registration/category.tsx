@@ -96,6 +96,10 @@ export default function RegistrationCategoryPage() {
       Taro.navigateTo({ url: `/${ROUTES.NISP_INDEX}?level=${level}` })
       return
     }
+    if (cert.vendor === '人社') {
+      Taro.navigateTo({ url: `/${ROUTES.RENSHE_INDEX}` })
+      return
+    }
     Taro.navigateTo({ url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}` })
   }, [])
 

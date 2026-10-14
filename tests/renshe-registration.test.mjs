@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import test from 'node:test'
+
+test('Renshe uses the dedicated batch, draft, and submission services', async () => {
+  const service = await readFile('src/services/rensheService.ts', 'utf8')
+
+  assert.match(service, /get<RenshePlan\[\]>\('\/api\/plans', \{ product_type: 'RS-ZY' \}\)/)
+  assert.match(service, /'\/api\/renshe\/applications\/draft'/)
+  assert.match(service, /post<RensheSubmitResult>\(`\/api\/renshe\/applications\/\$\{id\}\/submit`\)/)
+  assert.doesNotMatch(service, /post\(['`]\/api\/orders/)
+})
+
+test('Renshe has a dedicated batch list and batch-bound form route', async () => {
+  const [routes, appConfig, category, genericForm] = await Promise.all([
+    readFile('src/constants/routes.ts', 'utf8'),
+    readFile('src/app.config.ts', 'utf8'),
+    readFile('src/pages/registration/category.tsx', 'utf8'),
+    readFile('src/pages/registration/form.tsx', 'utf8'),
+  ])
+
+  assert.match(routes, /RENSHE_INDEX: 'pages\/renshe\/index'/)
+  assert.match(routes, /RENSHE_FORM: 'pages\/renshe\/form'/)
+  assert.match(appConfig, /root: 'pages\/renshe'/)
+  assert.match(appConfig, /'index', 'form'/)
+  assert.match(category, /ROUTES\.RENSHE_INDEX/)
+  assert.match(genericForm, /ROUTES\.RENSHE_INDEX/)
+  assert.doesNotMatch(appConfig, /form-renshe/)
+})
+
+test('Renshe form freezes verified identity and prechecks all six materials', async () => {
+  const form = await readFile('src/pages/renshe/form.tsx', 'utf8')
+
+  assert.match(form, /useIdentityCheck\(\)/)
+  assert.match(form, /身份证正面/)
+  assert.match(form, /学信网电子注册备案表/)
+  assert.match(form, /学历证明/)
+  assert.match(form, /rensheService\.saveDraft/)
+  assert.match(form, /rensheService\.submit\(saved\.id\)/)
+  assert.match(form, /payment_required/)
+  assert.doesNotMatch(form, /createOrder/)
+})
+
+test('My registrations and the standalone detail page include Renshe records', async () => {
+  const [list, detail] = await Promise.all([
+    readFile('src/pages/mine/registrations.tsx', 'utf8'),
+    readFile('src/pages/mine/registration-detail.tsx', 'utf8'),
+  ])
+
+  assert.match(list, /rensheService\.listApplications\(\)/)
+  assert.match(list, /openRegistrationDetail\('renshe', item\.id\)/)
+  assert.match(detail, /value === 'renshe'/)
+  assert.match(detail, /rensheService\.getApplication\(registrationId\)/)
+  assert.match(detail, /cancelRenshePayment/)
+  assert.match(detail, /requestRensheRefund/)
+  assert.match(detail, /ROUTES\.RENSHE_FORM/)
+})

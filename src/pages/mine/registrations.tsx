@@ -12,6 +12,10 @@ import {
   nispService,
   type NispRegistration,
 } from '@/services/nispService'
+import {
+  rensheService,
+  type RensheApplicationListItem,
+} from '@/services/rensheService'
 import type { H3cRegistration } from '@/types/h3c'
 import type { CompetitionMyRegistration } from '@/types'
 import styles from './registrations.module.scss'
@@ -33,6 +37,13 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   final_approved: { label: '终审通过', cls: styles.statusApproved },
   refunded_closed: { label: '已退款关闭', cls: styles.statusNeutral },
   cancelled: { label: '已取消', cls: styles.statusNeutral },
+  draft: { label: '草稿', cls: styles.statusNeutral },
+  pending_initial_review: { label: '待初审', cls: styles.statusReview },
+  initial_rejected: { label: '待补正 · 初审退回', cls: styles.statusRejected },
+  pending_external_review: { label: '待外审', cls: styles.statusReview },
+  external_rejected: { label: '待补正 · 外审退回', cls: styles.statusRejected },
+  external_approved: { label: '外审通过', cls: styles.statusApproved },
+  closed: { label: '已关闭', cls: styles.statusNeutral },
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -43,6 +54,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function MyRegistrationsPage() {
   const [items, setItems] = useState<UnifiedRegistration[]>([])
+  const [rensheItems, setRensheItems] = useState<RensheApplicationListItem[]>([])
   const [compRegs, setCompRegs] = useState<CompetitionMyRegistration[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -62,10 +74,12 @@ export default function MyRegistrationsPage() {
         })))
         .catch(() => [] as NispRegistrationCard[]),
       getMyCompetitionRegistrations().catch(() => [] as CompetitionMyRegistration[]),
+      rensheService.listApplications().then(page => page.items).catch(() => [] as RensheApplicationListItem[]),
     ])
-      .then(([h3cItems, nispItems, competitionItems]) => {
+      .then(([h3cItems, nispItems, competitionItems, rensheApplicationItems]) => {
         setItems([...h3cItems, ...nispItems])
         setCompRegs(competitionItems)
+        setRensheItems(rensheApplicationItems)
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
@@ -76,7 +90,7 @@ export default function MyRegistrationsPage() {
   })
 
   const openRegistrationDetail = (
-    type: 'h3c' | 'nisp' | 'competition',
+    type: 'h3c' | 'nisp' | 'competition' | 'renshe',
     id: number,
   ) => {
     Taro.navigateTo({
@@ -109,7 +123,7 @@ export default function MyRegistrationsPage() {
             </View>
           )}
 
-          {!loading && !error && items.length === 0 && compRegs.length === 0 && (
+          {!loading && !error && items.length === 0 && compRegs.length === 0 && rensheItems.length === 0 && (
             <View className={styles.empty}>
               <Text>暂无报名记录</Text>
               <Text className={styles.emptyHint}>去认证专区选择认证开始报名</Text>
@@ -119,6 +133,43 @@ export default function MyRegistrationsPage() {
           {!loading && !error && compRegs.length > 0 && (
             <Text className={styles.sectionTitle}>竞赛报名</Text>
           )}
+
+          {!loading && !error && rensheItems.length > 0 && (
+            <Text className={styles.sectionTitle}>人社报名</Text>
+          )}
+          {!loading && !error && rensheItems.map(item => {
+            const cfg = STATUS_CONFIG[item.status]
+            return (
+              <View
+                key={`renshe-${item.id}`}
+                className={styles.card}
+                onClick={() => openRegistrationDetail('renshe', item.id)}
+              >
+                <View className={styles.cardHeader}>
+                  <Text className={styles.title}>{item.plan.name}</Text>
+                  <Text className={styles.typeBadge}>人社</Text>
+                </View>
+                <View className={styles.row}>
+                  <Text className={styles.label}>状态</Text>
+                  <Text className={`${styles.status} ${cfg?.cls || ''}`}>
+                    {cfg?.label || item.status}
+                  </Text>
+                </View>
+                <View className={styles.row}>
+                  <Text className={styles.label}>订单状态</Text>
+                  <Text className={styles.value}>{item.current_order?.status || '-'}</Text>
+                </View>
+                <View className={styles.row}>
+                  <Text className={styles.label}>金额</Text>
+                  <Text className={styles.amount}>
+                    {item.current_order
+                      ? `${(item.current_order.price_cents / 100).toFixed(2)} 元`
+                      : '-'}
+                  </Text>
+                </View>
+              </View>
+            )
+          })}
           {!loading && !error && compRegs.map((reg) => (
             <View
               key={`comp-${reg.id}`}

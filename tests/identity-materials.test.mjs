@@ -88,7 +88,7 @@ test('registration pages no longer submit lightweight identity without materials
   const hook = await readFile('src/hooks/useIdentityCheck.ts', 'utf8')
   const gate = await readFile('src/pages/registration/components/IdentityCheckGate.tsx', 'utf8')
   const sangfor = await readFile('src/pages/registration/form-sangfor.tsx', 'utf8')
-  const renshe = await readFile('src/pages/registration/form-renshe.tsx', 'utf8')
+  const renshe = await readFile('src/pages/renshe/form.tsx', 'utf8')
 
   assert.doesNotMatch(hook, /submitIdentity/)
   assert.doesNotMatch(hook, /'submitting'/)
@@ -105,7 +105,7 @@ test('certification submissions gate the cert-registration agreement', async () 
     readFile('src/pages/registration/form.tsx', 'utf8'),
     readFile('src/pages/registration/form-sangfor.tsx', 'utf8'),
     readFile('src/pages/nisp/form.tsx', 'utf8'),
-    readFile('src/pages/registration/form-renshe.tsx', 'utf8'),
+    readFile('src/pages/renshe/form.tsx', 'utf8'),
   ])
 
   for (const source of sources) {
