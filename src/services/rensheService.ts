@@ -92,6 +92,13 @@ export interface RensheApplicationDetail extends RensheApplication {
   latest_rejection_stage: 'initial' | 'external' | null
   latest_rejection_reason: string | null
   required_changes: string[] | null
+  consultation_group?: {
+    qrcode_url: string
+    join_instructions?: string | null
+    expires_at?: string | null
+    contact_name?: string | null
+    contact_phone?: string | null
+  } | null
 }
 
 export interface RensheSubmitResult {

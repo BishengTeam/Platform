@@ -5,6 +5,10 @@ import test from 'node:test'
 test('my registrations uses a standalone detail page for every vendor', async () => {
   const page = await readFile('src/pages/mine/registrations.tsx', 'utf8')
   const detail = await readFile('src/pages/mine/registration-detail.tsx', 'utf8')
+  const consultation = await readFile(
+    'src/components/ConsultationGroupCard/index.tsx',
+    'utf8',
+  )
   const routes = await readFile('src/constants/routes.ts', 'utf8')
   const appConfig = await readFile('src/app.config.ts', 'utf8')
 
@@ -30,10 +34,15 @@ test('my registrations uses a standalone detail page for every vendor', async ()
   assert.match(detail, /www\.cisp\.cn/)
   assert.match(detail, /官网登录账号/)
   assert.match(detail, /snapshotText\(certRegistration\.candidate_snapshot, 'phone'\)/)
-  assert.match(detail, /resolveMediaUrl\(certRegistration\.consultation_group_qrcode_url\)/)
-  assert.match(detail, /批次咨询群聊码/)
-  assert.match(detail, /加入本批次咨询群/)
-  assert.match(detail, /<Image[\s\S]*?src=\{nispQrcodeUrl\}[\s\S]*?mode='aspectFit'/)
+  assert.match(detail, /certRegistration\.consultation_group &&/)
+  assert.match(detail, /rensheRegistration\.consultation_group &&/)
+  assert.match(detail, /<ConsultationGroupCard group=\{certRegistration\.consultation_group\}/)
+  assert.match(detail, /<ConsultationGroupCard\s+group=\{rensheRegistration\.consultation_group\}/)
+  assert.match(consultation, /resolveMediaUrl\(group\.qrcode_url\)/)
+  assert.match(consultation, /批次咨询群/)
+  assert.match(consultation, /长按识别加入咨询群/)
+  assert.match(consultation, /二维码暂时无法显示/)
+  assert.match(consultation, /contact_phone/)
 })
 
 test('NISP picker indexes options with a validated numeric index', async () => {

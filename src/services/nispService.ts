@@ -62,6 +62,13 @@ export interface NispRegistration {
   level: '1' | '2'
   status: 'pending_payment' | 'pending_review' | 'rejected_awaiting_resubmission' | 'pending_refund_confirmation' | 'refund_processing' | 'refunded_closed' | 'approved' | 'final_approved' | 'cancelled'
   consultation_group_qrcode_url?: string | null
+  consultation_group?: {
+    qrcode_url: string
+    join_instructions?: string | null
+    expires_at?: string | null
+    contact_name?: string | null
+    contact_phone?: string | null
+  } | null
   candidate_snapshot: Record<string, unknown>
   order_status: string
   price_cents: number

@@ -1,0 +1,98 @@
+.card {
+  margin-top: 20px;
+  padding: 24px;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  background: #f0fdf4;
+  text-align: center;
+}
+
+.title {
+  display: block;
+  color: #15803d;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.instructions {
+  display: block;
+  margin-top: 10px;
+  color: #166534;
+  font-size: 24px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.qrcodeWrap {
+  width: 320px;
+  height: 320px;
+  margin: 24px auto 0;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.qrcode {
+  width: 100%;
+  height: 100%;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #98a2b3;
+  font-size: 24px;
+}
+
+.hint {
+  display: block;
+  margin-top: 12px;
+  color: #667085;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+}
+
+.contactLabel {
+  flex-shrink: 0;
+  color: #667085;
+  font-size: 23px;
+}
+
+.contactValue {
+  flex: 1;
+  min-width: 0;
+  color: #17233d;
+  font-size: 24px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: #dcfce7;
+}
+
+.copyText {
+  color: #15803d;
+  font-size: 22px;
+  font-weight: 600;
+}

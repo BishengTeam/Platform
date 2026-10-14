@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Image, Text, View } from '@tarojs/components'
+import { Text, View } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
@@ -10,6 +10,7 @@ import {
   validateCompetitionRegForm,
   type CompetitionRegFormValues,
 } from '@/components/CompetitionRegForm'
+import { ConsultationGroupCard } from '@/components/ConsultationGroupCard'
 import { ROUTES } from '@/constants/routes'
 import { h3cService } from '@/services/h3cService'
 import {
@@ -29,7 +30,6 @@ import {
 } from '@/services/rensheService'
 import type { H3cRegistration } from '@/types/h3c'
 import type { CompetitionMyRegistration } from '@/types'
-import { resolveMediaUrl } from '@/utils/media'
 import sharedStyles from './registrations.module.scss'
 import styles from './registration-detail.module.scss'
 
@@ -527,14 +527,6 @@ export default function RegistrationDetailPage() {
     } as never)
   }
 
-  const previewNispQrcode = async (url: string) => {
-    try {
-      await Taro.previewImage({ urls: [url] })
-    } catch {
-      Taro.showToast({ title: '二维码预览失败', icon: 'none' })
-    }
-  }
-
   const copyNispLoginPhone = async (phone: string) => {
     try {
       await Taro.setClipboardData({ data: phone })
@@ -558,9 +550,6 @@ export default function RegistrationDetailPage() {
   const nispPhone = certRegistration?.kind === 'NISP'
     ? snapshotText(certRegistration.candidate_snapshot, 'phone')
     : null
-  const nispQrcodeUrl = certRegistration?.kind === 'NISP'
-    ? resolveMediaUrl(certRegistration.consultation_group_qrcode_url)
-    : ''
 
   const showCorrectionAction = certRegistration?.status === 'rejected_awaiting_resubmission'
   const showCancelAction = certRegistration?.status === 'pending_payment'
@@ -660,26 +649,11 @@ export default function RegistrationDetailPage() {
                       </View>
                     )}
                   </View>
-                  <Text className={sharedStyles.qrcodeTitle}>批次咨询群聊码</Text>
-                  <View
-                    className={sharedStyles.qrcodeWrap}
-                    onClick={() => nispQrcodeUrl
-                      && void previewNispQrcode(nispQrcodeUrl)}
-                  >
-                    {nispQrcodeUrl ? (
-                      <Image
-                        className={sharedStyles.qrcodeImage}
-                        src={nispQrcodeUrl}
-                        mode='aspectFit'
-                      />
-                    ) : (
-                      <Text className={sharedStyles.qrcodeEmpty}>咨询群聊码未配置</Text>
-                    )}
-                  </View>
-                  <Text className={sharedStyles.qrcodeHint}>
-                    点击二维码可放大，长按识别加入本批次咨询群
-                  </Text>
                 </View>
+              )}
+
+              {certRegistration.consultation_group && (
+                <ConsultationGroupCard group={certRegistration.consultation_group} />
               )}
 
               {certRegistration.status === 'approved' && (examDate || examLocation) && (
@@ -818,6 +792,12 @@ export default function RegistrationDetailPage() {
                 <View className={sharedStyles.rejectReason}>
                   <Text>退款处理中，报名资料已冻结：{rensheRegistration.freeze_reason || '-'}</Text>
                 </View>
+              )}
+
+              {rensheRegistration.consultation_group && (
+                <ConsultationGroupCard
+                  group={rensheRegistration.consultation_group}
+                />
               )}
 
               <Text className={sharedStyles.sectionTitle}>版本记录</Text>

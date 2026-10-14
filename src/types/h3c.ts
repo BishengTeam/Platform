@@ -98,6 +98,13 @@ export interface H3cRegistration {
     reason_detail: string | null
     rejected_material_types: string[] | null
   } | null
+  consultation_group?: {
+    qrcode_url: string
+    join_instructions?: string | null
+    expires_at?: string | null
+    contact_name?: string | null
+    contact_phone?: string | null
+  } | null
   created_at: string
   updated_at: string
 }
