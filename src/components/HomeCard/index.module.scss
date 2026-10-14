@@ -1,13 +1,7 @@
 @use '../../styles/variables' as *;
 
-.waterfall {
-  display: flex;
-  flex-direction: row;
-  gap: $spacing-sm;
-}
-
-.column {
-  flex: 1;
+/* 大图通栏列表：单列全宽卡片 */
+.list {
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;
@@ -25,21 +19,14 @@
   }
 }
 
-
+/* 卡片宽 702rpx（750 减去页边 24rpx×2），1404×640 横版封面按 640/1404 恰好 320rpx 满宽不裁切 */
 .cover {
   position: relative;
+  height: 320rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-
-.coverTall {
-  height: 340rpx;
-}
-
-.coverShort {
-  height: 260rpx;
 }
 
 .coverImage {
@@ -52,11 +39,16 @@
   height: 100%;
 }
 
-
 .tag {
   position: absolute;
   top: $spacing-xs;
   right: $spacing-xs;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.chip {
+  flex-shrink: 0;
   padding: 4px 12px;
   border-radius: 8px;
 }
@@ -67,16 +59,23 @@
   font-weight: 500;
 }
 
-
 .info {
   padding: $spacing-sm;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-height: 120rpx;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  min-width: 0;
 }
 
 .title {
+  flex: 1;
+  min-width: 0;
   font-size: $font-base;
   font-weight: 600;
   color: $color-text;

@@ -18,6 +18,7 @@ import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
+import { navigateToCertRegistration } from '@/utils/certNavigation'
 import type { HomeAggregationResponse } from '@/types'
 import type { CertificationResponse } from '@/types'
 import styles from './index.module.scss'
@@ -78,12 +79,15 @@ const DEFAULT_CERT_CARD_META = {
 
 function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
   const meta = CERT_CARD_META[cert.vendor] ?? DEFAULT_CERT_CARD_META
+  const cover = cert.home_cover_url
   return {
     id: cert.id,
     title: cert.chinese_name || cert.name,
     description: `认证代码：${cert.code}`,
-    gradient: meta.gradient,
-    icon: meta.icon,
+    // 上传了首页横幅（1404×640 通栏）则用图，未上传回退厂商渐变 + 图标
+    cover_url: cover ? resolveMediaUrl(cover) : null,
+    gradient: cover ? undefined : meta.gradient,
+    icon: cover ? undefined : meta.icon,
     tag: cert.vendor,
     tagColor: meta.tagColor,
     actionText: '报名入口',
@@ -147,7 +151,13 @@ export default function IndexPage() {
     Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
   }
 
-  // 活动/就业瀑布流由后台内容驱动：管理端上架才出现，下架自动隐藏。
+  // 首页认证卡点击直达对应认证的报名入口（与报名分类页同一跳转规则）
+  const handleCertCardClick = (item: HomeCardItem) => {
+    const cert = (homeData?.zones['cert']?.certifications ?? []).find(c => c.id === item.id)
+    if (cert) navigateToCertRegistration(cert)
+  }
+
+  // 活动/就业板块由后台内容驱动：管理端上架才出现，下架自动隐藏。
   const activities = homeData?.zones['activity']?.activities ?? []
   const employmentJobs = homeData?.zones['employment']?.jobs ?? []
   const certificationCards = useMemo(() => {
@@ -228,24 +238,28 @@ export default function IndexPage() {
           {certificationCards.length > 0 && (
             <View className={styles.section}>
               <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
-              <HomeCard items={certificationCards} onCardClick={handleGoCertZone} />
+              <HomeCard items={certificationCards} onCardClick={handleCertCardClick} />
             </View>
           )}
 
           <View className={styles.section}>
             <SectionHeader title={STRINGS.ZONE_NAMES[2]} onViewAll={handleGoCompetitionZone} />
             <HomeCard
-              items={(homeData?.zones['competition']?.competitions ?? []).map((comp) => ({
-                id: comp.id,
-                title: comp.name,
-                description: null,
-                // 竖版封面（686×680 ≈ 卡片 343×340rpx）优先，未配置时回退横版封面裁中
-                cover_url: resolveMediaUrl(comp.home_cover_url || comp.cover_url),
-                // 竖版封面按固定 1:1 裁剪，全部用高卡保证所见即所得
-                tall: true,
-                tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
-                tagColor: '#FA8C16',
-              }))}
+              items={(homeData?.zones['competition']?.competitions ?? []).map((comp) => {
+                // 大图通栏优先横版封面（1404×640 恰好满宽不裁切）；竖版封面仅作回退裁中
+                const cover = comp.cover_url || comp.home_cover_url
+                return {
+                  id: comp.id,
+                  title: comp.name,
+                  description: null,
+                  cover_url: resolveMediaUrl(cover),
+                  // 两个封面都未配置时给竞赛主题橙色渐变 + 奖杯图标占位
+                  gradient: cover ? undefined : 'linear-gradient(135deg, #FFA940 0%, #FA8C16 100%)',
+                  icon: cover ? undefined : 'trophy',
+                  tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
+                  tagColor: '#FA8C16',
+                }
+              })}
               onCardClick={handleGoCompetitionZone}
             />
           </View>

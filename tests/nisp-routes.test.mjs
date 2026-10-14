@@ -14,11 +14,13 @@ test('NISP pages are registered in the subpackage and reachable via ROUTES', asy
   const routes = await readFile(file('constants/routes.ts'), 'utf8')
   assert.match(routes, /NISP_INDEX: 'pages\/nisp\/index'/)
   assert.match(routes, /NISP_FORM: 'pages\/nisp\/form'/)
-  // 两个使用点必须走 ROUTES 常量，保证键值同步
+  // 使用点必须走 ROUTES 常量，保证键值同步；分类页委托给 certNavigation 统一跳转
   const nispIndexPage = await readFile(file('pages/nisp/index.tsx'), 'utf8')
   assert.match(nispIndexPage, /ROUTES\.NISP_FORM\}\?batch_id=/)
+  const certNavigation = await readFile(file('utils/certNavigation.ts'), 'utf8')
+  assert.match(certNavigation, /ROUTES\.NISP_INDEX/)
   const categoryPage = await readFile(file('pages/registration/category.tsx'), 'utf8')
-  assert.match(categoryPage, /ROUTES\.NISP_INDEX/)
+  assert.match(categoryPage, /navigateToCertRegistration\(cert\)/)
 })
 
 test('NISP form uploads each material with its own backend material type', async () => {
@@ -89,6 +91,7 @@ test('NISP uses only the dedicated batch form route', async () => {
 test('NISP level entry isolates batches while preserving the legacy all-level route', async () => {
   const service = await readFile(file('services/nispService.ts'), 'utf8')
   const index = await readFile(file('pages/nisp/index.tsx'), 'utf8')
+  const certNavigation = await readFile(file('utils/certNavigation.ts'), 'utf8')
   const category = await readFile(file('pages/registration/category.tsx'), 'utf8')
   const activityDetail = await readFile(file('pages/activity-zone/detail.tsx'), 'utf8')
 
@@ -102,9 +105,14 @@ test('NISP level entry isolates batches while preserving the legacy all-level ro
   assert.match(index, /level === '1' \? 'NISP 一级' : level === '2' \? 'NISP 二级' : 'NISP 认证'/)
   assert.match(index, /该级别批次暂未开放，敬请期待/)
 
+  // 按认证跳转的规则收敛在 utils/certNavigation.ts，各页面统一委托
+  assert.match(certNavigation, /getNispLevelFromCertCode\(cert\.code\)/)
+  assert.match(certNavigation, /ROUTES\.NISP_INDEX\}\?level=\$\{level\}/)
+  assert.match(certNavigation, /ROUTES\.H3C_INDEX/)
+  assert.match(certNavigation, /ROUTES\.RENSHE_INDEX/)
+  assert.match(certNavigation, /form\?cert_id=\$\{cert\.id\}/)
   for (const page of [category, activityDetail]) {
-    assert.match(page, /getNispLevelFromCertCode\(cert\.code\)/)
-    assert.match(page, /ROUTES\.NISP_INDEX\}\?level=\$\{level\}/)
+    assert.match(page, /navigateToCertRegistration\(cert\)/)
   }
 })
 

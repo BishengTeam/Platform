@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text, Input } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
@@ -8,8 +8,7 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
-import { getNispLevelFromCertCode } from '@/services/nispService'
-import { ROUTES } from '@/constants/routes'
+import { navigateToCertRegistration } from '@/utils/certNavigation'
 import type { CertificationResponse } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './category.module.scss'
@@ -87,20 +86,7 @@ export default function RegistrationCategoryPage() {
   }, [])
 
   const handleCardClick = useCallback((cert: CertificationResponse) => {
-    if (cert.vendor === 'H3C') {
-      Taro.navigateTo({ url: `/${ROUTES.H3C_INDEX}` })
-      return
-    }
-    if (cert.vendor === 'NISP') {
-      const level = getNispLevelFromCertCode(cert.code)
-      Taro.navigateTo({ url: `/${ROUTES.NISP_INDEX}?level=${level}` })
-      return
-    }
-    if (cert.vendor === '人社') {
-      Taro.navigateTo({ url: `/${ROUTES.RENSHE_INDEX}` })
-      return
-    }
-    Taro.navigateTo({ url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}` })
+    navigateToCertRegistration(cert)
   }, [])
 
   const activeTag = useMemo(() => {

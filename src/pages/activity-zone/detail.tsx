@@ -4,9 +4,8 @@ import Taro, { useRouter } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { getActivityList, getCertificationList, enrollActivity, remindActivity } from '@/services/zoneService'
-import { getNispLevelFromCertCode } from '@/services/nispService'
-import { ROUTES } from '@/constants/routes'
 import { goBackToActivityZone } from '@/utils/navigation'
+import { navigateToCertRegistration } from '@/utils/certNavigation'
 import { resolveMediaUrl } from '@/utils/media'
 import type { ActivityBrief } from '@/types'
 import styles from './detail.module.scss'
@@ -75,18 +74,7 @@ export default function ActivityDetailPage() {
         Taro.showToast({ title: '认证不存在', icon: 'none' })
         return
       }
-      if (cert.vendor === 'H3C') {
-        Taro.navigateTo({ url: '/pages/h3c/index' })
-        return
-      }
-      if (cert.vendor === 'NISP') {
-        const level = getNispLevelFromCertCode(cert.code)
-        Taro.navigateTo({ url: `/${ROUTES.NISP_INDEX}?level=${level}` })
-        return
-      }
-      Taro.navigateTo({
-        url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}`,
-      })
+      navigateToCertRegistration(cert)
     } catch (error) { Taro.showToast({ title: error instanceof Error ? error.message : '操作失败', icon: 'none', duration: 3000 }) }
   }
 

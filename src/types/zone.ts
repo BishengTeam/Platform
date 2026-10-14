@@ -150,6 +150,8 @@ export interface CertificationResponse {
   vendor: 'H3C' | '深信服' | 'NISP' | '人社'
   requires_xuexin: boolean
   pay_first: boolean
+  /** 首页认证专区通栏大图（1404×640）；空则回退厂商渐变占位 */
+  home_cover_url: string | null
 }
 
 /** 训练/培训简要 — 对齐后端 AdminTrainingListItem */

@@ -12,18 +12,21 @@ test('Renshe uses the dedicated batch, draft, and submission services', async ()
 })
 
 test('Renshe has a dedicated batch list and batch-bound form route', async () => {
-  const [routes, appConfig, category, genericForm] = await Promise.all([
+  const [routes, appConfig, category, genericForm, certNavigation] = await Promise.all([
     readFile('src/constants/routes.ts', 'utf8'),
     readFile('src/app.config.ts', 'utf8'),
     readFile('src/pages/registration/category.tsx', 'utf8'),
     readFile('src/pages/registration/form.tsx', 'utf8'),
+    readFile('src/utils/certNavigation.ts', 'utf8'),
   ])
 
   assert.match(routes, /RENSHE_INDEX: 'pages\/renshe\/index'/)
   assert.match(routes, /RENSHE_FORM: 'pages\/renshe\/form'/)
   assert.match(appConfig, /root: 'pages\/renshe'/)
   assert.match(appConfig, /'index', 'form'/)
-  assert.match(category, /ROUTES\.RENSHE_INDEX/)
+  // 分类页按认证跳转委托给 certNavigation 统一处理，人社分支收敛在其中
+  assert.match(category, /navigateToCertRegistration\(cert\)/)
+  assert.match(certNavigation, /ROUTES\.RENSHE_INDEX/)
   assert.match(genericForm, /ROUTES\.RENSHE_INDEX/)
   assert.doesNotMatch(appConfig, /form-renshe/)
 })
