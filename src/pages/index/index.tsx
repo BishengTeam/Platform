@@ -224,13 +224,6 @@ export default function IndexPage() {
 
           <KingKongZone items={kingKongItems} onItemClick={handleKingKongClick} />
 
-          {activities.length > 0 && (
-            <View className={styles.section}>
-              <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
-              <HomeCard items={activities} onCardClick={handleGoActivityZone} />
-            </View>
-          )}
-
           {certificationCards.length > 0 && (
             <View className={styles.section}>
               <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
@@ -267,6 +260,14 @@ export default function IndexPage() {
               onCardClick={handleGoCompetitionZone}
             />
           </View>
+
+          {/* 在线培训（活动板块）2026-10-15 按甲方要求置于竞赛专区之后 */}
+          {activities.length > 0 && (
+            <View className={styles.section}>
+              <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
+              <HomeCard items={activities} onCardClick={handleGoActivityZone} />
+            </View>
+          )}
 
           {employmentJobs.length > 0 && (
             <View className={styles.section}>
