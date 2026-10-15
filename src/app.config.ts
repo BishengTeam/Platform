@@ -35,7 +35,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/renshe',
-      pages: ['index', 'detail', 'form'],
+      pages: ['index', 'form'],
     },
     {
       root: 'pages/payment',

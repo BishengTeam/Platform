@@ -19,7 +19,6 @@ export const ROUTES = {
   NISP_INDEX: 'pages/nisp/index',
   NISP_FORM: 'pages/nisp/form',
   RENSHE_INDEX: 'pages/renshe/index',
-  RENSHE_DETAIL: 'pages/renshe/detail',
   RENSHE_FORM: 'pages/renshe/form',
   PAYMENT_RESULT: 'pages/payment/result',
   ORDER_DETAIL: 'pages/order-detail/index',
