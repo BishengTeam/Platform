@@ -1,37 +1,43 @@
-import { useCallback, useState } from 'react'
-import { ScrollView, View, Text } from '@tarojs/components'
-import Taro, { usePullDownRefresh, useLoad } from '@tarojs/taro'
+import { useCallback, useMemo, useState } from 'react'
+import { Text, View } from '@tarojs/components'
+import Taro, { useLoad, usePullDownRefresh, useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { RefreshableScrollView } from '@/components/RefreshableScrollView'
+import { CertBatchCard, type CertBatchInfoItem } from '@/components/CertBatchCard'
 import { h3cService } from '@/services/h3cService'
 import { ROUTES } from '@/constants/routes'
+import { formatDate } from '@/utils/format'
 import type { H3cExamBatch, H3cRegistrationType } from '@/types/h3c'
 import styles from './h3c.module.scss'
 
-const CARD_PRICE_OPTIONS: Array<{ type: H3cRegistrationType; label: string }> = [
-  { type: 'student', label: '学生价' },
-  { type: 'coupon', label: '考券价' },
-]
-
-const BATCH_STATUS_META: Record<string, { label: string; buttonLabel: string; color: string }> = {
-  published: { label: '报名中', buttonLabel: '立即报名', color: '#16A34A' },
-  registration_closed: { label: '报名已关闭', buttonLabel: '报名已关闭', color: '#F97316' },
-  finalized: { label: '已结束', buttonLabel: '已结束', color: '#6B7280' },
+const BATCH_STATUS_META: Record<string, {
+  label: string
+  buttonLabel: string
+  tone: 'green' | 'orange' | 'gray'
+}> = {
+  published: { label: '报名中', buttonLabel: '立即报名', tone: 'green' },
+  registration_closed: { label: '已截止', buttonLabel: '报名已结束', tone: 'orange' },
+  finalized: { label: '已结束', buttonLabel: '报名已结束', tone: 'gray' },
 }
 
-const getBatchStatusMeta = (status: string) => (
-  BATCH_STATUS_META[status] || { label: status, buttonLabel: status, color: '#6B7280' }
-)
+const PRICE_LABELS: Partial<Record<H3cRegistrationType, string>> = {
+  student: '学生价',
+  coupon: '考券价',
+  full: '全额价',
+}
 
-const formatExamDate = (value: string) => value.slice(0, 16).replace('T', ' ')
-
-const formatPrice = (batch: H3cExamBatch, type: H3cRegistrationType) => {
-  const price = batch.prices.find((item) => item.registration_type === type)?.price_cents
-  return price === undefined ? '¥--' : `¥${(price / 100).toFixed(2)}`
+const getStatusMeta = (status: string) => BATCH_STATUS_META[status] ?? {
+  label: status,
+  buttonLabel: '暂不可报名',
+  tone: 'gray' as const,
 }
 
 export default function H3CListPage() {
+  const { params } = useRouter()
+  const certCode = params?.cert_code ? decodeURIComponent(params.cert_code) : ''
+  const productName = params?.product_name ? decodeURIComponent(params.product_name) : ''
   const [batches, setBatches] = useState<H3cExamBatch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -48,91 +54,84 @@ export default function H3CListPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  useLoad(() => load())
+  useLoad(() => { void load() })
   usePullDownRefresh(async () => {
     await load()
     Taro.stopPullDownRefresh()
   })
 
+  const visibleBatches = useMemo(() => (
+    certCode
+      ? batches.filter(batch => batch.certification_code === certCode)
+      : batches
+  ), [batches, certCode])
+
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title='H3C 认证' shouldShowBack />
-        <View className={styles.body}>
-          <Button variant='secondary' size='lg' onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_REGISTRATIONS}` })}>
-            我的报名
-          </Button>
+        <PageHeader title={productName || 'H3C 认证'} shouldShowBack />
+        <RefreshableScrollView className={styles.body} onRefresh={load}>
           {loading && <View className={styles.empty}>正在加载考试批次...</View>}
           {error && (
-            <View className={styles.empty} onClick={load}>
+            <View className={styles.empty} onClick={() => { void load() }}>
               <Text>加载失败，点击重试</Text>
             </View>
           )}
-          {!loading && !error && batches.length === 0 && (
+          {!loading && !error && visibleBatches.length === 0 && (
             <View className={styles.empty}>
-              <Text>暂无认证批次</Text>
-              <Text style={{ fontSize: '24rpx', color: '#999', marginTop: '12rpx' }}>请联系老师发布认证批次</Text>
+              <Text>{certCode ? '该产品暂无开放批次' : '暂无可报名的考试批次'}</Text>
             </View>
           )}
-          {batches.map((batch) => {
-            const statusMeta = getBatchStatusMeta(batch.status)
+
+          {!loading && !error && visibleBatches.map((batch) => {
+            const statusMeta = getStatusMeta(batch.status)
             const canRegister = batch.status === 'published'
+            const infoItems: CertBatchInfoItem[] = [
+              {
+                label: '报名时间',
+                value: `${formatDate(batch.apply_start)} ~ ${formatDate(batch.apply_end)}`,
+                full: true,
+              },
+              { label: '考试时间', value: formatDate(batch.exam_date, '待公布') },
+              {
+                label: '剩余名额',
+                value: batch.remaining_count === -1 ? '不限' : `${batch.remaining_count} 人`,
+              },
+              ...(batch.exam_location
+                ? [{ label: '考试地点', value: batch.exam_location, full: true }]
+                : []),
+              ...batch.prices.map(price => ({
+                label: PRICE_LABELS[price.registration_type] ?? '报名费',
+                value: `¥${(price.price_cents / 100).toFixed(2)}`,
+                full: true,
+              })),
+            ]
 
             return (
-              <View key={batch.id} className={styles.examCard}>
-                <View className={styles.examCardHeader}>
-                  <Text className={styles.examTitle}>{batch.name}</Text>
-                  <Text className={styles.vendorBadge}>H3C 官方</Text>
-                  <Text
-                    className={styles.statusBadge}
-                    style={{ color: statusMeta.color, backgroundColor: `${statusMeta.color}14` }}
-                  >
-                    {statusMeta.label}
-                  </Text>
-                </View>
-
-                <View className={styles.examInfoList}>
-                  <View className={styles.infoRow}>
-                    <Text className={styles.infoIcon}>🕒</Text>
-                    <Text className={styles.infoLabel}>考试时间</Text>
-                    <Text className={styles.infoValue}>{formatExamDate(batch.exam_date)}</Text>
-                  </View>
-                  <View className={styles.infoRow}>
-                    <Text className={styles.infoIcon}>👥</Text>
-                    <Text className={styles.infoLabel}>{canRegister ? '剩余名额' : '名额'}</Text>
-                    <Text className={styles.quotaValue}>
-                      {canRegister ? `仅剩 ${batch.remaining_count} 名` : `${batch.remaining_count} 名`}
-                    </Text>
-                  </View>
-                </View>
-
-                <View className={styles.divider} />
-
-                <View className={styles.examCardFooter}>
-                  <View className={styles.priceGroup}>
-                    {CARD_PRICE_OPTIONS.map(({ type, label }) => (
-                      <View key={type} className={styles.priceItem}>
-                        <Text className={styles.priceLabel}>{label}</Text>
-                        <Text className={styles.priceValue}>
-                          {formatPrice(batch, type)}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                  <Button
-                    variant='primary'
-                    color={canRegister ? '#165DFF' : '#94A3B8'}
-                    className={`${styles.actionButton}${canRegister ? '' : ` ${styles.actionButtonDisabled}`}`}
-                    disabled={!canRegister}
-                    onClick={() => Taro.navigateTo({ url: `/${ROUTES.H3C_FORM}?batch_id=${batch.id}` })}
-                  >
-                    {statusMeta.buttonLabel}
-                  </Button>
-                </View>
-              </View>
+              <CertBatchCard
+                key={batch.id}
+                title={batch.name}
+                badge={statusMeta.label}
+                badgeTone={statusMeta.tone}
+                infoItems={infoItems}
+                actionText={statusMeta.buttonLabel}
+                actionDisabled={!canRegister}
+                onAction={() => Taro.navigateTo({
+                  url: `/${ROUTES.H3C_FORM}?batch_id=${batch.id}`,
+                })}
+              />
             )
           })}
-        </View>
+
+          <View className={styles.secondaryAction}>
+            <Button
+              variant='secondary'
+              onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_REGISTRATIONS}` })}
+            >
+              我的报名
+            </Button>
+          </View>
+        </RefreshableScrollView>
       </View>
     </AuthGuard>
   )

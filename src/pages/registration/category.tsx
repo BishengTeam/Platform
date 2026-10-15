@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
 import { navigateToCertRegistration } from '@/utils/certNavigation'
+import { resolveMediaUrl } from '@/utils/media'
 import type { CertificationResponse } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import styles from './category.module.scss'
@@ -126,6 +127,7 @@ export default function RegistrationCategoryPage() {
               filtered.map(cert => (
                 <View key={cert.id}>
                   <ZoneCard
+                    coverUrl={resolveMediaUrl(cert.home_cover_url)}
                     title={cert.name}
                     subtitle={cert.chinese_name}
                     tags={[cert.code, cert.vendor]}

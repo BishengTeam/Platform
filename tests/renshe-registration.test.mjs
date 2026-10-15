@@ -27,12 +27,15 @@ test('Renshe has a dedicated batch list and batch-bound form route', async () =>
   assert.match(appConfig, /'index', 'form'/)
   // 分类页按认证跳转委托给 certNavigation 统一处理，人社分支收敛在其中
   assert.match(category, /navigateToCertRegistration\(cert\)/)
-  assert.match(certNavigation, /ROUTES\.RENSHE_INDEX/)
+  assert.match(certNavigation, /ROUTES\.RENSHE_INDEX\}\?project_id=\$\{cert\.id\}/)
   assert.match(genericForm, /ROUTES\.RENSHE_INDEX/)
   assert.doesNotMatch(appConfig, /form-renshe/)
   const rensheIndex = await readFile('src/pages/renshe/index.tsx', 'utf8')
   assert.doesNotMatch(rensheIndex, /学历型/)
-  assert.match(rensheIndex, /报名资格和材料要求以所选批次为准/)
+  assert.match(rensheIndex, /project_id/)
+  assert.match(rensheIndex, /CertBatchCard/)
+  assert.match(rensheIndex, /ZoneCard/)
+  assert.match(rensheIndex, /该产品暂无开放批次/)
 })
 
 test('Renshe form freezes verified identity and prechecks all six materials', async () => {

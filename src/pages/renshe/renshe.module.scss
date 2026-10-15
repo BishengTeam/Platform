@@ -1,10 +1,18 @@
 .page {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
   background: #f5f7fb;
 }
 
 .body {
-  padding: 24px;
+  box-sizing: border-box;
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+  padding: 24px 32px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
 }
 
 .card {
@@ -21,6 +29,26 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.summaryCard {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  padding: 36px 28px 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+
+  &::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(90deg, #3366ff, #7c3aed);
+    content: '';
+  }
 }
 
 .title {
@@ -97,6 +125,11 @@
   margin-top: 12px;
   color: #98a2b3;
   font-size: 24px;
+}
+
+.secondaryAction {
+  margin-top: 12px;
+  margin-bottom: 8px;
 }
 
 .sectionTitle {

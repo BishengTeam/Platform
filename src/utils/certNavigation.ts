@@ -9,7 +9,9 @@ import type { CertificationResponse } from '@/types'
  */
 export function navigateToCertRegistration(cert: CertificationResponse) {
   if (cert.vendor === 'H3C') {
-    Taro.navigateTo({ url: `/${ROUTES.H3C_INDEX}` })
+    Taro.navigateTo({
+      url: `/${ROUTES.H3C_INDEX}?cert_code=${encodeURIComponent(cert.code)}&product_name=${encodeURIComponent(cert.chinese_name || cert.name)}`,
+    })
     return
   }
   if (cert.vendor === 'NISP') {
@@ -18,7 +20,9 @@ export function navigateToCertRegistration(cert: CertificationResponse) {
     return
   }
   if (cert.vendor === '人社') {
-    Taro.navigateTo({ url: `/${ROUTES.RENSHE_INDEX}` })
+    Taro.navigateTo({
+      url: `/${ROUTES.RENSHE_INDEX}?project_id=${cert.id}&product_name=${encodeURIComponent(cert.chinese_name || cert.name)}`,
+    })
     return
   }
   Taro.navigateTo({ url: `/pages/registration/form?cert_id=${cert.id}&cert_name=${encodeURIComponent(cert.name)}` })

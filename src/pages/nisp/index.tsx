@@ -5,6 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
+import { CertBatchCard, type CertBatchInfoItem } from '@/components/CertBatchCard'
 import { nispService } from '@/services/nispService'
 import type { NispBatch } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
@@ -47,60 +48,42 @@ export default function NispIndexPage() {
             </View>
           )}
 
-          {!loading && !error && batches.map((batch) => (
-            <View key={batch.id} className={styles.card}>
-              <View className={styles.cardHeader}>
-                <Text className={styles.title}>{batch.name}</Text>
-                <Text className={`${styles.levelBadge} ${batch.level === '1' ? styles.level1 : styles.level2}`}>
-                  {batch.level === '1' ? 'NISP一级' : 'NISP二级'}
-                </Text>
-              </View>
+          {!loading && !error && batches.map((batch) => {
+            const infoItems: CertBatchInfoItem[] = [
+              { label: '报名时间', value: formatNispApplyRange(batch), full: true },
+              ...(batch.exam_date
+                ? [{ label: '考试时间', value: formatDate(batch.exam_date) }]
+                : []),
+              {
+                label: '剩余名额',
+                value: batch.remaining_count === -1 ? '不限' : `${batch.remaining_count} 人`,
+              },
+              ...(batch.exam_location
+                ? [{ label: '考试地点', value: batch.exam_location, full: true }]
+                : []),
+              {
+                label: batch.level === '1' ? '一级报名费' : '二级报名费',
+                value: `¥${((batch.level === '1'
+                  ? batch.level1_price_cents
+                  : batch.level2_price_cents) / 100).toFixed(2)}`,
+                full: true,
+              },
+            ]
 
-              <View className={styles.infoGrid}>
-                <View className={styles.infoItemFull}>
-                  <Text className={styles.infoLabel}>报名时间</Text>
-                  <Text className={styles.infoValue}>{formatNispApplyRange(batch)}</Text>
-                </View>
-                {batch.exam_date && (
-                  <View className={styles.infoItem}>
-                    <Text className={styles.infoLabel}>考试时间</Text>
-                    <Text className={styles.infoValue}>{formatDate(batch.exam_date)}</Text>
-                  </View>
-                )}
-                <View className={styles.infoItem}>
-                  <Text className={styles.infoLabel}>剩余名额</Text>
-                  <Text className={styles.infoValue}>
-                    {batch.remaining_count === -1 ? '不限' : `${batch.remaining_count} 人`}
-                  </Text>
-                </View>
-                {batch.exam_location && (
-                  <View className={`${styles.infoItem} ${styles.infoItemFull}`}>
-                    <Text className={styles.infoLabel}>考试地点</Text>
-                    <Text className={styles.infoValue}>{batch.exam_location}</Text>
-                  </View>
-                )}
-                <View className={`${styles.infoItem} ${styles.infoItemFull}`}>
-                  <Text className={styles.infoLabel}>
-                    {batch.level === '1' ? '一级报名费' : '二级报名费'}
-                  </Text>
-                  <Text className={styles.infoValue}>
-                    ¥{((batch.level === '1' ? batch.level1_price_cents : batch.level2_price_cents) / 100).toFixed(2)}
-                  </Text>
-                </View>
-              </View>
-
-              <View className={styles.actionRow}>
-                <Button
-                  variant='gradient'
-                  onClick={() => Taro.navigateTo({
-                    url: `/${ROUTES.NISP_FORM}?batch_id=${batch.id}&level=${batch.level}`
-                  })}
-                >
-                  立即报名
-                </Button>
-              </View>
-            </View>
-          ))}
+            return (
+              <CertBatchCard
+                key={batch.id}
+                title={batch.name}
+                badge={batch.level === '1' ? 'NISP一级' : 'NISP二级'}
+                badgeTone={batch.level === '1' ? 'blue' : 'purple'}
+                infoItems={infoItems}
+                actionText='立即报名'
+                onAction={() => Taro.navigateTo({
+                  url: `/${ROUTES.NISP_FORM}?batch_id=${batch.id}&level=${batch.level}`,
+                })}
+              />
+            )
+          })}
 
           <View className={styles.secondaryAction}>
             <Button

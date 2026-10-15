@@ -28,7 +28,7 @@ test('NISP batch and form cards show the apply period', async () => {
   const form = await readFile(new URL('../src/pages/nisp/form.tsx', import.meta.url), 'utf8')
 
   assert.match(index, /formatNispApplyRange\(batch\)/)
-  assert.match(index, />报名时间</)
+  assert.match(index, /label: '报名时间'/)
   assert.match(form, /formatNispApplyRange\(batch\)/)
   assert.match(form, />报名时间</)
 })
