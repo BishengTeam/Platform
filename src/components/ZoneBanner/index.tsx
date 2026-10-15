@@ -3,6 +3,7 @@ import { View, Swiper, SwiperItem, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
 import { Button } from '@/components/Button'
+import { navigateToUrl } from '@/utils/navigation'
 import styles from './index.module.scss'
 
 const GRADIENTS: Record<string, string> = {
@@ -13,24 +14,6 @@ const GRADIENTS: Record<string, string> = {
   'gradient-teal': 'linear-gradient(to right, #13C2C2, #36CFC9)',
   'gradient-red': 'linear-gradient(to right, #FF4D4F, #FF7875)',
   'gradient-gray': 'linear-gradient(to right, #999999, #BFBFBF)',
-}
-
-/** TabBar 页面必须用 switchTab 跳转，navigateTo 会失败 */
-const TAB_PAGES = [
-  'pages/index/index',
-  'pages/training/index',
-  'pages/activity-zone/index',
-  'pages/profile/index',
-]
-
-function navigateToUrl(url: string) {
-  const normalized = url.startsWith('/') ? url.slice(1) : url
-  const [path] = normalized.split('?')
-  if (TAB_PAGES.includes(path)) {
-    Taro.switchTab({ url: `/${path}` })
-  } else {
-    Taro.navigateTo({ url })
-  }
 }
 
 export interface ZoneBannerItem {

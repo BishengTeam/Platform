@@ -24,6 +24,17 @@ export function isTabRoute(url: string): boolean {
   return TAB_ROUTES.has(path)
 }
 
+/** 站内路径统一跳转：tab 页必须 switchTab，其余 navigateTo */
+export function navigateToUrl(url: string): void {
+  const normalized = url.startsWith('/') ? url : `/${url}`
+  const path = normalized.split('?')[0]
+  if (isTabRoute(path)) {
+    Taro.switchTab({ url: path })
+  } else {
+    Taro.navigateTo({ url: normalized })
+  }
+}
+
 function currentPageCount(): number {
   const pages = Taro.getCurrentPages()
   return Array.isArray(pages) ? pages.length : 0

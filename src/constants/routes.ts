@@ -50,7 +50,6 @@ export const ROUTES = {
   MINE_DEACTIVATE: 'pages/mine/deactivate',
   MINE_REGISTRATIONS: 'pages/mine/registrations',
   MINE_REGISTRATION_DETAIL: 'pages/mine/registration-detail',
-  LOGIN_POSTER: 'pages/login-poster/index',
   AGREEMENT_VIEW: 'pages/agreement/view',
 } as const
 

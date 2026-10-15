@@ -74,10 +74,6 @@ export default defineAppConfig({
       pages: ['join', 'detail', 'quiz', 'result'],
     },
     {
-      root: 'pages/login-poster',
-      pages: ['index'],
-    },
-    {
       root: 'pages/agreement',
       pages: ['view'],
     },

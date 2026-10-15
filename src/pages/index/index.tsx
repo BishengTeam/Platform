@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Avatar } from '@nutui/nutui-react-taro'
@@ -10,6 +10,7 @@ import { SectionHeader } from '@/components/SectionHeader'
 import { HomeCard } from '@/components/HomeCard'
 import { JobGrid } from '@/components/JobGrid'
 import { ZoneBanner } from '@/components/ZoneBanner'
+import { AdPopup } from '@/components/AdPopup'
 import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
 import type { HomeCardItem } from '@/components/HomeCard'
@@ -22,6 +23,7 @@ import { resolveMediaUrl } from '@/utils/media'
 import { navigateToCertRegistration } from '@/utils/certNavigation'
 import type { HomeAggregationResponse } from '@/types'
 import type { CertificationResponse } from '@/types'
+import type { PopupBrief } from '@/types'
 import styles from './index.module.scss'
 
 const BASE_KING_KONG_ITEMS: KingKongItem[] = [
@@ -78,6 +80,14 @@ const DEFAULT_CERT_CARD_META = {
   tagColor: '#1677FF',
 }
 
+/** 「今日不再弹出」的本地存储 key，按天失效 */
+function popupDismissKey(id: number): string {
+  const d = new Date()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `popup_dismissed_${id}_${d.getFullYear()}${mm}${dd}`
+}
+
 function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
   const meta = CERT_CARD_META[cert.vendor] ?? DEFAULT_CERT_CARD_META
   const cover = cert.home_cover_url
@@ -97,6 +107,9 @@ function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
 
 export default function IndexPage() {
   const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
+  const [activePopup, setActivePopup] = useState<PopupBrief | null>(null)
+  // 每次冷启动只在首次拿到聚合数据时尝试弹窗，下拉刷新不重复触发
+  const popupShownRef = useRef(false)
 
   const loadHome = useCallback(() => {
     return getHomeAggregation().then((data) => {
@@ -107,6 +120,21 @@ export default function IndexPage() {
   }, [])
 
   useEffect(() => { void loadHome() }, [loadHome])
+
+  useEffect(() => {
+    const popup = homeData?.popup
+    if (!popup || popupShownRef.current) return
+    popupShownRef.current = true
+    if (Taro.getStorageSync(popupDismissKey(popup.id))) return
+    setActivePopup(popup)
+  }, [homeData])
+
+  const dismissPopupToday = useCallback(() => {
+    if (activePopup) {
+      Taro.setStorageSync(popupDismissKey(activePopup.id), true)
+    }
+    setActivePopup(null)
+  }, [activePopup])
 
   const handleGoConsult = () => {
     Taro.navigateTo({ url: `/${ROUTES.AI_CONSULT}` })
@@ -287,6 +315,14 @@ export default function IndexPage() {
         </RefreshableScrollView>
 
         <CustomTabBar activeTabKey='pages/index/index' onSwitch={(url) => Taro.switchTab({ url })} />
+
+        <AdPopup
+          visible={activePopup !== null}
+          imageUrl={activePopup ? resolveMediaUrl(activePopup.image_url) : ''}
+          jumpLink={activePopup?.jump_link ?? null}
+          onClose={() => setActivePopup(null)}
+          onDismissToday={dismissPopupToday}
+        />
       </View>
     </AuthGuard>
   )

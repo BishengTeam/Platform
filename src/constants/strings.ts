@@ -742,22 +742,6 @@ export const STRINGS = {
   MINE_SHARE_APP_DESC: '分享小程序给微信好友',
   MINE_SHARE_COURSE_DESC: '推荐课程给朋友',
   MINE_SHARE_POSTER_DESC: '生成专属推广海报',
-  // ---- Login Poster ----
-  LOGIN_POSTER_TITLE: '活动推荐',
-  LOGIN_POSTER_CLOSE: '关闭',
-  LOGIN_POSTER_CLAIMED: '已领取',
-  LOGIN_POSTER_WELCOME: '欢迎回来！以下是近期活动和优惠：',
-  LOGIN_POSTER_CLAIM_NOW: '立即领取',
-  LOGIN_POSTER_VIEW_DETAIL: '查看详情',
-  LOGIN_POSTER_CARD_1_TITLE: '2026全国大学生网络技术大赛',
-  LOGIN_POSTER_CARD_1_DESC: '火热报名中！赢取万元奖金与名企实习机会',
-  LOGIN_POSTER_CARD_1_TAG: '竞赛',
-  LOGIN_POSTER_CARD_2_TITLE: 'H3CNE 认证暑期特惠',
-  LOGIN_POSTER_CARD_2_DESC: '学生价立减400元，限时优惠',
-  LOGIN_POSTER_CARD_2_TAG: '优惠券',
-  LOGIN_POSTER_CARD_3_TITLE: '练习助手',
-  LOGIN_POSTER_CARD_3_DESC: '章节练习+模拟测试，随时随地备考',
-  LOGIN_POSTER_CARD_3_TAG: '备考',
   MINE_SHARE_DEFAULT_LABEL: '分享',
 
   // ---- Courses Page ----

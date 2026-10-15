@@ -33,6 +33,14 @@ export interface ZoneBrief {
   sort_order: number
 }
 
+/** 登录后弹窗海报（1280×1080，纯图片，jump_link 为站内路径） */
+export interface PopupBrief {
+  id: number
+  image_url: string
+  jump_link: string | null
+  sort: number
+}
+
 /** 课程简要 */
 export interface CourseBrief {
   id: number
@@ -185,6 +193,8 @@ export interface ZoneSectionData {
 export interface HomeAggregationResponse {
   banners: BannerBrief[]
   zones: Record<string, ZoneSectionData> // key = "cert"|"study"|"competition"|"activity"|"employment"
+  /** 登录后弹窗海报：后端取时间窗内 sort 最小的一条，无则缺省 */
+  popup?: PopupBrief | null
 }
 
 // ============================================================
