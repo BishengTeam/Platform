@@ -1,0 +1,66 @@
+@use '../../styles/variables' as *;
+
+.tabs {
+  display: flex;
+  background: $color-white;
+  padding: 0 $spacing-sm;
+}
+
+.tab {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm 0 0;
+  transition: opacity $motion-duration-press $motion-ease-out;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.tabText {
+  font-size: $font-base;
+  color: $color-text-secondary;
+  white-space: nowrap;
+  transition: color $motion-duration-state $motion-ease-out;
+}
+
+.tabActive {
+  .tabText {
+    color: $color-text;
+    font-weight: 600;
+  }
+}
+
+/* 短下划线指示器：底色透明占位保证 tab 高度一致，激活时染主色淡入 */
+.indicator {
+  width: 48px;
+  height: 6px;
+  border-radius: $radius-full;
+  margin-top: 8px;
+  background: transparent;
+  transition: background-color $motion-duration-state $motion-ease-out;
+}
+
+.tabActive {
+  .indicator {
+    background: $color-primary;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition-property: opacity;
+  }
+
+  .tabText,
+  .indicator {
+    transition-property: none;
+  }
+
+  .tab:active {
+    transform: none;
+  }
+}

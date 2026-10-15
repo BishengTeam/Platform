@@ -47,10 +47,38 @@ test('home activity and employment surfaces follow backend content visibility', 
   )
   const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
   assert.doesNotMatch(activeSource, /tab: 'employment'/)
-  // 首页瀑布流：活动/就业均按内容有无整块显示/隐藏。
-  assert.match(source, /activities\.length > 0 && \(/)
-  assert.match(source, /employmentJobs\.length > 0 && \(/)
+  // 首页板块导航（2026-10-15 起）：活动/就业 tab 均按内容有无显示/隐藏。
+  assert.match(source, /activities\.length > 0\) tabs\.push\(\{ key: 'activity'/)
+  assert.match(source, /employmentJobs\.length > 0\) tabs\.push\(\{ key: 'employment'/)
   assert.equal(STRINGS.INDEX_ZONE_COMING_SOON, '敬请期待')
+})
+
+test('home waterfall replaced by content-driven section tabs', async () => {
+  const source = await readFile(file('pages/index/index.tsx'), 'utf8')
+  const tabs = await readFile(file('components/HomeSectionTabs/index.tsx'), 'utf8')
+  const tabsStyle = await readFile(file('components/HomeSectionTabs/index.module.scss'), 'utf8')
+
+  // 2026-10-15 甲方要求：首页瀑布流改为导航栏切换，筛选栏位于金刚区（各专区宫格）下方、板块列表之前。
+  assert.match(source, /tabs=\{sectionTabs\}[\s\S]*?activeKey=\{activeSection\}/)
+  const kingKongAt = source.indexOf('<KingKongZone')
+  const tabsAt = source.indexOf('<HomeSectionTabs')
+  const tabContentAt = source.indexOf("{activeSection === 'cert'")
+  assert.ok(kingKongAt !== -1, 'KingKongZone should render')
+  assert.ok(tabsAt > kingKongAt, 'section tabs must sit below the KingKong zone grid')
+  assert.ok(tabContentAt > tabsAt, 'tab content must sit below the section tabs')
+  // 五个板块全部内容驱动：无内容不出现 tab，顺序与原瀑布流一致。
+  assert.match(source, /certificationCards\.length > 0\) tabs\.push\(\{ key: 'cert'/)
+  assert.match(source, /studyCourses\.length > 0\) tabs\.push\(\{ key: 'study'/)
+  assert.match(source, /competitionList\.length > 0\) tabs\.push\(\{ key: 'competition'/)
+  assert.match(source, /activities\.length > 0\) tabs\.push\(\{ key: 'activity'/)
+  assert.match(source, /employmentJobs\.length > 0\) tabs\.push\(\{ key: 'employment'/)
+  // 后台下架导致当前 tab 消失时回落到第一个 tab。
+  assert.match(source, /!sectionTabs\.some\(tab => tab\.key === activeSection\)/)
+  // 原五段堆叠板块的「查看全部」小节头不再渲染。
+  assert.doesNotMatch(source, /SectionHeader/)
+  // 组件：横排 tab 点击切换 + 激活态主色下划线。
+  assert.match(tabs, /onChange\(tab\.key\)/)
+  assert.match(tabsStyle, /background: \$color-primary/)
 })
 
 test('home king-kong grid keeps the study zone entry visible', async () => {
@@ -69,7 +97,7 @@ test('home certification waterfall renders active certification products', async
   assert.match(source, /zones\['cert'\]\?\.certifications/)
   assert.doesNotMatch(source, /zones\['cert'\]\?\.items/)
   assert.match(source, /title: cert\.chinese_name \|\| cert\.name/)
-  assert.match(source, /certificationCards\.length > 0 && \(/)
+  assert.match(source, /certificationCards\.length > 0\) tabs\.push\(\{ key: 'cert'/)
   // 2026-10-15 甲方要求：认证卡与竞赛卡同构（大图/渐变 + 角标 + 标题），
   // 不再有“认证代码”描述行和“报名入口”按钮，点击整卡直达对应认证报名。
   assert.doesNotMatch(source, /actionText/)

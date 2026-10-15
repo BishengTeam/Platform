@@ -6,7 +6,7 @@ import { Avatar } from '@nutui/nutui-react-taro'
 import { Icon } from '@/components/Icon'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
-import { SectionHeader } from '@/components/SectionHeader'
+import { HomeSectionTabs } from '@/components/HomeSectionTabs'
 import { HomeCard } from '@/components/HomeCard'
 import { JobGrid } from '@/components/JobGrid'
 import { ZoneBanner } from '@/components/ZoneBanner'
@@ -110,6 +110,7 @@ export default function IndexPage() {
   const [activePopup, setActivePopup] = useState<PopupBrief | null>(null)
   // 每次冷启动只在首次拿到聚合数据时尝试弹窗，下拉刷新不重复触发
   const popupShownRef = useRef(false)
+  const [activeSection, setActiveSection] = useState<string>('cert')
 
   const loadHome = useCallback(() => {
     return getHomeAggregation().then((data) => {
@@ -176,10 +177,6 @@ export default function IndexPage() {
     Taro.switchTab({ url: `/${ROUTES.ACTIVITY}` })
   }
 
-  const handleGoCertZone = () => {
-    Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_INDEX}` })
-  }
-
   // 首页认证卡点击直达对应认证的报名入口（与报名分类页同一跳转规则）
   const handleCertCardClick = (item: HomeCardItem) => {
     const cert = (homeData?.zones['cert']?.certifications ?? []).find(c => c.id === item.id)
@@ -191,14 +188,34 @@ export default function IndexPage() {
   const employmentJobs = homeData?.zones['employment']?.jobs ?? []
   // 在线课程同为主页内容驱动板块：后台配置了课程才显示
   const studyCourses = homeData?.zones['study']?.courses ?? []
+  const competitionList = homeData?.zones['competition']?.competitions ?? []
   const certificationCards = useMemo(() => {
     return (homeData?.zones['cert']?.certifications ?? []).map(toCertHomeCard)
   }, [homeData])
 
+  // 板块导航（2026-10-15 甲方要求：瀑布流改为顶部导航栏切换）。
+  // 全部内容驱动：无内容的板块不出现 tab，顺序与原瀑布流一致。
+  const sectionTabs = useMemo(() => {
+    const tabs: { key: string; label: string }[] = []
+    if (certificationCards.length > 0) tabs.push({ key: 'cert', label: STRINGS.ZONE_NAMES[0] })
+    if (studyCourses.length > 0) tabs.push({ key: 'study', label: STRINGS.INDEX_ONLINE_COURSES })
+    if (competitionList.length > 0) tabs.push({ key: 'competition', label: STRINGS.ZONE_NAMES[2] })
+    if (activities.length > 0) tabs.push({ key: 'activity', label: STRINGS.INDEX_TRAINING_ACTIVITIES })
+    if (employmentJobs.length > 0) tabs.push({ key: 'employment', label: STRINGS.ZONE_NAMES[4] })
+    return tabs
+  }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, employmentJobs.length])
+
+  // 后台下架导致当前 tab 消失时回落到第一个 tab
+  useEffect(() => {
+    if (sectionTabs.length > 0 && !sectionTabs.some(tab => tab.key === activeSection)) {
+      setActiveSection(sectionTabs[0].key)
+    }
+  }, [sectionTabs, activeSection])
+
   const kingKongItems = useMemo(() => {
     const items = [...BASE_KING_KONG_ITEMS]
     // 第 4 格只跟随活动：无上架活动时放灰色占位保持 2x2 完整，上架后自动让位。
-    // 岗位不设金刚区入口，就业走首页瀑布流与活动 tab 子页。
+    // 岗位不设金刚区入口，就业走首页板块导航 tab 与活动 tab 子页。
     if (activities.length > 0) {
       items.push({
         name: STRINGS.ZONE_NAMES[3],
@@ -253,63 +270,57 @@ export default function IndexPage() {
 
           <KingKongZone items={kingKongItems} onItemClick={handleKingKongClick} />
 
-          {certificationCards.length > 0 && (
-            <View className={styles.section}>
-              <SectionHeader title={STRINGS.ZONE_NAMES[0]} onViewAll={handleGoCertZone} />
-              <HomeCard items={certificationCards} onCardClick={handleCertCardClick} />
-            </View>
-          )}
-
-          {/* 在线课程 2026-10-15 按甲方要求恢复展示，位置在认证专区之下；内容驱动，无课不出现 */}
-          {studyCourses.length > 0 && (
-            <View className={styles.section}>
-              <SectionHeader title={STRINGS.INDEX_ONLINE_COURSES} onViewAll={handleGoStudyZone} />
-              <HomeCard items={studyCourses} onCardClick={handleGoStudyZone} />
-            </View>
-          )}
-
-          <View className={styles.section}>
-            <SectionHeader title={STRINGS.ZONE_NAMES[2]} onViewAll={handleGoCompetitionZone} />
-            <HomeCard
-              items={(homeData?.zones['competition']?.competitions ?? []).map((comp) => {
-                // 大图通栏用横版封面（1404×640 恰好满宽不裁切）
-                const cover = comp.cover_url
-                return {
-                  id: comp.id,
-                  title: comp.name,
-                  description: null,
-                  cover_url: resolveMediaUrl(cover),
-                  // 封面未配置时给竞赛主题橙色渐变 + 奖杯图标占位
-                  gradient: cover ? undefined : 'linear-gradient(135deg, #FFA940 0%, #FA8C16 100%)',
-                  icon: cover ? undefined : 'trophy',
-                  tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
-                  tagColor: '#FA8C16',
-                }
-              })}
-              onCardClick={handleGoCompetitionZone}
+          {/* 板块导航位于金刚区（各专区宫格）下方，列表内容随 tab 切换 */}
+          {sectionTabs.length > 0 && (
+            <HomeSectionTabs
+              tabs={sectionTabs}
+              activeKey={activeSection}
+              onChange={setActiveSection}
             />
-          </View>
-
-          {/* 在线培训（活动板块）2026-10-15 按甲方要求置于竞赛专区之后 */}
-          {activities.length > 0 && (
-            <View className={styles.section}>
-              <SectionHeader title={STRINGS.INDEX_TRAINING_ACTIVITIES} onViewAll={handleGoActivityZone} />
-              <HomeCard items={activities} onCardClick={handleGoActivityZone} />
-            </View>
           )}
 
-          {employmentJobs.length > 0 && (
+          {sectionTabs.length > 0 && (
             <View className={styles.section}>
-              <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
-              <JobGrid
-                items={employmentJobs.map((job) => ({
-                  id: job.id,
-                  title: job.title,
-                  location: job.location,
-                  salary: job.salary_range,
-                }))}
-                onCardClick={handleGoEmploymentZone}
-              />
+              {activeSection === 'cert' && (
+                <HomeCard items={certificationCards} onCardClick={handleCertCardClick} />
+              )}
+              {activeSection === 'study' && (
+                <HomeCard items={studyCourses} onCardClick={handleGoStudyZone} />
+              )}
+              {activeSection === 'competition' && (
+                <HomeCard
+                  items={competitionList.map((comp) => {
+                    // 大图通栏用横版封面（1404×640 恰好满宽不裁切）
+                    const cover = comp.cover_url
+                    return {
+                      id: comp.id,
+                      title: comp.name,
+                      description: null,
+                      cover_url: resolveMediaUrl(cover),
+                      // 封面未配置时给竞赛主题橙色渐变 + 奖杯图标占位
+                      gradient: cover ? undefined : 'linear-gradient(135deg, #FFA940 0%, #FA8C16 100%)',
+                      icon: cover ? undefined : 'trophy',
+                      tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
+                      tagColor: '#FA8C16',
+                    }
+                  })}
+                  onCardClick={handleGoCompetitionZone}
+                />
+              )}
+              {activeSection === 'activity' && (
+                <HomeCard items={activities} onCardClick={handleGoActivityZone} />
+              )}
+              {activeSection === 'employment' && (
+                <JobGrid
+                  items={employmentJobs.map((job) => ({
+                    id: job.id,
+                    title: job.title,
+                    location: job.location,
+                    salary: job.salary_range,
+                  }))}
+                  onCardClick={handleGoEmploymentZone}
+                />
+              )}
             </View>
           )}
         </RefreshableScrollView>
