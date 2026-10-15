@@ -48,7 +48,7 @@ export default function RensheIndexPage() {
 
           <Text className={styles.sectionTitle}>职业技能等级认证</Text>
           <Text className={styles.sectionDesc}>
-            本期开放院校应届毕业生学历型申报。报名前请确认实名认证、学生信息及六类证明材料均已审核通过。
+            报名前请确认实名认证、学生信息及六类证明材料均已审核通过；具体报考项目以所选批次展示为准。
           </Text>
 
           {loading && <View className={styles.loading}>正在加载认证批次...</View>}

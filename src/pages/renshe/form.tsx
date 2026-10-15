@@ -199,6 +199,16 @@ export default function RensheFormPage() {
                 {formatDateTime(plan.exam_date, '待定')} · {plan.exam_location || '以批次安排为准'}
               </Text>
             </View>
+            <View className={styles.row}>
+              <Text className={styles.label}>技能等级</Text>
+              <Text className={styles.value}>{plan.skill_level || '待核实'}</Text>
+            </View>
+            <View className={styles.row}>
+              <Text className={styles.label}>考试 / 申报</Text>
+              <Text className={styles.value}>
+                {plan.exam_type || '待核实'} · {plan.application_type || '待核实'}
+              </Text>
+            </View>
           </View>
 
           <View className={styles.card}>

@@ -9,6 +9,7 @@ test('Renshe uses the dedicated batch, draft, and submission services', async ()
   assert.match(service, /'\/api\/renshe\/applications\/draft'/)
   assert.match(service, /post<RensheSubmitResult>\(`\/api\/renshe\/applications\/\$\{id\}\/submit`\)/)
   assert.doesNotMatch(service, /post\(['`]\/api\/orders/)
+  assert.match(service, /plan: RenshePlan/)
 })
 
 test('Renshe has a dedicated batch list and batch-bound form route', async () => {
@@ -29,6 +30,9 @@ test('Renshe has a dedicated batch list and batch-bound form route', async () =>
   assert.match(certNavigation, /ROUTES\.RENSHE_INDEX/)
   assert.match(genericForm, /ROUTES\.RENSHE_INDEX/)
   assert.doesNotMatch(appConfig, /form-renshe/)
+  const rensheIndex = await readFile('src/pages/renshe/index.tsx', 'utf8')
+  assert.doesNotMatch(rensheIndex, /学历型/)
+  assert.match(rensheIndex, /具体报考项目以所选批次展示为准/)
 })
 
 test('Renshe form freezes verified identity and prechecks all six materials', async () => {
@@ -41,6 +45,9 @@ test('Renshe form freezes verified identity and prechecks all six materials', as
   assert.match(form, /rensheService\.saveDraft/)
   assert.match(form, /rensheService\.submit\(saved\.id\)/)
   assert.match(form, /payment_required/)
+  assert.match(form, /plan\.skill_level/)
+  assert.match(form, /plan\.exam_type/)
+  assert.match(form, /plan\.application_type/)
   assert.doesNotMatch(form, /createOrder/)
 })
 
@@ -54,6 +61,8 @@ test('My registrations and the standalone detail page include Renshe records', a
   assert.match(list, /openRegistrationDetail\('renshe', item\.id\)/)
   assert.match(detail, /value === 'renshe'/)
   assert.match(detail, /rensheService\.getApplication\(registrationId\)/)
+  assert.match(detail, /setRenshePlan\(detail\.plan\)/)
+  assert.match(detail, /renshePlan\?\.skill_level/)
   assert.match(detail, /cancelRenshePayment/)
   assert.match(detail, /requestRensheRefund/)
   assert.match(detail, /ROUTES\.RENSHE_FORM/)

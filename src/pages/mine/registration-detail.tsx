@@ -223,9 +223,8 @@ export default function RegistrationDetailPage() {
 
       if (kind === 'renshe') {
         const detail = await rensheService.getApplication(registrationId)
-        const plan = await rensheService.getBatch(detail.plan_id).catch(() => null)
         setRensheRegistration(detail)
-        setRenshePlan(plan)
+        setRenshePlan(detail.plan)
         return
       }
 
@@ -716,6 +715,16 @@ export default function RegistrationDetailPage() {
               <Text className={styles.subtitle}>
                 {renshePlan?.occupation_name || '职业技能等级认证'}
               </Text>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>技能等级</Text>
+                <Text className={sharedStyles.value}>{renshePlan?.skill_level || '待核实'}</Text>
+              </View>
+              <View className={sharedStyles.row}>
+                <Text className={sharedStyles.label}>考试 / 申报</Text>
+                <Text className={sharedStyles.value}>
+                  {renshePlan?.exam_type || '待核实'} · {renshePlan?.application_type || '待核实'}
+                </Text>
+              </View>
 
               {rensheRegistration.latest_rejection_reason && (
                 <View className={sharedStyles.rejectReason}>

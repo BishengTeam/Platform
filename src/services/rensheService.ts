@@ -82,6 +82,7 @@ export interface RensheApplicationListItem extends RensheApplication {
 }
 
 export interface RensheApplicationDetail extends RensheApplication {
+  plan: RenshePlan
   versions: Array<{ id: number; version_no: number; submitted_at: string }>
   current_order_id: number | null
   current_order_status: string | null

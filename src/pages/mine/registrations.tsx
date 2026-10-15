@@ -156,6 +156,12 @@ export default function MyRegistrationsPage() {
                   </Text>
                 </View>
                 <View className={styles.row}>
+                  <Text className={styles.label}>报考项目</Text>
+                  <Text className={styles.value}>
+                    {item.plan.occupation_name || '待核实'} · {item.plan.skill_level || '待核实'}
+                  </Text>
+                </View>
+                <View className={styles.row}>
                   <Text className={styles.label}>订单状态</Text>
                   <Text className={styles.value}>{item.current_order?.status || '-'}</Text>
                 </View>
