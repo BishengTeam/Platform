@@ -37,7 +37,7 @@ export function JobGrid({ items, onCardClick }: Props) {
             </View>
           )}
           <View className={styles.footer}>
-            <Text className={styles.location}>{item.location ?? ''}</Text>
+            <Text className={styles.jobLocation}>{item.location ?? ''}</Text>
             {item.salary ? (
               <Text className={styles.salary}>{item.salary}</Text>
             ) : (

@@ -56,7 +56,8 @@
   gap: 8px;
 }
 
-.location {
+/* 类名避开 location：小程序全局已有该标识符，CSS Modules 会编译成顶层 const location 导致重复声明报错 */
+.jobLocation {
   flex: 1;
   min-width: 0;
   font-size: 22px;
