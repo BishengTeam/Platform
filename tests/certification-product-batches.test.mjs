@@ -25,6 +25,12 @@ test('three certification vendors share the NISP product and batch presentation'
   assert.doesNotMatch(registrationIndex, /ROUTES\.H3C_INDEX/)
   assert.match(category, /ZoneCard/)
   assert.match(category, /resolveMediaUrl\(cert\.home_cover_url\)/)
+  assert.match(category, /rensheService\.listProjects\(\)/)
+  assert.match(category, /title=\{cert\.chinese_name \|\| cert\.name\}/)
+  assert.match(
+    category,
+    /cert\.vendor === '人社' \? occupationCodes\[cert\.id\] : undefined/,
+  )
 
   assert.match(navigation, /ROUTES\.NISP_INDEX\}\?level=\$\{level\}/)
   assert.match(navigation, /ROUTES\.H3C_INDEX\}\?cert_code=\$\{encodeURIComponent\(cert\.code\)\}/)

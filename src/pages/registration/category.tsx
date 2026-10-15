@@ -8,6 +8,7 @@ import { ZoneCard } from '@/components/ZoneCard'
 import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { getCertificationList } from '@/services/dataService'
+import { rensheService } from '@/services/rensheService'
 import { navigateToCertRegistration } from '@/utils/certNavigation'
 import { resolveMediaUrl } from '@/utils/media'
 import type { CertificationResponse } from '@/types'
@@ -32,6 +33,7 @@ export default function RegistrationCategoryPage() {
   const [vendor, setVendor] = useState<string>('')
   const [keyword, setKeyword] = useState('')
   const [certifications, setCertifications] = useState<CertificationResponse[]>([])
+  const [occupationCodes, setOccupationCodes] = useState<Record<number, string>>({})
   const [tagFilters, setTagFilters] = useState<TagFilterItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -56,6 +58,15 @@ export default function RegistrationCategoryPage() {
       ]
       setTagFilters(tags)
     }).catch(() => {}).finally(() => setLoading(false))
+
+    // 人社产品的职业编码来自现有报考项目接口；其他认证没有该业务字段。
+    rensheService.listProjects()
+      .then(projects => {
+        setOccupationCodes(Object.fromEntries(
+          projects.map(project => [project.id, project.occupation_code]),
+        ))
+      })
+      .catch(() => setOccupationCodes({}))
   }, [])
 
   const filtered = useMemo(() => {
@@ -128,8 +139,8 @@ export default function RegistrationCategoryPage() {
                 <View key={cert.id}>
                   <ZoneCard
                     coverUrl={resolveMediaUrl(cert.home_cover_url)}
-                    title={cert.name}
-                    subtitle={cert.chinese_name}
+                    title={cert.chinese_name || cert.name}
+                    subtitle={cert.vendor === '人社' ? occupationCodes[cert.id] : undefined}
                     tags={[cert.code, cert.vendor]}
                     buttonText={STRINGS.EXAM_SIGNUP}
                     buttonColor='#1677FF'

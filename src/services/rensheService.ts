@@ -49,6 +49,7 @@ export interface RensheProject {
   description: string | null
   home_cover_url: string | null
   occupation_name: string
+  occupation_code: string
   skill_level: string
 }
 
