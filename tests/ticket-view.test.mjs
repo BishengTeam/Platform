@@ -81,6 +81,6 @@ test('service page renders the redesigned ticket list contract', async () => {
   assert.match(styleSource, /border: \$border-thin solid \$card-border/)
   assert.match(pageSource, /showMenuByLongpress/)
   assert.match(pageSource, /SERVICE_ACTION_QR/)
-  assert.match(pageSource, /\/assets\/service\/wechat-kefu-qr\.png/)
+  assert.match(pageSource, /\/assets\/service\/wechat-kefu-qr\.jpg/)
   assert.match(configSource, /src\/assets\/service\/.*dist\/assets\/service\//)
 })

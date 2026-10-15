@@ -267,7 +267,7 @@ export default function ServicePage() {
             <View className={styles.qrImageWrap}>
               <Image
                 className={styles.qrImage}
-                src='/assets/service/wechat-kefu-qr.png'
+                src='/assets/service/wechat-kefu-qr.jpg'
                 mode='aspectFit'
                 showMenuByLongpress
               />
