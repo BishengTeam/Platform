@@ -23,6 +23,7 @@ import styles from './renshe.module.scss'
 
 export default function RensheFormPage() {
   const [planId, setPlanId] = useState(0)
+  const [projectId, setProjectId] = useState(0)
   const [applicationId, setApplicationId] = useState<number | null>(null)
   const [plan, setPlan] = useState<RenshePlan | null>(null)
   const [application, setApplication] = useState<RensheApplicationDetail | null>(null)
@@ -37,6 +38,7 @@ export default function RensheFormPage() {
 
   useLoad((options) => {
     setPlanId(Number(options?.plan_id || 0))
+    setProjectId(Number(options?.project_id || 0))
     setApplicationId(Number(options?.application_id || 0) || null)
   })
 
@@ -139,7 +141,11 @@ export default function RensheFormPage() {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title='人社认证报名' shouldShowBack />
+          <PageHeader
+            title='人社认证报名'
+            shouldShowBack
+            fallbackUrl={projectId ? `/${ROUTES.RENSHE_DETAIL}?project_id=${projectId}` : `/${ROUTES.RENSHE_INDEX}`}
+          />
           <View className={styles.loading}>加载中...</View>
         </View>
       </AuthGuard>
@@ -150,7 +156,11 @@ export default function RensheFormPage() {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title='人社认证报名' shouldShowBack />
+          <PageHeader
+            title='人社认证报名'
+            shouldShowBack
+            fallbackUrl={projectId ? `/${ROUTES.RENSHE_DETAIL}?project_id=${projectId}` : `/${ROUTES.RENSHE_INDEX}`}
+          />
           <View className={styles.empty}>批次不存在或已关闭</View>
         </View>
       </AuthGuard>
@@ -161,7 +171,11 @@ export default function RensheFormPage() {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title='实名认证检查' shouldShowBack />
+          <PageHeader
+            title='实名认证检查'
+            shouldShowBack
+            fallbackUrl={projectId ? `/${ROUTES.RENSHE_DETAIL}?project_id=${projectId}` : `/${ROUTES.RENSHE_INDEX}`}
+          />
           <View className={styles.body}>
             <View className={styles.card}>
               <Text className={styles.sectionTitle}>请先完成本人实名认证</Text>
@@ -186,7 +200,11 @@ export default function RensheFormPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title='人社认证报名' shouldShowBack />
+        <PageHeader
+          title='人社认证报名'
+          shouldShowBack
+          fallbackUrl={projectId ? `/${ROUTES.RENSHE_DETAIL}?project_id=${projectId}` : `/${ROUTES.RENSHE_INDEX}`}
+        />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY>
           <View className={styles.card}>
             <View className={styles.cardHeader}>
@@ -203,7 +221,7 @@ export default function RensheFormPage() {
             <View className={styles.row}>
               <Text className={styles.label}>考试安排</Text>
               <Text className={styles.value}>
-                {formatDateTime(plan.exam_date, '待定')} · {plan.exam_location || '以批次安排为准'}
+                {formatDateTime(plan.exam_date, '待公布')} · {plan.exam_location || '待公布'}
               </Text>
             </View>
             <View className={styles.row}>

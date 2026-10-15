@@ -16,7 +16,10 @@ export interface RenshePlan {
   project_name?: string | null
   renshe_config_id?: number | null
   renshe_config?: {
+    qualification_rule: string
     education_levels: string[]
+    exam_types: string[]
+    application_types: string[]
     materials: Array<{ kind: string; name: string; required: boolean; extensions: string[]; max_count: number }>
   } | null
   name: string
@@ -24,6 +27,8 @@ export interface RenshePlan {
   apply_end: string | null
   exam_date: string | null
   exam_location: string | null
+  contact_name: string | null
+  contact_phone: string | null
   capacity: number
   occupation_name: string
   occupation_code: string
