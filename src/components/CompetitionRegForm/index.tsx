@@ -2,12 +2,14 @@ import { Input, Picker, Text, Textarea, View } from '@tarojs/components'
 import type { CompetitionCustomField } from '@/types'
 import {
   emptyCompetitionRegFormValues,
+  FIXED_FIELD_ALIASES,
+  isFixedFieldAlias,
   validateCompetitionRegForm,
   type CompetitionRegFormValues,
 } from './validate'
 import styles from './index.module.scss'
 
-export { emptyCompetitionRegFormValues, validateCompetitionRegForm }
+export { emptyCompetitionRegFormValues, validateCompetitionRegForm, isFixedFieldAlias }
 export type { CompetitionRegFormValues }
 
 interface CompetitionRegFormProps {
@@ -16,10 +18,58 @@ interface CompetitionRegFormProps {
   onChange: (values: CompetitionRegFormValues) => void
 }
 
-/** 学校/姓名/手机 + 后台配置的自定义字段（报名与“我的报名”修改共用） */
+/**
+ * 固定三项（学校/姓名/手机）+ 后台配置的自定义字段（报名与"我的报名"修改共用）。
+ * 自定义字段里配置了固定字段别名键（name/school/phone_number）时，
+ * 该位置渲染的就是固定项本身，未配置的固定项保持在顶部，均不重复。
+ */
 export function CompetitionRegForm({ fields, values, onChange }: CompetitionRegFormProps) {
   const setCustomValue = (key: string, value: string | string[]): void => {
     onChange({ ...values, custom: { ...values.custom, [key]: value } })
+  }
+
+  const renderFixedSlot = (slot: 'school' | 'real_name' | 'phone', label?: string) => {
+    if (slot === 'school') {
+      return (
+        <View key='__fixed_school'>
+          <View className={styles.fieldLabel}>{label || '学校'} <Text className={styles.required}>*</Text></View>
+          <Input
+            className={styles.fieldInput}
+            placeholder='请输入学校名称'
+            value={values.school}
+            maxlength={128}
+            onInput={(e) => onChange({ ...values, school: e.detail.value })}
+          />
+        </View>
+      )
+    }
+    if (slot === 'real_name') {
+      return (
+        <View key='__fixed_real_name'>
+          <View className={styles.fieldLabel}>{label || '姓名'} <Text className={styles.required}>*</Text></View>
+          <Input
+            className={styles.fieldInput}
+            placeholder='请输入真实姓名'
+            value={values.real_name}
+            maxlength={64}
+            onInput={(e) => onChange({ ...values, real_name: e.detail.value })}
+          />
+        </View>
+      )
+    }
+    return (
+      <View key='__fixed_phone'>
+        <View className={styles.fieldLabel}>{label || '手机号'} <Text className={styles.required}>*</Text></View>
+        <Input
+          className={styles.fieldInput}
+          type='number'
+          placeholder='请输入联系电话'
+          value={values.phone}
+          maxlength={11}
+          onInput={(e) => onChange({ ...values, phone: e.detail.value })}
+        />
+      </View>
+    )
   }
 
   const renderCustomField = (field: CompetitionCustomField) => {
@@ -148,37 +198,22 @@ export function CompetitionRegForm({ fields, values, onChange }: CompetitionRegF
     )
   }
 
+  const customList = fields || []
+  // 被别名键覆盖的固定项不再置顶渲染，改在别名配置的位置出现
+  const covered = new Set(
+    customList.filter((field) => isFixedFieldAlias(field.key)).map((field) => FIXED_FIELD_ALIASES[field.key]),
+  )
+
   return (
     <View>
-      <View className={styles.fieldLabel}>学校 <Text className={styles.required}>*</Text></View>
-      <Input
-        className={styles.fieldInput}
-        placeholder='请输入学校名称'
-        value={values.school}
-        maxlength={128}
-        onInput={(e) => onChange({ ...values, school: e.detail.value })}
-      />
-
-      <View className={styles.fieldLabel}>姓名 <Text className={styles.required}>*</Text></View>
-      <Input
-        className={styles.fieldInput}
-        placeholder='请输入真实姓名'
-        value={values.real_name}
-        maxlength={64}
-        onInput={(e) => onChange({ ...values, real_name: e.detail.value })}
-      />
-
-      <View className={styles.fieldLabel}>手机号 <Text className={styles.required}>*</Text></View>
-      <Input
-        className={styles.fieldInput}
-        type='number'
-        placeholder='请输入联系电话'
-        value={values.phone}
-        maxlength={11}
-        onInput={(e) => onChange({ ...values, phone: e.detail.value })}
-      />
-
-      {(fields || []).map(field => renderCustomField(field))}
+      {!covered.has('school') && renderFixedSlot('school')}
+      {!covered.has('real_name') && renderFixedSlot('real_name')}
+      {!covered.has('phone') && renderFixedSlot('phone')}
+      {customList.map((field) =>
+        isFixedFieldAlias(field.key)
+          ? renderFixedSlot(FIXED_FIELD_ALIASES[field.key], field.label)
+          : renderCustomField(field),
+      )}
     </View>
   )
 }

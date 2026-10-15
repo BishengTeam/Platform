@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import {
   CompetitionRegForm,
+  isFixedFieldAlias,
   validateCompetitionRegForm,
   type CompetitionRegFormValues,
 } from '@/components/CompetitionRegForm'
@@ -159,7 +160,10 @@ function competitionEditValues(
     school: registration.school || '',
     real_name: registration.real_name || '',
     phone: registration.phone || '',
-    custom: { ...(registration.custom_field_values || {}) },
+    // 别名键（name/school/phone_number）由固定三项承载，回填时剔除避免重复
+    custom: Object.fromEntries(
+      Object.entries(registration.custom_field_values || {}).filter(([key]) => !isFixedFieldAlias(key)),
+    ),
   }
 }
 
@@ -865,7 +869,7 @@ export default function RegistrationDetailPage() {
                       {competitionRegistration.phone || '-'}
                     </Text>
                   </View>
-                  {Object.entries(competitionRegistration.custom_field_values || {}).map(([key, value]) => {
+                  {Object.entries(competitionRegistration.custom_field_values || {}).filter(([key]) => !isFixedFieldAlias(key)).map(([key, value]) => {
                     const label = competitionRegistration.custom_fields
                       ?.find((field) => field.key === key)?.label || key
                     const text = Array.isArray(value)

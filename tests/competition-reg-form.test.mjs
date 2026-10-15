@@ -45,3 +45,17 @@ test('custom required and format rules are enforced', () => {
     null,
   )
 })
+
+test('fixed-field alias keys are satisfied by the top-level slots', () => {
+  const aliasFields = [
+    { key: 'name', label: '姓名', type: 'text', required: true, sort_order: 0 },
+    { key: 'gender', label: '性别', type: 'radio', required: true, options: ['男', '女'], sort_order: 1 },
+    { key: 'phone_number', label: '电话号码', type: 'phone', required: true, sort_order: 2 },
+    { key: 'school', label: '学校', type: 'text', required: true, sort_order: 3 },
+  ]
+  const base = { ...emptyCompetitionRegFormValues(), school: '成都工业', real_name: '林安', phone: '13800138000' }
+  // 别名键（姓名/电话号码/学校）由固定三项承载，custom 为空也能通过校验
+  assert.equal(validateCompetitionRegForm({ ...base, custom: { gender: '女' } }, aliasFields), null)
+  // 固定三项本身缺失仍然拦截
+  assert.equal(validateCompetitionRegForm({ ...emptyCompetitionRegFormValues(), custom: { gender: '女' } }, aliasFields), '请输入学校')
+})
