@@ -67,7 +67,7 @@ export default function RensheFormPage() {
 
   const realname = profile?.realname
   const student = profile?.student
-  const materialChecks = [
+  const legacyMaterialChecks = [
     { label: '身份证正面', value: realname?.id_card_front_oss },
     { label: '身份证反面', value: realname?.id_card_back_oss },
     { label: '二寸免冠照', value: realname?.avatar_oss },
@@ -75,10 +75,16 @@ export default function RensheFormPage() {
     { label: '学信网电子注册备案表', value: student?.enrollment_pdf_oss },
     { label: '学历证明', value: student?.degree_cert_oss },
   ]
+  const sources: Record<string, string | null | undefined> = {
+    id_card_front: realname?.id_card_front_oss, id_card_back: realname?.id_card_back_oss, portrait: realname?.avatar_oss,
+    student_card: student?.student_card_oss, xuexin_registration: student?.enrollment_pdf_oss, education_proof: student?.degree_cert_oss,
+  }
+  const materialChecks = plan?.renshe_config?.materials.map(item => ({ label: item.name, value: sources[item.kind], required: item.required }))
+    ?? legacyMaterialChecks.map(item => ({ ...item, required: true }))
   const identityReady = identity.phase === 'verified'
     && realname?.identity_status === 'verified'
     && student?.student_status === 'verified'
-  const materialsReady = materialChecks.every(item => Boolean(item.value))
+  const materialsReady = materialChecks.every(item => !item.required || Boolean(item.value))
   const canSubmit = identityReady && materialsReady && !submitting
 
   const handleValidate = useCallback(() => {
@@ -187,6 +193,7 @@ export default function RensheFormPage() {
               <Text className={styles.title}>{plan.name}</Text>
               <Text className={styles.badge}>{plan.occupation_name}</Text>
             </View>
+            <View className={styles.row}><Text className={styles.label}>报考项目</Text><Text className={styles.value}>{plan.project_name || plan.occupation_name}</Text></View>
             <View className={styles.row}>
               <Text className={styles.label}>报名时间</Text>
               <Text className={styles.value}>
@@ -236,7 +243,7 @@ export default function RensheFormPage() {
             <View className={styles.requirementList}>
               {materialChecks.map(item => (
                 <View className={styles.requirementItem} key={item.label}>
-                  {item.label}：{item.value ? '已提交' : '待提交'}
+                  {item.label}（{item.required ? '必填' : '选填'}）：{item.value ? '已提交' : '待提交'}
                 </View>
               ))}
             </View>
@@ -247,7 +254,7 @@ export default function RensheFormPage() {
             )}
             {identityReady && !materialsReady && (
               <View className={styles.warning}>
-                认证材料不完整。人社报名会冻结提交时的六类证明材料，请先在「我的-编辑资料」补齐。
+                本批次必填材料不完整，请先在「我的-编辑资料」补齐。提交后将保留本次材料版本。
               </View>
             )}
           </View>

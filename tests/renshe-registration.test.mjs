@@ -5,7 +5,7 @@ import test from 'node:test'
 test('Renshe uses the dedicated batch, draft, and submission services', async () => {
   const service = await readFile('src/services/rensheService.ts', 'utf8')
 
-  assert.match(service, /get<RenshePlan\[\]>\('\/api\/plans', \{ product_type: 'RS-ZY' \}\)/)
+  assert.match(service, /get<RenshePlan\[\]>\('\/api\/renshe\/batches'/)
   assert.match(service, /'\/api\/renshe\/applications\/draft'/)
   assert.match(service, /post<RensheSubmitResult>\(`\/api\/renshe\/applications\/\$\{id\}\/submit`\)/)
   assert.doesNotMatch(service, /post\(['`]\/api\/orders/)
@@ -32,7 +32,7 @@ test('Renshe has a dedicated batch list and batch-bound form route', async () =>
   assert.doesNotMatch(appConfig, /form-renshe/)
   const rensheIndex = await readFile('src/pages/renshe/index.tsx', 'utf8')
   assert.doesNotMatch(rensheIndex, /学历型/)
-  assert.match(rensheIndex, /具体报考项目以所选批次展示为准/)
+  assert.match(rensheIndex, /报名资格和材料要求以所选批次为准/)
 })
 
 test('Renshe form freezes verified identity and prechecks all six materials', async () => {

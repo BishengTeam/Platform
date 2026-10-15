@@ -10,6 +10,7 @@ export interface Order {
 
 /** 后端 GET /api/orders 返回的单条订单原始结构 */
 export interface OrderBackendItem {
+  application_id?: number | null
   id: number
   order_kind: 'certification' | 'course' | 'quiz_order' | string
   product_type: string

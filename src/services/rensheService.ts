@@ -13,6 +13,12 @@ export type RensheApplicationStatus =
 export interface RenshePlan {
   id: number
   product_type: string
+  project_name?: string | null
+  renshe_config_id?: number | null
+  renshe_config?: {
+    education_levels: string[]
+    materials: Array<{ kind: string; name: string; required: boolean; extensions: string[]; max_count: number }>
+  } | null
   name: string
   apply_start: string | null
   apply_end: string | null
@@ -35,6 +41,15 @@ export interface RensheDraftPayload {
   contact_phone: string
   mailing_address: string
   email: string
+}
+
+export interface RensheProject {
+  id: number
+  name: string
+  description: string | null
+  home_cover_url: string | null
+  occupation_name: string
+  skill_level: string
 }
 
 export interface RensheApplication {
@@ -119,8 +134,11 @@ export interface PageData<T> {
 }
 
 export const rensheService = {
-  async listBatches(): Promise<RenshePlan[]> {
-    return (await get<RenshePlan[]>('/api/plans', { product_type: 'RS-ZY' })).data ?? []
+  async listProjects(): Promise<RensheProject[]> {
+    return (await get<RensheProject[]>('/api/renshe/projects')).data ?? []
+  },
+  async listBatches(projectId?: number): Promise<RenshePlan[]> {
+    return (await get<RenshePlan[]>('/api/renshe/batches', projectId ? { project_id: projectId } : undefined)).data ?? []
   },
 
   async getBatch(id: number): Promise<RenshePlan> {
