@@ -25,6 +25,25 @@
   margin-bottom: $spacing-sm;
 }
 
+// open-type='share' 的 Taro Button 伪装成卡片：重置按钮默认样式
+.cardAsButton {
+  width: 100%;
+  background: $color-white;
+  border: none;
+  margin: 0;
+  line-height: inherit;
+  font-size: inherit;
+  text-align: left;
+
+  &::after {
+    border: none;
+  }
+}
+
+.cardDisabled {
+  opacity: 0.45;
+}
+
 .cardIcon {
   font-size: 32px;
 }
@@ -56,4 +75,21 @@
   display: flex;
   justify-content: center;
   padding: $spacing-xl 0;
+}
+
+// open-type='share' 的底部主按钮（渐变样式，替代 NutUI Button 以支持转发）
+.shareBtn {
+  min-width: 320px;
+  padding: $spacing-md $spacing-xl;
+  background: linear-gradient(135deg, #1677FF, #4096FF);
+  color: #fff;
+  font-size: $font-base;
+  font-weight: 600;
+  border-radius: 44px;
+  text-align: center;
+  line-height: 1.5;
+
+  &::after {
+    border: none;
+  }
 }

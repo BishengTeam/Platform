@@ -741,7 +741,7 @@ export const STRINGS = {
   // ---- Share Page ----
   MINE_SHARE_APP_DESC: '分享小程序给微信好友',
   MINE_SHARE_COURSE_DESC: '推荐课程给朋友',
-  MINE_SHARE_POSTER_DESC: '生成专属推广海报',
+  MINE_SHARE_POSTER_DESC: '保存推广海报到相册',
   MINE_SHARE_DEFAULT_LABEL: '分享',
 
   // ---- Courses Page ----

@@ -722,6 +722,13 @@ export async function getPoster(): Promise<{ url: string }> {
   return res.data
 }
 
+/** GET /api/share/poster — 分享好友页推广海报（后台配置，未配置为 null） */
+export async function getSharePoster(): Promise<{ image_url: string | null }> {
+  if (USE_MOCK) return { image_url: '' }
+  const res = await get<{ image_url: string | null }>('/api/share/poster')
+  return res.data
+}
+
 /** POST /api/upload — 文件上传 OSS */
 export async function uploadToOss(filePath: string, token?: string): Promise<{ url: string }> {
   if (USE_MOCK) return { url: filePath }

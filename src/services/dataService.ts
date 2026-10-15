@@ -101,6 +101,6 @@ export {
   getJobs, createTicket, getTicketDetail,
   createShare, getShareInfo, getMediaUrl,
   assignCoupon, verifyCoupon, streamChatMessage,
-  getPoster, uploadToOss, getSystemMediaUrl,
+  getPoster, getSharePoster, uploadToOss, getSystemMediaUrl,
   fetchQuickQuestions,
 } from './userService'
