@@ -36,6 +36,7 @@ test('Renshe has a dedicated batch list and batch-bound form route', async () =>
   assert.match(rensheIndex, /CertBatchCard/)
   assert.match(rensheIndex, /ZoneCard/)
   assert.match(rensheIndex, /该产品暂无开放批次/)
+  assert.doesNotMatch(rensheIndex, /summaryCard/)
 })
 
 test('Renshe form freezes verified identity and prechecks all six materials', async () => {

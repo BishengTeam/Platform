@@ -113,21 +113,6 @@ export default function RensheIndexPage() {
             />
           ))}
 
-          {!loading && !error && selectedProject && (
-            <View className={styles.summaryCard}>
-              <View className={styles.cardHeader}>
-                <Text className={styles.title}>{selectedProject.name}</Text>
-                <Text className={styles.badge}>{selectedProject.skill_level}</Text>
-              </View>
-              <Text className={styles.sectionDesc}>
-                {selectedProject.occupation_name}
-              </Text>
-              {selectedProject.description && (
-                <Text className={styles.sectionDesc}>{selectedProject.description}</Text>
-              )}
-            </View>
-          )}
-
           {!loading && !error && selectedProject && batches.length === 0 && (
             <View className={styles.empty}>
               <Text>该产品暂无开放批次</Text>
