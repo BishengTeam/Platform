@@ -1,0 +1,90 @@
+@use '../../styles/variables' as *;
+
+/* 设计稿视觉值 ×2 换算：卡距 10px→20px、卡高 90px→180px、圆角 8px→$radius-md */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: 180px;
+  padding: $spacing-md;
+  background: #F9F9F9;
+  border-radius: $radius-md;
+  overflow: hidden;
+  transition: transform $motion-duration-press $motion-ease-out;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.title {
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tags {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.tag {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  background: #EDEDED;
+  border-radius: $radius-sm;
+  font-size: $font-xs;
+  color: $color-text-secondary;
+  white-space: nowrap;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.location {
+  flex: 1;
+  min-width: 0;
+  font-size: 22px;
+  color: $color-text-tertiary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.salary {
+  flex-shrink: 0;
+  font-size: 26px;
+  font-weight: 600;
+  color: $color-employment-teal;
+}
+
+.salaryFallback {
+  flex-shrink: 0;
+  font-size: 26px;
+  color: $color-text-tertiary;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition-property: opacity, background-color;
+  }
+
+  .card:active {
+    transform: none;
+  }
+}

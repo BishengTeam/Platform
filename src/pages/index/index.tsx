@@ -8,6 +8,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { SectionHeader } from '@/components/SectionHeader'
 import { HomeCard } from '@/components/HomeCard'
+import { JobGrid } from '@/components/JobGrid'
 import { ZoneBanner } from '@/components/ZoneBanner'
 import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
@@ -243,14 +244,14 @@ export default function IndexPage() {
             <SectionHeader title={STRINGS.ZONE_NAMES[2]} onViewAll={handleGoCompetitionZone} />
             <HomeCard
               items={(homeData?.zones['competition']?.competitions ?? []).map((comp) => {
-                // 大图通栏优先横版封面（1404×640 恰好满宽不裁切）；竖版封面仅作回退裁中
-                const cover = comp.cover_url || comp.home_cover_url
+                // 大图通栏用横版封面（1404×640 恰好满宽不裁切）
+                const cover = comp.cover_url
                 return {
                   id: comp.id,
                   title: comp.name,
                   description: null,
                   cover_url: resolveMediaUrl(cover),
-                  // 两个封面都未配置时给竞赛主题橙色渐变 + 奖杯图标占位
+                  // 封面未配置时给竞赛主题橙色渐变 + 奖杯图标占位
                   gradient: cover ? undefined : 'linear-gradient(135deg, #FFA940 0%, #FA8C16 100%)',
                   icon: cover ? undefined : 'trophy',
                   tag: comp.tracks.length > 0 ? `${comp.tracks.length} 条赛道` : undefined,
@@ -272,13 +273,12 @@ export default function IndexPage() {
           {employmentJobs.length > 0 && (
             <View className={styles.section}>
               <SectionHeader title={STRINGS.ZONE_NAMES[4]} onViewAll={handleGoEmploymentZone} />
-              <HomeCard
+              <JobGrid
                 items={employmentJobs.map((job) => ({
                   id: job.id,
                   title: job.title,
-                  description: [job.company, job.location].filter(Boolean).join(' · ') || null,
-                  tag: job.salary_range ?? undefined,
-                  tagColor: '#13C2C2',
+                  location: job.location,
+                  salary: job.salary_range,
                 }))}
                 onCardClick={handleGoEmploymentZone}
               />

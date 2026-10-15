@@ -104,13 +104,6 @@ export default function ActivityZonePage() {
     return { label: STRINGS.COMPETITION_STATUS_REGISTERING, color: '#52C41A' }
   }
 
-  const getEmploymentButton = (item: JobBrief) => {
-    return {
-      text: item.contact_info ? '复制联系方式' : '暂无联系方式',
-      variant: 'secondary' as const,
-    }
-  }
-
   const currentActiveTag = mainTab === 'activity'
     ? activityTag
     : competitionTag
@@ -243,7 +236,6 @@ export default function ActivityZonePage() {
               ) : (
               <View className={styles.cardList}>
                 {employmentData.map((job) => {
-                  const btn = getEmploymentButton(job)
                   return (
                     <ZoneCard
                       key={job.id}
@@ -251,18 +243,11 @@ export default function ActivityZonePage() {
                       subtitle={job.company}
                       tags={[job.location ?? '']}
                       price={job.salary_range ?? ''}
-                      buttonText={btn.text}
-                      buttonVariant={btn.variant}
+                      buttonText='了解详情'
+                      buttonVariant='secondary'
                       buttonColor='#13C2C2'
                       onCardClick={() => {
                         Taro.navigateTo({ url: `/pages/employment-zone/detail?id=${job.id}` })
-                      }}
-                      onButtonClick={() => {
-                        if (!job.contact_info) {
-                          Taro.showToast({ title: '暂无联系方式', icon: 'none' })
-                          return
-                        }
-                        Taro.setClipboardData({ data: job.contact_info })
                       }}
                     />
                   )

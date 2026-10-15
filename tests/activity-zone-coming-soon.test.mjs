@@ -19,10 +19,10 @@ test('activity zone defaults to competition and shows preparing empty states', a
   assert.match(source, /title=\{STRINGS\.EMPLOYMENT_EMPTY_TITLE\}/)
   // 竞赛子页不展示运营横幅，列表内容直接从筛选区开始。
   assert.doesNotMatch(source, /ZoneBanner|currentBanner|bannerWrap/)
-  // 薪资只保留价格槽位；联系方式不再塞进按钮文案导致按钮过长。
+  // 薪资只保留价格槽位；按钮统一为"了解详情"，联系方式在详情页查看。
   assert.match(source, /tags=\{\[job\.location \?\? ''\]\}/)
   assert.match(source, /price=\{job\.salary_range \?\? ''\}/)
-  assert.match(source, /text: item\.contact_info \? '复制联系方式' : '暂无联系方式'/)
+  assert.match(source, /buttonText='了解详情'/)
   assert.doesNotMatch(source, /`联系：\$\{item\.contact_info\}`/)
   // 活动卡片与竞赛卡片同构：仅封面 + 标题 + 状态角标，明细（时间/地点/描述）一律进详情页。
   // 断言限定在活动区块内，就业卡片的按钮不受影响。
@@ -91,11 +91,17 @@ test('ai consult no longer advertises unavailable activities or jobs', async () 
   assert.equal(STRINGS.AI_COMPETITION_CARD_DESC, '最新赛事报名与赛道信息')
 })
 
-test('login poster replaces the fake training camp with practice assistant', async () => {
-  const source = await readFile(file('pages/login-poster/index.tsx'), 'utf8')
-  assert.match(source, /type: 'quiz'/)
-  assert.equal(STRINGS.LOGIN_POSTER_CARD_3_TITLE, '练习助手')
-  assert.ok(!STRINGS.LOGIN_POSTER_CARD_3_TITLE.includes('题库'))
-  assert.ok(!STRINGS.LOGIN_POSTER_CARD_3_DESC.includes('题库'))
-  assert.ok(!STRINGS.LOGIN_POSTER_CARD_3_DESC.includes('报名开启'))
+test('home ad popup shows once per launch with dismiss-today storage', async () => {
+  const source = await readFile(file('pages/index/index.tsx'), 'utf8')
+  const adPopup = await readFile(file('components/AdPopup/index.tsx'), 'utf8')
+
+  // 废弃的写死演示页已删除，登录后弹窗改由后台 popup 配置驱动。
+  // 每次冷启动只尝试弹一次；选「今日不再弹出」后按天写本地存储。
+  assert.match(source, /import \{ AdPopup \} from '@\/components\/AdPopup'/)
+  assert.match(source, /popupShownRef\.current = true/)
+  assert.match(source, /popupDismissKey\(/)
+  assert.match(source, /AD_POPUP_DISMISS_TODAY|onDismissToday=\{dismissPopupToday\}/)
+  assert.match(adPopup, /AD_POPUP_DISMISS_TODAY/)
+  assert.match(adPopup, /navigateToUrl\(jumpLink\)/)
+  assert.ok(STRINGS.AD_POPUP_DISMISS_TODAY, '今日不再弹出')
 })
