@@ -1,5 +1,4 @@
 import { View, Text, Image } from '@tarojs/components'
-import { Button } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import styles from './index.module.scss'
 
@@ -15,7 +14,6 @@ export interface HomeCardItem {
   /** 角标：有封面图时叠在图右上角，无封面图时作为标题行徽签 */
   tag?: string
   tagColor?: string
-  actionText?: string
 }
 
 interface Props {
@@ -67,17 +65,6 @@ export function HomeCard({ items, onCardClick }: Props) {
               </View>
               {item.description ? (
                 <Text className={styles.desc}>{item.description}</Text>
-              ) : null}
-              {item.actionText ? (
-                <View className={styles.footer}>
-                  <Button
-                    variant='secondary'
-                    size='sm'
-                    className={styles.actionButton}
-                  >
-                    {item.actionText}
-                  </Button>
-                </View>
               ) : null}
             </View>
           </View>

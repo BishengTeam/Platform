@@ -83,14 +83,14 @@ function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
   return {
     id: cert.id,
     title: cert.chinese_name || cert.name,
-    description: `认证代码：${cert.code}`,
+    description: null,
+    // 与竞赛卡片同构：大图/渐变 + 厂商角标 + 标题，认证代码等明细进报名页
     // 上传了首页横幅（1404×640 通栏）则用图，未上传回退厂商渐变 + 图标
     cover_url: cover ? resolveMediaUrl(cover) : null,
     gradient: cover ? undefined : meta.gradient,
     icon: cover ? undefined : meta.icon,
     tag: cert.vendor,
     tagColor: meta.tagColor,
-    actionText: '报名入口',
   }
 }
 

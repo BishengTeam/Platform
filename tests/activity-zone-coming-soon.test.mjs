@@ -69,10 +69,12 @@ test('home certification waterfall renders active certification products', async
   assert.match(source, /zones\['cert'\]\?\.certifications/)
   assert.doesNotMatch(source, /zones\['cert'\]\?\.items/)
   assert.match(source, /title: cert\.chinese_name \|\| cert\.name/)
-  assert.match(source, /actionText: '报名入口'/)
   assert.match(source, /certificationCards\.length > 0 && \(/)
-  // 认证卡 CTA 使用统一胶囊按钮语言，不再使用早期网页风的 “>>” 文本箭头。
-  assert.match(homeCard, /<Button[\s\S]*?className=\{styles\.actionButton\}/)
+  // 2026-10-15 甲方要求：认证卡与竞赛卡同构（大图/渐变 + 角标 + 标题），
+  // 不再有“认证代码”描述行和“报名入口”按钮，点击整卡直达对应认证报名。
+  assert.doesNotMatch(source, /actionText/)
+  assert.match(source, /navigateToCertRegistration/)
+  assert.doesNotMatch(homeCard, /actionText|<Button/)
   assert.equal(homeCard.includes('>>'), false)
 })
 
