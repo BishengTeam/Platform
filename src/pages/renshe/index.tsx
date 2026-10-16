@@ -134,7 +134,7 @@ export default function RensheIndexPage() {
           )}
 
           {!loading && !error && selectedProject && batches.map((batch) => {
-            const acceptsNew = batch.renshe_config?.qualification_rule === GRADUATED_RULE
+            const acceptsNew = batch.renshe_config?.qualification_rule === GRADUATED_RULE && batch.renshe_config?.reporting_policy?.contract_version === 2
             const full = batch.capacity > 0 && batch.enrolled >= batch.capacity
             const remaining = batch.capacity === 0
               ? '不限'

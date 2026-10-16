@@ -11,6 +11,31 @@ export interface RensheEducationInfo {
   graduation_date: string
   certificate_number: string
 }
+export interface RensheReportingInfo {
+  occupation_status: string
+  ethnicity: string
+  political_status: string
+  has_work_experience: boolean
+  work_start_date?: string | null
+  enrollment_date?: string | null
+  occupation_years?: string | number | null
+  work_unit?: string
+  social_insurance_unit?: string
+}
+export interface RensheReportingOptions {
+  config_id: number
+  version: string
+  education_levels: string[]
+  education_labels: Record<string, string>
+  institution_types: string[]
+  occupations: string[]
+  ethnicities: string[]
+  political_statuses: string[]
+  candidate_source: string
+  application_condition: string
+  employment_reporting: { confirmed: boolean; date_rule: string; years_rule: string; allow_zero_years: boolean }
+  commitment_template: { filename: string }
+}
 export interface RensheUploadedMaterial {
   application_id?: number
   kind: string
@@ -37,7 +62,7 @@ export interface RenshePlan {
   renshe_config?: {
     qualification_rule?: string
     institution_types?: string[]
-    reporting_policy?: { commitment_template?: { filename: string; original_filename?: string } }
+    reporting_policy?: { contract_version?: number; commitment_template?: { filename: string; original_filename?: string } }
     education_levels: string[]
     materials: Array<{ kind: string; name: string; required: boolean; extensions: string[]; max_count: number }>
   } | null
@@ -64,6 +89,8 @@ export interface RensheDraftPayload {
   mailing_address: string
   email: string
   education_info?: RensheEducationInfo
+  reporting_info?: RensheReportingInfo
+  reporting_config_id?: number
 }
 
 export interface RensheProject {
@@ -93,6 +120,8 @@ export interface RensheApplication {
     mailing_address?: string
     email?: string
     education_info?: RensheEducationInfo
+    reporting_info?: RensheReportingInfo
+    reporting_config_id?: number
     materials?: Record<string, RensheUploadedMaterial>
   } | null
   correction_due_at?: string | null
@@ -167,6 +196,9 @@ export interface PageData<T> {
 }
 
 export const rensheService = {
+  async getReportingOptions(planId: number): Promise<RensheReportingOptions> {
+    return (await get<RensheReportingOptions>(`/api/renshe/batches/${planId}/reporting-options`)).data
+  },
   async findActiveApplication(planId: number): Promise<RensheApplicationDetail | null> {
     const result = await get<PageData<RensheApplicationListItem>>('/api/renshe/applications', { plan_id: planId, page_size: 20 })
     const item = result.data.items.find(application => application.status !== 'closed')
@@ -183,10 +215,10 @@ export const rensheService = {
     if (response.statusCode !== 200 || payload.code !== 0 || !payload.data?.storage_key) throw new Error(payload.message || '材料上传失败')
     return payload.data
   },
-  async downloadCommitmentTemplate(planId: number, filename?: string): Promise<void> {
+  async downloadCommitmentTemplate(planId: number, filename?: string, reportingConfigId?: number): Promise<void> {
     const token = getToken()
     const response = await Taro.downloadFile({
-      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template`,
+      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template${reportingConfigId ? `?reporting_config_id=${reportingConfigId}` : ''}`,
       header: { Authorization: token ? `Bearer ${token}` : '' },
     })
     if (response.statusCode !== 200) throw new Error('承诺书模板暂不可下载，请联系管理员')
