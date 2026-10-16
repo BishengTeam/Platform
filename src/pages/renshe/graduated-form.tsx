@@ -83,7 +83,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
   const downloadTemplate = async () => {
     if (busy) return
     setBusy('template'); setError('')
-    try { if (options) await rensheService.downloadCommitmentTemplate(plan.id, options.commitment_template.filename, options.config_id) }
+    try { if (options?.commitment_template) await rensheService.downloadCommitmentTemplate(plan.id, options.commitment_template.filename) }
     catch (value) { fail(value) } finally { setBusy('') }
   }
 
@@ -107,7 +107,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     setBusy('submit')
     try {
       if (!(await ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读并同意认证报名信息处理授权协议'))) return
-      const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), education_info: { ...education, graduated: true } as RensheEducationInfo, reporting_config_id: options.config_id, reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
+      const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), education_info: { ...education, graduated: true } as RensheEducationInfo, reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
       const result = await rensheService.submit(saved.id)
       if (result.payment_required) await Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` })
       else await Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${saved.id}` })
@@ -141,7 +141,6 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         <Text className={styles.sectionDesc}>已支付报名补正后重新初审，复用原订单。</Text>
       </View>}
       {!options && <View className={styles.warning}><Text>{optionsError || '正在加载本批次填报要求…'}</Text>{optionsError && <Button variant='secondary' onClick={() => setRetry(value => value + 1)}>重新加载</Button>}</View>}
-      {options && options.config_id !== plan.renshe_config_id && <View className={styles.warning}>本次补正采用已确认的新报送要求，保存为独立版本；原批次、报名费用和订单继续保留。</View>}
       {locked && <View className={styles.warning}>
         <Text>{application?.frozen_at ? '退款处理中，资料已冻结。' : correcting ? '补正期限或批次状态不允许修改，请联系管理员。' : '报名已提交，可在报名详情查看进度、继续支付或取消待支付订单。'}</Text>
         {application && <Button variant='secondary' onClick={() => Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${application.id}` })}>查看报名详情</Button>}
@@ -171,8 +170,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         {reportPicker('political_status', '政治面貌', options?.political_statuses || [])}
         <View className={styles.pickerField}><Text className={styles.label}>是否参加过工作 *</Text><Picker mode='selector' range={['参加过工作', '尚未参加工作']} disabled={locked || Boolean(busy)} onChange={event => setReporting(previous => ({ ...previous, has_work_experience: Number(event.detail.value) === 0, work_start_date: Number(event.detail.value) === 0 ? previous.work_start_date : null }))}><View className={styles.readonlyValue}>{reporting.has_work_experience === undefined ? '请选择' : reporting.has_work_experience ? '参加过工作' : '尚未参加工作'} ›</View></Picker></View>
         {reporting.has_work_experience && reportDatePicker('work_start_date', '参加工作日期 *')}
-        {reportDatePicker('enrollment_date', `本次毕业学历的入学日期${options?.employment_reporting.date_rule === 'enrollment_only' || (!reporting.has_work_experience && options?.employment_reporting.date_rule === 'work_or_enrollment') ? ' *' : '（选填）'}`)}
-        <Text className={styles.sectionDesc}>参加工作／入学日期须如实填写，毕业日期不能替代。{options?.employment_reporting.date_rule === 'work_only' ? '本批次仅接受参加工作日期；尚未参加工作请联系管理员核实。' : options?.employment_reporting.date_rule === 'enrollment_only' ? '本批次报送使用入学日期。' : options?.employment_reporting.date_rule === 'work_or_enrollment' ? '本批次优先报送参加工作日期，未工作时使用入学日期。' : '本批次报送日期可选填。'}</Text>
+        <Text className={styles.sectionDesc}>报送必须填写真实参加工作日期，不能用入学日期、毕业日期替代。尚未参加工作、无法提供该日期的，请联系管理员核实。</Text>
         <FormInput label='实际职业年限（年）' required={options?.employment_reporting.years_rule === 'required'} placeholder='如实填写，可保留两位小数' value={String(reporting.occupation_years ?? '')} disabled={locked || Boolean(busy)} onChange={value => reportField('occupation_years', value)} maxlength={7} />
         <Text className={styles.sectionDesc}>职业年限用于模板报送，不作为学历型报考的工龄门槛。{options?.employment_reporting.allow_zero_years ? '尚未参加工作可如实填写0。' : '本批次未确认接受零年限，请联系管理员，不要填写虚假年限。'}</Text>
         <FormInput label='工作单位（选填）' value={reporting.work_unit || ''} placeholder='按实际情况填写' disabled={locked || Boolean(busy)} onChange={value => reportField('work_unit', value)} maxlength={128} />

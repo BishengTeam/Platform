@@ -45,6 +45,14 @@ test('reporting respects explicitly confirmed optional columns and zero-year rul
   assert.match(validateReportingInfo({ ...reporting, has_work_experience: true, work_start_date: '2020-01-01', occupation_years: '3.255' }, options), /两位小数/)
 })
 
+test('current reporting requires a real work date and years while allowing zero', () => {
+  const options = { ...reportingOptions, employment_reporting: { confirmed: true, date_rule: 'work_only', years_rule: 'required', allow_zero_years: true } }
+  const worker = { ...reporting, has_work_experience: true, work_start_date: '2022-09-21', occupation_years: 0 }
+  assert.equal(validateReportingInfo(worker, options), null)
+  assert.match(validateReportingInfo({ ...worker, occupation_years: null }, options), /职业年限/)
+  assert.match(validateReportingInfo({ ...reporting, enrollment_date: '2019-09-01' }, options), /毕业日期不能替代/)
+})
+
 test('paid correction UX allows registration closure but respects deadline, freeze and cancellation', () => {
   const now = Date.parse('2026-10-16T02:00:00Z')
   const application = { status: 'initial_rejected', frozen_at: null, correction_due_at: '2026-10-17T02:00:00Z' }

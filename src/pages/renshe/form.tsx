@@ -13,6 +13,8 @@ import {
   rensheService,
   type RensheApplicationDetail,
   type RenshePlan,
+  type RensheReportingInfo,
+  type RensheReportingOptions,
 } from '@/services/rensheService'
 import type { UserProfileAggregated } from '@/types/profile'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
@@ -21,6 +23,8 @@ import { validateEmail, validatePhone, validateRequired } from '@/utils/validato
 import type { ValidationResult } from '@/utils/validator'
 import styles from './renshe.module.scss'
 import GraduatedForm from './graduated-form'
+import ReportingFields from './reporting-fields'
+import { validateReportingInfo } from '@/utils/rensheGraduated'
 
 export default function RensheFormPage() {
   const [planId, setPlanId] = useState(0)
@@ -31,6 +35,9 @@ export default function RensheFormPage() {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [address, setAddress] = useState('')
+  const [reporting, setReporting] = useState<Partial<RensheReportingInfo>>({})
+  const [reportingOptions, setReportingOptions] = useState<RensheReportingOptions | null>(null)
+  const [reportingError, setReportingError] = useState('')
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -62,6 +69,10 @@ export default function RensheFormPage() {
       setPhone(draft?.contact_phone || profileDetail?.profile.phone || '')
       setEmail(draft?.email || profileDetail?.profile.email || '')
       setAddress(draft?.mailing_address || profileDetail?.profile.address || '')
+      if (planDetail.renshe_config?.qualification_rule !== 'related_major_graduated_degree_v1') {
+        setReportingOptions(await rensheService.getReportingOptions(planDetail.id))
+        setReporting(draft?.reporting_info || { ethnicity: profileDetail?.realname?.ethnicity || '', political_status: profileDetail?.realname?.political_status || '' })
+      }
     } catch (error) {
       setPlan(null)
       setLoadError(error instanceof Error ? error.message : '报名信息加载失败，请重试')
@@ -101,8 +112,10 @@ export default function RensheFormPage() {
       address: validateRequired(address, '通讯地址'),
     }
     setErrors(next)
-    return Object.values(next).every(item => item.valid)
-  }, [address, email, phone])
+    const reportingMessage = reportingOptions ? validateReportingInfo(reporting, reportingOptions) : '报送信息尚未加载，请重试'
+    setReportingError(reportingMessage || '')
+    return Object.values(next).every(item => item.valid) && !reportingMessage
+  }, [address, email, phone, reporting, reportingOptions])
 
   const handleSubmit = async () => {
     if (!plan || !canSubmit || !handleValidate()) return
@@ -119,6 +132,7 @@ export default function RensheFormPage() {
         contact_phone: phone.trim(),
         mailing_address: address.trim(),
         email: email.trim(),
+        reporting_info: { ...reporting, occupation_years: reporting.occupation_years === '' ? null : reporting.occupation_years } as RensheReportingInfo,
       })
       const submitted = await rensheService.submit(saved.id)
       Taro.showToast({ title: '报名信息已提交', icon: 'success' })
@@ -287,6 +301,8 @@ export default function RensheFormPage() {
             </View>
           )}
 
+          <ReportingFields value={reporting} onChange={setReporting} options={reportingOptions} disabled={submitting} />
+          {reportingError && <View className={styles.warning}>{reportingError}</View>}
           <View className={styles.card}>
             <Text className={styles.sectionTitle}>报名联系信息</Text>
             <FormInput

@@ -24,7 +24,6 @@ export interface RensheReportingInfo {
 }
 export interface RensheReportingOptions {
   config_id: number
-  version: string
   education_levels: string[]
   education_labels: Record<string, string>
   institution_types: string[]
@@ -34,7 +33,7 @@ export interface RensheReportingOptions {
   candidate_source: string
   application_condition: string
   employment_reporting: { confirmed: boolean; date_rule: string; years_rule: string; allow_zero_years: boolean }
-  commitment_template: { filename: string }
+  commitment_template: { filename: string } | null
 }
 export interface RensheUploadedMaterial {
   application_id?: number
@@ -90,7 +89,6 @@ export interface RensheDraftPayload {
   email: string
   education_info?: RensheEducationInfo
   reporting_info?: RensheReportingInfo
-  reporting_config_id?: number
 }
 
 export interface RensheProject {
@@ -121,7 +119,6 @@ export interface RensheApplication {
     email?: string
     education_info?: RensheEducationInfo
     reporting_info?: RensheReportingInfo
-    reporting_config_id?: number
     materials?: Record<string, RensheUploadedMaterial>
   } | null
   correction_due_at?: string | null
@@ -215,10 +212,10 @@ export const rensheService = {
     if (response.statusCode !== 200 || payload.code !== 0 || !payload.data?.storage_key) throw new Error(payload.message || '材料上传失败')
     return payload.data
   },
-  async downloadCommitmentTemplate(planId: number, filename?: string, reportingConfigId?: number): Promise<void> {
+  async downloadCommitmentTemplate(planId: number, filename?: string): Promise<void> {
     const token = getToken()
     const response = await Taro.downloadFile({
-      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template${reportingConfigId ? `?reporting_config_id=${reportingConfigId}` : ''}`,
+      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template`,
       header: { Authorization: token ? `Bearer ${token}` : '' },
     })
     if (response.statusCode !== 200) throw new Error('承诺书模板暂不可下载，请联系管理员')
