@@ -196,3 +196,10 @@
 .bodyWithFooter {
   padding-bottom: calc(136px + env(safe-area-inset-bottom));
 }
+
+.pickerField { margin-bottom: 28px; }
+.declaration { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: #17233d; font-size: 26px; line-height: 1.6; }
+.uploadItem { padding: 28px 0; border-bottom: 1px solid #edf0f5; }
+.uploadItem:last-child { border-bottom: 0; padding-bottom: 0; }
+.uploadItem button { margin-top: 16px; }
+.fileName { display: block; margin: 16px 0; color: #157347; font-size: 24px; word-break: break-all; }

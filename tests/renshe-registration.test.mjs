@@ -31,7 +31,7 @@ test('Renshe has a dedicated batch list and batch-bound form route', async () =>
   assert.match(genericForm, /ROUTES\.RENSHE_INDEX/)
   assert.doesNotMatch(appConfig, /form-renshe/)
   const rensheIndex = await readFile('src/pages/renshe/index.tsx', 'utf8')
-  assert.doesNotMatch(rensheIndex, /学历型/)
+  assert.match(rensheIndex, /已取得毕业证/)
   assert.match(rensheIndex, /project_id/)
   assert.match(rensheIndex, /CertBatchCard/)
   assert.match(rensheIndex, /ZoneCard/)

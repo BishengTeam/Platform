@@ -32,6 +32,7 @@ import type { H3cRegistration } from '@/types/h3c'
 import type { CompetitionMyRegistration } from '@/types'
 import sharedStyles from './registrations.module.scss'
 import styles from './registration-detail.module.scss'
+import { CHANGE_LABELS, correctionAvailable } from '@/utils/rensheGraduated'
 
 type RegistrationKind = 'h3c' | 'nisp' | 'competition' | 'renshe'
 type H3cRegistrationDetail = H3cRegistration & { kind: 'H3C' }
@@ -555,8 +556,7 @@ export default function RegistrationDetailPage() {
   const showCompetitionSave = Boolean(competitionRegistration?.editable)
   const showRensheCorrection = Boolean(
     rensheRegistration
-    && (rensheRegistration.status === 'initial_rejected'
-      || rensheRegistration.status === 'external_rejected'),
+    && renshePlan && correctionAvailable(rensheRegistration, renshePlan),
   )
   const showRensheCancel = rensheRegistration?.status === 'pending_payment'
   const showRenshePay = rensheRegistration?.status === 'pending_payment'
@@ -736,7 +736,7 @@ export default function RegistrationDetailPage() {
               )}
               {Boolean(rensheRegistration.required_changes?.length) && (
                 <View className={sharedStyles.rejectReason}>
-                  <Text>待修改项：{rensheRegistration.required_changes?.join('、')}</Text>
+                  <Text>待修改项：{rensheRegistration.required_changes?.map(key => CHANGE_LABELS[key] || key).join('、')}</Text>
                 </View>
               )}
 
@@ -797,6 +797,7 @@ export default function RegistrationDetailPage() {
                   )}
                 </>
               )}
+              {rensheRegistration.correction_due_at && <View className={sharedStyles.row}><Text className={sharedStyles.label}>补正截止</Text><Text className={sharedStyles.value}>{formatDateTime(rensheRegistration.correction_due_at, '-')}</Text></View>}
               {rensheRegistration.frozen_at && (
                 <View className={sharedStyles.rejectReason}>
                   <Text>退款处理中，报名资料已冻结：{rensheRegistration.freeze_reason || '-'}</Text>

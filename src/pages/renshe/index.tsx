@@ -12,6 +12,7 @@ import { rensheService, type RenshePlan, type RensheProject } from '@/services/r
 import { formatDate, formatDateTime } from '@/utils/format'
 import { resolveMediaUrl } from '@/utils/media'
 import styles from './renshe.module.scss'
+import { GRADUATED_RULE } from '@/utils/rensheGraduated'
 
 export default function RensheIndexPage() {
   const { params } = useRouter()
@@ -104,14 +105,27 @@ export default function RensheIndexPage() {
               key={project.id}
               coverUrl={resolveMediaUrl(project.home_cover_url)}
               title={project.name}
-              subtitle={project.description || undefined}
-              tags={[project.occupation_name, project.skill_level]}
+              subtitle={[project.description, project.admission_notice].filter(Boolean).join('。') || undefined}
+              tags={[project.occupation_name, project.skill_level, ...(project.qualification_rule === GRADUATED_RULE ? ['学历型', '已取得毕业证'] : [])]}
               buttonText='查看批次'
               buttonVariant='primary'
               onButtonClick={() => openProject(project)}
               onCardClick={() => openProject(project)}
             />
           ))}
+
+          {!loading && !error && selectedProject && <View className={styles.card}>
+            <Text className={styles.sectionTitle}>{selectedProject.occupation_name} · {selectedProject.skill_level}</Text>
+            {selectedProject.description && <Text className={styles.sectionDesc}>{selectedProject.description}</Text>}
+            <Text className={styles.sectionDesc}>职业编码：{selectedProject.occupation_code}</Text>
+            {selectedProject.admission_notice && <View className={styles.warning}>{selectedProject.admission_notice}</View>}
+            {selectedProject.qualification_rule === GRADUATED_RULE && <>
+              <Text className={styles.sectionTitle}>报名前准备</Text>
+              <Text className={styles.sectionDesc}>本人实名；毕业院校、学历、专业、毕业日期及证书编号；手机号、邮箱、通讯地址。</Text>
+              <Text className={styles.sectionDesc}>身份证正反面、一寸白底近期照（≤500 KB）、毕业证、学信网学历备案表（验证有效期设置为6个月）、签字按手印承诺书。</Text>
+              <Text className={styles.sectionDesc}>报名页可下载承诺书模板并直接上传材料。支付后依次办理初审、线下报送和外审登记。</Text>
+            </>}
+          </View>}
 
           {!loading && !error && selectedProject && batches.length === 0 && (
             <View className={styles.empty}>
@@ -120,6 +134,8 @@ export default function RensheIndexPage() {
           )}
 
           {!loading && !error && selectedProject && batches.map((batch) => {
+            const acceptsNew = batch.renshe_config?.qualification_rule === GRADUATED_RULE
+            const full = batch.capacity > 0 && batch.enrolled >= batch.capacity
             const remaining = batch.capacity === 0
               ? '不限'
               : `${Math.max(batch.capacity - batch.enrolled, 0)} 人`
@@ -139,6 +155,7 @@ export default function RensheIndexPage() {
                 value: `${batch.exam_type} · ${batch.application_type}`,
                 full: true,
               },
+              ...(batch.renshe_config?.qualification_rule === GRADUATED_RULE ? [{ label: '报考条件', value: '已取得毕业证 · 本专业或相关专业 · 学历型', full: true }] : []),
               {
                 label: '报名费',
                 value: `¥${(batch.price_cents / 100).toFixed(2)}`,
@@ -150,10 +167,11 @@ export default function RensheIndexPage() {
               <CertBatchCard
                 key={batch.id}
                 title={batch.name}
-                badge='报名中'
-                badgeTone='green'
+                badge={!acceptsNew ? '历史批次' : full ? '名额已满' : '报名中'}
+                badgeTone={!acceptsNew || full ? 'gray' : 'green'}
                 infoItems={infoItems}
-                actionText='立即报名'
+                actionText={!acceptsNew ? '已有报名请前往我的报名' : full ? '名额已满' : '查看条件并报名'}
+                actionDisabled={!acceptsNew || full}
                 onAction={() => Taro.navigateTo({
                   url: `/${ROUTES.RENSHE_FORM}?plan_id=${batch.id}`,
                 })}

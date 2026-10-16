@@ -1,4 +1,23 @@
 import { get, post } from '../utils/request.ts'
+import { getToken } from '../utils/request.ts'
+import Taro from '@tarojs/taro'
+
+export interface RensheEducationInfo {
+  graduated: true
+  school: string
+  institution_type: string
+  education: string
+  major: string
+  graduation_date: string
+  certificate_number: string
+}
+export interface RensheUploadedMaterial {
+  application_id?: number
+  kind: string
+  storage_key: string
+  original_filename: string
+  size_bytes: number
+}
 
 export type RensheApplicationStatus =
   | 'draft'
@@ -16,6 +35,9 @@ export interface RenshePlan {
   project_name?: string | null
   renshe_config_id?: number | null
   renshe_config?: {
+    qualification_rule?: string
+    institution_types?: string[]
+    reporting_policy?: { commitment_template?: { filename: string; original_filename?: string } }
     education_levels: string[]
     materials: Array<{ kind: string; name: string; required: boolean; extensions: string[]; max_count: number }>
   } | null
@@ -41,6 +63,7 @@ export interface RensheDraftPayload {
   contact_phone: string
   mailing_address: string
   email: string
+  education_info?: RensheEducationInfo
 }
 
 export interface RensheProject {
@@ -51,6 +74,12 @@ export interface RensheProject {
   occupation_name: string
   occupation_code: string
   skill_level: string
+  qualification_rule?: string
+  application_types?: string[]
+  education_levels?: string[]
+  institution_types?: string[]
+  materials?: Array<{ kind: string; name: string; required: boolean }>
+  admission_notice?: string
 }
 
 export interface RensheApplication {
@@ -63,7 +92,10 @@ export interface RensheApplication {
     contact_phone?: string
     mailing_address?: string
     email?: string
+    education_info?: RensheEducationInfo
+    materials?: Record<string, RensheUploadedMaterial>
   } | null
+  correction_due_at?: string | null
   submitted_at: string | null
   frozen_at: string | null
   freeze_reason: string | null
@@ -135,6 +167,31 @@ export interface PageData<T> {
 }
 
 export const rensheService = {
+  async findActiveApplication(planId: number): Promise<RensheApplicationDetail | null> {
+    const result = await get<PageData<RensheApplicationListItem>>('/api/renshe/applications', { plan_id: planId, page_size: 20 })
+    const item = result.data.items.find(application => application.status !== 'closed')
+    return item ? this.getApplication(item.id) : null
+  },
+  async uploadMaterial(planId: number, kind: string, filePath: string): Promise<RensheUploadedMaterial> {
+    const token = getToken()
+    const response = await Taro.uploadFile({
+      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/materials/${kind}`,
+      filePath, name: 'file', header: { Authorization: token ? `Bearer ${token}` : '' },
+    })
+    let payload: { code: number; data: RensheUploadedMaterial; message?: string }
+    try { payload = JSON.parse(response.data) } catch { throw new Error('上传响应无效，请重试') }
+    if (response.statusCode !== 200 || payload.code !== 0 || !payload.data?.storage_key) throw new Error(payload.message || '材料上传失败')
+    return payload.data
+  },
+  async downloadCommitmentTemplate(planId: number, filename?: string): Promise<void> {
+    const token = getToken()
+    const response = await Taro.downloadFile({
+      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template`,
+      header: { Authorization: token ? `Bearer ${token}` : '' },
+    })
+    if (response.statusCode !== 200) throw new Error('承诺书模板暂不可下载，请联系管理员')
+    await Taro.openDocument({ filePath: response.tempFilePath, fileType: filename?.endsWith('.docx') ? 'docx' : 'pdf', showMenu: true })
+  },
   async listProjects(): Promise<RensheProject[]> {
     return (await get<RensheProject[]>('/api/renshe/projects')).data ?? []
   },

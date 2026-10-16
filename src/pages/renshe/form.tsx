@@ -20,6 +20,7 @@ import { formatDate, formatDateTime } from '@/utils/format'
 import { validateEmail, validatePhone, validateRequired } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
 import styles from './renshe.module.scss'
+import GraduatedForm from './graduated-form'
 
 export default function RensheFormPage() {
   const [planId, setPlanId] = useState(0)
@@ -32,6 +33,7 @@ export default function RensheFormPage() {
   const [address, setAddress] = useState('')
   const [errors, setErrors] = useState<Record<string, ValidationResult>>({})
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const identity = useIdentityCheck()
 
@@ -43,14 +45,16 @@ export default function RensheFormPage() {
   const load = useCallback(async () => {
     if (!planId) return
     setLoading(true)
+    setLoadError('')
     try {
       const [planDetail, profileDetail, applicationDetail] = await Promise.all([
         rensheService.getBatch(planId),
-        getUserProfile().catch(() => null),
+        getUserProfile(),
         applicationId
-          ? rensheService.getApplication(applicationId).catch(() => null)
-          : Promise.resolve(null),
+          ? rensheService.getApplication(applicationId)
+          : rensheService.findActiveApplication(planId),
       ])
+      if (applicationDetail && applicationDetail.plan_id !== planDetail.id) throw new Error('报名与批次不一致，请从我的报名重新进入')
       setPlan(planDetail)
       setProfile(profileDetail)
       setApplication(applicationDetail)
@@ -58,6 +62,9 @@ export default function RensheFormPage() {
       setPhone(draft?.contact_phone || profileDetail?.profile.phone || '')
       setEmail(draft?.email || profileDetail?.profile.email || '')
       setAddress(draft?.mailing_address || profileDetail?.profile.address || '')
+    } catch (error) {
+      setPlan(null)
+      setLoadError(error instanceof Error ? error.message : '报名信息加载失败，请重试')
     } finally {
       setLoading(false)
     }
@@ -151,10 +158,14 @@ export default function RensheFormPage() {
       <AuthGuard>
         <View className={styles.page}>
           <PageHeader title='人社认证报名' shouldShowBack />
-          <View className={styles.empty}>批次不存在或已关闭</View>
+          <View className={styles.empty}><Text>{loadError || '批次不存在或已关闭'}</Text><Button onClick={() => void load()}>重新加载</Button></View>
         </View>
       </AuthGuard>
     )
+  }
+
+  if (plan.renshe_config?.qualification_rule === 'related_major_graduated_degree_v1') {
+    return <GraduatedForm key={`${plan.id}-${application?.id || 0}`} plan={plan} profile={profile} application={application} />
   }
 
   if (identity.phase !== 'verified') {
