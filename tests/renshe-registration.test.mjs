@@ -55,6 +55,19 @@ test('Renshe form freezes verified identity and prechecks all six materials', as
   assert.doesNotMatch(form, /createOrder/)
 })
 
+test('graduated Renshe form reuses identity photo and collects standard package materials', async () => {
+  const form = await readFile('src/pages/renshe/graduated-form.tsx', 'utf8')
+
+  assert.match(form, /'id_card_front', 'id_card_back', 'portrait'/)
+  assert.match(form, /avatar_oss/)
+  assert.match(form, /社保缴费证明/)
+  assert.match(form, /学信网电子注册表/)
+  assert.match(form, /学历证明/)
+  assert.match(form, /职业资格证书/)
+  assert.match(form, /职称证书/)
+  assert.match(form, /承诺书/)
+})
+
 test('My registrations and the standalone detail page include Renshe records', async () => {
   const [list, detail] = await Promise.all([
     readFile('src/pages/mine/registrations.tsx', 'utf8'),

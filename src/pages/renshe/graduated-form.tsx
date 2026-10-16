@@ -47,7 +47,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
   const editable = !application || application.status === 'draft' || (correcting && correctionAvailable(application, plan))
   const locked = !editable || Boolean(application?.frozen_at)
   const requirements = plan.renshe_config?.materials || []
-  const uploadRequirements = requirements.filter(item => !['id_card_front', 'id_card_back'].includes(item.kind))
+  const uploadRequirements = requirements.filter(item => !['id_card_front', 'id_card_back', 'portrait'].includes(item.kind))
   const uploadedCount = uploadRequirements.filter(item => materials[item.kind]).length
   const setField = (field: keyof RensheEducationInfo, value: string) => setEducation(previous => ({ ...previous, [field]: value }))
   const fail = (value: unknown) => setError(value instanceof Error ? value.message : '操作失败，请重试')
@@ -103,7 +103,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     if (!options.education_levels.includes(education.education!) || !options.institution_types.includes(education.institution_type!)) { setError('请选择本批次支持的学历层次及院校类型'); return }
     if (!validatePhone(phone).valid || !validateEmail(email).valid || !address.trim()) { setError('请填写有效手机号、邮箱和通讯地址'); return }
     if (uploadRequirements.some(item => item.required && !materials[item.kind])) { setError('请上传全部必填报名材料'); return }
-    if (!realname?.id_card_front_oss || !realname?.id_card_back_oss) { setError('实名身份证材料不完整，请通过实名更正流程补齐'); return }
+    if (!realname?.id_card_front_oss || !realname?.id_card_back_oss || !realname?.avatar_oss) { setError('实名身份证或二寸免冠照片不完整，请通过实名更正流程补齐'); return }
     setBusy('submit')
     try {
       if (!(await ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读并同意认证报名信息处理授权协议'))) return
@@ -186,9 +186,9 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         <FormInput label='通讯地址' required placeholder='请输入完整通讯地址' value={address} maxlength={256} disabled={locked || Boolean(busy)} onChange={setAddress} />
       </View>
       <View className={styles.card}>
-        <Text className={styles.sectionTitle}>报名材料 · 已上传 {uploadedCount}/{uploadRequirements.length}</Text>
-        <Text className={styles.sectionDesc}>身份证正反面复用实名材料，请保证证件有效、图像清晰完整。以下文件仅用于本次报名。</Text>
-        <View className={styles.warning}>学历备案表须对应本次已毕业学历，在线验证有效期设置为6个月。无法提供既定材料请联系管理员，暂不支持替代材料线上报名。</View>
+        <Text className={styles.sectionTitle}>报名材料 · 已上传 {uploadedCount}/{uploadRequirements.length} · 另复用实名材料 3 类</Text>
+        <Text className={styles.sectionDesc}>身份证正反面、二寸免冠照片复用实名材料；以下文件仅用于本次报名，全部必传。</Text>
+        <View className={styles.warning}>请按甲方标准上传清晰完整材料。社保缴费证明和学信网电子注册表为 PDF；学历证明、职业资格证书、职称证书为 JPG／JPEG。</View>
         {uploadRequirements.map(item => <View key={item.kind} className={styles.uploadItem}>
           <Text className={styles.sectionTitle}>{item.name} {item.required ? '*' : ''}</Text>
           {item.kind === 'commitment_letter' && <><Text className={styles.sectionDesc}>下载模板 → 本人亲笔签名并按手印 → 上传清晰扫描件。此承诺书与信息处理授权协议分别提交。</Text><Button variant='secondary' disabled={Boolean(busy) || !options} onClick={() => void downloadTemplate()}>下载承诺书模板</Button></>}
