@@ -5,6 +5,7 @@ export const INSTITUTION_LABELS: Record<string, string> = {
   technical: '技工院校', vocational: '中等及以上职业院校', general_higher: '普通高等学校（专科及以上）',
 }
 export const EDUCATION_LABELS: Record<string, string> = {
+  primary: '小学', junior_high: '初中', senior_high: '高中', other: '其他',
   secondary_vocational: '中专', technical_school: '技校', vocational_high: '职高', higher_vocational: '高职', associate: '大专', bachelor: '大学本科', master: '硕士', doctorate: '博士',
 }
 export const CHANGE_LABELS: Record<string, string> = {
@@ -16,6 +17,7 @@ export const CHANGE_LABELS: Record<string, string> = {
   'education_info.graduation_date': '毕业日期', 'education_info.certificate_number': '毕业证书编号',
   contact_phone: '手机号', email: '邮箱', mailing_address: '通讯地址',
   id_card_front: '身份证正面', id_card_back: '身份证背面', portrait: '二寸免冠照片（需实名更正）',
+  registration_portrait: '一寸白底证件照（≤500 KB）', graduation_certificate: '毕业证', education_report: '学信网学历备案表',
   social_security_proof: '社保缴费证明', xuexin_registration: '学信网电子注册表', education_proof: '学历证明',
   vocational_qualification_certificate: '职业资格证书', professional_title_certificate: '职称证书', commitment_letter: '承诺书',
 }
@@ -41,8 +43,8 @@ export function validateReportingInfo(info: Partial<RensheReportingInfo>, option
 export function validateGraduatedFile(kind: string, filename: string, size: number, extensions: string[]): string | null {
   const extension = filename.toLowerCase().match(/\.[^.]+$/)?.[0] || ''
   if (!extensions.includes(extension)) return `请使用 ${extensions.join(' / ')} 格式`
-  const maximum = extension === '.pdf' ? 20 * 1024 * 1024 : 10 * 1024 * 1024
-  if (size <= 0 || size > maximum) return '文件为空或超过大小限制（图片10 MB、PDF20 MB）'
+  const maximum = kind === 'registration_portrait' ? 500 * 1024 : extension === '.pdf' ? 20 * 1024 * 1024 : 10 * 1024 * 1024
+  if (size <= 0 || size > maximum) return kind === 'registration_portrait' ? '一寸白底证件照须不超过500 KB' : '文件为空或超过大小限制（图片10 MB、PDF20 MB）'
   return null
 }
 export function correctionAvailable(application: { status: string; frozen_at: string | null; correction_due_at?: string | null }, plan: { status: string; renshe_config?: { qualification_rule?: string } | null }, now = Date.now()): boolean {

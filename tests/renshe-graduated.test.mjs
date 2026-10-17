@@ -3,6 +3,8 @@ import test from 'node:test'
 import { chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, GRADUATED_RULE } from '../src/utils/rensheGraduated.ts'
 
 test('standard package materials enforce declared formats and size boundaries', () => {
+  assert.equal(validateGraduatedFile('registration_portrait', 'photo.jpeg', 500 * 1024, ['.jpg', '.jpeg']), null)
+  assert.match(validateGraduatedFile('registration_portrait', 'photo.jpeg', 500 * 1024 + 1, ['.jpg', '.jpeg']), /500 KB/)
   assert.equal(validateGraduatedFile('social_security_proof', '社保证明.pdf', 20 * 1024 * 1024, ['.pdf']), null)
   assert.match(validateGraduatedFile('social_security_proof', '社保证明.jpg', 1000, ['.pdf']), /格式/)
   assert.match(validateGraduatedFile('social_security_proof', '社保证明.pdf', 20 * 1024 * 1024 + 1, ['.pdf']), /大小/)
