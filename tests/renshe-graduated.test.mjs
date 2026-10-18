@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, GRADUATED_RULE } from '../src/utils/rensheGraduated.ts'
+import { chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation, GRADUATED_RULE } from '../src/utils/rensheGraduated.ts'
 
 test('standard package materials enforce declared formats and size boundaries', () => {
   assert.equal(validateGraduatedFile('registration_portrait', 'photo.jpeg', 500 * 1024, ['.jpg', '.jpeg']), null)
@@ -15,6 +15,16 @@ test('standard package materials enforce declared formats and size boundaries', 
 test('graduation date uses the China date across UTC midnight', () => {
   assert.equal(chinaDate(new Date('2026-10-16T16:01:00Z')), '2026-10-17')
   assert.equal(chinaDate(new Date('2026-10-16T15:59:59Z')), '2026-10-16')
+})
+
+test('degree eligibility respects trade-specific institutions and the actual education level', () => {
+  const all = { education_levels: ['primary', 'secondary_vocational', 'technical_school', 'bachelor'], institution_types: ['technical', 'vocational', 'general_higher'] }
+  assert.equal(validateDegreeEducation({ education: 'bachelor', institution_type: 'general_higher' }, all), null)
+  assert.match(validateDegreeEducation({ education: 'primary', institution_type: 'vocational' }, all), /不属于/)
+  assert.match(validateDegreeEducation({ education: 'secondary_vocational', institution_type: 'general_higher' }, all), /专科及以上/)
+  const ai = { ...all, institution_types: ['technical', 'vocational'] }
+  assert.match(validateDegreeEducation({ education: 'bachelor', institution_type: 'general_higher' }, ai), /院校类型/)
+  assert.equal(validateDegreeEducation({ education: 'technical_school', institution_type: 'technical' }, ai), null)
 })
 
 const reportingOptions = {

@@ -24,7 +24,7 @@ import type { ValidationResult } from '@/utils/validator'
 import styles from './renshe.module.scss'
 import GraduatedForm from './graduated-form'
 import ReportingFields from './reporting-fields'
-import { validateReportingInfo } from '@/utils/rensheGraduated'
+import { validateReportingInfo, isSelfReportedRule } from '@/utils/rensheGraduated'
 
 export default function RensheFormPage() {
   const [planId, setPlanId] = useState(0)
@@ -69,7 +69,7 @@ export default function RensheFormPage() {
       setPhone(draft?.contact_phone || profileDetail?.profile.phone || '')
       setEmail(draft?.email || profileDetail?.profile.email || '')
       setAddress(draft?.mailing_address || profileDetail?.profile.address || '')
-      if (planDetail.renshe_config?.qualification_rule !== 'related_major_graduated_degree_v1') {
+      if (!isSelfReportedRule(planDetail.renshe_config?.qualification_rule)) {
         setReportingOptions(await rensheService.getReportingOptions(planDetail.id))
         setReporting(draft?.reporting_info || { ethnicity: profileDetail?.realname?.ethnicity || '', political_status: profileDetail?.realname?.political_status || '' })
       }
@@ -178,7 +178,7 @@ export default function RensheFormPage() {
     )
   }
 
-  if (plan.renshe_config?.qualification_rule === 'related_major_graduated_degree_v1') {
+  if (isSelfReportedRule(plan.renshe_config?.qualification_rule)) {
     return <GraduatedForm key={`${plan.id}-${application?.id || 0}`} plan={plan} profile={profile} application={application} />
   }
 

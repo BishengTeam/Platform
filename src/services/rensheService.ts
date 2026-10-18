@@ -11,6 +11,18 @@ export interface RensheEducationInfo {
   graduation_date: string
   certificate_number: string
 }
+export interface RensheWorkExperience {
+  work_unit: string
+  position: string
+  occupation_name: string
+  start_date: string
+  end_date: string | null
+}
+export interface RensheEmploymentInfo {
+  cultural_education: string
+  work_experiences: RensheWorkExperience[]
+  skill_certificate?: { occupation_name: string; grade: 5; certificate_number: string; issued_on: string } | null
+}
 export interface RensheReportingInfo {
   occupation_status: string
   ethnicity: string
@@ -23,6 +35,7 @@ export interface RensheReportingInfo {
   social_insurance_unit?: string
 }
 export interface RensheReportingOptions {
+  rule_profile?: { occupation_name?: string; related_majors?: string; related_occupations?: string; source_conditions?: string[]; project_limits?: string[]; sources?: string[] }
   config_id: number
   education_levels: string[]
   education_labels: Record<string, string>
@@ -59,6 +72,7 @@ export interface RenshePlan {
   project_name?: string | null
   renshe_config_id?: number | null
   renshe_config?: {
+    rule_profile?: { source_conditions?: string[] }
     qualification_rule?: string
     institution_types?: string[]
     reporting_policy?: { contract_version?: number; commitment_template?: { filename: string; original_filename?: string } }
@@ -83,6 +97,7 @@ export interface RenshePlan {
 }
 
 export interface RensheDraftPayload {
+  qualification_info?: RensheEmploymentInfo
   plan_id: number
   contact_phone: string
   mailing_address: string
@@ -114,6 +129,7 @@ export interface RensheApplication {
   current_version_id: number | null
   status: RensheApplicationStatus
   draft_data: {
+    qualification_info?: RensheEmploymentInfo
     contact_phone?: string
     mailing_address?: string
     email?: string

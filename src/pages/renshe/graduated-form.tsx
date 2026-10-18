@@ -6,18 +6,24 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { ROUTES } from '@/constants/routes'
-import { rensheService, type RenshePlan, type RensheApplicationDetail, type RensheEducationInfo, type RensheUploadedMaterial, type RensheReportingInfo, type RensheReportingOptions } from '@/services/rensheService'
+import { rensheService, type RenshePlan, type RensheApplicationDetail, type RensheEducationInfo, type RensheUploadedMaterial, type RensheReportingInfo, type RensheReportingOptions, type RensheEmploymentInfo } from '@/services/rensheService'
 import type { UserProfileAggregated } from '@/types/profile'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { validatePhone, validateEmail } from '@/utils/validator'
 import { formatDateTime } from '@/utils/format'
-import { CHANGE_LABELS, INSTITUTION_LABELS, EDUCATION_LABELS, chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo } from '@/utils/rensheGraduated'
+import { CHANGE_LABELS, INSTITUTION_LABELS, EDUCATION_LABELS, chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation } from '@/utils/rensheGraduated'
 import styles from './renshe.module.scss'
+import EmploymentFields, { emptyExperience } from './employment-fields'
+import { validateEmploymentInfo } from '@/utils/rensheEmployment'
+import { EMPLOYMENT_RULE } from '@/utils/rensheGraduated'
 
 interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; application: RensheApplicationDetail | null }
 
 export default function GraduatedForm({ plan, profile, application }: Props) {
   const draft = application?.draft_data
+  const employment = plan.renshe_config?.qualification_rule === EMPLOYMENT_RULE
+  const compound = plan.application_type === '复合型'
+  const [qualification, setQualification] = useState<RensheEmploymentInfo>(draft?.qualification_info || { cultural_education: profile?.student?.education || '', work_experiences: [emptyExperience()] })
   const [education, setEducation] = useState<Partial<RensheEducationInfo>>(draft?.education_info || {
     school: profile?.student?.school || '', major: profile?.student?.major || '', education: profile?.student?.education || '',
   })
@@ -97,17 +103,23 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     const workDate = reporting.work_start_date
     const enrollmentDate = reporting.enrollment_date
     const years = reporting.occupation_years
+    if (employment) {
+      const qualificationError = validateEmploymentInfo(qualification, compound, reporting)
+      if (qualificationError) { setError(qualificationError); return }
+    } else {
     if (!graduated) { setError('本期仅接受已取得毕业证的申请人，请确认毕业情况'); return }
     if (['school', 'institution_type', 'education', 'major', 'graduation_date', 'certificate_number'].some(key => !String(education[key as keyof RensheEducationInfo] || '').trim())) { setError('请完整填写毕业学历信息'); return }
     if (education.graduation_date! > chinaDate() || education.graduation_date! < '1900-01-01') { setError('毕业日期不得晚于今天'); return }
-    if (!options.education_levels.includes(education.education!) || !options.institution_types.includes(education.institution_type!)) { setError('请选择本批次支持的学历层次及院校类型'); return }
+    const educationError = validateDegreeEducation(education, options)
+    if (educationError) { setError(educationError); return }
+    }
     if (!validatePhone(phone).valid || !validateEmail(email).valid || !address.trim()) { setError('请填写有效手机号、邮箱和通讯地址'); return }
     if (uploadRequirements.some(item => item.required && !materials[item.kind])) { setError('请上传全部必填报名材料'); return }
     if (!realname?.id_card_front_oss || !realname?.id_card_back_oss || (requirements.some(item => item.kind === 'portrait' && item.required) && !realname?.avatar_oss)) { setError('实名材料不完整，请通过实名更正流程补齐'); return }
     setBusy('submit')
     try {
       if (!(await ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读并同意认证报名信息处理授权协议'))) return
-      const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), education_info: { ...education, graduated: true } as RensheEducationInfo, reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
+      const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), ...(employment ? { qualification_info: qualification } : { education_info: { ...education, graduated: true } as RensheEducationInfo }), reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
       const result = await rensheService.submit(saved.id)
       if (result.payment_required) await Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` })
       else await Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${saved.id}` })
@@ -129,10 +141,12 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     <PageHeader title='已毕业学历型报名' shouldShowBack />
     <ScrollView scrollY className={`${styles.body} ${styles.bodyWithFooter}`}>
       <View className={styles.card}>
-        <Text className={styles.sectionTitle}>{plan.occupation_name} · 四级 / 中级工</Text>
+        <Text className={styles.sectionTitle}>{plan.occupation_name} · {plan.skill_level}</Text>
         <Text className={styles.sectionDesc}>{plan.name} · {plan.application_type}</Text>
-        <View className={styles.warning}>本期仅接受已取得毕业证、本专业或相关专业的申请人。不接受在读证明、学生证或应届替代证明。学历及专业由本次报名初审核验。</View>
-        <Text className={styles.sectionDesc}>实名 → 学历与材料 → 提交支付 → 初审 → 线下报送 → 外审结果</Text>
+        <View className={styles.warning}>{employment ? compound ? '本路径须取得本职业或相关职业五级证书，取得证书后累计相关工作满3年。' : '本路径须累计本职业或相关职业工作满5年，提交工龄及社保证明。' : '本期仅接受已取得毕业证、本专业或相关专业的申请人。不接受在读证明、学生证或应届替代证明。学历及专业由本次报名初审核验。'}</View>
+        <Text className={styles.sectionDesc}>实名 → {employment ? '经历、证书及材料' : '学历与材料'} → 提交支付 → 初审 → 线下报送 → 外审结果</Text>
+        {employment ? options?.rule_profile?.related_occupations && <Text className={styles.sectionDesc}>相关职业：{options.rule_profile.related_occupations}</Text> : options?.rule_profile?.related_majors && <Text className={styles.sectionDesc}>本工种相关专业：{options.rule_profile.related_majors}</Text>}
+        {options?.rule_profile?.project_limits?.map(item => <Text key={item} className={styles.sectionDesc}>{item}</Text>)}
       </View>
       {application?.latest_rejection_reason && <View className={styles.warning}>
         <Text>补正原因：{application.latest_rejection_reason}</Text>
@@ -151,7 +165,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         <Text className={styles.sectionDesc}>姓名、身份证及证件正反面来自本人已验证资料。身份有误请走实名更正流程。</Text>
         {!identityReady && <Button onClick={() => Taro.navigateTo({ url: '/pages/mine/edit-profile' })}>去完成本人实名</Button>}
       </View>
-      <View className={styles.card}>
+      {employment ? <EmploymentFields value={qualification} onChange={setQualification} compound={compound} options={options} disabled={locked || Boolean(busy)} /> : <View className={styles.card}>
         <Text className={styles.sectionTitle}>毕业学历信息</Text>
         <Text className={styles.sectionDesc}>已有院校、专业可预填，请按毕业证核对；预填不代表资格审核通过。</Text>
         <View className={styles.declaration} onClick={() => { if (!locked && !busy) setGraduated(!graduated) }}><Checkbox value='graduated' checked={graduated} disabled={locked || Boolean(busy)} color='#3366ff' /><Text>本人已取得本次申报学历的毕业证</Text></View>
@@ -161,7 +175,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         <FormInput label='所学专业' required placeholder='按毕业证原文填写，不可自行认定相关专业' value={education.major || ''} disabled={locked || Boolean(busy)} onChange={value => setField('major', value)} maxlength={128} />
         <View className={styles.pickerField}><Text className={styles.label}>毕业日期 *</Text><Picker mode='date' start='1900-01-01' end={chinaDate()} disabled={locked || Boolean(busy)} value={education.graduation_date || ''} onChange={event => setField('graduation_date', event.detail.value)}><View className={styles.readonlyValue}>{education.graduation_date || '请选择毕业日期'} ›</View></Picker></View>
         <FormInput label='毕业证书编号' required placeholder='按毕业证填写' value={education.certificate_number || ''} disabled={locked || Boolean(busy)} onChange={value => setField('certificate_number', value)} maxlength={128} />
-      </View>
+      </View>}
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>模板填报信息</Text>
         <Text className={styles.sectionDesc}>考生来源：社会人员。请填写本人实际情况；职业状态与学历资格分别核验。</Text>
@@ -172,10 +186,10 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         {reporting.has_work_experience && reportDatePicker('work_start_date', '参加工作日期 *')}
         <Text className={styles.sectionDesc}>报送必须填写真实参加工作日期，不能用入学日期、毕业日期替代。尚未参加工作、无法提供该日期的，请联系管理员核实。</Text>
         <FormInput label='实际职业年限（年）' required={options?.employment_reporting.years_rule === 'required'} placeholder='如实填写，可保留两位小数' value={String(reporting.occupation_years ?? '')} disabled={locked || Boolean(busy)} onChange={value => reportField('occupation_years', value)} maxlength={7} />
-        <Text className={styles.sectionDesc}>职业年限用于模板报送，不作为学历型报考的工龄门槛。{options?.employment_reporting.allow_zero_years ? '尚未参加工作可如实填写0。' : '本批次未确认接受零年限，请联系管理员，不要填写虚假年限。'}</Text>
+        <Text className={styles.sectionDesc}>{employment ? '职业年限须满足本路径条件，系统按提交时的实际经历核算；重叠时间不重复累计。' : '职业年限用于模板报送，不作为学历型报考的工龄门槛。' + (options?.employment_reporting.allow_zero_years ? '尚未参加工作可如实填写0。' : '本批次未确认接受零年限，请联系管理员，不要填写虚假年限。')}</Text>
         <FormInput label='工作单位（选填）' value={reporting.work_unit || ''} placeholder='按实际情况填写' disabled={locked || Boolean(busy)} onChange={value => reportField('work_unit', value)} maxlength={128} />
         <FormInput label='社保参保单位（选填）' value={reporting.social_insurance_unit || ''} placeholder='按实际情况填写' disabled={locked || Boolean(busy)} onChange={value => reportField('social_insurance_unit', value)} maxlength={128} />
-        <Text className={styles.sectionDesc}>模板申报条件：{options?.application_condition || '加载中'} 本期报名范围仍仅限已取得毕业证人员。</Text>
+        <Text className={styles.sectionDesc}>模板申报条件：{options?.application_condition || '加载中'}{!employment && ' 本期报名范围仍仅限已取得毕业证人员。'}</Text>
       </View>
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>联系信息</Text>
@@ -186,7 +200,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>报名材料 · 已上传 {uploadedCount}/{uploadRequirements.length} · 实名材料 {requirements.length - uploadRequirements.length} 类</Text>
         <Text className={styles.sectionDesc}>身份证材料复用本人实名资料；其他材料按本批次要求上传，以下文件仅用于本次报名。</Text>
-        <View className={styles.warning}>{requirements.some(item => item.kind === 'registration_portrait') ? '本期仅接受已取得毕业证的申请人。一寸白底近期证件照≤500 KB；毕业证、对应学信网学历备案表及本人签字按手印承诺书必传，学历报告验证有效期设置为6个月。不能提供既定材料请联系管理员。' : '历史批次继续使用原材料清单及格式要求；无法提供材料请联系管理员。'}</View>
+        <View className={styles.warning}>{employment ? '工龄证明独立上传；社保证明须为PDF，参保单位和工作单位一致且验证码可验证。证书与完整网查截图须合并为同一张清晰JPEG图片上传，不改扩展名伪装格式。' : requirements.some(item => item.kind === 'registration_portrait') ? '本期仅接受已取得毕业证的申请人。一寸白底近期证件照≤500 KB；毕业证、对应学信网学历备案表及本人签字按手印承诺书必传，学历报告验证有效期设置为6个月。不能提供既定材料请联系管理员。' : '历史批次继续使用原材料清单及格式要求；无法提供材料请联系管理员。'}</View>
         {uploadRequirements.map(item => <View key={item.kind} className={styles.uploadItem}>
           <Text className={styles.sectionTitle}>{item.name} {item.required ? '*' : ''}</Text>
           {item.kind === 'commitment_letter' && <><Text className={styles.sectionDesc}>下载模板 → 本人亲笔签名并按手印 → 上传清晰扫描件。此承诺书与信息处理授权协议分别提交。</Text><Button variant='secondary' disabled={Boolean(busy) || !options} onClick={() => void downloadTemplate()}>下载承诺书模板</Button></>}
