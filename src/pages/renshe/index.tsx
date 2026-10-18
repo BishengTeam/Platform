@@ -12,7 +12,7 @@ import { rensheService, type RenshePlan, type RensheProject } from '@/services/r
 import { formatDate, formatDateTime } from '@/utils/format'
 import { resolveMediaUrl } from '@/utils/media'
 import styles from './renshe.module.scss'
-import { GRADUATED_RULE, EMPLOYMENT_RULE, isSelfReportedRule } from '@/utils/rensheGraduated'
+import { GRADUATED_RULE, isEmploymentRule, isSelfReportedRule } from '@/utils/rensheGraduated'
 
 export default function RensheIndexPage() {
   const { params } = useRouter()
@@ -119,7 +119,7 @@ export default function RensheIndexPage() {
             {selectedProject.description && <Text className={styles.sectionDesc}>{selectedProject.description}</Text>}
             <Text className={styles.sectionDesc}>职业编码：{selectedProject.occupation_code}</Text>
             {selectedProject.admission_notice && <View className={styles.warning}>{selectedProject.admission_notice}</View>}
-            {selectedProject.qualification_rule === EMPLOYMENT_RULE && <View><Text className={styles.sectionTitle}>报名前准备</Text><Text className={styles.sectionDesc}>本人实名、文化程度、逐段工作经历、联系方式、工龄及社保证明、签字按手印承诺书；复合型还须五级证书及合并的网查截图。</Text><Text className={styles.sectionDesc}>一寸白底近期证件照≤500 KB；工作经历重叠时间不重复累计。具体材料在报名页直接上传。</Text></View>}
+            {isEmploymentRule(selectedProject.qualification_rule) && <View><Text className={styles.sectionTitle}>报名前准备</Text><Text className={styles.sectionDesc}>本人实名、文化程度、逐段工作经历、联系方式、工龄及社保证明、签字按手印承诺书；复合型还须五级证书及合并的网查截图。</Text><Text className={styles.sectionDesc}>一寸白底近期证件照≤500 KB；工作经历重叠时间不重复累计。具体材料在报名页直接上传。</Text></View>}
             {selectedProject.qualification_rule === GRADUATED_RULE && <>
               <Text className={styles.sectionTitle}>报名前准备</Text>
               <Text className={styles.sectionDesc}>本人实名；毕业院校、学历、专业、毕业日期及证书编号；手机号、邮箱、通讯地址。</Text>
@@ -157,7 +157,7 @@ export default function RensheIndexPage() {
                 full: true,
               },
               ...(batch.renshe_config?.qualification_rule === GRADUATED_RULE ? [{ label: '报考条件', value: '已取得毕业证 · 本专业或相关专业 · 学历型', full: true }] : []),
-              ...(batch.renshe_config?.qualification_rule === EMPLOYMENT_RULE ? [{ label: '报考条件', value: batch.renshe_config.rule_profile?.source_conditions?.[0] || '按相关工作经历及本路径证书核验', full: true }] : []),
+              ...(isEmploymentRule(batch.renshe_config?.qualification_rule) ? [{ label: '报考条件', value: batch.renshe_config?.rule_profile?.source_conditions?.[0] || '按相关工作经历及本路径证书核验', full: true }] : []),
               {
                 label: '报名费',
                 value: `¥${(batch.price_cents / 100).toFixed(2)}`,

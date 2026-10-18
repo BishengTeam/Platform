@@ -7,7 +7,7 @@ import styles from './renshe.module.scss'
 
 export const emptyExperience = (): RensheWorkExperience => ({ work_unit: '', position: '', occupation_name: '', start_date: '', end_date: null })
 
-export default function EmploymentFields({ value, onChange, compound, options, disabled }: { value: RensheEmploymentInfo; onChange: (value: RensheEmploymentInfo) => void; compound: boolean; options: RensheReportingOptions | null; disabled: boolean }) {
+export default function EmploymentFields({ value, onChange, compound, options, disabled, levelFive = false }: { value: RensheEmploymentInfo; onChange: (value: RensheEmploymentInfo) => void; compound: boolean; levelFive?: boolean; options: RensheReportingOptions | null; disabled: boolean }) {
   const updateWork = (index: number, patch: Partial<RensheWorkExperience>) => onChange({ ...value, work_experiences: value.work_experiences.map((item, i) => i === index ? { ...item, ...patch } : item) })
   const certificate = value.skill_certificate || { occupation_name: '', grade: 5 as const, certificate_number: '', issued_on: '' }
   const updateCertificate = (patch: Partial<typeof certificate>) => onChange({ ...value, skill_certificate: { ...certificate, ...patch } })
@@ -28,7 +28,7 @@ export default function EmploymentFields({ value, onChange, compound, options, d
     </View>}
     <View className={styles.card}>
       <Text className={styles.sectionTitle}>相关职业工作经历</Text>
-      <Text className={styles.sectionDesc}>逐段填写实际工作经历，最多20段。重叠时间不重复累计；{compound ? '仅证书取得后的有效相关经历计入3年门槛。' : '累计相关工作须满5年。'}单位、岗位及职业是否相关由初审核验。</Text>
+      <Text className={styles.sectionDesc}>逐段填写实际工作经历，最多20段。重叠时间不重复累计；{levelFive ? '五级不设最低工作年数，不要求前置技能证书。' : compound ? '仅证书取得后的有效相关经历计入3年门槛。' : '累计相关工作须满5年。'}单位、岗位及职业是否相关由初审核验。</Text>
       {value.work_experiences.map((item, index) => <View key={index} className={styles.uploadItem}>
         <Text className={styles.sectionTitle}>第{index + 1}段工作经历</Text>
         <FormInput label='工作单位' required value={item.work_unit} placeholder='单位完整名称，与工龄及社保证明对应' disabled={disabled} onChange={work_unit => updateWork(index, { work_unit })} maxlength={128} />

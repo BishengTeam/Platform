@@ -15,13 +15,14 @@ import { CHANGE_LABELS, INSTITUTION_LABELS, EDUCATION_LABELS, chinaDate, correct
 import styles from './renshe.module.scss'
 import EmploymentFields, { emptyExperience } from './employment-fields'
 import { validateEmploymentInfo } from '@/utils/rensheEmployment'
-import { EMPLOYMENT_RULE } from '@/utils/rensheGraduated'
+import { isEmploymentRule, LEVEL_FIVE_EMPLOYMENT_RULE } from '@/utils/rensheGraduated'
 
 interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; application: RensheApplicationDetail | null }
 
 export default function GraduatedForm({ plan, profile, application }: Props) {
   const draft = application?.draft_data
-  const employment = plan.renshe_config?.qualification_rule === EMPLOYMENT_RULE
+  const employment = isEmploymentRule(plan.renshe_config?.qualification_rule)
+  const levelFive = plan.renshe_config?.qualification_rule === LEVEL_FIVE_EMPLOYMENT_RULE
   const compound = plan.application_type === '复合型'
   const [qualification, setQualification] = useState<RensheEmploymentInfo>(draft?.qualification_info || { cultural_education: profile?.student?.education || '', work_experiences: [emptyExperience()] })
   const [education, setEducation] = useState<Partial<RensheEducationInfo>>(draft?.education_info || {
@@ -104,7 +105,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     const enrollmentDate = reporting.enrollment_date
     const years = reporting.occupation_years
     if (employment) {
-      const qualificationError = validateEmploymentInfo(qualification, compound, reporting)
+      const qualificationError = validateEmploymentInfo(qualification, compound, reporting, levelFive)
       if (qualificationError) { setError(qualificationError); return }
     } else {
     if (!graduated) { setError('本期仅接受已取得毕业证的申请人，请确认毕业情况'); return }
@@ -143,7 +144,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>{plan.occupation_name} · {plan.skill_level}</Text>
         <Text className={styles.sectionDesc}>{plan.name} · {plan.application_type}</Text>
-        <View className={styles.warning}>{employment ? compound ? '本路径须取得本职业或相关职业五级证书，取得证书后累计相关工作满3年。' : '本路径须累计本职业或相关职业工作满5年，提交工龄及社保证明。' : '本期仅接受已取得毕业证、本专业或相关专业的申请人。不接受在读证明、学生证或应届替代证明。学历及专业由本次报名初审核验。'}</View>
+        <View className={styles.warning}>{employment ? levelFive ? '五级工龄型须在首次正式提交当日年满16周岁，实际从事本职业或相关职业；不设最低工作年数，须提交工龄及社保证明。年龄按本人实名资料核验，补正沿用首次提交日期。' : compound ? '本路径须取得本职业或相关职业五级证书，取得证书后累计相关工作满3年。' : '本路径须累计本职业或相关职业工作满5年，提交工龄及社保证明。' : '本期仅接受已取得毕业证、本专业或相关专业的申请人。不接受在读证明、学生证或应届替代证明。学历及专业由本次报名初审核验。'}</View>
         <Text className={styles.sectionDesc}>实名 → {employment ? '经历、证书及材料' : '学历与材料'} → 提交支付 → 初审 → 线下报送 → 外审结果</Text>
         {employment ? options?.rule_profile?.related_occupations && <Text className={styles.sectionDesc}>相关职业：{options.rule_profile.related_occupations}</Text> : options?.rule_profile?.related_majors && <Text className={styles.sectionDesc}>本工种相关专业：{options.rule_profile.related_majors}</Text>}
         {options?.rule_profile?.project_limits?.map(item => <Text key={item} className={styles.sectionDesc}>{item}</Text>)}
@@ -165,7 +166,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         <Text className={styles.sectionDesc}>姓名、身份证及证件正反面来自本人已验证资料。身份有误请走实名更正流程。</Text>
         {!identityReady && <Button onClick={() => Taro.navigateTo({ url: '/pages/mine/edit-profile' })}>去完成本人实名</Button>}
       </View>
-      {employment ? <EmploymentFields value={qualification} onChange={setQualification} compound={compound} options={options} disabled={locked || Boolean(busy)} /> : <View className={styles.card}>
+      {employment ? <EmploymentFields value={qualification} onChange={setQualification} compound={compound} levelFive={levelFive} options={options} disabled={locked || Boolean(busy)} /> : <View className={styles.card}>
         <Text className={styles.sectionTitle}>毕业学历信息</Text>
         <Text className={styles.sectionDesc}>已有院校、专业可预填，请按毕业证核对；预填不代表资格审核通过。</Text>
         <View className={styles.declaration} onClick={() => { if (!locked && !busy) setGraduated(!graduated) }}><Checkbox value='graduated' checked={graduated} disabled={locked || Boolean(busy)} color='#3366ff' /><Text>本人已取得本次申报学历的毕业证</Text></View>

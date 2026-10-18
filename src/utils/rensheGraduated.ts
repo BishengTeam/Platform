@@ -2,8 +2,12 @@ import type { RensheEducationInfo, RensheReportingInfo, RensheReportingOptions }
 
 export const GRADUATED_RULE = 'related_major_graduated_degree_v1'
 export const EMPLOYMENT_RULE = 'documented_employment_v1'
+export const LEVEL_FIVE_EMPLOYMENT_RULE = 'level_five_employment_v1'
+export function isEmploymentRule(rule?: string): boolean {
+  return rule === EMPLOYMENT_RULE || rule === LEVEL_FIVE_EMPLOYMENT_RULE
+}
 export function isSelfReportedRule(rule?: string): boolean {
-  return rule === GRADUATED_RULE || rule === EMPLOYMENT_RULE
+  return rule === GRADUATED_RULE || isEmploymentRule(rule)
 }
 export const INSTITUTION_LABELS: Record<string, string> = {
   technical: '技工院校', vocational: '中等及以上职业院校', general_higher: '普通高等学校（专科及以上）',

@@ -1,13 +1,22 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { validateEmploymentInfo } from '../src/utils/rensheEmployment.ts'
-import { correctionAvailable, EMPLOYMENT_RULE } from '../src/utils/rensheGraduated.ts'
+import { correctionAvailable, EMPLOYMENT_RULE, LEVEL_FIVE_EMPLOYMENT_RULE, isSelfReportedRule, isEmploymentRule } from '../src/utils/rensheGraduated.ts'
 
 const qualification = {
   cultural_education: 'primary',
   work_experiences: [{ work_unit: '实际单位', position: '安全管理', occupation_name: '信息安全管理员', start_date: '2018-01-01', end_date: null }],
 }
 const report = { has_work_experience: true, work_unit: '实际单位', social_insurance_unit: '实际单位', work_start_date: '2018-01-01', occupation_years: 6 }
+
+test('fifth-level employment is a separate self-reported rule without fourth-level year or certificate requirements', () => {
+  assert.equal(isEmploymentRule(LEVEL_FIVE_EMPLOYMENT_RULE), true)
+  assert.equal(isSelfReportedRule(LEVEL_FIVE_EMPLOYMENT_RULE), true)
+  assert.equal(validateEmploymentInfo(qualification, false, { ...report, occupation_years: 0 }, true), null)
+  assert.match(validateEmploymentInfo(qualification, false, { ...report, occupation_years: 0 }), /5年/)
+  assert.match(validateEmploymentInfo(qualification, true, report, true), /不提供复合型/)
+  assert.match(validateEmploymentInfo(qualification, false, { ...report, social_insurance_unit: '' }, true), /社保/)
+})
 test('work path accepts actual cultural education without a degree but requires real work and social data', () => {
   assert.equal(validateEmploymentInfo(qualification, false, report), null)
   assert.match(validateEmploymentInfo(qualification, false, { ...report, social_insurance_unit: '' }), /社保/)
