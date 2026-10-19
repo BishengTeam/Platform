@@ -1,5 +1,6 @@
 import type { RensheEmploymentInfo, RensheReportingInfo } from '../services/rensheService.ts'
 import { chinaDate } from './rensheGraduated.ts'
+import { cumulativeWorkYears, workAnniversary } from './rensheWorkYears.ts'
 
 export function validateEmploymentInfo(info: RensheEmploymentInfo, compound: boolean, reporting: Partial<RensheReportingInfo>, levelFive = false): string | null {
   if (levelFive && compound) return '五级不提供复合型路径'
@@ -13,6 +14,14 @@ export function validateEmploymentInfo(info: RensheEmploymentInfo, compound: boo
   }
   if (!reporting.work_start_date || info.work_experiences.some(item => item.start_date < reporting.work_start_date!)) return '参加工作日期不能晚于所填经历的最早开始日期'
   if (compound && (!info.skill_certificate?.occupation_name.trim() || !info.skill_certificate.certificate_number.trim() || info.skill_certificate.grade !== 5 || !validDate(info.skill_certificate.issued_on))) return '请完整填写五级证书的职业、编号及真实取得日期'
-  if (reporting.occupation_years == null || Number(reporting.occupation_years) < (levelFive ? 0 : compound ? 3 : 5)) return compound ? '本复合型路径要求证书取得后累计相关工作满3年' : '本工龄型路径要求累计相关工作满5年'
+  if (!compound && info.skill_certificate) return '工龄型不使用技能证书路径，请按当前申报类型填写'
+  const required = levelFive ? 0 : compound ? 3 : 5
+  const declared = Number(reporting.occupation_years)
+  if (reporting.occupation_years === '' || reporting.occupation_years == null || !Number.isFinite(declared) || declared < required) return levelFive ? '请填写真实职业年限，可填写0' : compound ? '本复合型路径要求证书取得后累计相关工作满3年' : '本工龄型路径要求累计相关工作满5年'
+  const after = compound ? info.skill_certificate!.issued_on : undefined
+  const effective = cumulativeWorkYears(info.work_experiences, chinaDate(), after)
+  if (!Number.isFinite(effective)) return '请核对实际工作经历的起止日期'
+  if (effective + 1e-9 < required || (after && workAnniversary(after, required) > chinaDate())) return compound ? '五级证书取得后的有效相关工作未满3年；证前经历及重叠时间不重复计入' : '去除重叠经历后，累计相关工作未满5年'
+  if (declared > cumulativeWorkYears(info.work_experiences) + 1e-9) return '职业年限不能超过所填工作经历去重后的实际累计年限'
   return null
 }

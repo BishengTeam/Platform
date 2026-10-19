@@ -119,7 +119,7 @@ export default function RensheIndexPage() {
             {selectedProject.description && <Text className={styles.sectionDesc}>{selectedProject.description}</Text>}
             <Text className={styles.sectionDesc}>职业编码：{selectedProject.occupation_code}</Text>
             {selectedProject.admission_notice && <View className={styles.warning}>{selectedProject.admission_notice}</View>}
-            {isEmploymentRule(selectedProject.qualification_rule) && <View><Text className={styles.sectionTitle}>报名前准备</Text><Text className={styles.sectionDesc}>本人实名、文化程度、逐段工作经历、联系方式、工龄及社保证明、签字按手印承诺书；复合型还须五级证书及合并的网查截图。</Text><Text className={styles.sectionDesc}>一寸白底近期证件照≤500 KB；工作经历重叠时间不重复累计。具体材料在报名页直接上传。</Text></View>}
+            {isEmploymentRule(selectedProject.qualification_rule) && <View><Text className={styles.sectionTitle}>报名前准备</Text><Text className={styles.sectionDesc}>本人实名、文化程度、联系方式、签字按手印承诺书；工作经历、工龄和社保证明、技能证书、职称或毕业学历按本批次具体申报路径准备，不同等级分别核验。</Text><Text className={styles.sectionDesc}>一寸白底近期证件照≤500 KB；工作经历重叠时间不重复累计。具体材料在报名页直接上传。</Text></View>}
             {selectedProject.qualification_rule === GRADUATED_RULE && <>
               <Text className={styles.sectionTitle}>报名前准备</Text>
               <Text className={styles.sectionDesc}>本人实名；毕业院校、学历、专业、毕业日期及证书编号；手机号、邮箱、通讯地址。</Text>

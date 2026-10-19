@@ -7,28 +7,29 @@ import styles from './renshe.module.scss'
 
 export const emptyExperience = (): RensheWorkExperience => ({ work_unit: '', position: '', occupation_name: '', start_date: '', end_date: null })
 
-export default function EmploymentFields({ value, onChange, compound, options, disabled, levelFive = false }: { value: RensheEmploymentInfo; onChange: (value: RensheEmploymentInfo) => void; compound: boolean; levelFive?: boolean; options: RensheReportingOptions | null; disabled: boolean }) {
+export default function EmploymentFields({ value, onChange, compound, options, disabled, levelFive = false, skillGrade = 5, requiredYears, showWork = true, educationRequired = false }: { value: RensheEmploymentInfo; onChange: (value: RensheEmploymentInfo) => void; compound: boolean; levelFive?: boolean; skillGrade?: 4 | 5; requiredYears?: number; showWork?: boolean; educationRequired?: boolean; options: RensheReportingOptions | null; disabled: boolean }) {
   const updateWork = (index: number, patch: Partial<RensheWorkExperience>) => onChange({ ...value, work_experiences: value.work_experiences.map((item, i) => i === index ? { ...item, ...patch } : item) })
-  const certificate = value.skill_certificate || { occupation_name: '', grade: 5 as const, certificate_number: '', issued_on: '' }
+  const years = requiredYears ?? (levelFive ? 0 : compound ? 3 : 5)
+  const certificate = value.skill_certificate || { occupation_name: '', grade: skillGrade, certificate_number: '', issued_on: '' }
   const updateCertificate = (patch: Partial<typeof certificate>) => onChange({ ...value, skill_certificate: { ...certificate, ...patch } })
   const levels = options?.education_levels || []
   return <>
     <View className={styles.card}>
       <Text className={styles.sectionTitle}>文化程度</Text>
-      <Text className={styles.sectionDesc}>按实际情况填写，用于报送；本路径以工作经历{compound ? '及五级技能证书' : ''}核验资格，不要求毕业证或学历备案表。</Text>
+      <Text className={styles.sectionDesc}>按实际情况填写，用于报送；{showWork ? `本路径按相关工作经历${compound ? '及技能证书' : ''}核验资格。` : '本路径按所选证书或毕业学历条件核验资格。'}{educationRequired ? '本路径还须提交对应毕业学历及核验材料。' : '不要求毕业证或学历备案表。'}</Text>
       <View className={styles.pickerField}><Text className={styles.label}>文化程度 *</Text><Picker mode='selector' disabled={disabled || !options} range={levels.map(item => (options?.education_labels || EDUCATION_LABELS)[item] || item)} onChange={event => onChange({ ...value, cultural_education: levels[Number(event.detail.value)] })}><View className={styles.readonlyValue}>{EDUCATION_LABELS[value.cultural_education] || '请选择'} ›</View></Picker></View>
     </View>
     {compound && <View className={styles.card}>
-      <Text className={styles.sectionTitle}>已取得的五级／初级工证书</Text>
-      <Text className={styles.sectionDesc}>须为本职业或资料列明相关职业的五级证书。证书取得后累计相关工作须满3年；职业对应关系由初审结合原件核验。</Text>
+      <Text className={styles.sectionTitle}>已取得的{skillGrade === 4 ? '四级／中级工' : '五级／初级工'}证书</Text>
+      <Text className={styles.sectionDesc}>须为本职业或资料列明相关职业的{skillGrade === 4 ? '四级' : '五级'}证书。{years > 0 ? `证书取得后累计相关工作须满${years}年。` : '本路径不设证后工作年数门槛。'}职业对应关系由初审核验。</Text>
       <FormInput label='证书职业／工种' required value={certificate.occupation_name} placeholder='按证书原文填写' disabled={disabled} onChange={occupation_name => updateCertificate({ occupation_name })} maxlength={128} />
-      <Text className={styles.readonlyValue}>证书等级：五级／初级工</Text>
+      <Text className={styles.readonlyValue}>证书等级：{skillGrade === 4 ? '四级／中级工' : '五级／初级工'}</Text>
       <FormInput label='证书编号' required value={certificate.certificate_number} placeholder='按证书原文填写' disabled={disabled} onChange={certificate_number => updateCertificate({ certificate_number })} maxlength={128} />
       <View className={styles.pickerField}><Text className={styles.label}>证书取得日期 *</Text><Picker mode='date' start='1900-01-01' end={chinaDate()} value={certificate.issued_on || ''} disabled={disabled} onChange={event => updateCertificate({ issued_on: event.detail.value })}><View className={styles.readonlyValue}>{certificate.issued_on || '请选择取得日期'} ›</View></Picker></View>
     </View>}
-    <View className={styles.card}>
+    {showWork && <View className={styles.card}>
       <Text className={styles.sectionTitle}>相关职业工作经历</Text>
-      <Text className={styles.sectionDesc}>逐段填写实际工作经历，最多20段。重叠时间不重复累计；{levelFive ? '五级不设最低工作年数，不要求前置技能证书。' : compound ? '仅证书取得后的有效相关经历计入3年门槛。' : '累计相关工作须满5年。'}单位、岗位及职业是否相关由初审核验。</Text>
+      <Text className={styles.sectionDesc}>逐段填写实际工作经历，最多20段。重叠时间不重复累计；{levelFive ? '五级不设最低工作年数，不要求前置技能证书。' : compound ? `仅证书取得后的有效相关经历计入${years}年门槛。` : `累计相关工作须满${years}年。`}单位、岗位及职业是否相关由初审核验。</Text>
       {value.work_experiences.map((item, index) => <View key={index} className={styles.uploadItem}>
         <Text className={styles.sectionTitle}>第{index + 1}段工作经历</Text>
         <FormInput label='工作单位' required value={item.work_unit} placeholder='单位完整名称，与工龄及社保证明对应' disabled={disabled} onChange={work_unit => updateWork(index, { work_unit })} maxlength={128} />
@@ -40,6 +41,6 @@ export default function EmploymentFields({ value, onChange, compound, options, d
         {value.work_experiences.length > 1 && <Button variant='secondary' disabled={disabled} onClick={() => onChange({ ...value, work_experiences: value.work_experiences.filter((_, i) => i !== index) })}>删除本段</Button>}
       </View>)}
       <Button variant='secondary' disabled={disabled || value.work_experiences.length >= 20} onClick={() => onChange({ ...value, work_experiences: [...value.work_experiences, emptyExperience()] })}>添加一段工作经历</Button>
-    </View>
+    </View>}
   </>
 }

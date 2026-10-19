@@ -3,8 +3,9 @@ import type { RensheEducationInfo, RensheReportingInfo, RensheReportingOptions }
 export const GRADUATED_RULE = 'related_major_graduated_degree_v1'
 export const EMPLOYMENT_RULE = 'documented_employment_v1'
 export const LEVEL_FIVE_EMPLOYMENT_RULE = 'level_five_employment_v1'
+export const LEVEL_THREE_RULE = 'level_three_v1'
 export function isEmploymentRule(rule?: string): boolean {
-  return rule === EMPLOYMENT_RULE || rule === LEVEL_FIVE_EMPLOYMENT_RULE
+  return rule === EMPLOYMENT_RULE || rule === LEVEL_FIVE_EMPLOYMENT_RULE || rule === LEVEL_THREE_RULE
 }
 export function isSelfReportedRule(rule?: string): boolean {
   return rule === GRADUATED_RULE || isEmploymentRule(rule)
@@ -17,6 +18,10 @@ export const EDUCATION_LABELS: Record<string, string> = {
   secondary_vocational: '中专', technical_school: '技校', vocational_high: '职高', higher_vocational: '高职', associate: '大专', bachelor: '大学本科', master: '硕士', doctorate: '博士',
 }
 export const CHANGE_LABELS: Record<string, string> = {
+  'qualification_info.admission_path': '三级具体申报路径',
+  'education_info.training_level': '技工院校培养层次', 'education_info.evaluation_reference': '院校评估论证依据',
+  'qualification_info.title_certificate.title_name': '初级职称名称', 'qualification_info.title_certificate.level': '职称等级',
+  'qualification_info.title_certificate.major': '职称专业', 'qualification_info.title_certificate.certificate_number': '职称证书编号', 'qualification_info.title_certificate.issued_on': '职称取得日期',
   work_proof: '工龄证明',
   'qualification_info.cultural_education': '文化程度', 'qualification_info.work_experiences': '工作经历',
   'qualification_info.skill_certificate.occupation_name': '证书职业／工种',
@@ -51,9 +56,9 @@ export function validateReportingInfo(info: Partial<RensheReportingInfo>, option
   for (const value of [info.work_start_date, info.enrollment_date]) {
     if (value && (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value)) || new Date(value).toISOString().slice(0, 10) !== value || value < '1900-01-01' || value > chinaDate())) return '请填写有效且不晚于今天的工作／入学日期'
   }
-  if (info.has_work_experience && !info.work_start_date) return '请填写真实参加工作日期'
+  if (rules.work_date_required !== false && info.has_work_experience && !info.work_start_date) return '请填写真实参加工作日期'
   if (!info.has_work_experience && info.work_start_date) return '未参加过工作时不能填写参加工作日期'
-  if ((rules.date_rule === 'work_only' && !info.work_start_date) || (rules.date_rule === 'enrollment_only' && !info.enrollment_date) || (rules.date_rule === 'work_or_enrollment' && !info.work_start_date && !info.enrollment_date)) return '请按批次要求填写参加工作日期或入学日期；毕业日期不能替代'
+  if (rules.work_date_required !== false && ((rules.date_rule === 'work_only' && !info.work_start_date) || (rules.date_rule === 'enrollment_only' && !info.enrollment_date) || (rules.date_rule === 'work_or_enrollment' && !info.work_start_date && !info.enrollment_date))) return '请按批次要求填写参加工作日期或入学日期；毕业日期不能替代'
   const years = info.occupation_years
   if (years === '' || years == null) return rules.years_rule === 'required' ? '请填写实际职业年限' : null
   if (!/^\d{1,4}(\.\d{1,2})?$/.test(String(years)) || (!info.has_work_experience && Number(years) !== 0)) return '请填写真实职业年限，最多保留两位小数；尚未工作时不能填写正年限'

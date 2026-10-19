@@ -75,3 +75,14 @@ test('paid correction UX allows registration closure but respects deadline, free
   assert.equal(correctionAvailable({ ...application, frozen_at: '2026-10-16T01:00:00Z' }, plan, now), false)
   assert.equal(correctionAvailable(application, { ...plan, status: 'cancelled' }, now), false)
 })
+
+
+test('degree date is optional for both employment states while years and supplied dates stay validated', () => {
+  const options = { ...reportingOptions, employment_reporting: { confirmed: true, date_rule: 'work_only', work_date_required: false, years_rule: 'required', allow_zero_years: true } }
+  for (const worked of [false, true]) {
+    const value = { ...reporting, has_work_experience: worked, work_start_date: null, enrollment_date: null }
+    assert.equal(validateReportingInfo(value, options), null)
+    assert.match(validateReportingInfo({ ...value, occupation_years: null }, options), /职业年限/)
+  }
+  assert.match(validateReportingInfo({ ...reporting, has_work_experience: true, work_start_date: '2999-01-01' }, options), /今天/)
+})

@@ -3,6 +3,8 @@ import { getToken } from '../utils/request.ts'
 import Taro from '@tarojs/taro'
 
 export interface RensheEducationInfo {
+  training_level?: 'senior_worker' | 'preparatory_technician' | 'technician'
+  evaluation_reference?: string
   graduated: true
   school: string
   institution_type: string
@@ -19,9 +21,21 @@ export interface RensheWorkExperience {
   end_date: string | null
 }
 export interface RensheEmploymentInfo {
+  admission_path?: string
+  title_certificate?: { title_name: string; level: 'primary'; major: string; certificate_number: string; issued_on: string } | null
   cultural_education: string
   work_experiences: RensheWorkExperience[]
-  skill_certificate?: { occupation_name: string; grade: 5; certificate_number: string; issued_on: string } | null
+  skill_certificate?: { occupation_name: string; grade: 4 | 5; certificate_number: string; issued_on: string } | null
+}
+export interface RensheAdmissionPath {
+  id: string
+  condition: string
+  material_kinds: string[]
+  years: number
+  work?: boolean
+  skill?: boolean
+  title?: boolean
+  education?: boolean
 }
 export interface RensheReportingInfo {
   occupation_status: string
@@ -35,7 +49,7 @@ export interface RensheReportingInfo {
   social_insurance_unit?: string
 }
 export interface RensheReportingOptions {
-  rule_profile?: { occupation_name?: string; related_majors?: string; related_occupations?: string; source_conditions?: string[]; project_limits?: string[]; sources?: string[] }
+  rule_profile?: { admission_paths?: RensheAdmissionPath[]; occupation_name?: string; related_majors?: string; related_occupations?: string; source_conditions?: string[]; project_limits?: string[]; sources?: string[] }
   config_id: number
   education_levels: string[]
   education_labels: Record<string, string>
@@ -45,7 +59,7 @@ export interface RensheReportingOptions {
   political_statuses: string[]
   candidate_source: string
   application_condition: string
-  employment_reporting: { confirmed: boolean; date_rule: string; years_rule: string; allow_zero_years: boolean }
+  employment_reporting: { confirmed: boolean; work_date_required?: boolean; date_rule: string; years_rule: string; allow_zero_years: boolean }
   commitment_template: { filename: string } | null
 }
 export interface RensheUploadedMaterial {
@@ -72,7 +86,7 @@ export interface RenshePlan {
   project_name?: string | null
   renshe_config_id?: number | null
   renshe_config?: {
-    rule_profile?: { source_conditions?: string[] }
+    rule_profile?: { source_conditions?: string[]; admission_paths?: RensheAdmissionPath[] }
     qualification_rule?: string
     institution_types?: string[]
     reporting_policy?: { contract_version?: number; commitment_template?: { filename: string; original_filename?: string } }
