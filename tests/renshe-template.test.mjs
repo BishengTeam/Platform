@@ -31,13 +31,22 @@ test('fetching a template stays authenticated, separate from opening, and does n
   assert.equal(calls.download.length, 2)
 })
 
-test('DOCX keeps its original suffix and forwards the actual local file with a custom filename', async () => {
+test('DOCX forwards the actual local file with a stable commitment filename and genuine suffix', async () => {
   content = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 1]).buffer
   const file = await rensheService.getCommitmentTemplateFile(42, '甲方模板.docx')
   await rensheService.previewCommitmentTemplate(file)
   await rensheService.sendCommitmentTemplate(file)
   assert.deepEqual(calls.preview, [{ filePath: response.tempFilePath, fileType: 'docx', showMenu: true }])
-  assert.deepEqual(calls.share, [{ filePath: response.tempFilePath, fileName: '甲方模板.docx' }])
+  assert.deepEqual(calls.share, [{ filePath: response.tempFilePath, fileName: '承诺书模板.docx' }])
+})
+
+test('different stored PDF names all forward as the same commitment filename', async () => {
+  for (const filename of ['commitment_a23b98.pdf', 'commitment_f983cc.pdf', '甲方新版模板.pdf']) {
+    const file = await rensheService.getCommitmentTemplateFile(42, filename)
+    await rensheService.sendCommitmentTemplate(file)
+  }
+  assert.deepEqual(calls.share.map(item => item.fileName), ['承诺书模板.pdf', '承诺书模板.pdf', '承诺书模板.pdf'])
+  assert.ok(calls.share.every(item => item.filePath === response.tempFilePath))
 })
 
 test('a missing filename falls back to the actual format and mismatched extensions are rejected', async () => {

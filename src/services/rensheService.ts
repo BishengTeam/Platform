@@ -261,7 +261,7 @@ export const rensheService = {
     await previewDocumentFile(file)
   },
   async sendCommitmentTemplate(file: RensheTemplateFile): Promise<void> {
-    await sendDocumentFile(file)
+    await sendDocumentFile({ ...file, filename: `承诺书模板.${file.fileType}` })
   },
   async downloadCommitmentTemplate(planId: number, filename?: string): Promise<void> {
     await this.previewCommitmentTemplate(await this.getCommitmentTemplateFile(planId, filename))
