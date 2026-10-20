@@ -14,7 +14,7 @@
   box-sizing: border-box;
   height: 180px;
   padding: $spacing-md;
-  background: #F9F9F9;
+  background: $color-white;
   border-radius: $radius-md;
   overflow: hidden;
   transition: transform $motion-duration-press $motion-ease-out;
