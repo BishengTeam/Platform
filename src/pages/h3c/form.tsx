@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { DocumentActions } from '@/components/DocumentActions'
+import { useDocumentActions } from '@/hooks/useDocumentActions'
 import { h3cService } from '@/services/h3cService'
 import {
   DEFAULT_H3C_XUEXIN_GUIDE_ENTRY_TEXT,
   H3C_STUDENT_XUEXIN_GUIDE_SCENE,
-  H3C_XUEXIN_VERIFICATION_GUIDE_KEY,
   getDocumentScene,
-  getDocument,
 } from '@/services/documentService'
 import type { DocumentSceneSlot } from '@/services/documentService'
 import { ROUTES } from '@/constants/routes'
@@ -64,6 +64,7 @@ export default function H3CFormPage() {
   const [couponKey, setCouponKey] = useState('')
   const [studentKey, setStudentKey] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const documentActions = useDocumentActions()
   const [guideSlot, setGuideSlot] = useState<DocumentSceneSlot | null>(null)
   const [identityVerified, setIdentityVerified] = useState(false)
 
@@ -112,34 +113,6 @@ export default function H3CFormPage() {
   }, [])
 
   const update = (key: string, value: string) => setForm((old) => ({ ...old, [key]: value }))
-
-  const openXuexinGuide = useCallback(async () => {
-    try {
-      if (!guideSlot?.document) {
-        throw new Error('教程文档暂未配置，请联系管理员')
-      }
-      const document = await getDocument(
-        guideSlot.document.document_key || H3C_XUEXIN_VERIFICATION_GUIDE_KEY,
-      )
-      const downloaded = await Taro.downloadFile({ url: document.download_url })
-      if (downloaded.statusCode !== 200 || !downloaded.tempFilePath) {
-        throw new Error(downloaded.errMsg || '教程文件下载失败')
-      }
-      await Taro.openDocument({
-        filePath: downloaded.tempFilePath,
-        fileType: 'pdf',
-        showMenu: true,
-      })
-    } catch (error) {
-      Taro.showToast({
-        title: error instanceof Error && error.message
-          ? error.message
-          : '教程文档暂未配置，请联系管理员',
-        icon: 'none',
-        duration: 3000,
-      })
-    }
-  }, [guideSlot])
 
   const chooseMaterial = async (materialType: 'coupon_proof' | 'student_proof') => {
     const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
@@ -333,11 +306,7 @@ export default function H3CFormPage() {
                   value={form.verify_code}
                   onInput={(event) => update('verify_code', event.detail.value)}
                 />
-                <View className={styles.guideLink} onClick={openXuexinGuide}>
-                  <Text>
-                    {guideSlot?.entry_text || DEFAULT_H3C_XUEXIN_GUIDE_ENTRY_TEXT}
-                  </Text>
-                </View>
+                <DocumentActions scene={H3C_STUDENT_XUEXIN_GUIDE_SCENE} title={guideSlot?.entry_text || DEFAULT_H3C_XUEXIN_GUIDE_ENTRY_TEXT} previewLabel='预览教程' controller={documentActions} disabled={submitting} />
                 <Text className={styles.remark}>学信网在线验证码必填；请先按教程查询并复制验证码。</Text>
               </View>
               <View className={styles.uploadBox} onClick={() => chooseMaterial('student_proof')}>

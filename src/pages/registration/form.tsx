@@ -281,14 +281,6 @@ export default function RegistrationFormPage() {
   }
 
   // ============================================================
-  // NISP 模板下载
-  // ============================================================
-  const handleDownloadTemplate = useCallback(() => {
-    Taro.downloadFile({ url: '/api/nisp/template/download' })
-      .then(() => Taro.showToast({ title: '模板下载成功', icon: 'success' }))
-      .catch(() => Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' }))
-  }, [])
-
   const handleNispUpload = useCallback((target: 'portrait' | 'idPhoto' | 'xuexin' | 'template') => {
     const setters: Record<string, (v: string) => void> = {
       portrait: setPortraitPhotoPath,
@@ -400,7 +392,6 @@ export default function RegistrationFormPage() {
                 templatePath={templatePath}
                 errors={errors}
                 onUpload={handleNispUpload}
-                onDownloadTemplate={handleDownloadTemplate}
               />
             )}
 

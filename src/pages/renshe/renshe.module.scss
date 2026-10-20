@@ -202,4 +202,8 @@
 .uploadItem { padding: 28px 0; border-bottom: 1px solid #edf0f5; }
 .uploadItem:last-child { border-bottom: 0; padding-bottom: 0; }
 .uploadItem button { margin-top: 16px; }
+.templateActions { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
+.templateAction { flex: 1 1 200px; min-width: 0; }
+.templateButton { width: 100%; max-width: 100%; }
+.templateActions button { margin-top: 0; }
 .fileName { display: block; margin: 16px 0; color: #157347; font-size: 24px; word-break: break-all; }

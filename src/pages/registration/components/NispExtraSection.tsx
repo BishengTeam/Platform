@@ -24,7 +24,6 @@ export interface NispExtraSectionProps {
   templatePath: string
   errors: Record<string, ValidationResult>
   onUpload: (target: 'portrait' | 'idPhoto' | 'xuexin' | 'template') => void
-  onDownloadTemplate: () => void
 }
 
 export function NispExtraSection(props: NispExtraSectionProps) {
@@ -35,7 +34,7 @@ export function NispExtraSection(props: NispExtraSectionProps) {
     pinyin, trainingType,
     portraitPhotoPath, idPhotoPath, xuexinReportPath,
     templatePath, errors,
-    onUpload, onDownloadTemplate,
+    onUpload,
   } = props
 
   return (
@@ -99,7 +98,6 @@ export function NispExtraSection(props: NispExtraSectionProps) {
           <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => onUpload('xuexin')}>{STRINGS.FORM_UPLOAD_XUEXIN_REPORT}</Button></View>
           {level === '2' && (
             <>
-              <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={onDownloadTemplate}>{STRINGS.FORM_TEMPLATE_DOWNLOAD}</Button></View>
               <View className={styles.btnWrap}><Button variant='secondary' size='md' onClick={() => onUpload('template')}>{STRINGS.FORM_TEMPLATE_UPLOAD}</Button></View>
             </>
           )}

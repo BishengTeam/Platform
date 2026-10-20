@@ -1,6 +1,7 @@
 import { get, post } from '../utils/request.ts'
 import { getToken } from '../utils/request.ts'
 import Taro from '@tarojs/taro'
+import { downloadDocumentFile, previewDocumentFile, sendDocumentFile, canSendDocumentFile, FILE_SHARE_UNSUPPORTED, type LocalDocumentFile } from '../utils/documentFile.ts'
 
 export interface RensheEducationInfo {
   training_level?: 'senior_worker' | 'preparatory_technician' | 'technician'
@@ -222,6 +223,10 @@ export interface PageData<T> {
   page_size: number
 }
 
+export type RensheTemplateFile = LocalDocumentFile
+export const TEMPLATE_SHARE_UNSUPPORTED = FILE_SHARE_UNSUPPORTED
+export const canSendCommitmentTemplate = canSendDocumentFile
+
 export const rensheService = {
   async getReportingOptions(planId: number): Promise<RensheReportingOptions> {
     return (await get<RensheReportingOptions>(`/api/renshe/batches/${planId}/reporting-options`)).data
@@ -242,14 +247,24 @@ export const rensheService = {
     if (response.statusCode !== 200 || payload.code !== 0 || !payload.data?.storage_key) throw new Error(payload.message || '材料上传失败')
     return payload.data
   },
-  async downloadCommitmentTemplate(planId: number, filename?: string): Promise<void> {
+  async getCommitmentTemplateFile(planId: number, filename?: string): Promise<RensheTemplateFile> {
     const token = getToken()
-    const response = await Taro.downloadFile({
+    if (!token) throw new Error('登录已失效，请重新登录后重试')
+    return downloadDocumentFile({
       url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template`,
-      header: { Authorization: token ? `Bearer ${token}` : '' },
+      header: { Authorization: `Bearer ${token}` }, filename,
+      fallbackName: '承诺书模板', failureMessage: '模板获取失败，请重试',
+      missingMessage: '暂无可用承诺书模板，请联系管理员',
     })
-    if (response.statusCode !== 200) throw new Error('承诺书模板暂不可下载，请联系管理员')
-    await Taro.openDocument({ filePath: response.tempFilePath, fileType: filename?.endsWith('.docx') ? 'docx' : 'pdf', showMenu: true })
+  },
+  async previewCommitmentTemplate(file: RensheTemplateFile): Promise<void> {
+    await previewDocumentFile(file)
+  },
+  async sendCommitmentTemplate(file: RensheTemplateFile): Promise<void> {
+    await sendDocumentFile(file)
+  },
+  async downloadCommitmentTemplate(planId: number, filename?: string): Promise<void> {
+    await this.previewCommitmentTemplate(await this.getCommitmentTemplateFile(planId, filename))
   },
   async listProjects(): Promise<RensheProject[]> {
     return (await get<RensheProject[]>('/api/renshe/projects')).data ?? []

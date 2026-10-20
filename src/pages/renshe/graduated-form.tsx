@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Checkbox, Picker, ScrollView, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
 import { ROUTES } from '@/constants/routes'
-import { rensheService, type RenshePlan, type RensheApplicationDetail, type RensheEducationInfo, type RensheUploadedMaterial, type RensheReportingInfo, type RensheReportingOptions, type RensheEmploymentInfo } from '@/services/rensheService'
+import { canSendCommitmentTemplate, TEMPLATE_SHARE_UNSUPPORTED, rensheService, type RenshePlan, type RensheApplicationDetail, type RensheEducationInfo, type RensheUploadedMaterial, type RensheReportingInfo, type RensheReportingOptions, type RensheEmploymentInfo } from '@/services/rensheService'
 import type { UserProfileAggregated } from '@/types/profile'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { validatePhone, validateEmail } from '@/utils/validator'
@@ -39,6 +39,8 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
   const [address, setAddress] = useState(draft?.mailing_address || profile?.profile.address || '')
   const [materials, setMaterials] = useState<Record<string, RensheUploadedMaterial>>(draft?.materials || {})
   const [busy, setBusy] = useState('')
+  const templateOperation = useRef(false)
+  const [fileShareSupported, setFileShareSupported] = useState(canSendCommitmentTemplate)
   const [error, setError] = useState('')
   const [options, setOptions] = useState<RensheReportingOptions | null>(null)
   const [optionsError, setOptionsError] = useState('')
@@ -69,7 +71,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
   const fail = (value: unknown) => setError(value instanceof Error ? value.message : '操作失败，请重试')
 
   const upload = async (kind: string, extensions: string[]) => {
-    if (busy || locked || !identityReady || !options) return
+    if (busy || templateOperation.current || locked || !identityReady || !options) return
     setError('')
     try {
       let path: string; let size: number; let filename: string
@@ -96,15 +98,28 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     } finally { setBusy('') }
   }
 
-  const downloadTemplate = async () => {
-    if (busy) return
-    setBusy('template'); setError('')
-    try { if (options?.commitment_template) await rensheService.downloadCommitmentTemplate(plan.id, options.commitment_template.filename) }
-    catch (value) { fail(value) } finally { setBusy('') }
+  const operateTemplate = async (action: 'preview' | 'send') => {
+    if (busy || templateOperation.current) return
+    setError('')
+    if (!options?.commitment_template) { setError('暂无可用承诺书模板，请联系管理员'); return }
+    if (action === 'send') {
+      const supported = canSendCommitmentTemplate()
+      setFileShareSupported(supported)
+      if (!supported) { setError(TEMPLATE_SHARE_UNSUPPORTED); return }
+    }
+    // The ref blocks a second tap before React has rendered the busy state.
+    templateOperation.current = true
+    setBusy(`template-${action}`)
+    try {
+      const file = await rensheService.getCommitmentTemplateFile(plan.id, options.commitment_template.filename)
+      if (action === 'preview') await rensheService.previewCommitmentTemplate(file)
+      else await rensheService.sendCommitmentTemplate(file)
+    } catch (value) { fail(value) }
+    finally { templateOperation.current = false; setBusy('') }
   }
 
   const submit = async () => {
-    if (busy || locked) return
+    if (busy || templateOperation.current || locked) return
     setError('')
     if (!identityReady) { setError('请先完成本人实名认证'); return }
     if (levelFive) {
@@ -237,10 +252,17 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         <View className={styles.warning}>{levelThree ? '材料按当前具体路径必交：技能或职称证书与网查截图合并JPEG；学历网查截图整理为PDF，证书加学历路径须有效学信网备案表（6个月）。仅涉及工作年限的路径要求工龄及社保证明。' : employment ? '工龄证明独立上传；社保证明须为PDF，参保单位和工作单位一致且验证码可验证。证书与完整网查截图须合并为同一张清晰JPEG图片上传，不改扩展名伪装格式。' : requirements.some(item => item.kind === 'registration_portrait') ? '本期仅接受已取得毕业证的申请人。一寸白底近期证件照≤500 KB；毕业证、对应学信网学历备案表及本人签字按手印承诺书必传，学历报告验证有效期设置为6个月。不能提供既定材料请联系管理员。' : '历史批次继续使用原材料清单及格式要求；无法提供材料请联系管理员。'}</View>
         {uploadRequirements.map(item => <View key={item.kind} className={styles.uploadItem}>
           <Text className={styles.sectionTitle}>{item.name} {item.required ? '*' : ''}</Text>
-          {item.kind === 'commitment_letter' && <><Text className={styles.sectionDesc}>下载模板 → 本人亲笔签名并按手印 → 上传清晰扫描件。此承诺书与信息处理授权协议分别提交。</Text><Button variant='secondary' disabled={Boolean(busy) || !options} onClick={() => void downloadTemplate()}>下载承诺书模板</Button></>}
+          {item.kind === 'commitment_letter' && <>
+            <Text className={styles.sectionDesc}>请打印模板，由本人亲笔签名并按手印后，上传清晰扫描件或照片。此承诺书与信息处理授权协议分别提交。</Text>
+            <View className={styles.templateActions}>
+              <View className={styles.templateAction}><Button variant='secondary' className={styles.templateButton} loading={busy === 'template-preview'} disabled={Boolean(busy) || !options} onClick={() => void operateTemplate('preview')}>{busy === 'template-preview' ? '正在预览…' : '预览模板'}</Button></View>
+              <View className={styles.templateAction}><Button variant='secondary' className={styles.templateButton} loading={busy === 'template-send'} disabled={Boolean(busy) || !options || !fileShareSupported} onClick={() => void operateTemplate('send')}>{busy === 'template-send' ? '正在发送…' : '发送到微信'}</Button></View>
+            </View>
+            <Text className={styles.sectionDesc}>{fileShareSupported ? '可发送给文件传输助手或打印店。文件保存方式以当前微信及系统支持为准。' : TEMPLATE_SHARE_UNSUPPORTED}</Text>
+          </>}
           <Text className={styles.sectionDesc}>{item.extensions.join(' / ')} · {item.kind === 'registration_portrait' ? '一寸、白底、近期、≤500 KB' : '图片≤10 MB，PDF≤20 MB'}</Text>
           {materials[item.kind] && <Text className={styles.fileName}>已上传：{materials[item.kind].original_filename} · {Math.ceil(materials[item.kind].size_bytes / 1024)} KB</Text>}
-          <Button variant='secondary' disabled={locked || Boolean(busy) || !identityReady || !options} onClick={() => void upload(item.kind, item.extensions)}>{busy === item.kind ? '上传中…' : materials[item.kind] ? '替换材料' : '上传材料'}</Button>
+          <Button variant='secondary' disabled={locked || Boolean(busy) || !identityReady || !options} onClick={() => void upload(item.kind, item.extensions)}>{busy === item.kind ? '上传中…' : materials[item.kind] ? '替换材料' : item.kind === 'commitment_letter' ? '上传已签署承诺书' : '上传材料'}</Button>
         </View>)}
       </View>
       <View className={styles.card}><Text className={styles.sectionTitle}>协议、费用与提交</Text><Text className={styles.sectionDesc}>报名费 ¥{(plan.price_cents / 100).toFixed(2)}。提交前需签署认证报名信息处理授权协议。补正保存独立版本，保留历史记录。</Text>{error && <View className={styles.warning}>{error}</View>}</View>
