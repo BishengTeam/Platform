@@ -14,7 +14,7 @@ interface Props {
 
 export function DocumentActions({ scene, title, controller, previewLabel = '预览模板', disabled }: Props) {
   const current = controller.busy?.scene === scene ? controller.busy.action : null
-  return <View className={styles.document}>
+  return <View className={styles.documentActions}>
     <Text className={styles.description}>{title.replace(/^(下载|查看)/, '')}</Text>
     <View className={styles.actions}>
       <View className={styles.action}><Button className={styles.button} variant='secondary' size='sm' disabled={disabled || Boolean(controller.busy)} loading={current === 'preview'} onClick={() => void controller.run(scene, 'preview')}>{current === 'preview' ? '正在预览…' : previewLabel}</Button></View>
