@@ -2,5 +2,5 @@
 .description { display: block; font-size: 24px; line-height: 1.6; color: #667085; word-break: break-all; }
 .actions { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
 .action { flex: 1 1 200px; min-width: 0; }
-.button { width: 100%; max-width: 100%; }
+.action .button { width: 100%; max-width: 100%; }
 .error { display: block; margin-top: 12px; font-size: 24px; line-height: 1.6; color: #c2410c; word-break: break-all; }

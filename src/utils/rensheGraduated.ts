@@ -49,6 +49,16 @@ export function validateDegreeEducation(info: Partial<RensheEducationInfo>, opti
   if (info.institution_type === 'general_higher' && !['higher_vocational', 'associate', 'bachelor', 'master', 'doctorate'].includes(info.education || '')) return '普通高等学校须为专科及以上学历'
   return null
 }
+export function workDateHint(rules: RensheReportingOptions['employment_reporting'] | undefined, hasWork?: boolean): string {
+  if (!rules) return '正在加载本批次工作日期要求…'
+  if (rules.work_date_required === false) return hasWork === false
+    ? `尚未参加工作可不填参加工作日期${rules.allow_zero_years ? '，职业年限如实填写0' : ''}，由管理员人工审核。`
+    : '参加工作日期选填，请按实际情况填写，由管理员人工审核；入学日期、毕业日期不能替代。'
+  return hasWork === false
+    ? '本路径要求实际工作经历及真实参加工作日期，尚未参加工作请联系管理员核实适用路径。'
+    : '本路径须填写真实参加工作日期，用于核验工作经历；入学日期、毕业日期不能替代。'
+}
+
 export function validateReportingInfo(info: Partial<RensheReportingInfo>, options: RensheReportingOptions): string | null {
   if (!options.occupations.includes(info.occupation_status || '') || !options.ethnicities.includes(info.ethnicity || '') || !options.political_statuses.includes(info.political_status || '') || typeof info.has_work_experience !== 'boolean') return '请选择从事职业、民族、政治面貌及是否参加过工作'
   const rules = options.employment_reporting

@@ -26,11 +26,12 @@ test('NISP pages are registered in the subpackage and reachable via ROUTES', asy
 test('NISP form uploads each material with its own backend material type', async () => {
   const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
 
-  assert.match(form, /uploadFile\(setIdCardKey, 'id_card_both_sides'\)/)
-  assert.match(form, /uploadFile\(setPortraitKey, 'portrait_photo'\)/)
-  assert.match(form, /uploadFile\(setXuexinKey, 'xuexin_report'\)/)
-  assert.match(form, /uploadFile\(setAppFormKey, 'application_form'\)/)
-  assert.match(form, /nispService\.uploadMaterial\(\s*filePath,\s*fileType,\s*originalFilename,/)
+  assert.match(form, /id_card_both_sides: setIdCardKey/)
+  assert.match(form, /portrait_photo: setPortraitKey/)
+  assert.match(form, /xuexin_report: setXuexinKey/)
+  assert.match(form, /application_form: setAppFormKey/)
+  assert.match(form, /uploadFile\(setters\[kind\], kind\)/)
+  assert.match(form, /nispService\.uploadMaterial\(\s*filePath,\s*fileType,\s*originalFilename,?\s*\)/)
   assert.match(form, /extension: \['pdf'\]/)
   assert.match(form, /batch\?\.max_material_bytes/)
   assert.equal(form.includes("fileType === 'image' ? 'portrait_photo' : 'id_card_both_sides'"), false)
@@ -39,7 +40,6 @@ test('NISP form uploads each material with its own backend material type', async
 test('NISP level-two form exposes managed report guide and application template', async () => {
   const form = await readFile(file('pages/nisp/form.tsx'), 'utf8')
   const service = await readFile(file('services/documentService.ts'), 'utf8')
-  const styles = await readFile(file('pages/nisp/nisp.module.scss'), 'utf8')
 
   assert.match(service, /NISP_EDUCATION_REPORT_GUIDE_SCENE = 'nisp_education_report_guide'/)
   assert.match(service, /NISP_LEVEL2_APPLICATION_FORM_SCENE = 'nisp_level2_application_form'/)
@@ -51,7 +51,6 @@ test('NISP level-two form exposes managed report guide and application template'
   assert.match(form, /<DocumentActions scene=\{NISP_LEVEL2_APPLICATION_FORM_SCENE\}/)
   assert.match(service, /查看《学历证书电子注册备案表》查询步骤PDF/)
   assert.match(service, /《NISP二级考试报名申请表》PDF/)
-  assert.match(styles, /\.guideLink\s*\{/)
 })
 
 test('NISP order creation goes to the unified payment confirm page with order id', async () => {
@@ -66,7 +65,8 @@ test('NISP submission gates the latest certification registration agreement', as
 
   assert.match(form, /const \[agreed, setAgreed\] = useState\(false\)/)
   assert.match(form, /if \(!agreed\)/)
-  assert.match(form, /<AgreementCheckbox agreed=\{agreed\} onChange=\{setAgreed\}>/)
+  assert.match(form, /<AgreementCheckbox agreed=\{agreed\} onChange=/)
+  assert.match(form, /setAgreed\(value\)/)
   assert.match(form, /AGREEMENT_VIEW\}\?type=cert_registration&requireSign=1/)
   assert.match(form, /ensureAgreementSigned\(\s*'cert_registration'/)
   assert.match(form, /AGREEMENT_TYPE_CERT_REGISTRATION/)
@@ -122,8 +122,8 @@ test('NISP pages keep symmetric margins and use compact field groups', async () 
   assert.match(body, /box-sizing:\s*border-box/)
   assert.match(body, /width:\s*100%/)
   assert.match(body, /overflow-x:\s*hidden/)
-  assert.match(body, /padding:\s*\$spacing-md \$spacing-lg/)
-  assert.match(styles, /\.fieldGrid,[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
-  assert.match(styles, /\.uploadGrid[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
+  assert.match(body, /padding:\s*24px 28px/)
+  assert.match(styles, /\.fieldGrid[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
+  assert.match(styles, /\.materialList[\s\S]*?flex-direction:\s*column/)
   assert.match(styles, /\.fieldWide \{ grid-column: 1 \/ -1; \}/)
 })

@@ -5,6 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { FormInput } from '@/components/FormInput'
+import { RegistrationSubmitBar } from '@/components/RegistrationParts'
 import { PriceRow } from '@/components/PriceRow'
 import { useIdentityCheck } from '@/hooks/useIdentityCheck'
 import { ROUTES } from '@/constants/routes'
@@ -305,7 +306,7 @@ export default function RensheFormPage() {
           {reportingError && <View className={styles.warning}>{reportingError}</View>}
           <View className={styles.card}>
             <Text className={styles.sectionTitle}>报名联系信息</Text>
-            <FormInput
+            <FormInput compact
               label='联系电话'
               required
               placeholder='请输入手机号'
@@ -315,7 +316,7 @@ export default function RensheFormPage() {
               error={errors.phone}
               onChange={setPhone}
             />
-            <FormInput
+            <FormInput compact
               label='电子邮箱'
               required
               placeholder='用于接收报名和证书信息'
@@ -323,7 +324,7 @@ export default function RensheFormPage() {
               error={errors.email}
               onChange={setEmail}
             />
-            <FormInput
+            <FormInput compact
               label='通讯地址'
               required
               placeholder='请填写证书邮寄地址'
@@ -341,18 +342,8 @@ export default function RensheFormPage() {
           </View>
         </ScrollView>
 
-        <View className={styles.fixedFooter}>
-          <Button
-            variant='gradient'
-            size='lg'
-            loading={submitting}
-            disabled={!canSubmit}
-            className={styles.primaryButton}
-            onClick={() => { void handleSubmit() }}
-          >
-            {applicationId ? '重新提交审核' : '提交报名'}
-          </Button>
-        </View>
+        <RegistrationSubmitBar priceCents={plan.price_cents} loading={submitting} disabled={!canSubmit}
+          onSubmit={() => { void handleSubmit() }} label={applicationId ? '重新提交审核' : '提交报名'} />
       </View>
     </AuthGuard>
   )

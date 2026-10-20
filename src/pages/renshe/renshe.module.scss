@@ -1,3 +1,4 @@
+@use '../../styles/registration' as form;
 .page {
   display: flex;
   flex-direction: column;
@@ -9,20 +10,14 @@
 .body {
   box-sizing: border-box;
   flex: 1;
+  min-height: 0;
   width: 100%;
   overflow-x: hidden;
-  padding: 24px 32px;
+  padding: 24px 28px;
   padding-bottom: calc(32px + env(safe-area-inset-bottom));
 }
 
-.card {
-  margin-bottom: 24px;
-  padding: 28px;
-  background: #fff;
-  border: 1px solid #f1f5f9;
-  border-radius: 24px;
-  box-shadow: 0 8px 30px rgba(15, 23, 42, .05);
-}
+.card { @include form.card; border: 0; margin-bottom: 24px; }
 
 .cardHeader {
   display: flex;
@@ -58,12 +53,7 @@
   margin-top: 16px;
 }
 
-.label {
-  flex-shrink: 0;
-  color: #667085;
-  font-size: 25px;
-  line-height: 1.5;
-}
+.label { @include form.label; flex-shrink: 0; }
 
 .value {
   flex: 1;
@@ -112,36 +102,11 @@
   margin-bottom: 8px;
 }
 
-.sectionTitle {
-  display: block;
-  margin: 30px 0 14px;
-  color: #17233d;
-  font-size: 29px;
-  font-weight: 700;
-}
+.sectionTitle { @include form.title; margin: 0 0 20px; }
 
-.sectionTitle:first-child {
-  margin-top: 0;
-}
+.sectionDesc { @include form.hint; margin-bottom: 12px; }
 
-.sectionDesc {
-  display: block;
-  color: #667085;
-  font-size: 24px;
-  line-height: 1.6;
-}
-
-.readonlyValue {
-  display: block;
-  margin-top: 10px;
-  padding: 18px 20px;
-  background: #f7f9fc;
-  border-radius: 14px;
-  color: #17233d;
-  font-size: 26px;
-  line-height: 1.5;
-  word-break: break-all;
-}
+.readonlyValue { @include form.input; display: block; word-break: break-all; }
 
 .requirementList {
   margin-top: 10px;
@@ -183,27 +148,16 @@
   width: 100%;
 }
 
-.fixedFooter {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  padding: 20px 24px calc(20px + env(safe-area-inset-bottom));
-  background: #fff;
-  box-shadow: 0 -4px 20px rgba(15, 23, 42, .06);
-}
+.bodyWithFooter { padding-bottom: calc(190px + env(safe-area-inset-bottom)); }
 
-.bodyWithFooter {
-  padding-bottom: calc(136px + env(safe-area-inset-bottom));
-}
-
-.pickerField { margin-bottom: 28px; }
+.pickerField { margin-bottom: 20px; }
 .declaration { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: #17233d; font-size: 26px; line-height: 1.6; }
 .uploadItem { padding: 28px 0; border-bottom: 1px solid #edf0f5; }
 .uploadItem:last-child { border-bottom: 0; padding-bottom: 0; }
-.uploadItem button { margin-top: 16px; }
-.templateActions { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
-.templateAction { flex: 1 1 200px; min-width: 0; }
-.templateButton { width: 100%; max-width: 100%; }
-.templateActions button { margin-top: 0; }
-.fileName { display: block; margin: 16px 0; color: #157347; font-size: 24px; word-break: break-all; }
+
+.fieldGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.materialList { display: flex; flex-direction: column; gap: 16px; }
+.agreementLink { color: #165dff; }
+.submissionError { display: block; margin-top: 16px; color: #dc2626; font-size: 24px; line-height: 1.6; }
+.experienceAction { margin-top: 16px; }
+@media (max-width: 340px) { .fieldGrid { grid-template-columns: minmax(0, 1fr); } }

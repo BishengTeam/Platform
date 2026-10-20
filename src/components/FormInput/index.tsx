@@ -13,6 +13,7 @@ interface FormInputProps {
   error?: ValidationResult
   onChange: (value: string) => void
   onBlur?: () => void
+  compact?: boolean
 }
 
 export function FormInput({
@@ -26,17 +27,18 @@ export function FormInput({
   error,
   onChange,
   onBlur,
+  compact = false,
 }: FormInputProps) {
   const showError = error && !error.valid
 
   return (
-    <View className={styles.wrap}>
+    <View className={`${styles.wrap} ${compact ? styles.compactField : ''}`}>
       <View className={styles.labelRow}>
         {required && <Text className={styles.asterisk}>*</Text>}
         <Text className={styles.label}>{label}</Text>
       </View>
       <Input
-        className={`${styles.input} ${showError ? styles.inputError : ''}`}
+        className={`${styles.input} ${compact ? styles.compactInput : ''} ${compact && disabled ? styles.compactDisabled : ''} ${showError ? styles.inputError : ''}`}
         placeholder={placeholder}
         value={value}
         type={type}

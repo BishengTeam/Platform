@@ -30,5 +30,5 @@ test('NISP batch and form cards show the apply period', async () => {
   assert.match(index, /formatNispApplyRange\(batch\)/)
   assert.match(index, /label: '报名时间'/)
   assert.match(form, /formatNispApplyRange\(batch\)/)
-  assert.match(form, />报名时间</)
+  assert.match(form, /label: '报名时间'/)
 })

@@ -1,0 +1,29 @@
+@use '../../styles/registration' as form;
+.registrationSummary { @include form.card; margin-bottom: 24px; border: 1px solid #e8edf9; background: linear-gradient(135deg, #f7f9ff, #f6f2ff); }
+.registrationSummaryHead { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.registrationBadge { padding: 4px 16px; border-radius: 999px; color: #3366ff; background: #eef4ff; font-size: 22px; }
+.registrationPrice { color: #ef4444; font-size: 34px; font-weight: 700; }
+.registrationHeading { @include form.title; margin: 16px 0 8px; word-break: break-all; }
+.registrationHint { @include form.hint; }
+.registrationSummaryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+.registrationSummaryItem { padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, .82); min-width: 0; }
+.registrationFullWidth { grid-column: 1 / -1; }
+.registrationSmallLabel { display: block; color: #667085; font-size: 22px; }
+.registrationSummaryValue { display: block; margin-top: 6px; color: #17233d; font-size: 24px; line-height: 1.5; word-break: break-all; }
+.registrationDisclosure { margin-top: 16px; }
+.registrationDisclosureToggle { color: #165dff; font-size: 24px; line-height: 1.6; }
+.registrationDisclosureBody { margin-top: 12px; padding: 16px; background: #f7f9fc; border-radius: 14px; }
+.registrationMaterial { padding: 20px; border: 1px solid #e8edf5; border-radius: 16px; }
+.registrationMaterialHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.registrationMaterialTitle { flex: 1; min-width: 0; color: #17233d; font-size: 26px; font-weight: 600; word-break: break-all; }
+.registrationRequired { color: #ef4444; }
+.registrationMaterialStatus { flex-shrink: 0; color: #667085; font-size: 22px; }
+.registrationFile { display: block; margin-top: 12px; color: #15803d; font-size: 24px; line-height: 1.5; word-break: break-all; }
+.registrationMaterialAction { margin-top: 16px; }
+.registrationError { display: block; margin-top: 12px; color: #dc2626; font-size: 24px; line-height: 1.5; word-break: break-all; }
+.registrationSubmitBar { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; display: flex; align-items: center; gap: 20px; padding: 20px 28px calc(20px + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -4px 20px rgba(15, 23, 42, .06); }
+.registrationSubmitFee { flex: 0 1 36%; min-width: 0; }
+.registrationSubmitAmount { display: block; margin-top: 4px; color: #ef4444; font-size: 30px; font-weight: 700; word-break: break-all; }
+.registrationSubmitAction { flex: 1; min-width: 0; }
+.registrationSubmitAction .registrationSubmitButton { width: 100%; max-width: 100%; min-height: 84px; }
+@media (max-width: 340px) { .registrationSummaryGrid { grid-template-columns: minmax(0, 1fr); } }
