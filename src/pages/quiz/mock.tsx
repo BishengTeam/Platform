@@ -32,7 +32,7 @@ import {
   remainingSeconds,
   serverClockOffset,
 } from '@/utils/quizRuntime'
-import { answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel, reviewVerdictLabel } from '@/utils/quizView'
+import { alignedAnswerLines, answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMatching, isMultipleChoice, isOrdering, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel, reviewVerdictLabel } from '@/utils/quizView'
 import styles from './mock.module.scss'
 
 const QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -119,6 +119,7 @@ export default function QuizMockPage() {
   const [creating, setCreating] = useState(false)
   const [savingQuestionId, setSavingQuestionId] = useState<number | null>(null)
   const [textDrafts, setTextDrafts] = useState<Record<number, string[] | string>>({})
+  const [activePairLeft, setActivePairLeft] = useState(0)
   const [actionBusy, setActionBusy] = useState(false)
   const [remaining, setRemaining] = useState(0)
   const [loadError, setLoadError] = useState('')
@@ -345,6 +346,49 @@ export default function QuizMockPage() {
       next = label
     }
 
+    setExam({
+      ...exam,
+      questions: exam.questions.map(item => item.exam_question_id === question.exam_question_id ? { ...item, user_answer: next } : item),
+    })
+    setSavingQuestionId(question.exam_question_id)
+    try {
+      const saved = await saveQuizExamAnswer(exam.id, question.exam_question_id, {
+        user_answer: next,
+        lock_version: question.answer_lock_version ?? 0,
+      })
+      setExam(current => current?.status === 'in_progress' ? {
+        ...current,
+        questions: current.questions.map(item => item.exam_question_id === saved.exam_question_id
+          ? { ...item, user_answer: saved.user_answer, answer_lock_version: saved.lock_version }
+          : item),
+      } : current)
+    } catch (error) {
+      if (error instanceof ApiError && (error.statusCode === 409 || error.code === 40201)) {
+        try {
+          await refreshExam(exam.id)
+          Taro.showToast({ title: '答案版本已变化，已加载服务端最新状态', icon: 'none', duration: 2500 })
+        } catch {
+          setExam(current => current?.status === 'in_progress' ? {
+            ...current,
+            questions: current.questions.map(item => item.exam_question_id === question.exam_question_id ? { ...item, user_answer: previous } : item),
+          } : current)
+          Taro.showToast({ title: '答案版本冲突且刷新失败，请重新进入考试', icon: 'none', duration: 3000 })
+        }
+      } else {
+        setExam(current => current?.status === 'in_progress' ? {
+          ...current,
+          questions: current.questions.map(item => item.exam_question_id === question.exam_question_id ? { ...item, user_answer: previous } : item),
+        } : current)
+        Taro.showToast({ title: `答案保存失败：${messageOf(error)}`, icon: 'none', duration: 2500 })
+      }
+    } finally {
+      setSavingQuestionId(null)
+    }
+  }
+
+  const saveAlignedAnswer = async (question: QuizExamQuestionState, next: string[]) => {
+    if (!exam || exam.status !== 'in_progress' || savingQuestionId !== null || remaining <= 0) return
+    const previous = question.user_answer
     setExam({
       ...exam,
       questions: exam.questions.map(item => item.exam_question_id === question.exam_question_id ? { ...item, user_answer: next } : item),
@@ -734,7 +778,91 @@ export default function QuizMockPage() {
                 {currentImageUrls.map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
               </View>
             )}
-            <View className={styles.options}>{options.length > 0 && options.map(option => {
+            {isMatching(currentQuestion.question_type) && (() => {
+              const lefts = quizOptions(currentQuestion.options)
+              const rights = currentQuestion.matching_rights ?? []
+              const saved = Array.isArray(currentQuestion.user_answer) ? [...(currentQuestion.user_answer as string[])] : []
+              return (
+                <View className={styles.matchingBlock}>
+                  <Text className={styles.blankHint}>先点左侧一项，再点右侧候选完成配对；每次配对会自动保存。</Text>
+                  <View className={styles.matchingLeft}>
+                    {lefts.map((left, index) => (
+                      <View
+                        key={left.label}
+                        className={`${styles.matchingItem} ${activePairLeft === index ? styles.matchingItemActive : ''}`}
+                        onClick={() => setActivePairLeft(index)}
+                      >
+                        <Text className={styles.matchingIndex}>{index + 1}.</Text>
+                        <Text className={styles.matchingText}>{left.text}</Text>
+                        <Text className={styles.matchingAssigned}>{saved[index] ? `→ ${saved[index]}` : '→ 未配对'}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  <View className={styles.matchingRight}>
+                    {rights.map(right => {
+                      const usedBy = saved.findIndex(value => value === right)
+                      return (
+                        <View
+                          key={right}
+                          className={`${styles.matchingCandidate} ${usedBy >= 0 ? styles.matchingCandidateUsed : ''}`}
+                          onClick={() => {
+                            if (savingQuestionId !== null) return
+                            const next = [...saved]
+                            while (next.length < lefts.length) next.push('')
+                            next[activePairLeft] = right
+                            void saveAlignedAnswer(currentQuestion, next)
+                          }}
+                        >
+                          <Text className={styles.matchingText}>{right}{usedBy >= 0 ? `（已配第 ${usedBy + 1} 项）` : ''}</Text>
+                        </View>
+                      )
+                    })}
+                  </View>
+                </View>
+              )
+            })()}
+            {isOrdering(currentQuestion.question_type) && (() => {
+              const items = quizOptions(currentQuestion.options)
+              const saved = Array.isArray(currentQuestion.user_answer) ? [...(currentQuestion.user_answer as string[])] : []
+              return (
+                <View className={styles.orderingBlock}>
+                  <Text className={styles.blankHint}>按正确顺序依次点选下方候选项；点已选序列中的项可撤销，改动自动保存。</Text>
+                  {saved.length > 0 && (
+                    <View className={styles.orderSequence}>
+                      {saved.map((text, index) => (
+                        <View
+                          key={`${text}-${index}`}
+                          className={styles.orderChip}
+                          onClick={() => {
+                            if (savingQuestionId !== null) return
+                            void saveAlignedAnswer(currentQuestion, saved.filter((_, chipIndex) => chipIndex !== index))
+                          }}
+                        >
+                          <Text className={styles.orderChipText}>{index + 1}. {text} ×</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                  <View className={styles.orderPool}>
+                    {items.map(item => {
+                      const used = saved.includes(item.text)
+                      return (
+                        <View
+                          key={item.label}
+                          className={`${styles.orderItem} ${used ? styles.orderItemUsed : ''}`}
+                          onClick={() => {
+                            if (!used && savingQuestionId === null) void saveAlignedAnswer(currentQuestion, [...saved, item.text])
+                          }}
+                        >
+                          <Text className={styles.matchingText}>{item.text}</Text>
+                        </View>
+                      )
+                    })}
+                  </View>
+                </View>
+              )
+            })()}
+            {!isMatching(currentQuestion.question_type) && !isOrdering(currentQuestion.question_type) && (<View className={styles.options}>{options.length > 0 && options.map(option => {
               const selected = answerIncludes(currentQuestion.user_answer, option.originalLabel)
               return <View key={option.originalLabel} className={`${styles.option} ${selected ? styles.optionSelected : ''}`} onClick={() => selectAnswer(currentQuestion, option.originalLabel)}>
                 <View className={`${styles.optionLabel} ${selected ? styles.optionLabelActive : ''}`}><Text>{option.label}</Text></View>
@@ -750,7 +878,7 @@ export default function QuizMockPage() {
                   )}
                 </View>
               </View>
-            })}</View>
+            })}</View>)}
             {isFillBlank(currentQuestion.question_type) && (() => {
               const draft = draftFor(currentQuestion) as string[]
               return (

@@ -510,3 +510,112 @@
   justify-content: center;
 }
 
+
+/* 配对题（点选左→右配对） */
+.matchingBlock {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.matchingLeft {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.matchingItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+}
+
+.matchingItemActive {
+  border-color: $color-primary;
+  background: rgba(22, 119, 255, 0.06);
+}
+
+.matchingIndex {
+  min-width: 32px;
+  color: $color-text-secondary;
+  font-size: $font-lg;
+  font-weight: 600;
+}
+
+.matchingText {
+  flex: 1;
+  color: $color-text-primary;
+  font-size: $font-md;
+}
+
+.matchingAssigned {
+  color: $color-primary;
+  font-size: $font-sm;
+}
+
+.matchingRight {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1px dashed $color-border;
+}
+
+.matchingCandidate {
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+}
+
+.matchingCandidateUsed {
+  opacity: 0.45;
+}
+
+/* 排序题（按顺序点选） */
+.orderingBlock {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.orderSequence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.orderChip {
+  padding: $spacing-xs $spacing-md;
+  background: rgba(22, 119, 255, 0.1);
+  border: 1px solid $color-primary;
+  border-radius: $radius-full;
+}
+
+.orderChipText {
+  color: $color-primary;
+  font-size: $font-sm;
+}
+
+.orderPool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.orderItem {
+  padding: $spacing-sm $spacing-md;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+}
+
+.orderItemUsed {
+  opacity: 0.35;
+}

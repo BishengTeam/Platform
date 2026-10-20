@@ -38,7 +38,7 @@ import {
   getOrCreateAttemptKey,
 } from '@/utils/quizRuntime'
 import { ApiError } from '@/utils/request'
-import { answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMultipleChoice, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
+import { alignedAnswerLines, answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMatching, isMultipleChoice, isOrdering, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import { safeNavigateBack } from '@/utils/navigation'
 import styles from './practice.module.scss'
 
@@ -109,6 +109,9 @@ export default function QuizPracticePage() {
   const [submitting, setSubmitting] = useState<{ sessionQuestionId: number; answer: QuizAnswer } | null>(null)
   const [multiDraft, setMultiDraft] = useState<string[]>([])
   const [fillDraft, setFillDraft] = useState<string[]>([])
+  const [pairDraft, setPairDraft] = useState<string[]>([])
+  const [activePairLeft, setActivePairLeft] = useState(0)
+  const [orderDraft, setOrderDraft] = useState<string[]>([])
   const [essayDrafts, setEssayDrafts] = useState<Record<number, string>>({})
   const [essayAnswerVisible, setEssayAnswerVisible] = useState(false)
   const [actionBusy, setActionBusy] = useState(false)
@@ -298,6 +301,21 @@ export default function QuizPracticePage() {
     const saved = currentQuestion?.user_answer
     setMultiDraft(Array.isArray(saved) ? [...saved] : [])
   }, [currentQuestion?.session_question_id, currentQuestion?.user_answer])
+
+  useEffect(() => {
+    const saved = currentQuestion && isMatching(currentQuestion.question_type) && Array.isArray(currentQuestion.user_answer)
+      ? [...(currentQuestion.user_answer as string[])]
+      : []
+    setPairDraft(saved)
+    setActivePairLeft(0)
+  }, [currentQuestion?.session_question_id, currentQuestion?.question_type])
+
+  useEffect(() => {
+    const saved = currentQuestion && isOrdering(currentQuestion.question_type) && Array.isArray(currentQuestion.user_answer)
+      ? [...(currentQuestion.user_answer as string[])]
+      : []
+    setOrderDraft(saved)
+  }, [currentQuestion?.session_question_id, currentQuestion?.question_type])
 
   useEffect(() => {
     if (!currentQuestion || !isFillBlank(currentQuestion.question_type)) {
@@ -652,6 +670,111 @@ export default function QuizPracticePage() {
                 )
               })()
             )}
+            {isMatching(currentQuestion.question_type) && (() => {
+              const lefts = quizOptions(currentQuestion.options)
+              const rights = currentQuestion.matching_rights ?? []
+              const pairFilled = pairDraft.filter(value => value).length
+              return (
+                <View className={styles.matchingBlock}>
+                  <Text className={styles.blankHint}>先点左侧一项，再点右侧候选完成配对；全部配好后点「确认答案」。</Text>
+                  <View className={styles.matchingLeft}>
+                    {lefts.map((left, index) => (
+                      <View
+                        key={left.label}
+                        className={`${styles.matchingItem} ${!isSettled && activePairLeft === index ? styles.matchingItemActive : ''}`}
+                        onClick={() => { if (!isSettled) setActivePairLeft(index) }}
+                      >
+                        <Text className={styles.matchingIndex}>{index + 1}.</Text>
+                        <Text className={styles.matchingText}>{left.text}</Text>
+                        <Text className={styles.matchingAssigned}>{pairDraft[index] ? `→ ${pairDraft[index]}` : '→ 未配对'}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  {!isSettled && (
+                    <View className={styles.matchingRight}>
+                      {rights.map(right => {
+                        const usedBy = pairDraft.findIndex(value => value === right)
+                        return (
+                          <View
+                            key={right}
+                            className={`${styles.matchingCandidate} ${usedBy >= 0 ? styles.matchingCandidateUsed : ''}`}
+                            onClick={() => {
+                              if (isSettled) return
+                              setPairDraft(previous => {
+                                const next = [...previous]
+                                while (next.length < lefts.length) next.push('')
+                                next[activePairLeft] = right
+                                return next
+                              })
+                            }}
+                          >
+                            <Text className={styles.matchingText}>{right}{usedBy >= 0 ? `（已配第 ${usedBy + 1} 项）` : ''}</Text>
+                          </View>
+                        )
+                      })}
+                    </View>
+                  )}
+                  <View className={styles.answerButton}>
+                    <Button
+                      variant='gradient'
+                      size='lg'
+                      disabled={pairFilled !== lefts.length}
+                      loading={submittingThis}
+                      onClick={() => { void submitAttempt(currentQuestion, pairDraft.slice(0, lefts.length)) }}
+                    >
+                      {currentResult ? '再答一次' : '确认答案'}
+                    </Button>
+                  </View>
+                </View>
+              )
+            })()}
+            {isOrdering(currentQuestion.question_type) && (() => {
+              const items = quizOptions(currentQuestion.options)
+              return (
+                <View className={styles.orderingBlock}>
+                  <Text className={styles.blankHint}>按正确顺序依次点选下方候选项；点已选序列中的项可撤销。</Text>
+                  {orderDraft.length > 0 && (
+                    <View className={styles.orderSequence}>
+                      {orderDraft.map((text, index) => (
+                        <View
+                          key={`${text}-${index}`}
+                          className={styles.orderChip}
+                          onClick={() => { if (!isSettled) setOrderDraft(previous => previous.filter((_, chipIndex) => chipIndex !== index)) }}
+                        >
+                          <Text className={styles.orderChipText}>{index + 1}. {text}{!isSettled ? ' ×' : ''}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                  <View className={styles.orderPool}>
+                    {items.map(item => {
+                      const used = orderDraft.includes(item.text)
+                      return (
+                        <View
+                          key={item.label}
+                          className={`${styles.orderItem} ${used ? styles.orderItemUsed : ''}`}
+                          onClick={() => { if (!isSettled && !used) setOrderDraft(previous => [...previous, item.text]) }}
+                        >
+                          <Text className={styles.matchingText}>{item.text}</Text>
+                        </View>
+                      )
+                    })}
+                  </View>
+                  <View className={styles.answerButton}>
+                    <Button
+                      variant='gradient'
+                      size='lg'
+                      disabled={orderDraft.length !== items.length}
+                      loading={submittingThis}
+                      onClick={() => { void submitAttempt(currentQuestion, [...orderDraft]) }}
+                    >
+                      {currentResult ? '再答一次' : '确认答案'}
+                    </Button>
+                  </View>
+                </View>
+              )
+            })()}
+            {!isMatching(currentQuestion.question_type) && !isOrdering(currentQuestion.question_type) && (
             <View className={styles.options}>
               {optionItems.length > 0 && optionItems.map(option => {
                 const selected = !isSettled && answerIncludes(selectedAnswer, option.originalLabel)
@@ -679,6 +802,7 @@ export default function QuizPracticePage() {
                 )
               })}
             </View>
+            )}
             {isSettled && !isEssay(currentQuestion.question_type) ? (
               <View className={`${styles.feedback} ${currentResult.is_correct ? styles.feedbackCorrect : styles.feedbackWrong}`}>
                 <Text className={styles.feedbackText}>{currentResult.is_correct ? '回答正确' : currentResult.is_correct === false && isFillBlank(currentQuestion.question_type) && fillBlankBlankResults(currentResult.user_answer, currentResult.correct_answer).some(blank => blank.correct) ? '部分正确' : '回答错误'}</Text>
@@ -694,6 +818,25 @@ export default function QuizPracticePage() {
                         <Text className={blank.correct ? styles.blankTagCorrect : styles.blankTagWrong}>{blank.correct ? '对' : '错'}</Text>
                       </View>
                     ))}
+                  </View>
+                ) : isMatching(currentQuestion.question_type) || isOrdering(currentQuestion.question_type) ? (
+                  <View className={styles.blankResultList}>
+                    {alignedAnswerLines(currentResult.user_answer).map((line, index) => {
+                      const correctLines = alignedAnswerLines(currentResult.correct_answer)
+                      const userValue = alignedAnswerLines(currentResult.user_answer)[index]?.replace(/^第 \d+ 项：/, '') ?? ''
+                      const expectedValue = correctLines[index]?.replace(/^第 \d+ 项：/, '') ?? ''
+                      const correct = userValue === expectedValue
+                      return (
+                        <View key={index} className={`${styles.blankResultRow} ${correct ? styles.blankResultCorrect : styles.blankResultWrong}`}>
+                          <Text className={styles.blankIndex}>{index + 1}.</Text>
+                          <View className={styles.blankResultBody}>
+                            <Text className={styles.blankResultValue}>{line.replace(/^第 \d+ 项：/, '')}</Text>
+                            {!correct && <Text className={styles.blankResultCandidates}>应为：{expectedValue}</Text>}
+                          </View>
+                          <Text className={correct ? styles.blankTagCorrect : styles.blankTagWrong}>{correct ? '对' : '错'}</Text>
+                        </View>
+                      )
+                    })}
                   </View>
                 ) : (
                   <Text className={styles.explanation}>你的答案：{answerText(currentResult.user_answer)}　正确答案：{answerText(currentResult.correct_answer)}</Text>
@@ -714,7 +857,11 @@ export default function QuizPracticePage() {
                       ? '填写每空后点「确认答案」提交判分；答错可当场重输。'
                       : isMultipleChoice(currentQuestion.question_type)
                         ? '选择选项后点「确认答案」提交判分；答案提交后不可修改。'
-                        : '点击选项立即判分并展示解析；答案提交后不可修改。'}
+                        : isMatching(currentQuestion.question_type)
+                          ? '左右点选完成配对后提交判分；答案提交后不可修改。'
+                          : isOrdering(currentQuestion.question_type)
+                            ? '按顺序点选候选项后提交判分；答案提交后不可修改。'
+                            : '点击选项立即判分并展示解析；答案提交后不可修改。'}
                 </Text>
               </>
             )}

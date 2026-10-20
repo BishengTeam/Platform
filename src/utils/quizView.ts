@@ -39,7 +39,7 @@ export function shuffledQuizOptions(
   return items
 }
 
-const DISPLAY_KEYS = ['A', 'B', 'C', 'D'] as const
+const DISPLAY_KEYS = ['A', 'B', 'C', 'D', 'E', 'F'] as const
 
 export function relabeledQuizOptions(
   options: Record<string, string>,
@@ -58,9 +58,12 @@ export function quizImageUrls(imageUrls: string[] | null | undefined): string[] 
 
 export function quizTypeLabel(type: QuizQuestionType): string {
   if (type === 'multiple_choice') return '多选题'
+  if (type === 'uncertain_choice') return '不定项选择题'
   if (type === 'judge') return '判断题'
   if (type === 'fill_blank') return '填空题'
   if (type === 'essay') return '问答题'
+  if (type === 'matching') return '配对题'
+  if (type === 'ordering') return '排序题'
   return '单选题'
 }
 
@@ -82,7 +85,16 @@ export function splitBilingualQuizTitle(title: string): { primary: string; secon
 }
 
 export function isMultipleChoice(type: QuizQuestionType): boolean {
-  return type === 'multiple_choice'
+  // 不定项选择题的作答与多选一致（勾选若干选项，答案数 1~N）。
+  return type === 'multiple_choice' || type === 'uncertain_choice'
+}
+
+export function isMatching(type: QuizQuestionType): boolean {
+  return type === 'matching'
+}
+
+export function isOrdering(type: QuizQuestionType): boolean {
+  return type === 'ordering'
 }
 
 export function answerIncludes(answer: QuizAnswer | QuizCorrectAnswer | null | undefined, label: string): boolean {
@@ -98,6 +110,12 @@ export function answerText(answer: QuizAnswer | QuizCorrectAnswer | null | undef
     return (answer as string[][]).map((group, index) => `空${index + 1}：${group.join(' / ')}`).join('；')
   }
   return typeof answer === 'string' ? answer : answer.join('、')
+}
+
+/** 配对/排序对齐数组 → 「第 1 项：xxx」形式的多行展示 */
+export function alignedAnswerLines(answer: QuizAnswer | QuizCorrectAnswer | null | undefined): string[] {
+  if (!Array.isArray(answer) || answer.length === 0 || !answer.every(item => typeof item === 'string')) return []
+  return (answer as string[]).map((item, index) => `第 ${index + 1} 项：${item}`)
 }
 
 export function isFillBlank(type: QuizQuestionType): boolean {

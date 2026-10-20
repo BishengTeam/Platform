@@ -8,7 +8,7 @@
 export type QuizAnswer = string | string[]
 /** 填空题正确答案：每空一组候选；问答题正确答案：参考答案文本 */
 export type QuizCorrectAnswer = QuizAnswer | string[][]
-export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'judge' | 'fill_blank' | 'essay'
+export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'uncertain_choice' | 'judge' | 'fill_blank' | 'essay' | 'matching' | 'ordering'
 export type QuizQuestionStatus = 'draft' | 'published' | 'disabled' | 'deleted'
 export type QuizPracticeMode = 'normal' | 'wrong' | 'full' | 'wrong_only' | 'legacy_limited'
 export type QuizPracticeStatus = 'in_progress' | 'paused' | 'completed' | 'abandoned' | 'expired' | 'terminated'
@@ -126,6 +126,8 @@ export interface QuizPublicQuestion {
   options: Record<string, string>
   image_urls: string[]
   option_image_urls: Record<string, string>
+  /** 配对题专用：打乱后的右侧候选池；其他题型为 [] */
+  matching_rights: string[]
 }
 
 export interface QuizCategoryPathItem {
@@ -533,7 +535,7 @@ function optionsAt(value: unknown, path: string): Record<string, string> {
   const object = objectAt(value, path)
   const options: Record<string, string> = {}
   for (const [key, item] of Object.entries(object)) {
-    if (!['A', 'B', 'C', 'D'].includes(key)) throw new QuizContractError(`${path}.${key}`, 'A | B | C | D')
+    if (!['A', 'B', 'C', 'D', 'E', 'F'].includes(key)) throw new QuizContractError(`${path}.${key}`, 'A | B | C | D | E | F')
     options[key] = stringAt(item, `${path}.${key}`)
   }
   return options
@@ -547,14 +549,14 @@ function optionImageUrlsAt(value: unknown, path: string): Record<string, string>
   const object = objectAt(value, path)
   const result: Record<string, string> = {}
   for (const [key, item] of Object.entries(object)) {
-    if (!['A', 'B', 'C', 'D'].includes(key)) throw new QuizContractError(`${path}.${key}`, '选项图片键只能为 A-D')
+    if (!['A', 'B', 'C', 'D', 'E', 'F'].includes(key)) throw new QuizContractError(`${path}.${key}`, '选项图片键只能为 A-F')
     result[key] = stringAt(item, `${path}.${key}`)
   }
   return result
 }
 
 function questionTypeAt(value: unknown, path: string): QuizQuestionType {
-  return literalAt(value, path, ['single_choice', 'multiple_choice', 'judge', 'fill_blank', 'essay'] as const)
+  return literalAt(value, path, ['single_choice', 'multiple_choice', 'uncertain_choice', 'judge', 'fill_blank', 'essay', 'matching', 'ordering'] as const)
 }
 
 function questionStatusAt(value: unknown, path: string): QuizQuestionStatus {
@@ -728,7 +730,7 @@ export function parseQuizCategories(value: unknown): QuizCategoryNode[] {
 export function parseQuizQuestion(value: unknown, path = 'data'): QuizPublicQuestion {
   const object = objectAt(value, path)
   const required = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls']
-  const allowed = new Set([...required, 'option_image_urls', 'library_id', 'knowledge_point_id', 'question_revision_id'])
+  const allowed = new Set([...required, 'option_image_urls', 'library_id', 'knowledge_point_id', 'question_revision_id', 'matching_rights'])
   for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of required) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
@@ -742,6 +744,7 @@ export function parseQuizQuestion(value: unknown, path = 'data'): QuizPublicQues
     options: optionsAt(object.options, `${path}.options`),
     image_urls: imageUrlsAt(object.image_urls, `${path}.image_urls`),
     option_image_urls: object.option_image_urls === undefined ? {} : optionImageUrlsAt(object.option_image_urls, `${path}.option_image_urls`),
+    matching_rights: object.matching_rights === undefined ? [] : arrayOf(object.matching_rights, `${path}.matching_rights`, stringAt),
   }
 }
 
@@ -775,12 +778,12 @@ function parsePracticeQuestion(value: unknown, path: string): QuizPracticeQuesti
   const baseKeys = ['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'session_question_id', 'position', 'category_path', 'answered', 'user_answer', 'answer_lock_version', 'attempt_count', 'latest_result']
   const optionalResultKeys = ['correct_answer', 'explanation', 'is_correct']
   const optionalKeys = ['library_id', 'knowledge_point_id', 'question_revision_id']
-  const optionalShapeKeys = [...optionalKeys, 'option_image_urls']
+  const optionalShapeKeys = [...optionalKeys, 'option_image_urls', 'matching_rights']
   const allowed = new Set([...baseKeys, ...optionalResultKeys, ...optionalShapeKeys])
   for (const key of Object.keys(object)) if (!allowed.has(key)) throw new QuizContractError(`${path}.${key}`, '不存在的字段')
   for (const key of baseKeys) if (!(key in object)) throw new QuizContractError(`${path}.${key}`, '必填字段')
   return {
-    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'option_image_urls'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
+    ...parseQuizQuestion(Object.fromEntries([...['id', 'category_id', 'question_type', 'question_text', 'options', 'image_urls', 'option_image_urls', 'matching_rights'], ...optionalKeys].filter(key => object[key] !== undefined).map(key => [key, object[key]])), path),
     session_question_id: integerAt(object.session_question_id, `${path}.session_question_id`),
     position: integerAt(object.position, `${path}.position`),
     category_path: categoryPathAt(object.category_path, `${path}.category_path`),
