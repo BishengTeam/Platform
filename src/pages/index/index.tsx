@@ -25,7 +25,6 @@ import { resolveMediaUrl } from '@/utils/media'
 import { navigateToCertRegistration } from '@/utils/certNavigation'
 import type { HomeAggregationResponse } from '@/types'
 import type { CertificationResponse } from '@/types'
-import type { GzhArticleBrief } from '@/types'
 import type { PopupBrief } from '@/types'
 import styles from './index.module.scss'
 
@@ -56,17 +55,6 @@ const BASE_KING_KONG_ITEMS: KingKongItem[] = [
     tab: 'competition',
   },
 ]
-
-// TODO(spike 2026-10-21): 真机验证「web-view 打开已关联公众号文章」的临时数据。
-// 已预填公众号「智天远教育」当前最新一篇真实推文（2026-04-30，链接已升级 https）。
-// 真机预览点击验证通过后删除本常量——上线后 ticker 数据由 Backend 同步经 /api/zones 下发。
-const SPIKE_GZH_ARTICLE: GzhArticleBrief | null = {
-  id: 0,
-  title: '晋级揭晓｜第15届“新华三杯”全国大学生数字技术大赛-四川、贵州赛区（复赛入围）名单发布！',
-  url: 'https://mp.weixin.qq.com/s?__biz=Mzk0NjQzNTM3OA==&mid=2247487268&idx=1&sn=aa5ae71e88083670550b7480e24fdc61&chksm=c3076b79f470e26f6e901a80b27d7789a43b98af38905aec2b1295c0ef606d023affd90aa97b#rd',
-  thumb_url: null,
-  publish_time: '2026-04-30T07:11:50+00:00',
-}
 
 const CERT_CARD_META: Record<string, { gradient: string; icon: string; tagColor: string }> = {
   'H3C': {
@@ -207,7 +195,7 @@ export default function IndexPage() {
   const studyCourses = homeData?.zones['study']?.courses ?? []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
   // 资讯栏：后端同步到公众号推文才显示；无数据（含接口失败）整条隐藏
-  const tickerArticle = homeData?.gzh_articles?.[0] ?? SPIKE_GZH_ARTICLE
+  const tickerArticle = homeData?.gzh_articles?.[0]
   const certificationCards = useMemo(() => {
     return (homeData?.zones['cert']?.certifications ?? []).map(toCertHomeCard)
   }, [homeData])
