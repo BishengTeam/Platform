@@ -54,6 +54,10 @@ export default function ProfilePage() {
     handleNavigate(item.route)
   }
 
+  // v1 裁剪：快捷金刚区只看真实入口，全是置灰占位时整卡不渲染
+  const gridItems = profileGridItems.filter(item => !item.comingSoon)
+  const listGroups = profileListGroups.filter(group => group.length > 0)
+
   return (
     <AuthGuard>
       <View className={styles.page}>
@@ -79,31 +83,33 @@ export default function ProfilePage() {
             <Icon name='chevron-right' size={22} color='rgba(255,255,255,0.7)' className={styles.bannerArrow} />
           </View>
 
-          {/* ---- 快捷金刚区：浮动白卡，4 列网格（含 2 个敬请期待占位） ---- */}
-          <View className={`${styles.card} ${styles.gridCard}`}>
-            <View className={styles.grid}>
-              {profileGridItems.map((item, index) => (
-                <View
-                  key={`${item.label}-${index}`}
-                  className={`${styles.gridItem} ${item.comingSoon ? styles.gridItemComingSoon : ''}`}
-                  onClick={() => handleGridItemClick(item)}
-                >
-                  {item.comingSoon && (
-                    <View className={styles.comingSoonBadge}>
-                      <Text className={styles.comingSoonBadgeText}>{STRINGS.PROFILE_GRID_COMING_SOON_BADGE}</Text>
+          {/* ---- 快捷金刚区：浮动白卡，4 列网格；无真实入口时整卡隐藏 ---- */}
+          {gridItems.length > 0 && (
+            <View className={`${styles.card} ${styles.gridCard}`}>
+              <View className={styles.grid}>
+                {gridItems.map((item, index) => (
+                  <View
+                    key={`${item.label}-${index}`}
+                    className={`${styles.gridItem} ${item.comingSoon ? styles.gridItemComingSoon : ''}`}
+                    onClick={() => handleGridItemClick(item)}
+                  >
+                    {item.comingSoon && (
+                      <View className={styles.comingSoonBadge}>
+                        <Text className={styles.comingSoonBadgeText}>{STRINGS.PROFILE_GRID_COMING_SOON_BADGE}</Text>
+                      </View>
+                    )}
+                    <View className={styles.iconBase} style={{ background: item.iconBg }}>
+                      <Icon name={item.icon} size={40} color={item.iconColor || '#1677FF'} />
                     </View>
-                  )}
-                  <View className={styles.iconBase} style={{ background: item.iconBg }}>
-                    <Icon name={item.icon} size={40} color={item.iconColor || '#1677FF'} />
+                    <Text className={styles.gridLabel}>{item.label}</Text>
                   </View>
-                  <Text className={styles.gridLabel}>{item.label}</Text>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* ---- 功能列表：分组白卡 ---- */}
-          {profileListGroups.map((group, groupIndex) => (
+          {listGroups.map((group, groupIndex) => (
             <View key={groupIndex} className={`${styles.card} ${styles.listCard}`}>
               {group.map((item, index) => (
                 <View key={item.label}>

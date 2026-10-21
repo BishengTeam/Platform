@@ -8,6 +8,7 @@ import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { QuizGrid } from '@/components/QuizGrid'
 import { QUIZ_BOTTOM, QUIZ_GRID } from '@/constants/quiz'
 import type { QuizBottomItem } from '@/constants/quiz'
+import { FEATURES } from '@/constants/features'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizLibraryProgress, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
@@ -143,7 +144,7 @@ export default function QuizIndexPage() {
     <View className={styles.page}>
       <PageHeader title={STRINGS.QUIZ_HEADER} shouldShowBack />
       <RefreshableScrollView className={styles.body} onRefresh={refreshCatalog}>
-        {isLoggedIn && (
+        {FEATURES.checkin && isLoggedIn && (
           <CheckinBar streakDays={streakDays} onCheckin={() => Taro.navigateTo({ url: `/${ROUTES.QUIZ_CHECKIN}` })} />
         )}
 

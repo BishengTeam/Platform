@@ -4,8 +4,13 @@ import { defineConfig, type UserConfigExport } from '@tarojs/cli'
 import devConfig from './dev'
 import prodConfig from './prod'
 
+// 版本口径：build:weapp:trim / dev:weapp:trim 注入 TARO_EDITION=trim 时按 v1 提审裁剪清单构建，默认全量。
+// 仓库里同时保留两份清单（src/constants/features.trim.ts / features.full.ts），不存在「改开关切版」。
+const edition = process.env.TARO_EDITION === 'trim' ? 'trim' : 'full'
+
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'vite'>(async (merge, { command, mode }) => {
+  console.log(`\n==== weapp 构建 EDITION=${edition}${edition === 'trim' ? '（v1 提审裁剪清单）' : '（全量）'} ====\n`)
   const baseConfig: UserConfigExport<'vite'> = {
     projectName: 'Platform',
     date: '2026-5-6',
@@ -23,6 +28,7 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
     ],
     defineConstants: {
       'process.env.TARO_APP_API_BASE': JSON.stringify(process.env.TARO_APP_API_BASE || ''),
+      'process.env.TARO_EDITION': JSON.stringify(edition),
     },
     copy: {
       patterns: [
@@ -30,6 +36,9 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
         { from: 'src/assets/vendor/', to: 'dist/assets/vendor/' },
         { from: 'src/assets/logo/', to: 'dist/assets/logo/' },
         { from: 'src/assets/service/', to: 'dist/assets/service/' },
+        { from: 'src/assets/about/', to: 'dist/assets/about/' },
+        // 产物版别标记：上传提审前 cat dist/EDITION 确认没传错包。
+        { from: `config/edition-${edition}`, to: 'dist/EDITION' },
       ],
       options: {
       }

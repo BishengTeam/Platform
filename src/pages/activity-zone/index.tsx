@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
+import { FEATURES } from '@/constants/features'
 import { getActivityList, getJobList, getCompetitionList } from '@/services/dataService'
 import type { ActivityBrief, CompetitionBrief, JobBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
@@ -17,13 +18,18 @@ import styles from './index.module.scss'
 
 type MainTab = 'activity' | 'competition' | 'employment'
 
+// v1 裁剪：「活动」tab 按开关隐藏，storage 回落校验也只认可见 tab，防止老用户被带回隐藏页
+const VISIBLE_MAIN_TABS: MainTab[] = (
+  ['activity', 'competition', 'employment'] as MainTab[]
+).filter(tab => tab !== 'activity' || FEATURES.activityTab)
+
 export default function ActivityZonePage() {
   const [mainTab, setMainTab] = useState<MainTab>('competition')
 
   // 从首页金刚区跳转时通过 storage 指定初始 tab；useDidShow 保证每次切回都能响应
   useDidShow(() => {
     const stored = Taro.getStorageSync('activityZoneTab') as MainTab | undefined
-    if (stored && ['activity', 'competition', 'employment'].includes(stored)) {
+    if (stored && VISIBLE_MAIN_TABS.includes(stored)) {
       setMainTab(stored)
       Taro.removeStorageSync('activityZoneTab')
     }
@@ -132,11 +138,10 @@ export default function ActivityZonePage() {
       ? competitionTagFilters
       : []
 
-  const mainTabs = [
-    { key: 'activity' as MainTab, label: '活动' },
-    { key: 'competition' as MainTab, label: '竞赛' },
-    { key: 'employment' as MainTab, label: '就业' },
-  ]
+  const mainTabs = VISIBLE_MAIN_TABS.map(tab => ({
+    key: tab,
+    label: tab === 'activity' ? '活动' : tab === 'competition' ? '竞赛' : '就业',
+  }))
 
   const showActivityEmpty = activitiesLoaded && allActivities.length === 0
   const showCompetitionEmpty = competitionsLoaded && allCompetitions.length === 0
@@ -241,7 +246,7 @@ export default function ActivityZonePage() {
                       key={job.id}
                       title={job.title}
                       subtitle={job.company ?? ''}
-                      tags={[job.location ?? '']}
+                      tags={[job.location ? `工作地点：${job.location}` : '']}
                       price={job.salary_range ?? ''}
                       buttonText='了解详情'
                       buttonVariant='secondary'
