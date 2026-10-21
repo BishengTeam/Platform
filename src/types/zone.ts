@@ -185,6 +185,15 @@ export interface ZoneSectionData {
   jobs?: JobBrief[] | null
 }
 
+/** 公众号推文简要 — 首页资讯栏（后端定时同步公众号发布列表落库） */
+export interface GzhArticleBrief {
+  id: number
+  title: string
+  url: string
+  thumb_url: string | null
+  publish_time: string | null
+}
+
 // ============================================================
 // 聚合响应体
 // ============================================================
@@ -195,6 +204,8 @@ export interface HomeAggregationResponse {
   zones: Record<string, ZoneSectionData> // key = "cert"|"study"|"competition"|"activity"|"employment"
   /** 登录后弹窗海报：后端取时间窗内 sort 最小的一条，无则缺省 */
   popup?: PopupBrief | null
+  /** 公众号资讯：最新 5 条，无则缺省（首页 ticker 整条隐藏） */
+  gzh_articles?: GzhArticleBrief[] | null
 }
 
 // ============================================================

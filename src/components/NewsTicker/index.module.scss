@@ -1,0 +1,48 @@
+@use '../../styles/variables' as *;
+
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin: 20px $spacing-md 0;
+  padding: 14px 20px;
+  background: $color-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  transition: transform $motion-duration-press $motion-ease-out;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: #07C160;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 500;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  font-size: 24px; // 视觉稿 12px（Taro px = 视觉 ×2）
+  color: $color-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker {
+    transition-property: background-color;
+  }
+
+  .ticker:active {
+    transform: none;
+  }
+}

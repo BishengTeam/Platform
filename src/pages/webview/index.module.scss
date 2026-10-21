@@ -1,0 +1,12 @@
+@use '../../styles/variables' as *;
+
+.page {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: $color-white;
+}
+
+.placeholder {
+  flex: 1;
+}
