@@ -240,7 +240,7 @@ export default function ActivityZonePage() {
                     <ZoneCard
                       key={job.id}
                       title={job.title}
-                      subtitle={job.company}
+                      subtitle={job.company ?? ''}
                       tags={[job.location ?? '']}
                       price={job.salary_range ?? ''}
                       buttonText='了解详情'

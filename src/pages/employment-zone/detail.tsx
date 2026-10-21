@@ -53,7 +53,7 @@ export default function JobDetailPage() {
             <View className={styles.title}>{job.title}</View>
             {job.salary_range && <View className={styles.salary}>{job.salary_range}</View>}
           </View>
-          <View className={styles.company}>{job.company}</View>
+          {job.company && <View className={styles.company}>{job.company}</View>}
 
           <View className={styles.tagList}>
             {job.location && <View className={styles.tag}>{job.location}</View>}

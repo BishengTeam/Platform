@@ -139,7 +139,7 @@ export interface ActivityBrief {
 export interface JobBrief {
   id: number
   title: string
-  company: string
+  company: string | null
   location: string | null
   salary_range: string | null
   description: string | null
