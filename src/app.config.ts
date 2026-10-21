@@ -54,12 +54,16 @@ export default defineAppConfig({
       pages: ['index'],
     },
     {
+      root: 'pages/webview',
+      pages: ['index'],
+    },
+    {
       root: 'pages/quiz',
       pages: ['index', 'questions', 'practice', 'prepare', 'history', 'mock', 'exam-history', 'wrong-book', 'collections', 'checkin', 'stats', 'question-select'],
     },
     {
       root: 'pages/mine',
-      pages: ['profile', 'feedback', 'personal-info', 'edit-profile', 'points', 'agreements', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations', 'registration-detail', 'points-history', 'video-codes', 'video-login'],
+      pages: ['profile', 'feedback', 'personal-info', 'personal-info-list', 'edit-profile', 'points', 'agreements', 'about', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations', 'registration-detail', 'points-history', 'video-codes', 'video-login'],
     },
     {
       root: 'pages/employment-zone',

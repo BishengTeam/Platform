@@ -13,27 +13,33 @@ import { ZoneBanner } from '@/components/ZoneBanner'
 import { AdPopup } from '@/components/AdPopup'
 import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
+import { NewsTicker } from '@/components/NewsTicker'
 import type { HomeCardItem } from '@/components/HomeCard'
 import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
+import { FEATURES } from '@/constants/features'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
 import { navigateToCertRegistration } from '@/utils/certNavigation'
 import type { HomeAggregationResponse } from '@/types'
 import type { CertificationResponse } from '@/types'
+import type { GzhArticleBrief } from '@/types'
 import type { PopupBrief } from '@/types'
 import styles from './index.module.scss'
 
+// v1 裁剪：金刚区只保留学习/竞赛两格；报名认证按开关恢复，不再用置灰占位补格
+const CERT_REG_KING_KONG_ITEM: KingKongItem = {
+  name: STRINGS.INDEX_ZONE_REGISTRATION,
+  bg: '#E6F7FF',
+  iconColor: '#1a73e8',
+  icon: 'check-circle-2',
+  url: '/pages/registration/index',
+}
+
 const BASE_KING_KONG_ITEMS: KingKongItem[] = [
-  {
-    name: STRINGS.INDEX_ZONE_REGISTRATION,
-    bg: '#E6F7FF',
-    iconColor: '#1a73e8',
-    icon: 'check-circle-2',
-    url: '/pages/registration/index',
-  },
+  ...(FEATURES.certRegistration ? [CERT_REG_KING_KONG_ITEM] : []),
   {
     name: STRINGS.INDEX_ZONE_STUDY,
     bg: '#F6FFED',
@@ -50,6 +56,17 @@ const BASE_KING_KONG_ITEMS: KingKongItem[] = [
     tab: 'competition',
   },
 ]
+
+// TODO(spike 2026-10-21): 真机验证「web-view 打开已关联公众号文章」的临时数据。
+// 已预填公众号「智天远教育」当前最新一篇真实推文（2026-04-30，链接已升级 https）。
+// 真机预览点击验证通过后删除本常量——上线后 ticker 数据由 Backend 同步经 /api/zones 下发。
+const SPIKE_GZH_ARTICLE: GzhArticleBrief | null = {
+  id: 0,
+  title: '晋级揭晓｜第15届“新华三杯”全国大学生数字技术大赛-四川、贵州赛区（复赛入围）名单发布！',
+  url: 'https://mp.weixin.qq.com/s?__biz=Mzk0NjQzNTM3OA==&mid=2247487268&idx=1&sn=aa5ae71e88083670550b7480e24fdc61&chksm=c3076b79f470e26f6e901a80b27d7789a43b98af38905aec2b1295c0ef606d023affd90aa97b#rd',
+  thumb_url: null,
+  publish_time: '2026-04-30T07:11:50+00:00',
+}
 
 const CERT_CARD_META: Record<string, { gradient: string; icon: string; tagColor: string }> = {
   'H3C': {
@@ -189,6 +206,8 @@ export default function IndexPage() {
   // 在线课程同为主页内容驱动板块：后台配置了课程才显示
   const studyCourses = homeData?.zones['study']?.courses ?? []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
+  // 资讯栏：后端同步到公众号推文才显示；无数据（含接口失败）整条隐藏
+  const tickerArticle = homeData?.gzh_articles?.[0] ?? SPIKE_GZH_ARTICLE
   const certificationCards = useMemo(() => {
     return (homeData?.zones['cert']?.certifications ?? []).map(toCertHomeCard)
   }, [homeData])
@@ -214,8 +233,8 @@ export default function IndexPage() {
 
   const kingKongItems = useMemo(() => {
     const items = [...BASE_KING_KONG_ITEMS]
-    // 第 4 格只跟随活动：无上架活动时放灰色占位保持 2x2 完整，上架后自动让位。
-    // 岗位不设金刚区入口，就业走首页板块导航 tab 与活动 tab 子页。
+    // 活动入口跟随后台上架：上架才出现。
+    // 全量版（活动 tab 开启）无活动时保留灰色占位补 2x2；v1 裁剪期不占位，金刚区只留真实入口。
     if (activities.length > 0) {
       items.push({
         name: STRINGS.ZONE_NAMES[3],
@@ -225,7 +244,7 @@ export default function IndexPage() {
         url: '/pages/activity-zone/index',
         tab: 'activity',
       })
-    } else {
+    } else if (FEATURES.activityTab) {
       items.push({
         name: STRINGS.INDEX_ZONE_COMING_SOON,
         // 与前三格的浅蓝/浅绿/浅橙形成同饱和度的四色宫格。
@@ -254,19 +273,30 @@ export default function IndexPage() {
             }))} />
           </View>
 
-          <View className={styles.aiCard} onClick={handleGoConsult}>
-            <View className={styles.aiCardLeft}>
-              <Avatar size='44' icon={<Icon name='sparkles' size={20} color='#1677FF' />} background='#E6F7FF' />
-              <View className={styles.aiCardInfo}>
-                <Text className={styles.aiCardTitle}>{STRINGS.INDEX_AI_NAME}</Text>
-                <Text className={styles.aiCardDesc}>{STRINGS.INDEX_AI_DESC}</Text>
+          {FEATURES.aiConsult && (
+            <View className={styles.aiCard} onClick={handleGoConsult}>
+              <View className={styles.aiCardLeft}>
+                <Avatar size='44' icon={<Icon name='sparkles' size={20} color='#1677FF' />} background='#E6F7FF' />
+                <View className={styles.aiCardInfo}>
+                  <Text className={styles.aiCardTitle}>{STRINGS.INDEX_AI_NAME}</Text>
+                  <Text className={styles.aiCardDesc}>{STRINGS.INDEX_AI_DESC}</Text>
+                </View>
+              </View>
+              <View className={styles.aiCardRight}>
+                <Text className={styles.aiCardAction}>{STRINGS.INDEX_AI_CONSULT_BTN}</Text>
+                <Icon name='chevron-right' size={16} color='#1677FF' />
               </View>
             </View>
-            <View className={styles.aiCardRight}>
-              <Text className={styles.aiCardAction}>{STRINGS.INDEX_AI_CONSULT_BTN}</Text>
-              <Icon name='chevron-right' size={16} color='#1677FF' />
-            </View>
-          </View>
+          )}
+
+          {tickerArticle && (
+            <NewsTicker
+              article={tickerArticle}
+              onClick={(a) =>
+                Taro.navigateTo({ url: `/${ROUTES.WEBVIEW}?url=${encodeURIComponent(a.url)}` })
+              }
+            />
+          )}
 
           <KingKongZone items={kingKongItems} onItemClick={handleKingKongClick} />
 

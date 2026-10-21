@@ -20,7 +20,8 @@ test('activity zone defaults to competition and shows preparing empty states', a
   // 竞赛子页不展示运营横幅，列表内容直接从筛选区开始。
   assert.doesNotMatch(source, /ZoneBanner|currentBanner|bannerWrap/)
   // 薪资只保留价格槽位；按钮统一为"了解详情"，联系方式在详情页查看。
-  assert.match(source, /tags=\{\[job\.location \?\? ''\]\}/)
+  // 2026-10-21：地点标签带「工作地点：」前缀，空地点不渲染标签。
+  assert.match(source, /tags=\{\[job\.location \? `工作地点：\$\{job\.location\}` : ''\]\}/)
   assert.match(source, /price=\{job\.salary_range \?\? ''\}/)
   assert.match(source, /buttonText='了解详情'/)
   assert.doesNotMatch(source, /`联系：\$\{item\.contact_info\}`/)
