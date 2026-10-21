@@ -306,6 +306,8 @@ export const STRINGS = {
   INDEX_AI_NAME: '智小通',
   INDEX_AI_DESC: '您的专属 IT 学习助手',
   INDEX_AI_CONSULT_BTN: '去咨询',
+  INDEX_GZH_BADGE: '公众号',
+  WEBVIEW_LINK_INVALID: '链接不可用',
 
   // ---- AI Consult Page ----
   AI_CONSULT_HEADER_TITLE: '智小通咨询',
@@ -775,6 +777,41 @@ export const STRINGS = {
 
   // ---- Ad Popup（登录后弹窗海报） ----
   AD_POPUP_DISMISS_TODAY: '今日不再弹出',
+
+  // ---- About Page（关于我们） ----
+  ABOUT_SECTION_INTRO: '企业简介',
+  ABOUT_INTRO_1: '智天远教育（四川智天远教育科技有限公司、贵州智天远教育科技有限公司）与国内外领先的技术供应商达成深度合作关系，结合智天远在ICT领域的积累和沉淀，联合厂商、企业、高校，共同构筑ICT产教融合服务平台，为教育行业客户提供深度产教融合及教育信息化服务，为行业用户及生态合作伙伴提供技术培训、技术认证、技术支持及人才服务。',
+  ABOUT_INTRO_2: '智天远教育业务覆盖四川、贵州、西藏、青海等区域，与电子科技大学、贵州大学、西南民族大学、成都大学、四川邮电职业技术学院、四川司法警官职业学院、贵阳职业技术学院、贵州电子信息职业技术学院、青海柴达木职业技术学院等数十所知名院校，开展不同层次的产教融合校企合作、教育信息化服务，为ICT行业培养和输送了千余名高素质应用型人才。',
+  ABOUT_SECTION_CULTURE: '企业文化',
+  ABOUT_CULTURE_VISION_LABEL: '企业愿景',
+  ABOUT_CULTURE_VISION: '成为能担当、有使命、作引领，为产业发展助力的DICT产教融合型企业。',
+  ABOUT_CULTURE_MISSION_LABEL: '企业使命',
+  ABOUT_CULTURE_MISSION: '传播DICT知识，为国家和行业培养高素质、高技能的应用型人才。',
+  ABOUT_CULTURE_VALUES_LABEL: '核心价值',
+  ABOUT_CULTURE_VALUES: '诚信、务实、卓越、共赢。',
+  ABOUT_SECTION_QUALIFICATION: '企业资质',
+  ABOUT_QUALIFICATIONS: [
+    '西部DICT开放型产教融合实践中心',
+    '全国大数据创新应用产教融合共同体副理事长单位',
+    '四川省龙天才“双师型”名师工作室企业工作站',
+    '国家信息安全水平考试(NISP)运营机构',
+    '红帽学院合作伙伴',
+    'VUE、Prometric、ATAC考试中心',
+    '成都工业职业技术学院教师企业实践流动工作站',
+    '电子科技大学创业实践基地',
+    '四川邮电职业技术学院校外实践基地',
+    '国家级职业教育“双师型”教师培训基地核心成员单位',
+    '四川省大学生校外实践教育基地',
+    '成都市高校毕业生（青年）就业见习基地',
+    '新华三教育合作伙伴、培训认证中心',
+    '新华三、神州数码、腾讯 1+X技术支持单位',
+    '成都工贸职业技术学院双师型教师培养培训基地',
+    '成都石化工业学校“双师型”教师培养基地',
+    '西南民族大学教学实践与就业基地',
+    '四川化工职业技术学院教学实践与就业基地',
+  ],
+  ABOUT_GZH_QR_HINT: '长按识别二维码关注公众号',
+  ABOUT_ADDRESS: '四川省成都市武侯区长华路19号万科汇智中心33楼',
 
   // ---- Validation ----
   VALIDATOR_EMAIL_REQUIRED: '请输入邮箱',
