@@ -74,7 +74,7 @@ export default function JobDetailPage() {
           )}
 
           <View className={styles.section}>
-            <View className={styles.sectionTitle}>联系方式</View>
+            <View className={styles.sectionTitle}>报名邮件（请将简历发送至此邮件）</View>
             <View className={styles.contactRow}>
               <Text className={styles.contactValue}>{job.contact_info || '暂无联系方式'}</Text>
             </View>
