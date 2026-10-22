@@ -387,7 +387,7 @@ export default function NispFormPage() {
         </ScrollView>
         <RegistrationSubmitBar priceCents={batch ? Math.round(price * 100) : null}
           disabled={!identityVerified || batchState !== 'ready' || Boolean(uploading) || Boolean(documentActions.busy) || submitting} loading={submitting} onSubmit={() => void submit()}
-          label={!identityVerified ? '请先完成实名认证' : batchState !== 'ready' ? '请先加载有效批次' : uploading ? '材料上传中…' : documentActions.busy ? '文件操作中…' : price === 0 ? '提交报名' : '提交并支付'} />
+          label={!identityVerified ? '请先完成实名认证' : batchState !== 'ready' ? '请先加载有效批次' : uploading ? '材料上传中…' : documentActions.busy ? '文件操作中…' : price === 0 ? '提交报名' : '提交报名，前往付款'} />
       </View>
     </AuthGuard>
   )

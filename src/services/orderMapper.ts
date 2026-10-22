@@ -1,4 +1,5 @@
 import type { Order, OrderBackendItem, OrderDetail } from '@/types/orders'
+import { OFFLINE_PAYMENT_LABELS } from '../utils/offlinePayment.ts'
 
 function stringExtra(item: OrderBackendItem, key: string): string | undefined {
   const value = item.extra_data?.[key]
@@ -64,6 +65,7 @@ export function toOrder(item: OrderBackendItem): Order {
     title: orderTitle(item),
     description: orderDescription(item),
     status: item.status,
+    ...(item.payment_channel === 'bank_transfer' && item.offline_status ? { paymentStatusLabel: item.price === 0 && item.status === 'pending' ? '待确认零元报名' : OFFLINE_PAYMENT_LABELS[item.status === 'refunded' ? 'refunded' : item.status === 'closed' && item.offline_status !== 'exception' ? 'closed' : item.offline_status] } : {}),
     date: item.created_at?.slice(0, 10) || '',
     amount: orderAmount(item.price),
   }
@@ -75,6 +77,9 @@ export function toOrderDetail(item: OrderBackendItem): OrderDetail {
   return {
     orderId: String(item.id),
     numericId: item.id,
+    paymentChannel: item.payment_channel || (item.price === 0 ? "free" : "unknown"),
+    offlineStatus: item.offline_status,
+    paymentStatusLabel: toOrder(item).paymentStatusLabel,
     orderKind: item.order_kind,
     productType: item.product_type,
     status: item.status,
@@ -87,7 +92,7 @@ export function toOrderDetail(item: OrderBackendItem): OrderDetail {
     discountAmount: (discountAmount / 100).toFixed(2),
     amountPaid: item.price != null ? (item.price / 100).toFixed(2) : '0.00',
     couponCode: item.coupon_code || null,
-    paymentMethod: item.paid_at ? '微信支付' : item.price === 0 ? '免费开通' : '未支付',
+    paymentMethod: item.payment_channel === 'bank_transfer' ? '银行转账' : item.price === 0 ? '免费开通' : item.payment_channel === 'wechat' ? '微信支付（历史订单）' : '原支付渠道待核实',
     paymentTime: item.paid_at ? formatOrderTime(item.paid_at) : '未支付',
     orderTime: formatOrderTime(item.created_at),
     closedAt: item.closed_at ? formatOrderTime(item.closed_at) : '',

@@ -1,0 +1,16 @@
+@use '../../styles/registration' as form;
+@use '../../styles/variables' as *;
+.transferPanel { display: flex; flex-direction: column; gap: 24px; padding: 24px 24px calc(190px + env(safe-area-inset-bottom)); background: $color-bg; min-height: 80vh; }
+.transferCard { @include form.card; }
+.transferTitle { @include form.title; margin-bottom: 20px; }
+.transferHint { @include form.hint; }
+.transferError { display: block; color: #cf1322; font-size: 24px; line-height: 1.6; margin: 12px 0; word-break: break-all; }
+.transferRow { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.transferLabel { @include form.label; }
+.transferValue { color: #17233d; font-size: 27px; line-height: 1.6; word-break: break-all; }
+.transferLink { color: $color-primary; font-size: 25px; line-height: 1.8; margin-right: 24px; word-break: break-all; }
+.transferGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.transferPicker { @include form.input; margin-bottom: 20px; }
+.transferActions { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 18px; }
+.transferHistory { border-top: 1px solid #eef2f8; margin-top: 20px; padding-top: 20px; }
+@media (max-width: 340px) { .transferGrid { grid-template-columns: 1fr; } }

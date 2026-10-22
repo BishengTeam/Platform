@@ -210,7 +210,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
       </View>}
       {!options && <View className={styles.warning}><Text>{optionsError || '正在加载本批次填报要求…'}</Text>{optionsError && <Button variant='secondary' onClick={() => setRetry(value => value + 1)}>重新加载</Button>}</View>}
       {locked && <View className={styles.warning}>
-        <Text>{application?.frozen_at ? '退款处理中，资料已冻结。' : correcting ? '补正期限或批次状态不允许修改，请联系管理员。' : '报名已提交，可在报名详情查看进度、继续支付或取消待支付订单。'}</Text>
+        <Text>{application?.frozen_at ? '退款处理中，资料已冻结。' : correcting ? '补正期限或批次状态不允许修改，请联系管理员。' : '报名已提交，可在报名详情查看进度、查看付款进度或取消待支付订单。'}</Text>
         {application && <Button variant='secondary' onClick={() => Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${application.id}` })}>查看报名详情</Button>}
       </View>}
       <View className={styles.card}>
@@ -304,6 +304,6 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     </ScrollView>
     <RegistrationSubmitBar priceCents={plan.price_cents} priceLabel={correcting ? '本次补正' : '报名费'} priceText={correcting ? '无需重复支付' : undefined}
       disabled={locked || Boolean(busy) || !identityReady || !options} loading={busy === 'submit'} onSubmit={() => void submit()}
-      label={correcting ? '提交补正' : plan.price_cents === 0 ? '提交报名' : '提交并支付'} />
+      label={correcting ? '提交补正' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
   </View></AuthGuard>
 }

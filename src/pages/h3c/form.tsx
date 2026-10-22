@@ -323,7 +323,7 @@ export default function H3CFormPage() {
             onClick={submit}
           >
             {identityVerified
-              ? submitting ? '提交中...' : `提交并支付 ${(price / 100).toFixed(2)} 元`
+              ? submitting ? '提交中...' : price === 0 ? '提交报名' : '提交报名，前往付款'
               : '请先完成实名认证'}
           </Button>
         </View>

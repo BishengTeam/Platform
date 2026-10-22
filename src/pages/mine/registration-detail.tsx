@@ -1,3 +1,4 @@
+import { OFFLINE_PAYMENT_LABELS as labels } from '@/utils/offlinePayment'
 import { useCallback, useEffect, useState } from 'react'
 import { Text, View } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
@@ -10,6 +11,8 @@ import {
   validateCompetitionRegForm,
   type CompetitionRegFormValues,
 } from '@/components/CompetitionRegForm'
+import { getOrderDetail } from '@/services/dataService'
+import type { OrderDetail } from '@/types/orders'
 import { ConsultationGroupCard } from '@/components/ConsultationGroupCard'
 import { ROUTES } from '@/constants/routes'
 import { h3cService } from '@/services/h3cService'
@@ -33,6 +36,14 @@ import type { CompetitionMyRegistration } from '@/types'
 import sharedStyles from './registrations.module.scss'
 import styles from './registration-detail.module.scss'
 import { CHANGE_LABELS, correctionAvailable } from '@/utils/rensheGraduated'
+
+function PaymentProgress({ orderId, onLoaded }: { orderId: number; onLoaded: (order: OrderDetail) => void }) {
+  const [order, setOrder] = useState<OrderDetail | null>(null)
+  const [error, setError] = useState('')
+  const load = useCallback(async () => { try { const value = await getOrderDetail(orderId); if (!value) throw new Error('订单不存在'); setOrder(value); onLoaded(value); setError('') } catch { setError('付款进度加载失败，点击重试') } }, [orderId, onLoaded])
+  useEffect(() => { void load() }, [load])
+  return <View><View className={sharedStyles.row}><Text className={sharedStyles.label}>付款进度</Text><Text className={sharedStyles.value} onClick={() => void load()}>{error || (!order ? '加载中…' : order.paymentStatusLabel || (order.status === 'closed' ? order.offlineStatus === 'exception' ? labels.exception : labels.closed : labels[order.offlineStatus || ''] || (['paid', 'completed'].includes(order.status) ? '付款已确认' : '请查看订单')))}</Text></View><Text className={styles.paymentLink} onClick={() => void Taro.navigateTo({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${orderId}` })}>查看订单付款进度</Text></View>
+}
 
 type RegistrationKind = 'h3c' | 'nisp' | 'competition' | 'renshe'
 type H3cRegistrationDetail = H3cRegistration & { kind: 'H3C' }
@@ -169,6 +180,8 @@ function competitionEditValues(
 }
 
 export default function RegistrationDetailPage() {
+  const [progressOrder, setProgressOrder] = useState<OrderDetail | null>(null)
+  const cancellable = Boolean(progressOrder && progressOrder.status === "pending" && (progressOrder.paymentChannel !== "bank_transfer" || progressOrder.offlineStatus === "awaiting_proof"))
   const { params } = useRouter()
   const kind = parseRegistrationKind(params?.type)
   const registrationId = Number(params?.id)
@@ -552,17 +565,18 @@ export default function RegistrationDetailPage() {
     : null
 
   const showCorrectionAction = certRegistration?.status === 'rejected_awaiting_resubmission'
-  const showCancelAction = certRegistration?.status === 'pending_payment'
+  const showCancelAction = certRegistration?.status === 'pending_payment' && cancellable
   const showCompetitionSave = Boolean(competitionRegistration?.editable)
   const showRensheCorrection = Boolean(
     rensheRegistration
     && renshePlan && correctionAvailable(rensheRegistration, renshePlan),
   )
-  const showRensheCancel = rensheRegistration?.status === 'pending_payment'
+  const showRensheCancel = rensheRegistration?.status === 'pending_payment' && cancellable
   const showRenshePay = rensheRegistration?.status === 'pending_payment'
     && Boolean(rensheRegistration.current_order_id)
   const showRensheRefund = Boolean(
     rensheRegistration
+    && progressOrder && Number(progressOrder.amountPaid) > 0
     && rensheRegistration.current_order_status
     && ['paid', 'completed'].includes(rensheRegistration.current_order_status)
     && rensheRegistration.status !== 'closed'
@@ -673,6 +687,7 @@ export default function RegistrationDetailPage() {
                 </>
               )}
 
+              {certRegistration && <PaymentProgress orderId={certRegistration.order_id} onLoaded={setProgressOrder} />}
               <Text className={sharedStyles.sectionTitle}>报名信息</Text>
               {snapshotEntries(certRegistration.candidate_snapshot).map((entry) => (
                 <View className={sharedStyles.row} key={entry.label}>
@@ -773,6 +788,7 @@ export default function RegistrationDetailPage() {
               </View>
 
               <Text className={sharedStyles.sectionTitle}>支付与退款</Text>
+              {rensheRegistration.current_order_id && <PaymentProgress orderId={rensheRegistration.current_order_id} onLoaded={setProgressOrder} />}
               <View className={sharedStyles.row}>
                 <Text className={sharedStyles.label}>订单状态</Text>
                 <Text className={sharedStyles.value}>
@@ -934,7 +950,7 @@ export default function RegistrationDetailPage() {
                   url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${rensheRegistration.current_order_id}`,
                 })}
               >
-                <Text>继续支付</Text>
+                <Text>查看付款进度</Text>
               </View>
             )}
 

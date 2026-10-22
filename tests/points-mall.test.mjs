@@ -22,15 +22,14 @@ test('minimum spend keeps whole-yuan labels concise', () => {
   assert.equal(formatMinimumSpend(1055), '10.55')
 })
 
-test('payment confirm page loads usable coupons after order detail', async () => {
-  const source = await readFile(new URL('../src/pages/registration/confirm.tsx', import.meta.url), 'utf8')
-
+test('shared bank transfer panel loads coupons only before proof and refreshes server amount', async () => {
+  const source = await readFile(new URL('../src/components/OfflinePaymentPanel/index.tsx', import.meta.url), 'utf8')
+  assert.match(source, /payment\.can_change_coupon/)
   assert.match(source, /pointsMallService\.usableCoupons\(\{/)
-  assert.match(source, /order_amount_cents: Math\.round\(initialOriginalPrice \* 100\)/)
-  assert.match(source, /product_type: order\?\.productType \|\| ''/)
+  assert.match(source, /order_amount_cents: payment\.amount_cents/)
+  assert.match(source, /product_type: payment\.product_type/)
   assert.match(source, /product_category: 'certification'/)
-  assert.match(source, /setUsableCoupons\(/)
-  assert.match(source, /applyCouponToOrder\(Number\(orderId\), coupon\?\.coupon_code \|\| ''\)/)
+  assert.match(source, /applyCouponToOrder\(orderId, coupon\.coupon_code\)/)
 })
 
 test('mall coupon card keeps essential labels readable', async () => {

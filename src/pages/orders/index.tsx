@@ -122,7 +122,7 @@ export default function OrdersPage() {
                     {statusCfg && (
                       <View className={`${styles.badge} ${statusCfg.badgeClass}`}>
                         <Text className={`${styles.badgeText} ${statusCfg.badgeTextClass}`}>
-                          {statusCfg.label}
+                          {order.paymentStatusLabel || statusCfg.label}
                         </Text>
                       </View>
                     )}

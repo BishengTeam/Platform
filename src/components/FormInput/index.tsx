@@ -7,7 +7,7 @@ interface FormInputProps {
   required?: boolean
   placeholder: string
   value: string
-  type?: 'text' | 'number' | 'idcard'
+  type?: 'text' | 'number' | 'idcard' | 'digit'
   maxlength?: number
   disabled?: boolean
   error?: ValidationResult

@@ -69,7 +69,7 @@ test('order detail keeps internal id separate from merchant order number', () =>
   assert.equal(detail.productTitle, '网络工程师入门')
   assert.equal(detail.orderKind, 'course')
   assert.equal(detail.productType, 'course:1')
-  assert.equal(detail.paymentMethod, '微信支付')
+  assert.equal(detail.paymentMethod, '原支付渠道待核实')
 })
 
 test('order detail maps every current transaction kind to one payment surface', () => {
@@ -119,8 +119,8 @@ test('pending order detail page is transaction generic and calls unified cancel 
 test('payment result is terminal and never creates a success-order navigation cycle', async () => {
   const source = await readFile('src/pages/payment/result.tsx', 'utf8')
 
-  assert.match(source, /Taro\.reLaunch\(\{ url: `\/\$\{ROUTES\.ORDER_DETAIL\}\?order_id=\$\{orderId\}` \}\)/)
-  assert.match(source, /onClick=\{handleBackHome\}/)
+  assert.match(source, /Taro\.reLaunch\(\{ url: `\/pages\/order-detail\/index\?order_id=\$\{orderId\}` \}\)/)
+  assert.match(source, /Taro\.switchTab/)
   assert.doesNotMatch(source, /handleViewOrder[\s\S]*?Taro\.navigateTo/)
 })
 

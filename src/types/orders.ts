@@ -1,5 +1,6 @@
 /** 前端展示用订单对象（由 getOrders 映射层统一从后端字段转换而来） */
 export interface Order {
+  paymentStatusLabel?: string
   id: string
   title: string
   description: string
@@ -10,6 +11,9 @@ export interface Order {
 
 /** 后端 GET /api/orders 返回的单条订单原始结构 */
 export interface OrderBackendItem {
+  payment_channel?: string
+  offline_status?: string | null
+  offline_submitted_at?: string | null
   application_id?: number | null
   id: number
   order_kind: 'certification' | 'course' | 'quiz_order' | string
@@ -36,6 +40,9 @@ export interface OrderBackendItem {
 }
 
 export interface OrderDetail {
+  paymentStatusLabel?: string
+  paymentChannel?: string
+  offlineStatus?: string | null
   orderId: string
   numericId: number
   orderKind: string

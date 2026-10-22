@@ -1,117 +1,30 @@
-import { useState, useEffect } from 'react'
-import { View, Text } from '@tarojs/components'
+import { OFFLINE_PAYMENT_LABELS as labels } from '@/utils/offlinePayment'
+import { useState, useCallback } from 'react'
+import { Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
-import { STRINGS } from '@/constants/strings'
-import { ROUTES } from '@/constants/routes'
 import { getOrderDetail } from '@/services/dataService'
+import type { OrderDetail } from '@/types/orders'
 import styles from './result.module.scss'
 
 export default function ResultPage() {
-  const [orderId, setOrderId] = useState('')
-  const [status, setStatus] = useState('success')
-  const [certName, setCertName] = useState('')
-  const [price, setPrice] = useState('')
-  const [orderDetail, setOrderDetail] = useState<import('@/types/orders').OrderDetail | null>(null)
-
-  useLoad((options) => {
-    setStatus((options.status as string) || 'success')
-    setOrderId((options.order_id as string) || '')
-    setCertName(options.cert_name ? decodeURIComponent(options.cert_name as string) : '')
-    setPrice((options.price as string) || '')
-  })
-
-  useEffect(() => {
-    if (!orderId) return
-    getOrderDetail(Number(orderId))
-      .then((detail) => {
-        if (detail) setOrderDetail(detail)
-      })
-      .catch(() => {})
-  }, [orderId])
-
-  const isSuccess = status === 'success'
-
-  // 优先使用 API 返回的订单详情，fallback 到 URL 参数
-  const displayOrderId = orderDetail?.outTradeNo || orderDetail?.orderId || orderId
-  const displayCertName = orderDetail?.productTitle || certName
-  const displayPrice = orderDetail?.amountPaid || price
-
-  const handleViewOrder = () => {
-    // 支付结果是流程终页。这里必须重建页面栈，避免“成功页 ↔ 订单页”循环返回。
-    Taro.reLaunch({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${orderId}` })
-  }
-
-  const handleRepay = () => {
-    // 待支付订单详情本身承载继续支付能力，也不依赖上一层页面是否存在。
-    Taro.reLaunch({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${orderId}` })
-  }
-
-  const handleBackHome = () => {
-    Taro.switchTab({ url: `/${ROUTES.INDEX}` })
-  }
-
-  return (
-    <AuthGuard>
-      <View className={styles.page}>
-        <PageHeader title='' shouldShowBack={false} />
-
-        <View className={styles.body}>
-          <View className={isSuccess ? styles.successIcon : styles.failIcon}>
-            <Text className={styles.iconText}>{isSuccess ? '✓' : '✕'}</Text>
-          </View>
-
-          <Text className={styles.title}>
-            {isSuccess ? STRINGS.RESULT_SUCCESS_TITLE : STRINGS.RESULT_FAIL_TITLE}
-          </Text>
-          <Text className={styles.desc}>
-            {isSuccess ? STRINGS.RESULT_SUCCESS_DESC : STRINGS.RESULT_FAIL_DESC}
-          </Text>
-
-          <View className={styles.orderCard}>
-            <View className={styles.cardRow}>
-              <Text className={styles.cardLabel}>{STRINGS.RESULT_ORDER_ID}</Text>
-              <Text className={styles.cardValueSm}>{displayOrderId || '—'}</Text>
-            </View>
-            {displayCertName ? (
-              <View className={styles.cardRow}>
-                <Text className={styles.cardLabel}>{STRINGS.RESULT_CERT_PROJECT}</Text>
-                <Text className={styles.cardValue}>{displayCertName}</Text>
-              </View>
-            ) : null}
-            {displayPrice ? (
-              <View className={styles.cardRow}>
-                <Text className={styles.cardLabel}>{STRINGS.RESULT_PAID_AMOUNT}</Text>
-                <Text className={styles.cardValuePrice}>¥{parseFloat(displayPrice).toFixed(2)}</Text>
-              </View>
-            ) : null}
-          </View>
-
-          <View className={styles.actions}>
-            {isSuccess ? (
-              <>
-                <Button variant='gradient' size='lg' onClick={handleViewOrder} className={styles.actionBtn}>
-                  {STRINGS.RESULT_VIEW_ORDER}
-                </Button>
-                <Button variant='secondary' size='lg' onClick={handleBackHome} className={styles.actionBtnSecondary}>
-                  {STRINGS.RESULT_BACK_HOME}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant='gradient' size='lg' onClick={handleRepay} className={styles.actionBtn}>
-                  {STRINGS.RESULT_REPAY}
-                </Button>
-                <Button variant='secondary' size='lg' onClick={handleBackHome} className={styles.actionBtnSecondary}>
-                  {STRINGS.RESULT_BACK_HOME}
-                </Button>
-              </>
-            )}
-          </View>
-        </View>
-      </View>
-    </AuthGuard>
-  )
+  const [orderId, setOrderId] = useState(0)
+  const [order, setOrder] = useState<OrderDetail | null>(null)
+  const [error, setError] = useState('')
+  const load = useCallback(async (id: number) => {
+    try { setOrder(await getOrderDetail(id)); setError('') } catch (reason) { setError(reason instanceof Error ? reason.message : '进度获取失败，请重试') }
+  }, [])
+  useLoad(options => { const id = Number(options?.order_id); if (Number.isSafeInteger(id) && id > 0) { setOrderId(id); void load(id) } else setError('订单不存在') })
+  const confirmed = order?.status === 'paid' || order?.status === 'completed'
+  const title = !order ? error ? '暂时无法获取付款进度' : '正在核实付款进度…' : order.paymentStatusLabel || (order.offlineStatus === 'exception' ? labels.exception : order.status === 'refunded' ? labels.refunded : confirmed ? '付款已确认' : order.status === 'closed' ? '订单已关闭' : labels[order.offlineStatus || ''] || '请查看订单进度')
+  return <AuthGuard><View className={styles.page}><PageHeader title='付款进度' shouldShowBack={false} /><View className={styles.body}>
+    <Text className={styles.title}>{title}</Text><Text className={styles.desc}>{confirmed ? '认证报名继续进行资料审核，请在报名详情查看进度。' : '上传凭证不代表到账，付款状态以管理员核账结果为准。'}</Text>
+    {order && <View className={styles.orderCard}><Text className={styles.cardValue}>{order.productTitle}</Text><Text className={styles.cardValueSm}>{order.outTradeNo}</Text><Text className={styles.cardValuePrice}>应付 ¥{order.amountPaid}</Text></View>}
+    {error && <Text className={styles.desc}>{error}</Text>}<View className={styles.actions}>
+      <Button onClick={() => void load(orderId)} disabled={!orderId}>刷新进度</Button>
+      <Button variant='gradient' onClick={() => void Taro.reLaunch({ url: `/pages/order-detail/index?order_id=${orderId}` })} disabled={!orderId}>查看订单</Button>
+      <Button variant='secondary' onClick={() => void Taro.switchTab({ url: '/pages/index/index' })}>返回首页</Button>
+    </View></View></View></AuthGuard>
 }

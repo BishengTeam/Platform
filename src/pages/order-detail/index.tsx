@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow, useLoad, usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
+import { OfflinePaymentPanel } from '@/components/OfflinePaymentPanel'
 import { PageHeader } from '@/components/PageHeader'
 import { EmptyState } from '@/components/EmptyState'
-import { cancelOrder, getOrderDetail, prepayOrder } from '@/services/dataService'
+import { cancelOrder, getOrderDetail } from '@/services/dataService'
 import { orderKindLabel } from '@/services/orderMapper'
 import { safeNavigateBack } from '@/utils/navigation'
 import type { OrderDetail } from '@/types'
@@ -110,18 +111,7 @@ export default function OrderDetailPage() {
     }
     setPaying(true)
     try {
-      const prepay = await prepayOrder(detail.numericId)
-      if (prepay.time_stamp) {
-        await Taro.requestPayment({
-          timeStamp: prepay.time_stamp,
-          nonceStr: prepay.nonce_str,
-          package: prepay.package,
-          signType: prepay.sign_type as 'MD5' | 'HMAC-SHA256',
-          paySign: prepay.pay_sign,
-        })
-        Taro.showToast({ title: '支付成功', icon: 'success' })
-        setTimeout(() => void loadOrder(detail.numericId), 1000)
-      }
+      await Taro.navigateTo({ url: `/pages/registration/confirm?order_id=${detail.numericId}` })
     } catch (err) {
       if ((err as { errMsg?: string })?.errMsg?.includes('cancel')) return
       Taro.showToast({
@@ -195,6 +185,8 @@ export default function OrderDetailPage() {
           </View>
         ) : !detail ? (
           <EmptyState icon='file-text' title='订单不存在' description='未找到该订单信息' />
+        ) : detail.paymentChannel === 'bank_transfer' ? (
+          <OfflinePaymentPanel orderId={detail.numericId} title={detail.productTitle} />
         ) : (
           <>
             <View className={styles.body}>
@@ -310,7 +302,7 @@ export default function OrderDetailPage() {
                   className={`${styles.payBtn} ${isVirtualOrder || paying || cancelling ? styles.payBtnDisabled : ''}`}
                   onClick={handlePay}
                 >
-                  <Text>{isVirtualOrder ? '无法支付' : paying ? '支付中...' : '立即支付'}</Text>
+                  <Text>{isVirtualOrder ? '无法支付' : paying ? '支付中...' : '查看付款方式'}</Text>
                 </View>
               </View>
             )}
