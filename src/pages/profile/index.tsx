@@ -9,7 +9,8 @@ import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { profileGridItems, profileListGroups } from '@/constants/mock/profile'
 import type { ProfileMenuItem } from '@/types'
-import { getUserProfile } from '@/services/dataService'
+import { resolveMediaUrl } from '@/utils/media'
+import { getUserProfile, getSharePoster } from '@/services/dataService'
 import { getVerificationMaterialSignedUrl } from '@/services/identityMaterialService'
 import styles from './index.module.scss'
 
@@ -18,6 +19,8 @@ export default function ProfilePage() {
   const [userStatus, setUserStatus] = useState<string>(STRINGS.PROFILE_MOCK_STATUS)
   // 二寸照存的是私有 OSS 键，需换取短时签名链接渲染；与个人资料页保持一致
   const [avatarUrl, setAvatarUrl] = useState('')
+  // 积分海报：后台上传才显示，点击全屏预览（与分享好友页同链路）
+  const [posterUrl, setPosterUrl] = useState('')
 
   const loadProfile = () => {
     getUserProfile().then(profile => {
@@ -34,6 +37,19 @@ export default function ProfilePage() {
   }
 
   useEffect(() => { loadProfile() }, [])
+
+  useEffect(() => {
+    getSharePoster()
+      .then(res => setPosterUrl(res.image_url || ''))
+      .catch(() => setPosterUrl(''))
+  }, [])
+
+  // 全屏预览，微信原生长按菜单即可保存到相册/转发
+  const handlePreviewPoster = () => {
+    if (!posterUrl) return
+    Taro.showToast({ title: '长按海报可保存到相册', icon: 'none' })
+    Taro.previewImage({ urls: [resolveMediaUrl(posterUrl)] })
+  }
 
   // Tab 页常驻：签名链接 5 分钟过期、编辑资料后也需刷新，每次显示时重取
   useDidShow(() => { loadProfile() })
@@ -105,6 +121,17 @@ export default function ProfilePage() {
                   </View>
                 ))}
               </View>
+            </View>
+          )}
+
+          {/* ---- 积分海报：后台上传才显示，双版本（含 v1 裁剪版）均展示 ---- */}
+          {posterUrl && (
+            <View className={`${styles.card} ${styles.posterCard}`} onClick={handlePreviewPoster}>
+              <View className={styles.posterHeader}>
+                <Text className={styles.posterTitle}>{STRINGS.PROFILE_POSTER_TITLE}</Text>
+                <Text className={styles.posterHint}>{STRINGS.PROFILE_POSTER_HINT}</Text>
+              </View>
+              <Image className={styles.posterImage} src={resolveMediaUrl(posterUrl)} mode='widthFix' />
             </View>
           )}
 
