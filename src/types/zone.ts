@@ -204,7 +204,7 @@ export interface HomeAggregationResponse {
   zones: Record<string, ZoneSectionData> // key = "cert"|"study"|"competition"|"activity"|"employment"
   /** 登录后弹窗海报：后端取时间窗内 sort 最小的一条，无则缺省 */
   popup?: PopupBrief | null
-  /** 公众号资讯：最新 5 条，无则缺省（首页 ticker 整条隐藏） */
+  /** 公众号资讯：最新 10 条，无则缺省（首页 ticker 整条隐藏、新闻资讯 tab 不出现） */
   gzh_articles?: GzhArticleBrief[] | null
 }
 

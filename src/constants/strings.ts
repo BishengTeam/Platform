@@ -307,6 +307,7 @@ export const STRINGS = {
   INDEX_AI_DESC: '您的专属 IT 学习助手',
   INDEX_AI_CONSULT_BTN: '去咨询',
   INDEX_GZH_BADGE: '公众号',
+  INDEX_NEWS_TAB: '新闻资讯',
   WEBVIEW_LINK_INVALID: '链接不可用',
 
   // ---- AI Consult Page ----

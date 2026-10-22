@@ -14,6 +14,7 @@ import { AdPopup } from '@/components/AdPopup'
 import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
 import { NewsTicker } from '@/components/NewsTicker'
+import { NewsList } from '@/components/NewsList'
 import type { HomeCardItem } from '@/components/HomeCard'
 import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -26,6 +27,7 @@ import { navigateToCertRegistration } from '@/utils/certNavigation'
 import type { HomeAggregationResponse } from '@/types'
 import type { CertificationResponse } from '@/types'
 import type { PopupBrief } from '@/types'
+import type { GzhArticleBrief } from '@/types'
 import styles from './index.module.scss'
 
 // v1 裁剪：金刚区只保留学习/竞赛两格；报名认证按开关恢复，不再用置灰占位补格
@@ -194,8 +196,14 @@ export default function IndexPage() {
   // 在线课程同为主页内容驱动板块：后台配置了课程才显示
   const studyCourses = homeData?.zones['study']?.courses ?? []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
-  // 资讯栏：后端同步到公众号推文才显示；无数据（含接口失败）整条隐藏
-  const tickerArticle = homeData?.gzh_articles?.[0]
+  // 资讯：后端同步到公众号推文才显示；无数据（含接口失败）ticker 整条隐藏、新闻 tab 不出现
+  const gzhArticles = homeData?.gzh_articles ?? []
+  const tickerArticle = gzhArticles[0]
+
+  // 公众号文章统一跳 webview 容器页（ticker 与新闻资讯列表共用）
+  const handleOpenArticle = useCallback((article: GzhArticleBrief) => {
+    Taro.navigateTo({ url: `/${ROUTES.WEBVIEW}?url=${encodeURIComponent(article.url)}` })
+  }, [])
   const certificationCards = useMemo(() => {
     return (homeData?.zones['cert']?.certifications ?? []).map(toCertHomeCard)
   }, [homeData])
@@ -209,8 +217,10 @@ export default function IndexPage() {
     if (competitionList.length > 0) tabs.push({ key: 'competition', label: STRINGS.ZONE_NAMES[2] })
     if (activities.length > 0) tabs.push({ key: 'activity', label: STRINGS.INDEX_TRAINING_ACTIVITIES })
     if (employmentJobs.length > 0) tabs.push({ key: 'employment', label: STRINGS.ZONE_NAMES[4] })
+    // 新闻资讯固定排最右：同步到公众号推文才出现
+    if (gzhArticles.length > 0) tabs.push({ key: 'news', label: STRINGS.INDEX_NEWS_TAB })
     return tabs
-  }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, employmentJobs.length])
+  }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, employmentJobs.length, gzhArticles.length])
 
   // 后台下架导致当前 tab 消失时回落到第一个 tab
   useEffect(() => {
@@ -278,12 +288,7 @@ export default function IndexPage() {
           )}
 
           {tickerArticle && (
-            <NewsTicker
-              article={tickerArticle}
-              onClick={(a) =>
-                Taro.navigateTo({ url: `/${ROUTES.WEBVIEW}?url=${encodeURIComponent(a.url)}` })
-              }
-            />
+            <NewsTicker article={tickerArticle} onClick={handleOpenArticle} />
           )}
 
           <KingKongZone items={kingKongItems} onItemClick={handleKingKongClick} />
@@ -338,6 +343,9 @@ export default function IndexPage() {
                   }))}
                   onCardClick={handleGoEmploymentZone}
                 />
+              )}
+              {activeSection === 'news' && (
+                <NewsList articles={gzhArticles} onArticleClick={handleOpenArticle} />
               )}
             </View>
           )}
