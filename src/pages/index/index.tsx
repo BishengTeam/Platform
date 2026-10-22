@@ -14,7 +14,6 @@ import { AdPopup } from '@/components/AdPopup'
 import { KingKongZone } from '@/components/KingKongZone'
 import type { KingKongItem } from '@/components/KingKongZone'
 import { NewsTicker } from '@/components/NewsTicker'
-import { NewsList } from '@/components/NewsList'
 import type { HomeCardItem } from '@/components/HomeCard'
 import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -23,6 +22,7 @@ import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
 import { FEATURES } from '@/constants/features'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
+import { formatDate } from '@/utils/format'
 import { navigateToCertRegistration } from '@/utils/certNavigation'
 import type { HomeAggregationResponse } from '@/types'
 import type { CertificationResponse } from '@/types'
@@ -354,7 +354,23 @@ export default function IndexPage() {
                 />
               )}
               {activeSection === 'news' && (
-                <NewsList articles={gzhArticles} onArticleClick={handleOpenArticle} />
+                <HomeCard
+                  items={gzhArticles.map((article) => ({
+                    id: article.id,
+                    title: article.title,
+                    description: formatDate(article.publish_time, ''),
+                    cover_url: article.thumb_url ? resolveMediaUrl(article.thumb_url) : null,
+                    // 与竞赛卡片同构：大图 + 角标 + 两行标题；无封面用微信绿渐变兜底
+                    gradient: article.thumb_url ? undefined : 'linear-gradient(135deg, #07C160 0%, #059048 100%)',
+                    icon: article.thumb_url ? undefined : 'file-text',
+                    tag: STRINGS.INDEX_GZH_BADGE,
+                    tagColor: '#07C160',
+                  }))}
+                  onCardClick={(item) => {
+                    const article = gzhArticles.find(a => a.id === item.id)
+                    if (article) handleOpenArticle(article)
+                  }}
+                />
               )}
             </View>
           )}
