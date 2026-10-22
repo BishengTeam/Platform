@@ -94,6 +94,9 @@ export interface CompetitionBrief {
   end_time: string | null
   registration_deadline: string | null
   is_active: boolean
+  /** 详情页展示开关；后端未返回（旧版本）时按展示处理 */
+  show_schedule?: boolean
+  show_signup?: boolean
   tracks: CompetitionTrackBrief[]
   custom_fields: CompetitionCustomField[] | null
   created_at: string

@@ -63,6 +63,9 @@ export default function CompetitionDetailPage() {
     return new Date(competition.end_time) <= new Date()
   })()
   const registrationClosed = deadlinePassed || eventEnded
+  // 后台可按赛事关闭详情页“比赛时间/赛道报名”区块（未返回时按展示处理）
+  const showSchedule = competition?.show_schedule !== false
+  const showSignup = competition?.show_signup !== false
 
   const submitEnroll = async () => {
     if (!enrollTrack || submitting) return
@@ -125,20 +128,22 @@ export default function CompetitionDetailPage() {
           )}
           <View className={styles.title}>{competition.name}</View>
 
-          <View className={styles.metaList}>
-            <View className={styles.metaItem}>
-              <Text className={styles.metaLabel}>比赛时间</Text>
-              <Text className={styles.metaValue}>
-                {formatDate(competition.start_time)} ~ {formatDate(competition.end_time)}
-              </Text>
+          {showSchedule && (
+            <View className={styles.metaList}>
+              <View className={styles.metaItem}>
+                <Text className={styles.metaLabel}>比赛时间</Text>
+                <Text className={styles.metaValue}>
+                  {formatDate(competition.start_time)} ~ {formatDate(competition.end_time)}
+                </Text>
+              </View>
+              <View className={styles.metaItem}>
+                <Text className={styles.metaLabel}>报名截止</Text>
+                <Text className={styles.metaValue}>
+                  {formatDateTime(competition.registration_deadline, '不限（赛前均可报）')}
+                </Text>
+              </View>
             </View>
-            <View className={styles.metaItem}>
-              <Text className={styles.metaLabel}>报名截止</Text>
-              <Text className={styles.metaValue}>
-                {formatDateTime(competition.registration_deadline, '不限（赛前均可报）')}
-              </Text>
-            </View>
-          </View>
+          )}
 
           {competition.description && (
             <View className={styles.section}>
@@ -171,39 +176,41 @@ export default function CompetitionDetailPage() {
             </View>
           )}
 
-          <View className={styles.section}>
-            <View className={styles.sectionTitle}>选择赛道报名</View>
-            {registrationClosed && (
-              <View className={styles.closedTip}>{eventEnded ? '比赛已结束' : '报名已截止'}</View>
-            )}
-            <View className={styles.trackList}>
-              {competition.tracks.map((t) => {
-                const enrolled = enrolledTrackIds.includes(t.id)
-                const full = trackFull(t)
-                const disabled = enrolled || full || registrationClosed
-                return (
-                  <View key={t.id} className={styles.trackItem}>
-                    <View className={styles.trackInfo}>
-                      <Text className={styles.trackName}>{t.name}</Text>
-                      <Text className={styles.trackQuota}>
-                        {t.max_participants > 0
-                          ? `${t.enrolled}/${t.max_participants} 人`
-                          : `${t.enrolled} 人 · 不限`}
-                      </Text>
+          {showSignup && (
+            <View className={styles.section}>
+              <View className={styles.sectionTitle}>选择赛道报名</View>
+              {registrationClosed && (
+                <View className={styles.closedTip}>{eventEnded ? '比赛已结束' : '报名已截止'}</View>
+              )}
+              <View className={styles.trackList}>
+                {competition.tracks.map((t) => {
+                  const enrolled = enrolledTrackIds.includes(t.id)
+                  const full = trackFull(t)
+                  const disabled = enrolled || full || registrationClosed
+                  return (
+                    <View key={t.id} className={styles.trackItem}>
+                      <View className={styles.trackInfo}>
+                        <Text className={styles.trackName}>{t.name}</Text>
+                        <Text className={styles.trackQuota}>
+                          {t.max_participants > 0
+                            ? `${t.enrolled}/${t.max_participants} 人`
+                            : `${t.enrolled} 人 · 不限`}
+                        </Text>
+                      </View>
+                      <Button
+                        variant={disabled ? 'secondary' : 'primary'}
+                        disabled={disabled}
+                        onClick={() => setEnrollTrack(t)}
+                        className={styles.trackBtn}
+                      >
+                        {enrolled ? '已报名' : full ? '已满' : eventEnded ? '已结束' : deadlinePassed ? '已截止' : '报名'}
+                      </Button>
                     </View>
-                    <Button
-                      variant={disabled ? 'secondary' : 'primary'}
-                      disabled={disabled}
-                      onClick={() => setEnrollTrack(t)}
-                      className={styles.trackBtn}
-                    >
-                      {enrolled ? '已报名' : full ? '已满' : eventEnded ? '已结束' : deadlinePassed ? '已截止' : '报名'}
-                    </Button>
-                  </View>
-                )
-              })}
+                  )
+                })}
+              </View>
             </View>
-          </View>
+          )}
         </View>
       )}
 
