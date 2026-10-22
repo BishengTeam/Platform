@@ -11,12 +11,9 @@ export const orderItems: OrderItem[] = [
 export const profileFunctions: ProfileFunction[] = []
 
 // 学习相关入口随学习专区在线课程一起暂时下线。
-// 金刚区固定 4 列：已上线功能在前，未上线位置用置灰占位卡保持网格完整。
-// v1 裁剪：积分入口按开关隐藏；无真实入口时页面整卡不渲染（全是灰占位没有意义）。
+// 金刚区固定 4 列：未上线位置用置灰占位卡保持网格完整。
+// 积分入口改为「我的」页头部的「积分兑好礼」海报横幅（见 pages/profile/index.tsx），不再占用金刚区图标。
 export const profileGridItems: ProfileMenuItem[] = [
-  ...(FEATURES.points
-    ? [{ icon: 'star', label: STRINGS.MINE_POINTS_TITLE, route: 'pages/mine/points', iconBg: '#EFF6FF', iconColor: '#2563EB' }]
-    : []),
   { icon: 'gift', label: STRINGS.PROFILE_GRID_COMING_SOON_TITLE, iconBg: '#F2F3F5', iconColor: '#A9AEB8', comingSoon: true },
   { icon: 'sparkles', label: STRINGS.PROFILE_GRID_COMING_SOON_TITLE, iconBg: '#F2F3F5', iconColor: '#A9AEB8', comingSoon: true },
   { icon: 'compass', label: STRINGS.PROFILE_GRID_COMING_SOON_TITLE, iconBg: '#F2F3F5', iconColor: '#A9AEB8', comingSoon: true },

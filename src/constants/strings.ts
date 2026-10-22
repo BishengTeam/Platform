@@ -647,6 +647,7 @@ export const STRINGS = {
   MINE_POINTS_HISTORY: '积分记录',
   MINE_POINTS_REDEEM: '兑换',
   MINE_POINTS_REDEEM_TIP: '每月可减免考试费¥50，上限¥100',
+  MINE_POINTS_EXCHANGE_COMING_SOON: '兑换好礼即将开放，打卡攒积分，敬请期待',
   MINE_AGREEMENTS_TITLE: '我的协议',
   MINE_AGREEMENTS_SIGN: '立即签署',
   MINE_AGREEMENTS_SIGN_CANVAS: '请在此处手写签名',

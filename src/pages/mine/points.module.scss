@@ -124,6 +124,25 @@
   margin-left: 4px;
 }
 
+/* ── 兑换未开放预告条（只读态） ── */
+.comingSoonBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: $spacing-sm;
+  padding: 26px 32px;
+  background: #fff7e6;
+  border: 1PX solid #ffe7ba;
+  border-radius: $radius-lg;
+}
+
+.comingSoonText {
+  color: #c67c00;
+  font-size: $font-base;
+  line-height: 1.5;
+}
+
 /* ── 顶层 Tab ── */
 .mainTabs {
   display: flex;

@@ -37,6 +37,7 @@ export default defineConfig<'vite'>(async (merge, { command, mode }) => {
         { from: 'src/assets/logo/', to: 'dist/assets/logo/' },
         { from: 'src/assets/service/', to: 'dist/assets/service/' },
         { from: 'src/assets/about/', to: 'dist/assets/about/' },
+        { from: 'src/assets/points/', to: 'dist/assets/points/' },
         // 产物版别标记：上传提审前 cat dist/EDITION 确认没传错包。
         { from: `config/edition-${edition}`, to: 'dist/EDITION' },
       ],

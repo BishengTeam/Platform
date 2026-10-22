@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
+import { FEATURES } from '@/constants/features'
 import { getPointsBalance } from '@/services/dataService'
 import { pointsMallService } from '@/services/pointsMallService'
 import type {
@@ -39,6 +40,9 @@ const STATUS_BADGE_LABELS: Record<MyCoupon['status'], string> = {
   used: '已使用',
   expired: '已过期',
 }
+
+// 兑换开放开关：false 时页面为只读态（余额+积分记录），入口海报照常展示预热
+const EXCHANGE_OPEN = FEATURES.pointsExchange
 
 export default function PointsPage() {
   const [balance, setBalance] = useState(0)
@@ -120,6 +124,7 @@ export default function PointsPage() {
 
   useEffect(() => {
     loadBalance()
+    if (!EXCHANGE_OPEN) return
     loadMall()
     loadVirtualProducts()
   }, [loadBalance, loadMall, loadVirtualProducts])
@@ -138,6 +143,10 @@ export default function PointsPage() {
   }, [mainTab, ordersLoaded, ordersLoading, loadVirtualOrders])
 
   const refreshCurrentTab = useCallback(async () => {
+    if (!EXCHANGE_OPEN) {
+      await loadBalance()
+      return
+    }
     await Promise.all([
       loadBalance(),
       mainTab === 'mall'
@@ -328,7 +337,16 @@ export default function PointsPage() {
             </View>
           </View>
 
-          <View className={styles.mainTabs}>
+          {/* 只读态：兑换未开放，用预告条解释页面构成，tab 栏与兑换面板整体隐藏 */}
+          {!EXCHANGE_OPEN && (
+            <View className={styles.comingSoonBar}>
+              <Icon name='gift' size={28} color='#C67C00' />
+              <Text className={styles.comingSoonText}>{STRINGS.MINE_POINTS_EXCHANGE_COMING_SOON}</Text>
+            </View>
+          )}
+
+          {EXCHANGE_OPEN && (
+            <View className={styles.mainTabs}>
             {MAIN_TABS.map(tab => {
               const isActive = tab.key === mainTab
               return (
@@ -341,9 +359,10 @@ export default function PointsPage() {
                 </View>
               )
             })}
-          </View>
+            </View>
+          )}
 
-          {mainTab === 'mall' && (
+          {EXCHANGE_OPEN && mainTab === 'mall' && (
             <View>
               <ScrollView className={styles.filterBar} scrollX enhanced showScrollbar={false}>
                 <View className={styles.filterTabs}>
@@ -410,7 +429,7 @@ export default function PointsPage() {
             </View>
           )}
 
-          {mainTab === 'virtual' && (
+          {EXCHANGE_OPEN && mainTab === 'virtual' && (
             <View>
               {virtualLoading && <View className={styles.statusBlock}>加载中...</View>}
               {virtualError && <View className={styles.statusBlock}>加载失败，下拉重试</View>}
@@ -449,7 +468,7 @@ export default function PointsPage() {
             </View>
           )}
 
-          {mainTab === 'orders' && (
+          {EXCHANGE_OPEN && mainTab === 'orders' && (
             <View>
               {ordersLoading && <View className={styles.statusBlock}>加载中...</View>}
               {ordersError && <View className={styles.statusBlock}>加载失败，下拉重试</View>}
@@ -494,7 +513,7 @@ export default function PointsPage() {
             </View>
           )}
 
-          {mainTab === 'coupons' && (
+          {EXCHANGE_OPEN && mainTab === 'coupons' && (
             <View>
               <ScrollView className={styles.filterBar} scrollX enhanced showScrollbar={false}>
                 <View className={styles.filterTabs}>

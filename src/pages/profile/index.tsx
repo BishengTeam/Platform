@@ -7,10 +7,11 @@ import { Icon } from '@/components/Icon'
 import { CustomTabBar } from '@/components/TabBar'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
+import { FEATURES } from '@/constants/features'
 import { profileGridItems, profileListGroups } from '@/constants/mock/profile'
 import type { ProfileMenuItem } from '@/types'
 import { resolveMediaUrl } from '@/utils/media'
-import { getUserProfile, getSharePoster } from '@/services/dataService'
+import { getUserProfile, getSharePoster, getPointsBalance } from '@/services/dataService'
 import { getVerificationMaterialSignedUrl } from '@/services/identityMaterialService'
 import styles from './index.module.scss'
 
@@ -21,6 +22,15 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('')
   // 积分海报：后台上传才显示，点击全屏预览（与分享好友页同链路）
   const [posterUrl, setPosterUrl] = useState('')
+  // 头部右侧积分数据位：未取到余额前退回纯箭头，避免渲染出 0 分误导
+  const [userPoints, setUserPoints] = useState<number | null>(null)
+
+  const loadPoints = () => {
+    if (!FEATURES.points) return
+    getPointsBalance()
+      .then(d => setUserPoints(d.available ?? 0))
+      .catch(() => setUserPoints(null))
+  }
 
   const loadProfile = () => {
     getUserProfile().then(profile => {
@@ -51,8 +61,8 @@ export default function ProfilePage() {
     Taro.previewImage({ urls: [resolveMediaUrl(posterUrl)] })
   }
 
-  // Tab 页常驻：签名链接 5 分钟过期、编辑资料后也需刷新，每次显示时重取
-  useDidShow(() => { loadProfile() })
+  // Tab 页常驻：签名链接 5 分钟过期、编辑资料/打卡积分变动后也需刷新，每次显示时重取
+  useDidShow(() => { loadProfile(); loadPoints() })
 
   const handleNavigate = (route?: string) => {
     if (!route) {
@@ -96,8 +106,36 @@ export default function ProfilePage() {
                 <Text className={styles.identityText}>{userStatus}</Text>
               </View>
             </View>
-            <Icon name='chevron-right' size={22} color='rgba(255,255,255,0.7)' className={styles.bannerArrow} />
+            {FEATURES.points && userPoints !== null ? (
+              <View
+                className={styles.headerPoints}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  Taro.navigateTo({ url: '/pages/mine/points' })
+                }}
+              >
+                <Text className={styles.headerPointsLabel}>{STRINGS.MINE_POINTS_BALANCE}</Text>
+                <View className={styles.headerPointsRow}>
+                  <Text className={styles.headerPointsValue}>{userPoints}</Text>
+                  <Text className={styles.headerPointsUnit}>分</Text>
+                  <Icon name='chevron-right' size={20} color='rgba(255,255,255,0.8)' />
+                </View>
+              </View>
+            ) : (
+              <Icon name='chevron-right' size={22} color='rgba(255,255,255,0.7)' className={styles.bannerArrow} />
+            )}
           </View>
+
+          {/* ---- 积分兑换入口横幅：浮动重叠在 header 渐变下缘，点击进积分页 ---- */}
+          {/* 积分页呈只读态还是完整兑换商城由 features 的 pointsExchange 开关决定，入口本身双版本常显 */}
+          {FEATURES.points && (
+            <View
+              className={`${styles.card} ${styles.pointsBannerCard}`}
+              onClick={() => Taro.navigateTo({ url: '/pages/mine/points' })}
+            >
+              <Image className={styles.pointsBannerImage} src='/assets/points/exchange-banner.jpg' mode='widthFix' />
+            </View>
+          )}
 
           {/* ---- 快捷金刚区：浮动白卡，4 列网格；无真实入口时整卡隐藏 ---- */}
           {gridItems.length > 0 && (

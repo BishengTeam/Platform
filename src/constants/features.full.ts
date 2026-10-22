@@ -11,5 +11,6 @@ export const FEATURES_FULL = {
   videoCodes: true,
   examQuery: true,
   points: true,
+  pointsExchange: true,
   checkin: true,
 } as const

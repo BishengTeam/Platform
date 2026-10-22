@@ -7,6 +7,7 @@ import { FEATURES } from '../src/constants/features.ts'
 
 test('features.trim 冻结为 v1 提审口径（2026.10.21 提审版）', () => {
   // 冻结断言：改动 trim 清单必须显式更新此用例并说明提审口径变化。
+  // 2026.10.22：积分海报入口上线（points=true，只读积分页），兑换商城仍关闭（pointsExchange=false）。
   assert.deepEqual({ ...FEATURES_TRIM }, {
     certRegistration: false,
     aiConsult: false,
@@ -15,7 +16,8 @@ test('features.trim 冻结为 v1 提审口径（2026.10.21 提审版）', () => 
     videoLogin: false,
     videoCodes: false,
     examQuery: false,
-    points: false,
+    points: true,
+    pointsExchange: false,
     checkin: true,
   })
 })
