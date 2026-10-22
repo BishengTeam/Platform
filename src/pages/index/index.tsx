@@ -30,7 +30,8 @@ import type { PopupBrief } from '@/types'
 import type { GzhArticleBrief } from '@/types'
 import styles from './index.module.scss'
 
-// v1 裁剪：金刚区只保留学习/竞赛两格；报名认证按开关恢复，不再用置灰占位补格
+// v1 口径：认证专区卡片保留在金刚区，但报名入口未开放——点击仅提示开发中。
+// FEATURES.certRegistration 恢复 true 后原卡回到可跳转报名的完整形态。
 const CERT_REG_KING_KONG_ITEM: KingKongItem = {
   name: STRINGS.INDEX_ZONE_REGISTRATION,
   bg: '#E6F7FF',
@@ -39,8 +40,17 @@ const CERT_REG_KING_KONG_ITEM: KingKongItem = {
   url: '/pages/registration/index',
 }
 
+const CERT_REG_PLACEHOLDER_ITEM: KingKongItem = {
+  name: STRINGS.INDEX_ZONE_REGISTRATION,
+  bg: '#E6F7FF',
+  iconColor: '#1a73e8',
+  icon: 'check-circle-2',
+  url: '',
+  comingSoon: true,
+}
+
 const BASE_KING_KONG_ITEMS: KingKongItem[] = [
-  ...(FEATURES.certRegistration ? [CERT_REG_KING_KONG_ITEM] : []),
+  FEATURES.certRegistration ? CERT_REG_KING_KONG_ITEM : CERT_REG_PLACEHOLDER_ITEM,
   {
     name: STRINGS.INDEX_ZONE_STUDY,
     bg: '#F6FFED',
@@ -231,8 +241,7 @@ export default function IndexPage() {
 
   const kingKongItems = useMemo(() => {
     const items = [...BASE_KING_KONG_ITEMS]
-    // 活动入口跟随后台上架：上架才出现。
-    // 全量版（活动 tab 开启）无活动时保留灰色占位补 2x2；v1 裁剪期不占位，金刚区只留真实入口。
+    // 第 4 格跟随后台上架：无上架活动时保留「敬请期待」占位补 2x2（点击提示开发中）。
     if (activities.length > 0) {
       items.push({
         name: STRINGS.ZONE_NAMES[3],
@@ -242,7 +251,7 @@ export default function IndexPage() {
         url: '/pages/activity-zone/index',
         tab: 'activity',
       })
-    } else if (FEATURES.activityTab) {
+    } else {
       items.push({
         name: STRINGS.INDEX_ZONE_COMING_SOON,
         // 与前三格的浅蓝/浅绿/浅橙形成同饱和度的四色宫格。
