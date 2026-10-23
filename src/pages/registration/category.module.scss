@@ -1,11 +1,12 @@
 @use '../../styles/variables' as *;
 
+// 页面：轻微灰蓝底
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: $color-bg;
+  background: #F4F6F9;
 }
 
 .body {
@@ -16,34 +17,153 @@
   padding-bottom: calc(#{$spacing-lg} + #{$safe-bottom});
 }
 
+// 搜索框：白底 + 20px 视觉圆角 + 浅色边框与微阴影 + 左侧放大镜
 .searchWrap {
   padding: $spacing-md $spacing-lg 0;
 }
 
-.searchInput {
-  width: 100%;
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
   height: 72px;
   background: $color-white;
-  border-radius: $radius-lg;
+  border: $border-thin solid #EEF0F4;
+  border-radius: 40px;
   padding: 0 $spacing-md;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(29, 33, 41, 0.04);
+}
+
+.searchIcon {
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  height: 100%;
   font-size: $font-base;
   color: $color-text;
-  box-sizing: border-box;
 
   &::placeholder {
     color: $color-text-tertiary;
   }
 }
 
+// Segment 风格 Tab：16px 视觉圆角，选中蓝底白字，未选中浅灰底高亮文字
 .filterRow {
   padding: $spacing-md $spacing-lg 0;
 }
 
+.tabScroll {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.tabRow {
+  display: inline-flex;
+  gap: $spacing-xs;
+}
+
+.tabItem {
+  flex-shrink: 0;
+  padding: 12px $spacing-lg;
+  border-radius: 32px;
+  background: #F2F4F7;
+}
+
+.tabItemActive {
+  background: #2F80ED;
+}
+
+.tabText {
+  font-size: $font-base;
+  font-weight: 500;
+  color: #2F80ED;
+}
+
+.tabItemActive .tabText {
+  color: $color-white;
+}
+
+// 卡片列表：垂直间距统一 12px 视觉（等价 margin-bottom）
 .cardList {
   padding: $spacing-md $spacing-lg;
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
+  gap: $spacing-md;
+}
+
+// 认证卡片：纯白 16px 视觉圆角 + 软阴影
+.certCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  background: $color-white;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+}
+
+.certIcon {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.certInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2xs;
+}
+
+.certTitle {
+  font-size: $font-lg;
+  font-weight: 600;
+  color: #1D2129;
+}
+
+.certOccupation {
+  font-size: $font-sm;
+  color: #86909C;
+}
+
+.certTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-top: $spacing-2xs;
+}
+
+.certTag {
+  font-size: $font-sm;
+  line-height: 1.4;
+  color: #86909C;
+  background: #F2F3F5;
+  padding: 2px $spacing-xs;
+  border-radius: $radius-sm;
+}
+
+// 右侧：灰色胶囊标签 + 浅灰右箭头
+.certRight {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+}
+
+.certBadge {
+  font-size: $font-sm;
+  color: #86909C;
+  background: #F2F3F5;
+  padding: 6px $spacing-sm;
+  border-radius: $radius-full;
 }
 
 .loadingWrap {
