@@ -29,8 +29,8 @@ export default function ActivityZonePage() {
   // 从首页金刚区跳转时通过 storage 指定初始 tab；useDidShow 保证每次切回都能响应
   useDidShow(() => {
     const stored = Taro.getStorageSync('activityZoneTab') as MainTab | undefined
-    if (stored && VISIBLE_MAIN_TABS.includes(stored)) {
-      setMainTab(stored)
+    if (stored) {
+      if (VISIBLE_MAIN_TABS.includes(stored)) setMainTab(stored)
       Taro.removeStorageSync('activityZoneTab')
     }
   })

@@ -1,5 +1,7 @@
 import Taro from '@tarojs/taro'
 import { ROUTES, TAB_BAR_CONFIG } from '../constants/routes.ts'
+import { FEATURES } from '../constants/features.ts'
+import { resolveWebViewTarget } from './webviewUrl.ts'
 
 export type SafeBackResult = 'back' | 'fallback'
 
@@ -24,14 +26,65 @@ export function isTabRoute(url: string): boolean {
   return TAB_ROUTES.has(path)
 }
 
-/** 站内路径统一跳转：tab 页必须 switchTab，其余 navigateTo */
-export function navigateToUrl(url: string): void {
-  const normalized = url.startsWith('/') ? url : `/${url}`
-  const path = normalized.split('?')[0]
-  if (isTabRoute(path)) {
-    Taro.switchTab({ url: path })
-  } else {
-    Taro.navigateTo({ url: normalized })
+function navigationNotice(title: string): void {
+  void Taro.showToast({ title, icon: 'none' })
+}
+
+function queryValue(url: string, name: string): string | undefined {
+  const query = url.split('?')[1] || ''
+  for (const part of query.split('&')) {
+    const [key, ...value] = part.split('=')
+    if (key === name) return decodeURIComponent(value.join('='))
+  }
+}
+
+/** Banner、海报共用：外链走WebView，Tab内部标签沿用首页storage约定。 */
+export async function navigateToUrl(url: string): Promise<void> {
+  let stagedTab = false
+  try {
+    const target = url.trim()
+    if (/^https?:\/\//i.test(target)) {
+      const external = resolveWebViewTarget(target)
+      if (!external) {
+        navigationNotice('链接不可用，请联系管理员')
+        return
+      }
+      await Taro.navigateTo({ url: `/${ROUTES.WEBVIEW}?url=${encodeURIComponent(external)}` })
+      return
+    }
+    const normalized = normalizeUrl(target)
+    const path = normalized.split('?')[0]
+    if (['/pages/course/index', '/pages/course/detail', '/pages/mine/courses'].includes(path)) {
+      navigationNotice('目标页面已下线，请联系管理员')
+      return
+    }
+    if (!/^\/pages\/[a-z0-9/_-]+$/i.test(path) || /[\s\\]/.test(normalized)) {
+      navigationNotice('链接不可用，请联系管理员')
+      return
+    }
+    if (isTabRoute(path)) {
+      if (path === `/${ROUTES.ACTIVITY}`) {
+        const tab = queryValue(normalized, 'tab')
+        if (tab && !['activity', 'competition', 'employment'].includes(tab)) {
+          navigationNotice('目标标签不可用，请联系管理员')
+          return
+        }
+        if (tab === 'activity' && !FEATURES.activityTab) {
+          navigationNotice('当前版本暂未开放活动')
+          return
+        }
+        if (tab) {
+          Taro.setStorageSync('activityZoneTab', tab)
+          stagedTab = true
+        } else Taro.removeStorageSync('activityZoneTab')
+      }
+      await Taro.switchTab({ url: path })
+    } else {
+      await Taro.navigateTo({ url: normalized })
+    }
+  } catch {
+    if (stagedTab) Taro.removeStorageSync('activityZoneTab')
+    navigationNotice('页面打开失败，请重试')
   }
 }
 
