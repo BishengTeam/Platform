@@ -126,4 +126,5 @@ export interface H3cOrderCreatePayload {
   verify_code?: string | null
   coupon_proof_key?: string | null
   student_proof_key?: string | null
+  student_verification_method?: import('../utils/h3cStudent').H3cStudentVerificationMethod | null
 }

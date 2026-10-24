@@ -32,6 +32,7 @@ import {
   type RenshePlan,
 } from '@/services/rensheService'
 import type { H3cRegistration } from '@/types/h3c'
+import { H3C_STUDENT_METHODS, studentProofLabel, type H3cStudentVerificationMethod } from '@/utils/h3cStudent'
 import type { CompetitionMyRegistration } from '@/types'
 import sharedStyles from './registrations.module.scss'
 import styles from './registration-detail.module.scss'
@@ -89,6 +90,7 @@ const FIELD_LABELS: Record<string, string> = {
   education: '学历',
   first_name_en: '英文名',
   last_name_en: '英文姓',
+  student_verification_method: '学生资格核验方式',
   name: '姓名',
   pinyin: '拼音',
   major: '专业',
@@ -140,7 +142,8 @@ function snapshotText(
 function snapshotEntries(snapshot: Record<string, unknown>) {
   return Object.entries(snapshot)
     .filter(([key]) => key !== 'exam_date' && key !== 'exam_location' && FIELD_LABELS[key])
-    .map(([key, value]) => ({ label: FIELD_LABELS[key], value: String(value ?? '-') }))
+    .map(([key, value]) => ({ label: FIELD_LABELS[key], value: key === 'student_verification_method'
+      ? H3C_STUDENT_METHODS.find(item => item.value === value)?.label || '-' : String(value ?? '-') }))
 }
 
 function isUserCancelled(error: unknown): boolean {
@@ -285,8 +288,29 @@ export default function RegistrationDetailPage() {
 
   const uploadH3c = async (registration: H3cRegistration): Promise<boolean> => {
     const correction = registration.pending_correction
-    const fieldValues: Record<string, string> = {}
+    const fieldValues: Record<string, string | null> = {}
+    const verificationCorrection = registration.registration_type === 'student' && (
+      correction?.allowed_fields.some(field => ['verify_code', 'student_verification_method'].includes(field))
+      || correction?.allowed_material_types?.includes('student_proof')
+    )
+    let verificationMethod: H3cStudentVerificationMethod | undefined
+    if (verificationCorrection) {
+      try {
+        const selected = await Taro.showActionSheet({ itemList: H3C_STUDENT_METHODS.map(item => item.label) })
+        verificationMethod = H3C_STUDENT_METHODS[selected.tapIndex].value
+      } catch (error) {
+        if (isUserCancelled(error)) return false
+        throw error
+      }
+      if (verificationMethod === 'online_code') {
+        const code = await promptCorrectionField('verify_code', String(registration.candidate_snapshot.verify_code || ''))
+        if (code === null) return false
+        if (!code) { Taro.showToast({ title: '请填写学信网在线验证码', icon: 'none' }); return false }
+        fieldValues.verify_code = code
+      } else fieldValues.verify_code = null
+    }
     for (const field of correction?.allowed_fields || []) {
+      if (verificationCorrection && ['verify_code', 'student_verification_method'].includes(field)) continue
       const value = await promptCorrectionField(
         field,
         String(registration.candidate_snapshot[field] ?? ''),
@@ -295,14 +319,15 @@ export default function RegistrationDetailPage() {
       fieldValues[field] = value
     }
 
-    const materialTypes = (
+    const materialTypes = [...new Set((
       correction?.allowed_material_types
       ?? registration.latest_review?.rejected_material_types
       ?? []
-    ).filter(type => type === 'coupon_proof' || type === 'student_proof')
+    ).filter(type => type === 'coupon_proof' || type === 'student_proof').concat(verificationCorrection ? ['student_proof'] : []))]
     const materialValues: Record<string, string> = {}
     for (const materialType of materialTypes) {
       try {
+        Taro.showToast({ title: `请选择${materialType === 'student_proof' ? studentProofLabel(verificationMethod) : '考券证明图片'}`, icon: 'none' })
         const result = await Taro.chooseImage({
           count: 1,
           sizeType: ['compressed'],
@@ -324,11 +349,8 @@ export default function RegistrationDetailPage() {
     }
 
     await h3cService.resubmitMaterials(registration.id, {
-      phone: fieldValues.phone ?? null,
-      email: fieldValues.email ?? null,
-      school: fieldValues.school ?? null,
-      address: fieldValues.address ?? null,
-      verify_code: fieldValues.verify_code ?? null,
+      ...fieldValues,
+      student_verification_method: verificationMethod,
       coupon_proof_key: materialValues.coupon_proof ?? null,
       student_proof_key: materialValues.student_proof ?? null,
     })

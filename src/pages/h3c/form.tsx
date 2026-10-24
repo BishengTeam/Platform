@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Input, Text, View } from '@tarojs/components'
+import { useEffect, useRef, useState } from 'react'
+import { Input, Text, View, Picker, RadioGroup, Radio, Label } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
@@ -18,6 +18,7 @@ import { STRINGS } from '@/constants/strings'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
 import type { H3cExamBatch, H3cProfileDefaults, H3cRegistrationType } from '@/types/h3c'
 import styles from './h3c.module.scss'
+import { H3C_EDUCATIONS, H3C_STUDENT_METHODS, studentProofLabel, studentQualificationError, type H3cStudentVerificationMethod } from '@/utils/h3cStudent'
 
 const TYPE_LABELS: Record<H3cRegistrationType, string> = {
   coupon: '考券报名',
@@ -47,7 +48,7 @@ const BASE_FIELDS: H3cFieldDef[] = [
   { key: 'address', label: '通信地址', required: true, placeholder: '请输入详细通信地址' },
   { key: 'phone', label: '手机号', required: true, placeholder: '如：188XXXX8888' },
   { key: 'email', label: '邮箱', required: true, placeholder: '如：wxe@XX.com' },
-  { key: 'education', label: '学历', required: true, placeholder: '如：本科', remark: '可选：本科 / 中职 / 高职 / 硕士 / 博士' },
+  { key: 'education', label: '学历', required: true, placeholder: '请选择学历' },
   { key: 'first_name_en', label: 'First Name', required: true, placeholder: '如：Xiaoer', remark: '官方模板示例：王小二 → Xiaoer' },
   { key: 'last_name_en', label: 'Last Name', required: true, placeholder: '如：Wang', remark: '官方模板示例：王小二 → Wang' },
 ]
@@ -63,6 +64,10 @@ export default function H3CFormPage() {
   })
   const [couponKey, setCouponKey] = useState('')
   const [studentKey, setStudentKey] = useState('')
+  const [studentMethod, setStudentMethod] = useState<H3cStudentVerificationMethod | ''>('')
+  const [educationHint, setEducationHint] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const uploadLock = useRef(false)
   const [submitting, setSubmitting] = useState(false)
   const documentActions = useDocumentActions()
   const [guideSlot, setGuideSlot] = useState<DocumentSceneSlot | null>(null)
@@ -89,10 +94,11 @@ export default function H3CFormPage() {
         address: data.address || '',
         phone: data.phone || '',
         email: data.email || '',
-        education: data.education || '',
+        education: H3C_EDUCATIONS.includes(data.education || '') ? data.education! : '',
         first_name_en: data.first_name_en || '',
         last_name_en: data.last_name_en || '',
       }))
+      if (data.education && !H3C_EDUCATIONS.includes(data.education)) setEducationHint('个人资料中的学历不匹配，请重新选择')
     }).catch(() => {
       setIdentityVerified(false)
       Taro.showToast({ title: '加载实名信息失败，请先完成实名认证', icon: 'none' })
@@ -115,24 +121,30 @@ export default function H3CFormPage() {
   const update = (key: string, value: string) => setForm((old) => ({ ...old, [key]: value }))
 
   const chooseMaterial = async (materialType: 'coupon_proof' | 'student_proof') => {
-    const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
-    const filePath = result.tempFilePaths[0]
-    if (!filePath || !batchId) return
-    Taro.showLoading({ title: '上传中', mask: true })
+    if (uploadLock.current || submitting) return
+    uploadLock.current = true
+    setUploading(true)
     try {
+      const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
+      const filePath = result.tempFilePaths[0]
+      if (!filePath || !batchId) return
+      Taro.showLoading({ title: '上传中', mask: true })
       const uploaded = await h3cService.uploadMaterial(filePath, batchId, materialType)
       if (materialType === 'coupon_proof') setCouponKey(uploaded.storage_key)
       else setStudentKey(uploaded.storage_key)
       Taro.showToast({ title: '上传成功', icon: 'success' })
     } catch (error) {
+      if ((error as { errMsg?: string })?.errMsg?.includes('cancel')) return
       Taro.showToast({ title: error instanceof Error ? error.message : '上传失败，请重试', icon: 'none', duration: 3000 })
     } finally {
       Taro.hideLoading()
+      uploadLock.current = false
+      setUploading(false)
     }
   }
 
   const submit = async () => {
-    if (!batch || submitting) return
+    if (!batch || submitting || uploadLock.current) return
     if (!identityVerified) {
       Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2000 })
       setTimeout(() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` }), 500)
@@ -140,6 +152,10 @@ export default function H3CFormPage() {
     }
     if (BASE_FIELDS.some((field) => !form[field.key])) {
       Taro.showToast({ title: '请完整填写报名信息', icon: 'none' })
+      return
+    }
+    if (!H3C_EDUCATIONS.includes(form.education)) {
+      Taro.showToast({ title: '请选择学历', icon: 'none' })
       return
     }
     if (!/^1\d{10}$/.test(form.phone)) {
@@ -158,9 +174,9 @@ export default function H3CFormPage() {
       Taro.showToast({ title: '请上传优惠券证明', icon: 'none' })
       return
     }
-    if (type === 'student' && (!form.verify_code || !studentKey)) {
-      Taro.showToast({ title: '请上传学生证明', icon: 'none' })
-      return
+    if (type === 'student') {
+      const error = studentQualificationError(studentMethod, form.verify_code, studentKey)
+      if (error) { Taro.showToast({ title: error, icon: 'none' }); return }
     }
     if (!(await ensureAgreementSigned(
       'cert_registration',
@@ -198,7 +214,8 @@ export default function H3CFormPage() {
         first_name_en: form.first_name_en,
         last_name_en: form.last_name_en,
         coupon_code: type === 'coupon' ? form.coupon_code : null,
-        verify_code: type === 'student' ? form.verify_code : null,
+        verify_code: type === 'student' && studentMethod === 'online_code' ? form.verify_code.trim() : null,
+        student_verification_method: type === 'student' ? studentMethod as H3cStudentVerificationMethod : null,
         coupon_proof_key: type === 'coupon' ? couponKey : null,
         student_proof_key: type === 'student' ? studentKey : null,
       })
@@ -229,7 +246,7 @@ export default function H3CFormPage() {
             <Text className={styles.title}>报名类型</Text>
             <View className={styles.grid}>
               {(Object.keys(TYPE_LABELS) as H3cRegistrationType[]).map((key) => (
-                <View key={key} className={`${styles.typeButton} ${type === key ? styles.typeActive : ''}`} onClick={() => setType(key)}>
+                <View key={key} className={`${styles.typeButton} ${type === key ? styles.typeActive : ''}`} onClick={() => { if (!uploading && !submitting) setType(key) }}>
                   {TYPE_LABELS[key]}
                 </View>
               ))}
@@ -250,7 +267,13 @@ export default function H3CFormPage() {
                   {field.required && <Text className={styles.required}>*</Text>}
                   <Text className={styles.label}>{field.label}</Text>
                 </View>
-                <Input
+                {field.key === 'education' ? <>
+                  <Picker mode='selector' range={H3C_EDUCATIONS} value={Math.max(0, H3C_EDUCATIONS.indexOf(form.education))}
+                    onChange={event => { update('education', H3C_EDUCATIONS[Number(event.detail.value)]); setEducationHint('') }}>
+                    <View className={`${styles.input} ${styles.pickerValue}`}>{form.education || '请选择学历'}</View>
+                  </Picker>
+                  {educationHint && <Text className={styles.remark}>{educationHint}</Text>}
+                </> : <Input
                   className={`${styles.input} ${
                     field.key === 'candidate_name' || field.key === 'candidate_idcard'
                       ? styles.inputDisabled
@@ -261,7 +284,7 @@ export default function H3CFormPage() {
                   value={form[field.key]}
                   disabled={field.key === 'candidate_name' || field.key === 'candidate_idcard'}
                   onInput={(event) => update(field.key, event.detail.value)}
-                />
+                />}
                 {field.remark && <Text className={styles.remark}>{field.remark}</Text>}
               </View>
             ))}
@@ -294,6 +317,19 @@ export default function H3CFormPage() {
           {type === 'student' && (
             <View className={styles.card}>
               <Text className={styles.title}>学生材料</Text>
+              <Text className={styles.label}>学生资格核验方式 *</Text>
+              <RadioGroup onChange={event => {
+                if (uploadLock.current || submitting || event.detail.value === studentMethod) return
+                setStudentMethod(event.detail.value as H3cStudentVerificationMethod)
+                setStudentKey('')
+                update('verify_code', '')
+              }}>
+                {H3C_STUDENT_METHODS.map(item => <Label key={item.value} className={styles.methodOption}>
+                  <Radio value={item.value} checked={studentMethod === item.value} disabled={uploading || submitting} />
+                  <Text>{item.label}</Text>
+                </Label>)}
+              </RadioGroup>
+              {studentMethod === 'online_code' && <>
               <View className={styles.field}>
                 <View className={styles.labelRow}>
                   <Text className={styles.required}>*</Text>
@@ -309,17 +345,23 @@ export default function H3CFormPage() {
                 <DocumentActions scene={H3C_STUDENT_XUEXIN_GUIDE_SCENE} title={guideSlot?.entry_text || DEFAULT_H3C_XUEXIN_GUIDE_ENTRY_TEXT} previewLabel='预览教程' controller={documentActions} disabled={submitting} />
                 <Text className={styles.remark}>学信网在线验证码必填；请先按教程查询并复制验证码。</Text>
               </View>
+              </>}
+              {studentMethod && <>
+              <Text className={styles.label}>{studentProofLabel(studentMethod)} *</Text>
               <View className={styles.uploadBox} onClick={() => chooseMaterial('student_proof')}>
-                <Text className={studentKey ? styles.uploaded : ''}>{studentKey ? '学生证明已上传' : '上传 JPG 学生证明'}</Text>
+                <Text className={studentKey ? styles.uploaded : ''}>{uploading ? '上传中…' : studentKey ? `${studentProofLabel(studentMethod)}已上传` : `上传 JPG ${studentProofLabel(studentMethod)}`}</Text>
               </View>
-              <Text className={styles.remark}>请上传身份证人像面清晰图片，JPG 格式，用于学生身份核验。</Text>
+              <Text className={styles.remark}>{studentMethod === 'online_code'
+                ? '上传清晰身份证人像面，用于核验学籍信息。'
+                : '请上传有学院盖章的学籍证图片。'} JPG格式，切换核验方式后需重新上传。</Text>
+              </>}
             </View>
           )}
 
           <Button
             variant='gradient'
             size='lg'
-            disabled={!identityVerified || submitting}
+            disabled={!identityVerified || submitting || uploading}
             onClick={submit}
           >
             {identityVerified

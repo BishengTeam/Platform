@@ -36,7 +36,7 @@ test('H3C cards stay visible after enrollment closes or exam finishes', async ()
   assert.equal(page.includes('暂无可报名考试'), false)
 })
 
-test('H3C student registration keeps xuexin code required and links to the PDF guide', async () => {
+test('H3C online-code branch links to the PDF guide and offers the alternative stamped-certificate branch', async () => {
   const page = await readFile('src/pages/h3c/form.tsx', 'utf8')
   const config = await readFile('config/index.ts', 'utf8')
   const service = await readFile('src/services/documentService.ts', 'utf8')
@@ -52,7 +52,8 @@ test('H3C student registration keeps xuexin code required and links to the PDF g
   assert.match(page, /<DocumentActions scene=\{H3C_STUDENT_XUEXIN_GUIDE_SCENE\}/)
   assert.match(page, /previewLabel='预览教程'/)
   assert.match(page, /学信网在线验证码必填/)
-  assert.match(page, /请上传身份证人像面清晰图片，JPG 格式/)
-  assert.doesNotMatch(page, /如无学信网在线验证码/)
+  assert.match(page, /studentMethod === 'online_code'/)
+  assert.match(page, /上传清晰身份证人像面，用于核验学籍信息/)
+  assert.match(page, /请上传有学院盖章的学籍证图片/)
   assert.doesNotMatch(config, /h3c\/assets\/docs/)
 })

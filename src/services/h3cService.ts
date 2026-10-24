@@ -70,6 +70,7 @@ export const h3cService = {
       school?: string | null
       address?: string | null
       verify_code?: string | null
+      student_verification_method?: import('../utils/h3cStudent').H3cStudentVerificationMethod | null
       coupon_proof_key?: string | null
       student_proof_key?: string | null
     },
