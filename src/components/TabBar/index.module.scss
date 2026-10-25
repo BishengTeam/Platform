@@ -12,6 +12,8 @@
 
   :global(.nut-tabbar-item) {
     padding: 0;
+    // NutUI 默认顶对齐，64px 栏高下文字下方留白近 27px；改居中配合 50px 栏高
+    justify-content: center;
   }
 
   :global(.nut-safe-area-position-bottom) {
