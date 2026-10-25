@@ -30,8 +30,9 @@ import type { PopupBrief } from '@/types'
 import type { GzhArticleBrief } from '@/types'
 import styles from './index.module.scss'
 
-// v1 口径：认证专区卡片保留在金刚区，但报名入口未开放——点击仅提示开发中。
-// FEATURES.certRegistration 恢复 true 后原卡回到可跳转报名的完整形态。
+// v1 口径：认证报名未开放（certRegistration=false）——金刚区卡片保留但点击提示开发中，
+// 板块导航「认证专区」tab 一并隐藏（认证开发完成前不放用户进入报名页，后台返回了数据也不出）。
+// FEATURES.certRegistration 恢复 true 后原卡与 tab 回到完整形态。
 const CERT_REG_KING_KONG_ITEM: KingKongItem = {
   name: STRINGS.INDEX_ZONE_REGISTRATION,
   bg: '#E6F7FF',
@@ -222,7 +223,7 @@ export default function IndexPage() {
   // 全部内容驱动：无内容的板块不出现 tab，顺序与原瀑布流一致。
   const sectionTabs = useMemo(() => {
     const tabs: { key: string; label: string }[] = []
-    if (certificationCards.length > 0) tabs.push({ key: 'cert', label: STRINGS.ZONE_NAMES[0] })
+    if (FEATURES.certRegistration && certificationCards.length > 0) tabs.push({ key: 'cert', label: STRINGS.ZONE_NAMES[0] })
     if (studyCourses.length > 0) tabs.push({ key: 'study', label: STRINGS.INDEX_ONLINE_COURSES })
     if (competitionList.length > 0) tabs.push({ key: 'competition', label: STRINGS.ZONE_NAMES[2] })
     if (activities.length > 0) tabs.push({ key: 'activity', label: STRINGS.INDEX_TRAINING_ACTIVITIES })
@@ -313,7 +314,8 @@ export default function IndexPage() {
 
           {sectionTabs.length > 0 && (
             <View className={styles.section}>
-              {activeSection === 'cert' && (
+              {/* 渲染同样认开关：数据先到、回落 effect 后至的一帧里，避免无 tab 却闪现认证卡 */}
+              {activeSection === 'cert' && FEATURES.certRegistration && (
                 <HomeCard items={certificationCards} onCardClick={handleCertCardClick} />
               )}
               {activeSection === 'study' && (
