@@ -38,7 +38,7 @@ import {
   getOrCreateAttemptKey,
 } from '@/utils/quizRuntime'
 import { ApiError } from '@/utils/request'
-import { alignedAnswerLines, answerIncludes, answerText, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMatching, isMultipleChoice, isOrdering, quizImageUrls, quizOptions, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
+import { alignedAnswerLines, answerIncludes, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMatching, isMultipleChoice, isOrdering, quizImageUrls, quizOptions, relabeledAnswerText, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import { safeNavigateBack } from '@/utils/navigation'
 import styles from './practice.module.scss'
 
@@ -454,9 +454,12 @@ export default function QuizPracticePage() {
   const answeredCount = session?.questions.filter(question => question.user_answer !== null).length ?? 0
   const correctCount = session?.questions.filter(question => question.is_correct === true).length ?? 0
   const wrongCount = session?.questions.filter(question => question.is_correct === false).length ?? 0
+  const optionSeed = currentQuestion && session
+    ? `${session.id}:${currentQuestion.id}:${currentQuestion.position}`
+    : ''
   const optionItems = useMemo(() => currentQuestion && session
-    ? relabeledQuizOptions(currentQuestion.options, `${session.id}:${currentQuestion.id}:${currentQuestion.position}`)
-    : [], [currentQuestion, session?.id])
+    ? relabeledQuizOptions(currentQuestion.options, optionSeed)
+    : [], [currentQuestion, optionSeed])
   const currentImageUrls = quizImageUrls(currentQuestion?.image_urls)
   const previewQuestionImages = (current: string) => {
     const urls = [
@@ -556,21 +559,24 @@ export default function QuizPracticePage() {
             </View>
             {session.status === 'completed' && (
               <View className={styles.resultList}>
-                {session.questions.map(question => (
-                  <View key={question.session_question_id} className={styles.resultQuestionCard}>
-                    <Text className={question.is_correct === true ? styles.resultCorrect : question.is_correct === false ? styles.resultWrong : styles.resultUnanswered}>
-                      {question.position}. {question.is_correct === true ? '回答正确' : question.is_correct === false ? '回答错误' : '未作答'}
-                    </Text>
-                    <Text className={styles.resultStem}>{question.question_text}</Text>
-                    {quizImageUrls(question.image_urls).length > 0 && (
-                      <View className={styles.questionImages}>
-                        {quizImageUrls(question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
-                      </View>
-                    )}
-                    <Text className={styles.resultAnswer}>你的答案：{answerText(question.user_answer)}　正确答案：{answerText(question.correct_answer)}</Text>
-                    {question.explanation && <Text className={styles.resultExplanation}>解析：{question.explanation}</Text>}
-                  </View>
-                ))}
+                {session.questions.map(question => {
+                  const questionSeed = `${session.id}:${question.id}:${question.position}`
+                  return (
+                    <View key={question.session_question_id} className={styles.resultQuestionCard}>
+                      <Text className={question.is_correct === true ? styles.resultCorrect : question.is_correct === false ? styles.resultWrong : styles.resultUnanswered}>
+                        {question.position}. {question.is_correct === true ? '回答正确' : question.is_correct === false ? '回答错误' : '未作答'}
+                      </Text>
+                      <Text className={styles.resultStem}>{question.question_text}</Text>
+                      {quizImageUrls(question.image_urls).length > 0 && (
+                        <View className={styles.questionImages}>
+                          {quizImageUrls(question.image_urls).map(url => <Image key={url} className={styles.questionImage} src={url} mode='widthFix' />)}
+                        </View>
+                      )}
+                      <Text className={styles.resultAnswer}>你的答案：{relabeledAnswerText(question.user_answer, question.options, questionSeed)}　正确答案：{relabeledAnswerText(question.correct_answer, question.options, questionSeed)}</Text>
+                      {question.explanation && <Text className={styles.resultExplanation}>解析：{question.explanation}</Text>}
+                    </View>
+                  )
+                })}
               </View>
             )}
             {loadError && <Text className={styles.errorText}>{loadError}</Text>}
@@ -839,7 +845,7 @@ export default function QuizPracticePage() {
                     })}
                   </View>
                 ) : (
-                  <Text className={styles.explanation}>你的答案：{answerText(currentResult.user_answer)}　正确答案：{answerText(currentResult.correct_answer)}</Text>
+                  <Text className={styles.explanation}>你的答案：{relabeledAnswerText(currentResult.user_answer, currentQuestion.options, optionSeed)}　正确答案：{relabeledAnswerText(currentResult.correct_answer, currentQuestion.options, optionSeed)}</Text>
                 )}
                 {currentResult.explanation && <Text className={styles.explanation}>解析：{currentResult.explanation}</Text>}
               </View>

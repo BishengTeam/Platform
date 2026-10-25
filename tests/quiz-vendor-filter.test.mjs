@@ -4,11 +4,11 @@ import test from 'node:test'
 
 const file = (p) => new URL(`../src/${p}`, import.meta.url)
 
-test('practice assistant exposes the four vendor buttons with H3C default', async () => {
+test('practice assistant exposes the four vendor buttons with Sangfor default', async () => {
   const source = await readFile(file('pages/training/index.tsx'), 'utf8')
 
-  // 甲方要求：默认 H3C，四个页签覆盖全部题库（none 归入「其他」）。
-  assert.match(source, /DEFAULT_VENDOR_TAG: QuizVendorTag = 'h3c'/)
+  // 默认深信服（SCSA-T 题库上线），四个页签覆盖全部题库（none 归入「其他」）。
+  assert.match(source, /DEFAULT_VENDOR_TAG: QuizVendorTag = 'sangfor'/)
   // 小程序会按页面路径解析无前导斜杠的相对路径，logo 必须指向包根的 assets。
   assert.match(source, /tag: 'h3c', label: 'H3C', logo: '\/assets\/vendor\/h3c\.png'/)
   assert.match(source, /tag: 'nisp', label: 'NISP', logo: '\/assets\/vendor\/nisp\.png'/)

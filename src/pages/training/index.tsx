@@ -31,15 +31,15 @@ const QUICK_ACTIONS: QuickAction[] = [
   { label: '我的收藏', icon: 'star', route: ROUTES.QUIZ_COLLECTIONS, iconBg: '#FEFCE8', iconColor: '#EA580C' },
 ]
 
-// 题库厂商筛选：默认 H3C；none 归入「其他」，保证四个页签覆盖全部题库。
+// 题库厂商筛选：默认深信服；none 归入「其他」，保证四个页签覆盖全部题库。
 const VENDOR_TABS: Array<{ tag: QuizVendorTag; label: string; logo?: string }> = [
+  { tag: 'sangfor', label: '深信服', logo: '/assets/vendor/sangfor.png' },
   { tag: 'h3c', label: 'H3C', logo: '/assets/vendor/h3c.png' },
   { tag: 'nisp', label: 'NISP', logo: '/assets/vendor/nisp.png' },
-  { tag: 'sangfor', label: '深信服', logo: '/assets/vendor/sangfor.png' },
   { tag: 'none', label: '其他' },
 ]
 
-const DEFAULT_VENDOR_TAG: QuizVendorTag = 'h3c'
+const DEFAULT_VENDOR_TAG: QuizVendorTag = 'sangfor'
 
 const EMPTY_STATE_ILLUSTRATION = `data:image/svg+xml;base64,${toBase64(`
   <svg xmlns="http://www.w3.org/2000/svg" width="160" height="112" viewBox="0 0 160 112" fill="none">

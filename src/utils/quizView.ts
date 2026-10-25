@@ -52,6 +52,30 @@ export function relabeledQuizOptions(
   }))
 }
 
+/**
+ * 结果文案用：答案里存的是题目原始字母，而选项列表按 seed 洗牌后重新标了
+ * 显示字母，直接打印原始字母会指向屏幕上另一行。这里把字母翻译成显示字母；
+ * 填空/配对/排序等非字母内容原样输出。
+ */
+export function relabeledAnswerText(
+  answer: QuizAnswer | QuizCorrectAnswer | null | undefined,
+  options: Record<string, string>,
+  seed: string,
+): string {
+  const mapping = new Map(
+    relabeledQuizOptions(options, seed).map(item => [item.originalLabel, item.label]),
+  )
+  const isOriginalLabel = (value: unknown): value is string =>
+    typeof value === 'string' && mapping.has(value)
+  if (typeof answer === 'string' && isOriginalLabel(answer)) {
+    return answerText(mapping.get(answer))
+  }
+  if (Array.isArray(answer) && answer.length > 0 && answer.every(isOriginalLabel)) {
+    return answerText(answer.map(item => mapping.get(item as string) as string).sort())
+  }
+  return answerText(answer)
+}
+
 export function quizImageUrls(imageUrls: string[] | null | undefined): string[] {
   return Array.isArray(imageUrls) ? imageUrls.filter(url => typeof url === 'string' && url.trim() !== '') : []
 }
