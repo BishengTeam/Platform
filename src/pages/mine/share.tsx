@@ -16,7 +16,7 @@ const SHARE_OPTIONS = [
 
 export default function SharePage() {
   useShareAppMessage(() => ({
-    title: '智天远小程序 - H3CNE 认证考试',
+    title: '智天远优学',
     path: '/pages/index/index',
     imageUrl: '',
   }))
