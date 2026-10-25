@@ -75,6 +75,10 @@ $tint-blue: rgba(22, 119, 255, 0.08);
   box-sizing: content-box;
 }
 
+.onlineDot_offline {
+  background: $color-text-tertiary;
+}
+
 .assistantInfo {
   display: flex;
   flex-direction: column;
@@ -96,6 +100,10 @@ $tint-blue: rgba(22, 119, 255, 0.08);
 .onlineText {
   font-size: $font-sm;
   color: $color-success;
+}
+
+.onlineText_offline {
+  color: $color-text-tertiary;
 }
 
 // ---- 联系方式卡片 ----

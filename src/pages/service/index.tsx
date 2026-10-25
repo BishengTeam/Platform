@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Image, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { Popup } from '@nutui/nutui-react-taro'
@@ -31,6 +31,17 @@ interface TicketDetail extends Ticket {
   updated_at: string
 }
 
+// 每日在线时段：09:00-12:00、14:00-17:30（按手机本地时间判定）
+const ONLINE_PERIODS: Array<[number, number]> = [
+  [9 * 60, 12 * 60],
+  [14 * 60, 17 * 60 + 30],
+]
+
+function isWithinServiceHours(date: Date): boolean {
+  const minutes = date.getHours() * 60 + date.getMinutes()
+  return ONLINE_PERIODS.some(([start, end]) => minutes >= start && minutes < end)
+}
+
 export default function ServicePage() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [ticketsLoaded, setTicketsLoaded] = useState(false)
@@ -38,6 +49,13 @@ export default function ServicePage() {
   const [detailLoading, setDetailLoading] = useState(false)
   const [detail, setDetail] = useState<TicketDetail | null>(null)
   const [qrVisible, setQrVisible] = useState(false)
+  const [online, setOnline] = useState(() => isWithinServiceHours(new Date()))
+
+  // 页面停留时每分钟重算在线状态，跨过时段边界自动切换
+  useEffect(() => {
+    const timer = setInterval(() => setOnline(isWithinServiceHours(new Date())), 60 * 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   const loadTickets = useCallback(() => {
     return getTickets().then(data => {
@@ -49,6 +67,7 @@ export default function ServicePage() {
   // 从意见反馈页返回时刷新工单列表
   useDidShow(() => {
     loadTickets()
+    setOnline(isWithinServiceHours(new Date()))
   })
 
   const handleBack = useCallback(() => {
@@ -126,13 +145,15 @@ export default function ServicePage() {
             <View className={styles.assistantCard}>
               <View className={styles.assistantAvatar}>
                 <Image className={styles.assistantLogo} src='/assets/logo/zhi-tian-yuan.svg' mode='aspectFit' />
-                <View className={styles.onlineDot} />
+                <View className={`${styles.onlineDot} ${!online ? styles.onlineDot_offline : ''}`} />
               </View>
               <View className={styles.assistantInfo}>
                 <Text className={styles.assistantName}>{STRINGS.SERVICE_CARD_TITLE}</Text>
                 <View className={styles.onlineRow}>
-                  <Text className={styles.onlineText}>
-                    {STRINGS.SERVICE_ONLINE} {STRINGS.SERVICE_ONLINE_RANGE}
+                  <Text className={`${styles.onlineText} ${!online ? styles.onlineText_offline : ''}`}>
+                    {online
+                      ? `${STRINGS.SERVICE_ONLINE} ${STRINGS.SERVICE_ONLINE_RANGE}`
+                      : STRINGS.SERVICE_OFFLINE_TEXT}
                   </Text>
                 </View>
               </View>
