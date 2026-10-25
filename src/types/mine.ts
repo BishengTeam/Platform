@@ -1,4 +1,5 @@
-export type PointsClaimScene = 'daily_checkin' | 'new_user' | 'activity'
+// 与后端 PointsClaimScene 保持一致：2026-10-24 起注册不再赠送积分，new_user 场景已移除
+export type PointsClaimScene = 'daily_checkin' | 'activity'
 export type PointsRedeemType = 'exam_discount' | 'course'
 
 export interface MyCourse {
