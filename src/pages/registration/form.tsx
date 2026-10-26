@@ -42,6 +42,10 @@ export default function RegistrationFormPage() {
   }, [certId])
 
   useEffect(() => {
+    if (cert?.vendor === '深信服') {
+      Taro.redirectTo({ url: `/${ROUTES.SANGFOR_INDEX}?cert_code=${encodeURIComponent(cert.code)}` })
+      return
+    }
     if (cert?.vendor === 'H3C') {
       Taro.redirectTo({ url: `/${ROUTES.H3C_INDEX}` })
       return

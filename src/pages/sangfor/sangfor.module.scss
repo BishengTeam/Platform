@@ -1,0 +1,17 @@
+@use '../../styles/variables' as *;
+
+.page { display: flex; flex-direction: column; height: 100vh; background: $color-bg; }
+.body { flex: 1; min-height: 0; box-sizing: border-box; }
+.content { padding: $spacing-md; padding-bottom: calc(180px + env(safe-area-inset-bottom)); }
+.card { padding: $spacing-lg; margin-bottom: $spacing-md; background: $color-white; border-radius: $radius-lg; }
+.title { display: block; margin-bottom: $spacing-md; font-size: $font-lg; font-weight: 600; color: $color-text; }
+.hint { display: block; font-size: $font-sm; color: $color-text-secondary; line-height: 1.7; white-space: pre-wrap; }
+.error { display: block; font-size: $font-sm; color: $color-price; margin: $spacing-sm 0; }
+.empty { padding: $spacing-xl; text-align: center; font-size: $font-base; color: $color-text-secondary; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 $spacing-md; }
+.wide { grid-column: 1 / -1; }
+.row { display: flex; justify-content: space-between; gap: $spacing-md; padding: $spacing-sm 0; font-size: $font-base; }
+.label { flex-shrink: 0; color: $color-text-secondary; }
+.value { color: $color-text; text-align: right; word-break: break-all; }
+.actions { display: flex; flex-wrap: wrap; gap: $spacing-md; margin-top: $spacing-lg; }
+@media (max-width: 340px) { .fields { grid-template-columns: minmax(0, 1fr); } }

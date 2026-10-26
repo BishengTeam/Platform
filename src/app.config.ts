@@ -34,6 +34,10 @@ export default defineAppConfig({
       pages: ['index', 'form'],
     },
     {
+      root: 'pages/sangfor',
+      pages: ['index', 'form', 'detail'],
+    },
+    {
       root: 'pages/renshe',
       pages: ['index', 'form'],
     },

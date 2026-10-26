@@ -87,7 +87,7 @@ test('identity page submits private storage keys rather than public media URLs',
 test('registration pages no longer submit lightweight identity without materials', async () => {
   const hook = await readFile('src/hooks/useIdentityCheck.ts', 'utf8')
   const gate = await readFile('src/pages/registration/components/IdentityCheckGate.tsx', 'utf8')
-  const sangfor = await readFile('src/pages/registration/form-sangfor.tsx', 'utf8')
+  const sangfor = await readFile('src/pages/sangfor/form.tsx', 'utf8')
   const renshe = await readFile('src/pages/renshe/form.tsx', 'utf8')
 
   assert.doesNotMatch(hook, /submitIdentity/)
@@ -103,7 +103,7 @@ test('certification submissions gate the cert-registration agreement', async () 
   const sources = await Promise.all([
     readFile('src/pages/h3c/form.tsx', 'utf8'),
     readFile('src/pages/registration/form.tsx', 'utf8'),
-    readFile('src/pages/registration/form-sangfor.tsx', 'utf8'),
+    readFile('src/pages/sangfor/form.tsx', 'utf8'),
     readFile('src/pages/nisp/form.tsx', 'utf8'),
     readFile('src/pages/renshe/form.tsx', 'utf8'),
   ])

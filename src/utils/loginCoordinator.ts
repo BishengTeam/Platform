@@ -74,6 +74,18 @@ export async function cancelLogin(): Promise<void> {
 
 async function validResumeTarget(target: string, origin?: string): Promise<string> {
   const [path, query = ''] = target.split('?')
+  if (path === '/pages/sangfor/form' || path === '/pages/sangfor/detail') {
+    const registrationId = /(?:^|&)(?:registration_id|id)=(\d+)/.exec(query)?.[1]
+    if (registrationId) {
+      try { await get(`/api/sangfor/registrations/${registrationId}`, undefined, false) }
+      catch (error) {
+        if (!(error instanceof ApiError) || ![403, 404].includes(error.statusCode)) throw error
+        Taro.showToast({ title: '报名记录不存在或无法查看，请重新选择', icon: 'none' })
+        return '/pages/mine/registrations'
+      }
+      return target
+    }
+  }
   if (path === '/pages/order-detail/index') {
     const orderId = /(?:^|&)order_id=(\d+)/.exec(query)?.[1]
     try { await get(`/api/orders/${orderId}`, undefined, false) }
@@ -87,6 +99,7 @@ async function validResumeTarget(target: string, origin?: string): Promise<strin
   const id = Number(/(?:^|&)batch_id=(\d+)/.exec(query)?.[1] || /(?:^|&)plan_id=(\d+)/.exec(query)?.[1])
   const api = path === '/pages/h3c/form' ? '/api/h3c/exam-batches'
     : path === '/pages/nisp/form' ? '/api/nisp/batches'
+      : path === '/pages/sangfor/form' ? '/api/sangfor/batches'
       : path === '/pages/renshe/form' ? '/api/renshe/batches' : ''
   if (!api) return target
   const listPath = path.replace('/form', '/index')

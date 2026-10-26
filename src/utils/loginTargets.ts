@@ -3,6 +3,7 @@ import { ROUTES, TAB_BAR_CONFIG } from '../constants/routes.ts'
 export const PUBLIC_PAGES = new Set([
   ROUTES.INDEX, 'pages/training/index', ROUTES.PROFILE, ROUTES.REGISTRATION_INDEX,
   ROUTES.REGISTRATION_CATEGORY, ROUTES.H3C_INDEX, ROUTES.NISP_INDEX, ROUTES.RENSHE_INDEX,
+  ROUTES.SANGFOR_INDEX,
   ROUTES.ACTIVITY, 'pages/activity-zone/detail', 'pages/competition/detail', 'pages/employment-zone/detail',
   ROUTES.QUIZ_INDEX, ROUTES.MINE_POINTS, ROUTES.MINE_ABOUT, ROUTES.AGREEMENT_VIEW, ROUTES.WEBVIEW,
   'pages/competition/attachment',
@@ -47,6 +48,8 @@ export function safeLoginTarget(raw: string, partial = false): string | null {
     [ROUTES.QUIZ_PREPARE]: ['scopeType', 'scopeId'],
   }
   if (!partial && required[route]?.some(key => !seen.has(key))) return null
+  if (!partial && route === ROUTES.SANGFOR_FORM && !seen.has('batch_id') && !seen.has('registration_id')) return null
+  if (!partial && route === ROUTES.SANGFOR_DETAIL && !seen.has('id')) return null
   return `/${route}${params.length ? '?' + params.join('&') : ''}`
 }
 export function isPublicPage(url: string): boolean { return PUBLIC_PAGES.has(url.replace(/^\//, '').split('?')[0]) }
@@ -55,6 +58,7 @@ export function loginPurpose(url: string): string {
   if (/\/h3c\/form/.test(url)) return '登录后继续报名H3C认证'
   if (/\/nisp\/form/.test(url)) return url.includes('level=2') ? '登录后继续报名NISP二级' : '登录后继续报名NISP认证'
   if (/\/renshe\/form/.test(url)) return '登录后继续报名人社认证'
+  if (/\/sangfor\//.test(url)) return '登录后继续办理深信服认证'
   if (/\/quiz\//.test(url)) return '登录后继续使用个人学习功能'
   if (url.includes('/mine/points')) return '登录后继续使用积分功能'
   if (url.includes('/orders/') || url.includes('/order-detail/')) return '登录后查看我的订单'

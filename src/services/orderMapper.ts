@@ -19,6 +19,7 @@ export function orderTitle(item: OrderBackendItem): string {
   if (item.order_kind === 'quiz_order') return '题库商品'
   if (item.product_type === 'NISP-1') return 'NISP一级认证'
   if (item.product_type === 'NISP-2') return 'NISP二级认证'
+  if (stringExtra(item, 'business_type') === 'sangfor') return '深信服认证报名'
   if (item.application_id || stringExtra(item, 'business_type') === 'renshe' || item.product_type === 'RS-ZY') return stringExtra(item, 'project_name') || '人社认证报名'
   return item.product_type || '订单'
 }

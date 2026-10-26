@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { ROUTES } from '@/constants/routes'
 import { h3cService } from '@/services/h3cService'
+import { sangforService, type SangforRegistration } from '@/services/sangforService'
+import { SANGFOR_STATUS } from '@/utils/sangforForm'
 import { getMyCompetitionRegistrations } from '@/services/zoneService'
 import { formatDateTime } from '@/utils/format'
 import {
@@ -55,6 +57,7 @@ const TYPE_LABELS: Record<string, string> = {
 export default function MyRegistrationsPage() {
   const [items, setItems] = useState<UnifiedRegistration[]>([])
   const [rensheItems, setRensheItems] = useState<RensheApplicationListItem[]>([])
+  const [sangforItems, setSangforItems] = useState<SangforRegistration[]>([])
   const [compRegs, setCompRegs] = useState<CompetitionMyRegistration[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -75,11 +78,13 @@ export default function MyRegistrationsPage() {
         .catch(() => [] as NispRegistrationCard[]),
       getMyCompetitionRegistrations().catch(() => [] as CompetitionMyRegistration[]),
       rensheService.listApplications().then(page => page.items).catch(() => [] as RensheApplicationListItem[]),
+      sangforService.registrations().then(page => page.items).catch(() => [] as SangforRegistration[]),
     ])
-      .then(([h3cItems, nispItems, competitionItems, rensheApplicationItems]) => {
+      .then(([h3cItems, nispItems, competitionItems, rensheApplicationItems, sangforRegistrations]) => {
         setItems([...h3cItems, ...nispItems])
         setCompRegs(competitionItems)
         setRensheItems(rensheApplicationItems)
+        setSangforItems(sangforRegistrations)
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
@@ -123,7 +128,7 @@ export default function MyRegistrationsPage() {
             </View>
           )}
 
-          {!loading && !error && items.length === 0 && compRegs.length === 0 && rensheItems.length === 0 && (
+          {!loading && !error && items.length === 0 && compRegs.length === 0 && rensheItems.length === 0 && sangforItems.length === 0 && (
             <View className={styles.empty}>
               <Text>暂无报名记录</Text>
               <Text className={styles.emptyHint}>去认证专区选择认证开始报名</Text>
@@ -200,6 +205,13 @@ export default function MyRegistrationsPage() {
               </View>
             </View>
           ))}
+
+          {!loading && !error && sangforItems.map(item => <View key={`sangfor-${item.id}`} className={styles.card} onClick={() => Taro.navigateTo({ url: `/${ROUTES.SANGFOR_DETAIL}?id=${item.id}` })}>
+            <View className={styles.cardHeader}><Text className={styles.title}>{item.batch_snapshot.name}</Text><Text className={styles.typeBadge}>深信服</Text></View>
+            <View className={styles.row}><Text className={styles.label}>报考方向</Text><Text className={styles.value}>{item.batch_snapshot.exam_direction}</Text></View>
+            <View className={styles.row}><Text className={styles.label}>状态</Text><Text className={styles.value}>{SANGFOR_STATUS[item.status] || item.status}</Text></View>
+            <View className={styles.row}><Text className={styles.label}>金额</Text><Text className={styles.amount}>{(item.price_cents / 100).toFixed(2)} 元</Text></View>
+          </View>)}
 
           {!loading && !error && items.map((item) => {
             const cfg = STATUS_CONFIG[item.status]
