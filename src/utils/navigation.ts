@@ -75,6 +75,10 @@ export async function navigateToUrl(url: string): Promise<void> {
           navigationNotice('当前版本暂未开放活动')
           return
         }
+        if (tab === 'employment' && !FEATURES.employmentZone) {
+          navigationNotice('当前版本暂未开放就业专区')
+          return
+        }
         if (tab) {
           Taro.setStorageSync('activityZoneTab', tab)
           stagedTab = true

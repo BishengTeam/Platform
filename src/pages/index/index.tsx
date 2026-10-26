@@ -192,7 +192,7 @@ export default function IndexPage() {
     if (studyCourses.length > 0) tabs.push({ key: 'study', label: STRINGS.INDEX_ONLINE_COURSES })
     if (competitionList.length > 0) tabs.push({ key: 'competition', label: STRINGS.ZONE_NAMES[2] })
     if (activities.length > 0) tabs.push({ key: 'activity', label: STRINGS.INDEX_TRAINING_ACTIVITIES })
-    if (employmentJobs.length > 0) tabs.push({ key: 'employment', label: STRINGS.ZONE_NAMES[4] })
+    if (FEATURES.employmentZone && employmentJobs.length > 0) tabs.push({ key: 'employment', label: STRINGS.ZONE_NAMES[4] })
     // 新闻资讯固定排最右：同步到公众号推文才出现
     if (gzhArticles.length > 0) tabs.push({ key: 'news', label: STRINGS.INDEX_NEWS_TAB })
     return tabs

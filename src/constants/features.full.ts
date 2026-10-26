@@ -6,6 +6,7 @@ export const FEATURES_FULL = {
   certRegistration: true,
   aiConsult: true,
   activityTab: true,
+  employmentZone: true,
   orders: true,
   videoLogin: true,
   videoCodes: true,

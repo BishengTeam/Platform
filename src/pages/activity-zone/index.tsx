@@ -20,7 +20,7 @@ type MainTab = 'activity' | 'competition' | 'employment'
 // v1 裁剪：「活动」tab 按开关隐藏，storage 回落校验也只认可见 tab，防止老用户被带回隐藏页
 const VISIBLE_MAIN_TABS: MainTab[] = (
   ['activity', 'competition', 'employment'] as MainTab[]
-).filter(tab => tab !== 'activity' || FEATURES.activityTab)
+).filter(tab => (tab !== 'activity' || FEATURES.activityTab) && (tab !== 'employment' || FEATURES.employmentZone))
 
 export default function ActivityZonePage() {
   const [mainTab, setMainTab] = useState<MainTab>('competition')

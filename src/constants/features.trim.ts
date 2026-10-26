@@ -3,6 +3,7 @@
  * 其余入口一律隐藏。首页认证快捷按钮另由 homeCertEntryVisible 控制，生产构建隐藏。
  * 2026.10.22 口径调整：积分海报入口上线（points=true），积分页为只读态，
  * 兑换商城仍不开放（pointsExchange=false）。
+ * 2026.10.26 口径调整：就业专区隐藏（employmentZone=false）。
  * 本清单不得随手修改，tests/features-edition.test.mjs 有冻结断言拦防；
  * 恢复功能请改 features.full.ts，走全量构建。
  */
@@ -13,6 +14,8 @@ export const FEATURES_TRIM = {
   aiConsult: false,
   /** 发现页「活动」tab */
   activityTab: false,
+  /** 就业专区：false=首页板块 tab 与活动页「就业」tab 一并隐藏 */
+  employmentZone: false,
   /** 我的页「订单」（认证/课程支付链路） */
   orders: false,
   /** 我的页「视频登录」 */
