@@ -116,6 +116,20 @@ test('expired or offline batch returns to its public list without creating a reg
   assert.equal(calls.some(call => call[0] === 'showToast' && call[1].title.includes('不可报名')), true)
 })
 
+test('an inaccessible shared order returns to my orders after login without performing a payment', async () => {
+  const { calls } = setup()
+  await requireLogin('/pages/order-detail/index?order_id=42')
+  setAuthTokens('access', 'refresh')
+  Taro.request = async options => {
+    calls.push(['request', options])
+    assert.equal(options.header.Authorization, 'Bearer access')
+    return { statusCode: 404, data: { code: 40300, message: '订单不存在' } }
+  }
+  await completeLogin()
+  assert.deepEqual(calls.at(-1), ['redirectTo', { url: '/pages/orders/index' }])
+  assert.equal(calls.filter(call => call[0] === 'request' && call[1].method !== 'GET').length, 0)
+})
+
 test('protected deep link parks on the real home with a safe continuation, without opening login', async () => {
   const { calls } = setup()
   Taro.getCurrentPages = () => [{ route: 'pages/renshe/form', options: { plan_id: '8' } }]

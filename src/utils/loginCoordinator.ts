@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro'
 import { getToken } from './authState.ts'
-import { getPublic, restoreAuthSession } from './request.ts'
+import { ApiError, get, getPublic, restoreAuthSession } from './request.ts'
 import { isLoginTab, isPublicPage, loginPurpose, safeLoginTarget } from './loginTargets.ts'
 
 const INTENT_KEY = 'login_intent_v1'
@@ -74,6 +74,16 @@ export async function cancelLogin(): Promise<void> {
 
 async function validResumeTarget(target: string, origin?: string): Promise<string> {
   const [path, query = ''] = target.split('?')
+  if (path === '/pages/order-detail/index') {
+    const orderId = /(?:^|&)order_id=(\d+)/.exec(query)?.[1]
+    try { await get(`/api/orders/${orderId}`, undefined, false) }
+    catch (error) {
+      if (!(error instanceof ApiError) || ![403, 404].includes(error.statusCode)) throw error
+      Taro.showToast({ title: '订单不存在或无法查看，请从我的订单重新选择', icon: 'none' })
+      return '/pages/orders/index'
+    }
+    return target
+  }
   const id = Number(/(?:^|&)batch_id=(\d+)/.exec(query)?.[1] || /(?:^|&)plan_id=(\d+)/.exec(query)?.[1])
   const api = path === '/pages/h3c/form' ? '/api/h3c/exam-batches'
     : path === '/pages/nisp/form' ? '/api/nisp/batches'
