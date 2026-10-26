@@ -12,3 +12,6 @@ export type EditionName = 'trim' | 'full'
 const edition: EditionName = process.env.TARO_EDITION === 'trim' ? 'trim' : 'full'
 
 export const FEATURES = edition === 'trim' ? FEATURES_TRIM : FEATURES_FULL
+
+/** 仅控制首页快捷按钮；不改变认证内容区、报名或订单功能。 */
+export const homeCertEntryVisible = process.env.TARO_APP_HOME_CERT_ENTRY_VISIBLE === 'true'

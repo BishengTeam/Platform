@@ -20,7 +20,8 @@ import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
-import { FEATURES } from '@/constants/features'
+import { FEATURES, homeCertEntryVisible } from '@/constants/features'
+import { getHomeQuickEntries } from '@/constants/homeEntries'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
 import { formatDate } from '@/utils/format'
@@ -30,45 +31,6 @@ import type { CertificationResponse } from '@/types'
 import type { PopupBrief } from '@/types'
 import type { GzhArticleBrief } from '@/types'
 import styles from './index.module.scss'
-
-// v1 口径：认证报名未开放（certRegistration=false）——金刚区卡片保留但点击提示开发中，
-// 板块导航「认证专区」tab 一并隐藏（认证开发完成前不放用户进入报名页，后台返回了数据也不出）。
-// FEATURES.certRegistration 恢复 true 后原卡与 tab 回到完整形态。
-const CERT_REG_KING_KONG_ITEM: KingKongItem = {
-  name: STRINGS.INDEX_ZONE_REGISTRATION,
-  bg: '#E6F7FF',
-  iconColor: '#1a73e8',
-  icon: 'check-circle-2',
-  url: '/pages/registration/index',
-}
-
-const CERT_REG_PLACEHOLDER_ITEM: KingKongItem = {
-  name: STRINGS.INDEX_ZONE_REGISTRATION,
-  bg: '#E6F7FF',
-  iconColor: '#1a73e8',
-  icon: 'check-circle-2',
-  url: '',
-  comingSoon: true,
-}
-
-const BASE_KING_KONG_ITEMS: KingKongItem[] = [
-  FEATURES.certRegistration ? CERT_REG_KING_KONG_ITEM : CERT_REG_PLACEHOLDER_ITEM,
-  {
-    name: STRINGS.INDEX_ZONE_STUDY,
-    bg: '#F6FFED',
-    iconColor: '#2e7d32',
-    icon: 'book-open',
-    url: '/pages/training/index',
-  },
-  {
-    name: STRINGS.INDEX_ZONE_COMPETITION,
-    bg: '#FFF7E6',
-    iconColor: '#c67c00',
-    icon: 'trophy',
-    url: '/pages/activity-zone/index',
-    tab: 'competition',
-  },
-]
 
 const CERT_CARD_META: Record<string, { gradient: string; icon: string; tagColor: string }> = {
   'H3C': {
@@ -167,10 +129,6 @@ export default function IndexPage() {
   }
 
   const handleKingKongClick = (item: KingKongItem) => {
-    if (item.comingSoon) {
-      Taro.showToast({ title: STRINGS.INDEX_ACTIVITY_COMING_SOON, icon: 'none' })
-      return
-    }
     if (!item.url) return
     const path = item.url.replace(/^\//, '')
     if (TAB_BAR_CONFIG.some(t => t.key === path)) {
@@ -247,31 +205,11 @@ export default function IndexPage() {
     }
   }, [sectionTabs, activeSection])
 
-  const kingKongItems = useMemo(() => {
-    const items = [...BASE_KING_KONG_ITEMS]
-    // 第 4 格跟随后台上架：无上架活动时保留「敬请期待」占位补 2x2（点击提示开发中）。
-    if (activities.length > 0) {
-      items.push({
-        name: STRINGS.ZONE_NAMES[3],
-        bg: '#F9F0FF',
-        iconColor: '#722ED1',
-        icon: 'gift',
-        url: '/pages/activity-zone/index',
-        tab: 'activity',
-      })
-    } else {
-      items.push({
-        name: STRINGS.INDEX_ZONE_COMING_SOON,
-        // 与前三格的浅蓝/浅绿/浅橙形成同饱和度的四色宫格。
-        bg: '#F9F0FF',
-        iconColor: '#722ED1',
-        icon: 'sparkles',
-        url: '',
-        comingSoon: true,
-      })
-    }
-    return items
-  }, [activities.length])
+  const kingKongItems = useMemo(() => getHomeQuickEntries({
+    homeCertEntryVisible,
+    certRegistration: FEATURES.certRegistration,
+    hasActivities: activities.length > 0,
+  }), [activities.length])
 
   return (
     <>
@@ -312,7 +250,7 @@ export default function IndexPage() {
             <NewsTicker article={tickerArticle} onClick={handleOpenArticle} />
           )}
 
-          <KingKongZone items={kingKongItems} onItemClick={handleKingKongClick} />
+          <KingKongZone items={kingKongItems} columns={kingKongItems.length === 3 ? 3 : 2} onItemClick={handleKingKongClick} />
 
           {/* 板块导航位于金刚区（各专区宫格）下方，列表内容随 tab 切换 */}
           {sectionTabs.length > 0 && (

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 import { STRINGS } from '../src/constants/strings.ts'
+import { getHomeQuickEntries } from '../src/constants/homeEntries.ts'
 
 const file = (p) => new URL(`../src/${p}`, import.meta.url)
 
@@ -38,14 +39,13 @@ test('activity zone defaults to competition and shows preparing empty states', a
 
 test('home activity and employment surfaces follow backend content visibility', async () => {
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
-  // 金刚区第 4 格只跟随活动：有上架活动显示活动入口，无活动显示敬请期待占位。
+  // 活动入口只随可用内容出现，无活动不补占位。
   // 岗位不设金刚区入口，就业走首页瀑布流与活动 tab 子页。
-  assert.match(source, /if \(activities\.length > 0\)[\s\S]*?tab: 'activity'/)
-  assert.match(source, /\} else \{[\s\S]*?INDEX_ZONE_COMING_SOON/)
-  assert.match(
-    source,
-    /INDEX_ZONE_COMING_SOON,[\s\S]*?bg: '#F9F0FF',[\s\S]*?iconColor: '#722ED1'/
-  )
+  assert.match(source, /hasActivities: activities\.length > 0/)
+  const entries = getHomeQuickEntries({ homeCertEntryVisible: false, certRegistration: true, hasActivities: true })
+  assert.equal(entries.find(item => item.tab === 'activity')?.url, '/pages/activity-zone/index')
+  assert.equal(entries.some(item => item.tab === 'employment'), false)
+  assert.doesNotMatch(source, /INDEX_ZONE_COMING_SOON|CERT_REG_PLACEHOLDER_ITEM/)
   const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
   assert.doesNotMatch(activeSource, /tab: 'employment'/)
   // 首页板块导航（2026-10-15 起）：活动/就业 tab 均按内容有无显示/隐藏。
@@ -84,8 +84,10 @@ test('home waterfall replaced by content-driven section tabs', async () => {
 
 test('home king-kong grid keeps the study zone entry visible', async () => {
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
-  assert.match(source, /name: STRINGS\.INDEX_ZONE_STUDY,[\s\S]*?url: '\/pages\/training\/index'/)
-  // 2026-10-01 甲方要求：学习专区入口不再隐藏，金刚区保持 2x2 填满。
+  const entries = getHomeQuickEntries({ homeCertEntryVisible: false, certRegistration: true, hasActivities: false })
+  assert.equal(entries.find(item => item.name === STRINGS.INDEX_ZONE_STUDY)?.url, '/pages/training/index')
+  assert.match(source, /getHomeQuickEntries\(\{/)
+  assert.match(source, /columns=\{kingKongItems\.length === 3 \? 3 : 2\}/)
   assert.doesNotMatch(source, /学习专区暂时隐藏/)
 })
 
