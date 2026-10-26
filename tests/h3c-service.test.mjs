@@ -45,7 +45,7 @@ test('H3C service uses the frozen user registration routes', async () => {
 
   assert.deepEqual(batches, [{ id: 3, prices: [] }])
   assert.equal(resubmitted.status, 'pending_review')
-  assert.equal(calls[0].header.Authorization, undefined)
+  assert.equal(calls[0].header.Authorization, 'Bearer access-token')
   assert.equal(calls[1].header.Authorization, 'Bearer access-token')
   assert.equal(calls[1].url.includes('/api/h3c/registrations/12/materials'), true)
   assert.equal(calls[1].data.coupon_proof_key, 'h3c/materials/7/coupon.jpg')

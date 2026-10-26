@@ -13,6 +13,7 @@ const METHOD_BY_HELPER = {
   del: 'DELETE',
   get: 'GET',
   getPublic: 'GET',
+  getOptional: 'GET',
   post: 'POST',
   put: 'PUT',
 }
@@ -40,7 +41,7 @@ test('quiz service implements exactly the frozen 33 user operations', async () =
     .sort()
 
   const actual = []
-  const requestPattern = /\b(getPublic|get|post|put|del)<unknown>\((['`])([^'`]+)\2/g
+  const requestPattern = /\b(getPublic|getOptional|get|post|put|del)<unknown>\((['`])([^'`]+)\2/g
   for (const match of source.matchAll(requestPattern)) {
     const method = METHOD_BY_HELPER[match[1]]
     const path = normalizeTemplatePath(match[3])

@@ -1,4 +1,4 @@
-import { getPublic } from '../utils/request.ts'
+import { getOptional, getPublic } from '../utils/request.ts'
 /** Quiz API client. All user operations use the frozen quiz contract. */
 
 import { del, get, post, put } from '@/utils/request'
@@ -90,12 +90,12 @@ export async function listQuizCategories(): Promise<QuizCategoryNode[]> {
 }
 
 export async function listQuizLibraries(): Promise<QuizLibraryCatalogItem[]> {
-  const response = await getPublic<unknown>('/api/quiz/libraries')
+  const response = await getOptional<unknown>('/api/quiz/libraries')
   return parseQuizLibraries(response.data)
 }
 
 export async function getQuizLibrary(libraryId: number): Promise<QuizLibraryCatalogDetail> {
-  const response = await getPublic<unknown>(`/api/quiz/libraries/${libraryId}`)
+  const response = await getOptional<unknown>(`/api/quiz/libraries/${libraryId}`)
   return parseQuizLibrary(response.data)
 }
 

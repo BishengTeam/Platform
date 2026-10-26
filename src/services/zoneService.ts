@@ -1,4 +1,4 @@
-import { getPublic } from '../utils/request.ts'
+import { getOptional, getPublic } from '../utils/request.ts'
 /**
  * Zone 聚合服务
  * 2026-06-03：从 dataService.ts 提取，Zone 模块从 20 个细粒度端点收敛为 6 个聚合端点
@@ -129,7 +129,7 @@ export async function getCourseList(): Promise<CourseBrief[]> {
     }))
   }
   if (USE_MOCK) return []
-  const res = await getPublic<{ items?: CourseBrief[] }>('/api/courses')
+  const res = await getOptional<{ items?: CourseBrief[] }>('/api/courses')
   const items = res.data?.items ?? []
   return items.map(item => ({ ...item, cover_url: resolveUrl(item.cover_url) }))
 }

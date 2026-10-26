@@ -117,7 +117,7 @@ export const pointsMallService = {
     return (await post<UsableCoupon[]>('/api/points-mall/usable-coupons', payload as Record<string, unknown>)).data
   },
   async listVirtualProducts(): Promise<VirtualProduct[]> {
-    const response = await getPublic<{ items?: VirtualProduct[] }>('/api/points/virtual-products')
+    const response = await getOptional<{ items?: VirtualProduct[] }>('/api/points/virtual-products')
     return response.data?.items ?? []
   },
   async precheckVirtualProduct(
