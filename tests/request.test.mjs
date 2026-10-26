@@ -78,7 +78,7 @@ test('parallel 401 responses share one refresh and retry with the rotated access
   clearAuthTokens()
 })
 
-test('failed refresh clears quiz caches, shows one modal and no UNAUTHORIZED toast', async () => {
+test('failed refresh clears quiz caches without a modal or forced login', async () => {
   resetRequestStateForTest()
   const env = installTaroMock(async options => options.url.endsWith('/api/auth/refresh')
     ? response(401, 40100, null, '刷新失败')
@@ -87,11 +87,11 @@ test('failed refresh clears quiz caches, shows one modal and no UNAUTHORIZED toa
   env.storage.set('quiz_active_exam_id', 7)
   await assert.rejects(
     request({ url: '/api/quiz/stats', showLoading: false }),
-    /UNAUTHORIZED/,
+    /登录已过期/,
   )
   assert.equal(getToken(), '')
   assert.equal(getRefreshToken(), '')
   assert.equal(env.storage.has('quiz_active_exam_id'), false)
-  assert.equal(env.modalCount(), 1)
+  assert.equal(env.modalCount(), 0)
   assert.equal(env.toastCount(), 0)
 })

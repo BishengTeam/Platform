@@ -9,7 +9,6 @@
  */
 
 import Taro from '@tarojs/taro'
-import { clearQuizCache } from './quizRuntime.ts'
 
 // ---- 配置 ----
 
@@ -29,30 +28,8 @@ export function resolveUrl(path: string | null | undefined): string {
   return `${BASE_URL}${path}`
 }
 
-const TOKEN_KEY = 'auth_token'
-const REFRESH_TOKEN_KEY = 'auth_refresh_token'
-
-// ---- Token 管理 ----
-
-export function getToken(): string {
-  return Taro.getStorageSync(TOKEN_KEY) || ''
-}
-
-export function getRefreshToken(): string {
-  return Taro.getStorageSync(REFRESH_TOKEN_KEY) || ''
-}
-
-export function setAuthTokens(accessToken: string, refreshToken: string): void {
-  if (!accessToken || !refreshToken) throw new Error('登录响应缺少令牌')
-  Taro.setStorageSync(TOKEN_KEY, accessToken)
-  Taro.setStorageSync(REFRESH_TOKEN_KEY, refreshToken)
-}
-
-export function clearAuthTokens(): void {
-  Taro.removeStorageSync(TOKEN_KEY)
-  Taro.removeStorageSync(REFRESH_TOKEN_KEY)
-  clearQuizCache()
-}
+import { getToken, getRefreshToken, setAuthTokens, clearAuthTokens, getAuthSessionId, accessTokenExpired } from './authState.ts'
+export { getToken, getRefreshToken, setAuthTokens, clearAuthTokens } from './authState.ts'
 
 // ---- 类型 ----
 
@@ -81,14 +58,16 @@ export interface RequestOptions {
   header?: Record<string, string>
   /** 是否显示 loading，默认 true */
   showLoading?: boolean
+  /** public不带令牌；optional支持匿名回退；required在本地检查登录。 */
+  auth?: 'public' | 'optional' | 'required'
 }
 
 // ---- 核心请求函数 ----
 
 let refreshPromise: Promise<boolean> | null = null
-let reloginPromptVisible = false
 
 async function refreshAccessToken(): Promise<boolean> {
+  const session = getAuthSessionId()
   const refreshToken = getRefreshToken()
   if (!refreshToken) return false
   try {
@@ -105,7 +84,8 @@ async function refreshAccessToken(): Promise<boolean> {
     if (typeof data !== 'object' || data === null) return false
     const values = data as Record<string, unknown>
     if (typeof values.access_token !== 'string' || typeof values.refresh_token !== 'string') return false
-    setAuthTokens(values.access_token, values.refresh_token)
+    if (getAuthSessionId() !== session || getRefreshToken() !== refreshToken) return false
+    setAuthTokens(values.access_token, values.refresh_token, false)
     return true
   } catch {
     return false
@@ -123,36 +103,28 @@ function runSingleFlightRefresh(): Promise<boolean> {
  * refresh request, which is important because refresh tokens are rotated.
  */
 export async function restoreAuthSession(): Promise<boolean> {
-  if (getToken()) return true
-  if (!getRefreshToken()) return false
+  if (getToken() && !accessTokenExpired()) return true
+  if (!getRefreshToken()) { if (getToken()) clearAuthTokens(); return false }
+  const session = getAuthSessionId()
   const restored = await runSingleFlightRefresh()
-  if (!restored) clearAuthTokens()
-  return restored
-}
-
-function requireRelogin(message: string): void {
-  clearAuthTokens()
-  if (reloginPromptVisible) return
-  reloginPromptVisible = true
-  Taro.showModal({
-    title: '提示',
-    content: message,
-    showCancel: false,
-    success: () => {
-      reloginPromptVisible = false
-      Taro.reLaunch({ url: '/pages/auth/index' })
-    },
-    fail: () => { reloginPromptVisible = false },
-  })
+  if (!restored && getAuthSessionId() === session) clearAuthTokens()
+  return restored || Boolean(getToken())
 }
 
 export async function request<T = unknown>(options: RequestOptions, allowRefresh = true): Promise<ApiResponse<T>> {
-  const { url, method = 'GET', data, header = {}, showLoading = true } = options
+  const { url, method = 'GET', data, header = {}, showLoading = true, auth = 'required' } = options
 
-  const token = getToken()
+  if (auth === 'required' && (!getToken() || accessTokenExpired()) && !(await restoreAuthSession())) {
+    throw new ApiError('请先登录后继续操作', 40100, 401)
+  }
+  const token = auth === 'public' ? '' : getToken()
+  const session = getAuthSessionId()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...header,
+  }
+  if (auth === 'public') {
+    for (const key of Object.keys(headers)) if (key.toLowerCase() === 'authorization') delete headers[key]
   }
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
@@ -181,43 +153,26 @@ export async function request<T = unknown>(options: RequestOptions, allowRefresh
 
     const result = res.data as ApiResponse<T>
 
-    // HTTP 层错误（如 502 Bad Gateway）：
-    // 如果后端仍返回了带 code 的业务 JSON，优先走下面的业务错误处理；
-    // 否则按网络异常抛错。
     const hasBusinessCode = result && typeof result.code === 'number'
-    if ((res.statusCode < 200 || res.statusCode >= 300) && !hasBusinessCode) {
-      // 保留 HTTP 状态码，调用方可以区分“接口未部署”和业务资源 404。
-      throw new ApiError(
-        result?.message || '服务器开小差了，请稍后重试',
-        res.statusCode,
-        res.statusCode,
-      )
-    }
-
-    if (result && result.code === 0) {
-      return result
-    }
-
-    // 业务错误：按错误码分流
-    // 后端认证错误码: 40100-40199，HTTP 401
-    if ((result && result.code === 40100) || res.statusCode === 401) {
-      if (isDev) {
-        console.warn('[Request] 401 detected — message:', result.message, 'code:', result.code)
-      }
-      const msg = result.message || '登录已过期，请重新登录'
+    if (res.statusCode === 401 || result?.code === 40100) {
       const isAuthEndpoint = url === '/api/auth/login' || url === '/api/auth/refresh'
-      if (allowRefresh && !isAuthEndpoint && getRefreshToken()) {
-        // A startup restore may have rotated the token while this request was
-        // in flight. In that case retry with the new access token directly;
-        // otherwise join/start the one permitted refresh request.
-        const tokenWasRefreshed = Boolean(getToken()) && getToken() !== token
-        if (tokenWasRefreshed || await runSingleFlightRefresh()) {
-          return request<T>({ ...options, showLoading: false }, false)
+      if (auth !== 'public' && !isAuthEndpoint) {
+        if (getAuthSessionId() !== session) throw new ApiError('登录状态已变化，请重新操作', 40100, 401)
+        if (allowRefresh && getRefreshToken()) {
+          const tokenWasRefreshed = Boolean(getToken()) && getToken() !== token
+          if (tokenWasRefreshed || await runSingleFlightRefresh()) {
+            return request<T>({ ...options, showLoading: false }, false)
+          }
         }
+        if (getAuthSessionId() === session && (getToken() || getRefreshToken())) clearAuthTokens()
+        if (auth === 'optional') return request<T>({ ...options, auth: 'public', showLoading: false }, false)
       }
-      requireRelogin(msg)
-      throw new Error('UNAUTHORIZED')
+      throw new ApiError(result?.message || '登录已过期，请重新登录', 40100, 401)
     }
+    if ((res.statusCode < 200 || res.statusCode >= 300) && !hasBusinessCode) {
+      throw new ApiError(result?.message || '服务器开小差了，请稍后重试', res.statusCode, res.statusCode)
+    }
+    if (result && result.code === 0) return result
 
     // 其他业务错误统一抛错，避免调用方读到空 data
     throw new ApiError(
@@ -249,10 +204,9 @@ export async function request<T = unknown>(options: RequestOptions, allowRefresh
   }
 }
 
-/** Test-only reset for module-level single-flight/prompt state. */
+/** Test-only reset for module-level single-flight state. */
 export function resetRequestStateForTest(): void {
   refreshPromise = null
-  reloginPromptVisible = false
 }
 
 // ---- 便捷方法 ----
@@ -271,4 +225,12 @@ export function put<T = unknown>(url: string, data?: Record<string, unknown>, sh
 
 export function del<T = unknown>(url: string, data?: Record<string, unknown>, showLoading?: boolean) {
   return request<T>({ url, method: 'DELETE', data, showLoading })
+}
+
+/** 公开读取不发送令牌，不刷新会话，也不触发登录导航。 */
+export function getPublic<T = unknown>(url: string, data?: Record<string, unknown>, showLoading?: boolean) {
+  return request<T>({ url, method: 'GET', data, showLoading, auth: 'public' })
+}
+export function getOptional<T = unknown>(url: string, data?: Record<string, unknown>, showLoading?: boolean) {
+  return request<T>({ url, method: 'GET', data, showLoading, auth: 'optional' })
 }

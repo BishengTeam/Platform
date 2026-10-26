@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -64,7 +63,7 @@ export default function RegistrationIndexPage() {
   }, [])
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={STRINGS.REGISTRATION_TITLE} shouldShowBack />
         <RefreshableScrollView className={styles.body} onRefresh={load}>
@@ -101,6 +100,6 @@ export default function RegistrationIndexPage() {
           </View>
         </RefreshableScrollView>
       </View>
-    </AuthGuard>
+    </>
   )
 }

@@ -1,7 +1,9 @@
+import { getToken, getAuthSessionId } from '@/utils/authState'
+import { useAuth } from '@/hooks/useAuth'
+import { navigateWithLogin } from '@/utils/loginCoordinator'
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
 import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
@@ -69,6 +71,7 @@ interface TrainingScopePickerNode extends TrainingScope {
 }
 
 export default function TrainingPage() {
+  const { isLoggedIn, sessionId } = useAuth()
   const [quizLibraries, setQuizLibraries] = useState<QuizLibraryCatalogItem[]>([])
   const [activeVendor, setActiveVendor] = useState<QuizVendorTag>(DEFAULT_VENDOR_TAG)
   const [selectedLibrary, setSelectedLibrary] = useState<QuizLibraryCatalogDetail | null>(null)
@@ -108,21 +111,22 @@ export default function TrainingPage() {
   useEffect(() => { void loadInitialData() }, [loadInitialData])
 
   useEffect(() => {
-    if (!selectedScope) {
+    if (!selectedScope || !isLoggedIn) {
       setQuizStats(null)
       return
     }
     setQuizStats(null)
     let active = true
+    const session = getAuthSessionId()
     getQuizStats({ scope_type: selectedScope.type, scope_id: selectedScope.id })
       .then(stats => {
-        if (active) setQuizStats(stats)
+        if (active && getToken() && getAuthSessionId() === session) setQuizStats(stats)
       })
       .catch(() => {
         if (active) setQuizStats(null)
       })
     return () => { active = false }
-  }, [selectedScope?.id, selectedScope?.type])
+  }, [selectedScope?.id, selectedScope?.type, isLoggedIn, sessionId])
 
   const vendorLibraries = useMemo(
     () => quizLibraries.filter(item => item.vendor_tag === activeVendor),
@@ -201,7 +205,7 @@ export default function TrainingPage() {
   }, [])
 
   const handleQuickActionClick = useCallback((item: QuickAction) => {
-    Taro.navigateTo({ url: `/${item.route}` })
+    void navigateWithLogin(`/${item.route}`)
   }, [])
 
   const handleSwitchToAvailableVendor = useCallback(() => {
@@ -285,7 +289,7 @@ export default function TrainingPage() {
 
             <View
               className={`${styles.practiceCta} ${selectedScope ? '' : styles.practiceCtaDisabled}`}
-              onClick={() => selectedScope && Taro.navigateTo({ url: `/${ROUTES.QUIZ_PREPARE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}` })}
+              onClick={() => selectedScope && void navigateWithLogin(`/${ROUTES.QUIZ_PREPARE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}`)}
             >
               <Text className={styles.practiceCtaText}>开始练习</Text>
             </View>
@@ -315,12 +319,12 @@ export default function TrainingPage() {
 
   return (
     <View className={styles.page}>
-      <AuthGuard>
+      <>
         <PageHeader title={STRINGS.STUDY_TITLE} shouldShowBack={false} />
         <RefreshableScrollView className={styles.body} onRefresh={loadInitialData}>
           {renderQuizTab()}
         </RefreshableScrollView>
-      </AuthGuard>
+      </>
       <CustomTabBar activeTabKey='pages/training/index' onSwitch={(url: string) => Taro.switchTab({ url })} />
       <QuizCategoryPicker
         visible={scopePickerVisible}

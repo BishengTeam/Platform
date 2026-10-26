@@ -5,7 +5,7 @@ import test from 'node:test'
 test('Renshe uses the dedicated batch, draft, and submission services', async () => {
   const service = await readFile('src/services/rensheService.ts', 'utf8')
 
-  assert.match(service, /get<RenshePlan\[\]>\('\/api\/renshe\/batches'/)
+  assert.match(service, /getPublic<RenshePlan\[\]>\('\/api\/renshe\/batches'/)
   assert.match(service, /'\/api\/renshe\/applications\/draft'/)
   assert.match(service, /post<RensheSubmitResult>\(`\/api\/renshe\/applications\/\$\{id\}\/submit`\)/)
   assert.doesNotMatch(service, /post\(['`]\/api\/orders/)

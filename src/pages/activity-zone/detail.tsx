@@ -1,3 +1,4 @@
+import { requireLogin } from '@/utils/loginCoordinator'
 import { useEffect, useState } from 'react'
 import { View, Text, Image, Input, Textarea } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
@@ -39,13 +40,15 @@ export default function ActivityDetailPage() {
       .finally(() => setLoading(false))
   }, [activityId])
 
-  const openEnroll = () => {
+  const openEnroll = async () => {
+    if (!(await requireLogin(`/pages/activity-zone/detail?id=${activityId}`))) return
     if (enrolled) return
     setEnrollOpen(true)
   }
 
   const submitEnroll = async () => {
     if (!activity || submitting) return
+    if (!(await requireLogin(`/pages/activity-zone/detail?id=${activityId}`))) return
     if (!name.trim()) {
       Taro.showToast({ title: '请输入姓名', icon: 'none' })
       return
@@ -85,6 +88,7 @@ export default function ActivityDetailPage() {
 
   const handleRemind = async () => {
     if (!activity || reminded) return
+    if (!(await requireLogin(`/pages/activity-zone/detail?id=${activityId}`))) return
     try {
       await remindActivity(activity.id)
       setReminded(true)

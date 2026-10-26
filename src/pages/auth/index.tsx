@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { View, Text, Image } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useUnload } from '@tarojs/taro'
 import { wxLogin, acceptLoginAgreements } from '@/services/dataService'
 import { setAuthTokens } from '@/utils/request'
 import { clearQuizCache } from '@/utils/quizRuntime'
-import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import { Icon } from '@/components/Icon'
 import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import styles from './index.module.scss'
+import { cancelLogin, completeLogin, loginPageClosed, pendingLogin } from '@/utils/loginCoordinator'
 
 export default function AuthPage() {
   const [isAgreed, setIsAgreed] = useState(false)
   const [isShaking, setIsShaking] = useState(false)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const purpose = pendingLogin()?.purpose || '登录后查看报名、订单及个人服务'
+  useUnload(loginPageClosed)
 
   const handleLogin = () => {
     if (!isAgreed) {
@@ -34,11 +36,11 @@ export default function AuthPage() {
               setAuthTokens(data.access_token, data.refresh_token)
               // P0 电子协议：登录即视为同意用户协议与隐私政策，尽力记录签署（失败不阻断登录）
               acceptLoginAgreements().catch(() => undefined)
-              Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
+              void completeLogin()
             })
             .catch((err: unknown) => {
               setIsLoggingIn(false)
-              // 40100 由 request.ts 已弹 modal，不重复提示
+              // 登录失败留在当前页，保留原办理目标和协议勾选。
               if ((err as Error)?.message !== 'UNAUTHORIZED') {
                 Taro.showToast({ title: '登录失败，请重试', icon: 'none' })
               }
@@ -67,6 +69,7 @@ export default function AuthPage() {
         </View>
 
         <View className={`${styles.actions} fade-in-up delay-1`}>
+          <Text className={styles.loginPurpose}>{purpose}</Text>
           <View
             className={`${styles.wechatBtn} ${isLoggingIn ? styles.wechatBtnLoading : ''}`}
             onClick={handleLogin}
@@ -74,6 +77,7 @@ export default function AuthPage() {
             <Icon name='message-circle' size={20} color='#ffffff' />
             <Text className={styles.wechatBtnText}>{isLoggingIn ? '登录中...' : STRINGS.AUTH_WECHAT_BTN}</Text>
           </View>
+          <Text className={styles.browseLink} onClick={() => { if (!isLoggingIn) void cancelLogin() }}>暂不登录，继续浏览</Text>
 
           <View className={`${styles.agreementRow} ${isShaking ? 'shake' : ''} fade-in delay-2`}>
             <AgreementCheckbox

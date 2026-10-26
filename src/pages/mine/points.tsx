@@ -1,7 +1,9 @@
+import { useAuth } from '@/hooks/useAuth'
+import { getToken, getAuthSessionId } from '@/utils/authState'
+import { requireLogin, navigateWithLogin } from '@/utils/loginCoordinator'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ScrollView, Text, View } from '@tarojs/components'
-import Taro from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
+import Taro, { useRouter } from '@tarojs/taro'
 import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -45,8 +47,10 @@ const STATUS_BADGE_LABELS: Record<MyCoupon['status'], string> = {
 const EXCHANGE_OPEN = FEATURES.pointsExchange
 
 export default function PointsPage() {
-  const [balance, setBalance] = useState(0)
-  const [mainTab, setMainTab] = useState<MainTab>('mall')
+  const { isLoggedIn, sessionId } = useAuth()
+  const { params } = useRouter()
+  const [balance, setBalance] = useState<number | null>(null)
+  const [mainTab, setMainTab] = useState<MainTab>(['mall', 'virtual', 'orders', 'coupons'].includes(params.tab || '') ? params.tab as MainTab : 'mall')
   const virtualAttempts = useRef<Record<number, { version: number; key: string }>>({})
 
   // 商城兑换
@@ -72,9 +76,15 @@ export default function PointsPage() {
   const [couponsError, setCouponsError] = useState(false)
   const [couponsLoaded, setCouponsLoaded] = useState(false)
   const [couponStatus, setCouponStatus] = useState('')
+  useEffect(() => {
+    setCoupons([]); setVirtualOrders([]); setCouponsLoaded(false); setOrdersLoaded(false)
+    setCouponsLoading(false); setOrdersLoading(false)
+  }, [sessionId])
 
   const loadBalance = useCallback(() => {
-    return getPointsBalance().then(d => setBalance(d.available ?? 0)).catch(() => {})
+    if (!getToken()) { setBalance(null); return Promise.resolve() }
+    const session = getAuthSessionId()
+    return getPointsBalance().then(d => { if (getToken() && getAuthSessionId() === session) setBalance(d.available ?? 0) }).catch(() => setBalance(null))
   }, [])
 
   const loadMall = useCallback(() => {
@@ -87,17 +97,18 @@ export default function PointsPage() {
   }, [])
 
   const loadCoupons = useCallback((status: string) => {
+    if (!getToken()) return Promise.resolve()
+    const session = getAuthSessionId()
     setCouponsLoading(true)
     setCouponsError(false)
     return pointsMallService.myCoupons(status || undefined)
-      .then(setCoupons)
+      .then(values => { if (getToken() && getAuthSessionId() === session) setCoupons(values) })
       .catch(() => {
         setCoupons([])
         setCouponsError(true)
       })
       .finally(() => {
-        setCouponsLoading(false)
-        setCouponsLoaded(true)
+        if (getAuthSessionId() === session) { setCouponsLoading(false); setCouponsLoaded(true) }
       })
   }, [])
 
@@ -111,15 +122,17 @@ export default function PointsPage() {
   }, [])
 
   const loadVirtualOrders = useCallback(() => {
+    if (!getToken()) return Promise.resolve()
+    const session = getAuthSessionId()
     setOrdersLoading(true)
     setOrdersError(false)
     return pointsMallService.listVirtualOrders()
-      .then(setVirtualOrders)
+      .then(values => { if (getToken() && getAuthSessionId() === session) setVirtualOrders(values) })
       .catch(() => {
         setVirtualOrders([])
         setOrdersError(true)
       })
-      .finally(() => setOrdersLoaded(true))
+      .finally(() => { if (getAuthSessionId() === session) { setOrdersLoading(false); setOrdersLoaded(true) } })
   }, [])
 
   useEffect(() => {
@@ -127,20 +140,22 @@ export default function PointsPage() {
     if (!EXCHANGE_OPEN) return
     loadMall()
     loadVirtualProducts()
-  }, [loadBalance, loadMall, loadVirtualProducts])
+  }, [loadBalance, loadMall, loadVirtualProducts, isLoggedIn, sessionId])
+
+  useEffect(() => { if (!isLoggedIn) { setBalance(null); setCoupons([]); setVirtualOrders([]); setCouponsLoaded(false); setOrdersLoaded(false); setCouponsLoading(false); setOrdersLoading(false); if (mainTab === 'orders' || mainTab === 'coupons') setMainTab('mall') } }, [isLoggedIn])
 
   // 首次切到「我的优惠券」时加载，之后由下拉刷新或状态切换刷新
   useEffect(() => {
-    if (mainTab === 'coupons' && !couponsLoaded && !couponsLoading) {
+    if (isLoggedIn && mainTab === 'coupons' && !couponsLoaded && !couponsLoading) {
       loadCoupons(couponStatus)
     }
-  }, [mainTab, couponsLoaded, couponsLoading, couponStatus, loadCoupons])
+  }, [mainTab, couponsLoaded, couponsLoading, couponStatus, loadCoupons, isLoggedIn])
 
   useEffect(() => {
-    if (mainTab === 'orders' && !ordersLoaded && !ordersLoading) {
+    if (isLoggedIn && mainTab === 'orders' && !ordersLoaded && !ordersLoading) {
       loadVirtualOrders()
     }
-  }, [mainTab, ordersLoaded, ordersLoading, loadVirtualOrders])
+  }, [mainTab, ordersLoaded, ordersLoading, loadVirtualOrders, isLoggedIn])
 
   const refreshCurrentTab = useCallback(async () => {
     if (!EXCHANGE_OPEN) {
@@ -177,7 +192,7 @@ export default function PointsPage() {
   }
 
   const goHistory = () => {
-    Taro.navigateTo({ url: '/pages/mine/points-history' })
+    void navigateWithLogin('/pages/mine/points-history')
   }
 
   const virtualTypeLabel = (product: VirtualProduct) => (
@@ -220,6 +235,7 @@ export default function PointsPage() {
   }
 
   const redeemVirtual = async (item: VirtualProduct) => {
+    if (!(await requireLogin(`/pages/mine/points?tab=virtual`))) return
     let precheck
     Taro.showLoading({ title: '检查中', mask: true })
     try {
@@ -287,7 +303,8 @@ export default function PointsPage() {
     })
   }
 
-  const redeem = (item: PointsMallItem) => {
+  const redeem = async (item: PointsMallItem) => {
+    if (!(await requireLogin('/pages/mine/points?tab=mall'))) return
     if (!item.can_redeem) return
     Taro.showModal({
       title: '确认兑换',
@@ -318,7 +335,7 @@ export default function PointsPage() {
   }
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={STRINGS.MINE_POINTS_TITLE} shouldShowBack />
         <RefreshableScrollView className={styles.body} onRefresh={refreshCurrentTab}>
@@ -327,8 +344,8 @@ export default function PointsPage() {
               <Text className={styles.balanceLabel}>{STRINGS.MINE_POINTS_BALANCE}</Text>
               <View className={styles.balanceRow}>
                 <Icon name='coin' size={32} color='rgba(255, 255, 255, 0.92)' className={styles.balanceIcon} />
-                <Text className={styles.balanceValue}>{balance}</Text>
-                <Text className={styles.balanceUnit}>分</Text>
+                <Text className={`${styles.balanceValue} ${!isLoggedIn ? styles.guestBalanceValue : ''}`}>{isLoggedIn ? balance ?? '—' : '登录后查看'}</Text>
+                {isLoggedIn && balance !== null && <Text className={styles.balanceUnit}>分</Text>}
               </View>
             </View>
             <View className={styles.historyBtn} onClick={goHistory}>
@@ -353,7 +370,7 @@ export default function PointsPage() {
                 <View
                   key={tab.key}
                   className={`${styles.mainTab} ${isActive ? styles.mainTabActive : ''}`}
-                  onClick={() => setMainTab(tab.key)}
+                  onClick={async () => { if (['orders', 'coupons'].includes(tab.key) && !(await requireLogin(`/pages/mine/points?tab=${tab.key}`))) return; setMainTab(tab.key) }}
                 >
                   <Text>{tab.label}</Text>
                 </View>
@@ -408,9 +425,9 @@ export default function PointsPage() {
                       <Text className={styles.pointsCostValue}>{item.points_cost}</Text>
                       <Text className={styles.pointsCostUnit}>积分</Text>
                     </View>
-                    {item.can_redeem ? (
+                    {item.can_redeem || (!isLoggedIn && item.redeem_blocked_reason === '登录后兑换') ? (
                       <View className={styles.redeemBtn} onClick={() => redeem(item)}>
-                        <Text>立即兑换</Text>
+                        <Text>{isLoggedIn ? '立即兑换' : '登录后兑换'}</Text>
                       </View>
                     ) : (
                       <View className={styles.redeemBtnDisabled}>
@@ -574,6 +591,6 @@ export default function PointsPage() {
           )}
         </RefreshableScrollView>
       </View>
-    </AuthGuard>
+    </>
   )
 }

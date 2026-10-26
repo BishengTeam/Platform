@@ -1,3 +1,6 @@
+import { useAuth } from '@/hooks/useAuth'
+import { getToken, getAuthSessionId } from '@/utils/authState'
+import { requireLogin } from '@/utils/loginCoordinator'
 import { useEffect, useState } from 'react'
 import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
@@ -21,6 +24,7 @@ import type { CompetitionBrief, CompetitionTrackBrief } from '@/types'
 import styles from './detail.module.scss'
 
 export default function CompetitionDetailPage() {
+  const { isLoggedIn, sessionId } = useAuth()
   const { params } = useRouter()
   const competitionId = Number(params?.id)
   const [competition, setCompetition] = useState<CompetitionBrief | null>(null)
@@ -43,16 +47,24 @@ export default function CompetitionDetailPage() {
       .then((detail) => setCompetition(detail))
       .catch(() => setCompetition(null))
       .finally(() => setLoading(false))
+  }, [competitionId])
+
+  useEffect(() => {
+    if (!isLoggedIn) { setEnrolledTrackIds([]); return }
+    let active = true
+    const session = getAuthSessionId()
     // 进入页面即恢复“已报名”状态（此前仅内存记录，重进页面会丢失）
     getMyCompetitionRegistrations()
       .then((regs) => {
+        if (!active || !getToken() || getAuthSessionId() !== session) return
         const trackIds = regs
           .filter((r) => r.competition_id === competitionId && r.track_id !== null)
           .map((r) => r.track_id as number)
         setEnrolledTrackIds(trackIds)
       })
       .catch(() => {})
-  }, [competitionId])
+    return () => { active = false }
+  }, [competitionId, isLoggedIn, sessionId])
 
   const deadlinePassed = (() => {
     if (!competition?.registration_deadline) return false
@@ -69,6 +81,7 @@ export default function CompetitionDetailPage() {
 
   const submitEnroll = async () => {
     if (!enrollTrack || submitting) return
+    if (!(await requireLogin(`/pages/competition/detail?id=${competitionId}`))) return
     const error = validateCompetitionRegForm(formValues, customFields)
     if (error) {
       Taro.showToast({ title: error, icon: 'none' })
@@ -160,7 +173,7 @@ export default function CompetitionDetailPage() {
                   <View
                     key={`${index}-${att.title}`}
                     className={styles.attachmentItem}
-                    onClick={() => {
+                    onClick={async () => {
                       Taro.navigateTo({
                         url: `/pages/competition/attachment?id=${competitionId}&att=${index}`,
                       })
@@ -200,7 +213,7 @@ export default function CompetitionDetailPage() {
                       <Button
                         variant={disabled ? 'secondary' : 'primary'}
                         disabled={disabled}
-                        onClick={() => setEnrollTrack(t)}
+                        onClick={async () => { if (await requireLogin(`/pages/competition/detail?id=${competitionId}`)) setEnrollTrack(t) }}
                         className={styles.trackBtn}
                       >
                         {enrolled ? '已报名' : full ? '已满' : eventEnded ? '已结束' : deadlinePassed ? '已截止' : '报名'}

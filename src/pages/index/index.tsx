@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
+import { useAuth } from '@/hooks/useAuth'
+import { pendingLogin, requireLogin } from '@/utils/loginCoordinator'
 import { Avatar } from '@nutui/nutui-react-taro'
 
 import { Icon } from '@/components/Icon'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { HomeSectionTabs } from '@/components/HomeSectionTabs'
 import { HomeCard } from '@/components/HomeCard'
@@ -124,6 +125,10 @@ function toCertHomeCard(cert: CertificationResponse): HomeCardItem {
 }
 
 export default function IndexPage() {
+  const { isLoggedIn } = useAuth()
+  const [loginIntent, setLoginIntent] = useState(pendingLogin)
+  useDidShow(() => setLoginIntent(pendingLogin()))
+  const [homeError, setHomeError] = useState(false)
   const [homeData, setHomeData] = useState<HomeAggregationResponse | null>(null)
   const [activePopup, setActivePopup] = useState<PopupBrief | null>(null)
   // 每次冷启动只在首次拿到聚合数据时尝试弹窗，下拉刷新不重复触发
@@ -133,8 +138,9 @@ export default function IndexPage() {
   const loadHome = useCallback(() => {
     return getHomeAggregation().then((data) => {
       setHomeData(data)
+      setHomeError(false)
     }).catch((err) => {
-      // 加载失败静默处理，页面展示空状态
+      setHomeError(true)
     })
   }, [])
 
@@ -142,11 +148,12 @@ export default function IndexPage() {
 
   useEffect(() => {
     const popup = homeData?.popup
+    if (!isLoggedIn) { setActivePopup(null); return }
     if (!popup || popupShownRef.current) return
     popupShownRef.current = true
     if (Taro.getStorageSync(popupDismissKey(popup.id))) return
     setActivePopup(popup)
-  }, [homeData])
+  }, [homeData, isLoggedIn])
 
   const dismissPopupToday = useCallback(() => {
     if (activePopup) {
@@ -267,11 +274,15 @@ export default function IndexPage() {
   }, [activities.length])
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={STRINGS.INDEX_PAGE_TITLE} />
 
         <RefreshableScrollView className={styles.main} onRefresh={loadHome}>
+          {homeError && <View className={styles.browseNotice} onClick={() => void loadHome()}>首页加载失败，点击重试</View>}
+          {!isLoggedIn && <View className={styles.browseNotice} onClick={() => void requireLogin(loginIntent?.target || '/pages/index/index')}>
+            {loginIntent?.parked ? `${loginIntent.purpose}，点击继续办理` : '先浏览，使用个人服务时再登录 · 微信登录／注册'}
+          </View>}
           <View className={styles.bannerWrap}>
             <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
               id: b.id,
@@ -381,13 +392,13 @@ export default function IndexPage() {
         <CustomTabBar activeTabKey='pages/index/index' onSwitch={(url) => Taro.switchTab({ url })} />
 
         <AdPopup
-          visible={activePopup !== null}
+          visible={isLoggedIn && activePopup !== null}
           imageUrl={activePopup ? resolveMediaUrl(activePopup.image_url) : ''}
           jumpLink={activePopup?.jump_link ?? null}
           onClose={() => setActivePopup(null)}
           onDismissToday={dismissPopupToday}
         />
       </View>
-    </AuthGuard>
+    </>
   )
 }

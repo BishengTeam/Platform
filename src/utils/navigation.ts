@@ -2,6 +2,8 @@ import Taro from '@tarojs/taro'
 import { ROUTES, TAB_BAR_CONFIG } from '../constants/routes.ts'
 import { FEATURES } from '../constants/features.ts'
 import { resolveWebViewTarget } from './webviewUrl.ts'
+import { navigateWithLogin } from './loginCoordinator.ts'
+import { isPublicPage } from './loginTargets.ts'
 
 export type SafeBackResult = 'back' | 'fallback'
 
@@ -80,7 +82,8 @@ export async function navigateToUrl(url: string): Promise<void> {
       }
       await Taro.switchTab({ url: path })
     } else {
-      await Taro.navigateTo({ url: normalized })
+      if (isPublicPage(normalized)) await Taro.navigateTo({ url: normalized })
+      else await navigateWithLogin(normalized)
     }
   } catch {
     if (stagedTab) Taro.removeStorageSync('activityZoneTab')

@@ -1,3 +1,4 @@
+import { getPublic } from '../utils/request.ts'
 import { get, post } from '../utils/request.ts'
 import { getToken } from '../utils/request.ts'
 import Taro from '@tarojs/taro'
@@ -82,6 +83,7 @@ export type RensheApplicationStatus =
   | 'closed'
 
 export interface RenshePlan {
+  can_apply?: boolean
   id: number
   product_type: string
   project_name?: string | null
@@ -267,10 +269,10 @@ export const rensheService = {
     await this.previewCommitmentTemplate(await this.getCommitmentTemplateFile(planId, filename))
   },
   async listProjects(): Promise<RensheProject[]> {
-    return (await get<RensheProject[]>('/api/renshe/projects')).data ?? []
+    return (await getPublic<RensheProject[]>('/api/renshe/projects')).data ?? []
   },
   async listBatches(projectId?: number): Promise<RenshePlan[]> {
-    return (await get<RenshePlan[]>('/api/renshe/batches', projectId ? { project_id: projectId } : undefined)).data ?? []
+    return (await getPublic<RenshePlan[]>('/api/renshe/batches', projectId ? { project_id: projectId } : undefined)).data ?? []
   },
 
   async getBatch(id: number): Promise<RenshePlan> {

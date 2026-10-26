@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
 import { CustomTabBar } from '@/components/TabBar'
@@ -14,10 +13,15 @@ import { resolveMediaUrl } from '@/utils/media'
 import { getUserProfile, getSharePoster, getPointsBalance } from '@/services/dataService'
 import { getVerificationMaterialSignedUrl } from '@/services/identityMaterialService'
 import styles from './index.module.scss'
+import { useAuth } from '@/hooks/useAuth'
+import { getToken, getAuthSessionId } from '@/utils/authState'
+import { navigateWithLogin, requireLogin } from '@/utils/loginCoordinator'
+import { isPublicPage } from '@/utils/loginTargets'
 
 export default function ProfilePage() {
-  const [userName, setUserName] = useState<string>(STRINGS.PROFILE_MOCK_NAME)
-  const [userStatus, setUserStatus] = useState<string>(STRINGS.PROFILE_MOCK_STATUS)
+  const { isChecked, isLoggedIn, sessionId } = useAuth()
+  const [userName, setUserName] = useState('')
+  const [userStatus, setUserStatus] = useState('')
   // 二寸照存的是私有 OSS 键，需换取短时签名链接渲染；与个人资料页保持一致
   const [avatarUrl, setAvatarUrl] = useState('')
   // 积分海报：后台上传才显示，点击全屏预览（与分享好友页同链路）
@@ -26,19 +30,23 @@ export default function ProfilePage() {
   const [userPoints, setUserPoints] = useState<number | null>(null)
 
   const loadPoints = () => {
-    if (!FEATURES.points) return
+    if (!FEATURES.points || !isLoggedIn || !getToken()) return
+    const session = getAuthSessionId()
     getPointsBalance()
-      .then(d => setUserPoints(d.available ?? 0))
+      .then(d => { if (getToken() && getAuthSessionId() === session) setUserPoints(d.available ?? 0) })
       .catch(() => setUserPoints(null))
   }
 
   const loadProfile = () => {
+    if (!isLoggedIn || !getToken()) return
+    const session = getAuthSessionId()
     getUserProfile().then(profile => {
-      setUserName(profile.profile.nickname || STRINGS.PROFILE_MOCK_NAME)
-      setUserStatus(profile.realname?.user_type || STRINGS.PROFILE_MOCK_STATUS)
+      if (!getToken() || getAuthSessionId() !== session) return
+      setUserName(profile.profile.nickname || '微信用户')
+      setUserStatus(profile.realname?.user_type || '点击完善个人资料')
       if (profile.realname?.avatar_oss) {
         getVerificationMaterialSignedUrl('portrait')
-          .then((result) => setAvatarUrl(result.url))
+          .then((result) => { if (getToken() && getAuthSessionId() === session) setAvatarUrl(result.url) })
           .catch(() => setAvatarUrl(''))
       } else {
         setAvatarUrl('')
@@ -46,13 +54,18 @@ export default function ProfilePage() {
     }).catch(() => {})
   }
 
-  useEffect(() => { loadProfile() }, [])
+  useEffect(() => {
+    setUserName(''); setUserStatus(''); setAvatarUrl(''); setUserPoints(null)
+    if (isChecked && isLoggedIn) { loadProfile(); loadPoints() }
+  }, [isChecked, isLoggedIn, sessionId])
 
   useEffect(() => {
+    if (!isLoggedIn) { setPosterUrl(''); return }
+    const session = getAuthSessionId()
     getSharePoster()
-      .then(res => setPosterUrl(res.image_url || ''))
+      .then(res => { if (getToken() && getAuthSessionId() === session) setPosterUrl(res.image_url || '') })
       .catch(() => setPosterUrl(''))
-  }, [])
+  }, [isLoggedIn, sessionId])
 
   // 全屏预览，微信原生长按菜单即可保存到相册/转发
   const handlePreviewPoster = () => {
@@ -69,7 +82,8 @@ export default function ProfilePage() {
       Taro.showToast({ title: STRINGS.PROFILE_FEATURE_IN_DEVELOPMENT, icon: 'none' })
       return
     }
-    Taro.navigateTo({ url: `/${route}` })
+    if (isPublicPage(route)) void Taro.navigateTo({ url: `/${route}` })
+    else void navigateWithLogin(`/${route}`)
   }
 
   const handleGridItemClick = (item: ProfileMenuItem) => {
@@ -85,7 +99,7 @@ export default function ProfilePage() {
   const listGroups = profileListGroups.filter(group => group.length > 0)
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={STRINGS.TAB_PROFILE} />
 
@@ -101,12 +115,13 @@ export default function ProfilePage() {
                 : <Icon name='user' size={56} color='#FFFFFF' />}
             </View>
             <View className={styles.headerInfo}>
-              <Text className={styles.name}>{userName}</Text>
+              <Text className={styles.name}>{isLoggedIn ? userName || '微信用户' : '未登录'}</Text>
               <View className={styles.identityBadge}>
-                <Text className={styles.identityText}>{userStatus}</Text>
+                <Text className={styles.identityText}>{isLoggedIn ? userStatus : '登录后查看报名、订单及积分'}</Text>
               </View>
+              {!isLoggedIn && <Text className={styles.guestLogin} onClick={event => { event.stopPropagation(); void requireLogin('/pages/profile/index') }}>微信登录</Text>}
             </View>
-            {FEATURES.points && userPoints !== null ? (
+            {isLoggedIn && FEATURES.points && userPoints !== null ? (
               <View
                 className={styles.headerPoints}
                 onClick={(e) => {
@@ -192,10 +207,15 @@ export default function ProfilePage() {
               ))}
             </View>
           ))}
+          <View className={styles.guestLegal}>
+            <Text onClick={() => Taro.navigateTo({ url: '/pages/agreement/view?type=user_terms' })}>用户协议</Text>
+            <Text onClick={() => Taro.navigateTo({ url: '/pages/agreement/view?type=privacy' })}>隐私政策</Text>
+            <Text onClick={() => Taro.navigateTo({ url: '/pages/mine/about' })}>关于我们</Text>
+          </View>
         </View>
 
         <CustomTabBar activeTabKey='pages/profile/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>
-    </AuthGuard>
+    </>
   )
 }

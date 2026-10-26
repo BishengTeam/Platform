@@ -10,6 +10,7 @@ import type { AgreementType, AgreementTemplate } from '@/services/dataService'
 import { normalizeAgreementHtml } from '@/utils/agreementHtml'
 import { safeNavigateBack } from '@/utils/navigation'
 import styles from './view.module.scss'
+import { requireLogin } from '@/utils/loginCoordinator'
 
 const TYPE_TITLES: Record<string, string> = {
   user_terms: STRINGS.AUTH_AGREEMENT_TERMS,
@@ -65,6 +66,7 @@ export default function AgreementViewPage() {
 
   const handleSign = async () => {
     if (!template || !agreed || submitting) return
+    if (!(await requireLogin(`/pages/agreement/view?type=${type}&requireSign=1`))) return
     setSubmitting(true)
     try {
       await acceptAgreements([{ type, version: template.version }])

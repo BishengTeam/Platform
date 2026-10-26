@@ -1,3 +1,4 @@
+import { getPublic, getOptional } from '../utils/request.ts'
 import { get, post } from '../utils/request.ts'
 
 export interface PointsMallItem {
@@ -12,7 +13,7 @@ export interface PointsMallItem {
   points_cost: number
   remaining_stock: number
   per_user_limit: number
-  user_redeemed_count: number
+  user_redeemed_count: number | null
   can_redeem: boolean
   redeem_blocked_reason: string | null
 }
@@ -99,7 +100,7 @@ export interface VirtualRedeemResult extends VirtualOrder {
 
 export const pointsMallService = {
   async listItems(): Promise<PointsMallItem[]> {
-    return (await get<PointsMallItem[]>('/api/points-mall/items')).data
+    return (await getOptional<PointsMallItem[]>('/api/points-mall/items')).data
   },
   async redeem(itemId: number): Promise<MyCoupon> {
     return (await post<MyCoupon>('/api/points-mall/redeem', { item_id: itemId })).data
@@ -116,7 +117,7 @@ export const pointsMallService = {
     return (await post<UsableCoupon[]>('/api/points-mall/usable-coupons', payload as Record<string, unknown>)).data
   },
   async listVirtualProducts(): Promise<VirtualProduct[]> {
-    const response = await get<{ items?: VirtualProduct[] }>('/api/points/virtual-products')
+    const response = await getPublic<{ items?: VirtualProduct[] }>('/api/points/virtual-products')
     return response.data?.items ?? []
   },
   async precheckVirtualProduct(

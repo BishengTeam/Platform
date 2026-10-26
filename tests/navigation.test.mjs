@@ -14,6 +14,7 @@ function installNavigationMock(pages, navigateBackShouldFail = false) {
   const calls = []
   const storage = new Map()
 
+  Taro.getStorageSync = key => key === 'auth_token' ? 'navigation-test-access' : storage.get(key)
   Taro.getCurrentPages = () => pages
   Taro.navigateBack = async options => {
     calls.push(['navigateBack', options])

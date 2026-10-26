@@ -46,7 +46,7 @@ export default function SettingsPage() {
           const request = refreshToken ? logout(refreshToken) : Promise.resolve()
           void request.finally(() => {
             clearAuthTokens()
-            Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
+            Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
           }).catch(() => undefined)
         }
       },

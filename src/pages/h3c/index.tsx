@@ -1,7 +1,7 @@
+import { navigateWithLogin } from '@/utils/loginCoordinator'
 import { useCallback, useMemo, useState } from 'react'
 import { Text, View } from '@tarojs/components'
 import Taro, { useLoad, usePullDownRefresh, useRouter } from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -67,10 +67,15 @@ export default function H3CListPage() {
   ), [batches, certCode])
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={productName || 'H3C 认证'} shouldShowBack />
         <RefreshableScrollView className={styles.body} onRefresh={load}>
+          <View className={styles.card}>
+            <Text className={styles.title}>报名前准备</Text>
+            <Text className={styles.remark}>可先浏览批次和费用，办理报名时登录并核验本人实名。学历可选本科、中职、高职、硕士、博士。</Text>
+            <Text className={styles.remark}>学生报名：有学信网验证码时提供验证码及身份证人像面；无验证码时提供学院盖章的学籍证图片。考券报名需考券号和证明图片，全额报名无需这两类证明。</Text>
+          </View>
           {loading && <View className={styles.empty}>正在加载考试批次...</View>}
           {error && (
             <View className={styles.empty} onClick={() => { void load() }}>
@@ -116,9 +121,7 @@ export default function H3CListPage() {
                 infoItems={infoItems}
                 actionText={statusMeta.buttonLabel}
                 actionDisabled={!canRegister}
-                onAction={() => Taro.navigateTo({
-                  url: `/${ROUTES.H3C_FORM}?batch_id=${batch.id}`,
-                })}
+                onAction={() => void navigateWithLogin(`/${ROUTES.H3C_FORM}?batch_id=${batch.id}`)}
               />
             )
           })}
@@ -126,13 +129,13 @@ export default function H3CListPage() {
           <View className={styles.secondaryAction}>
             <Button
               variant='secondary'
-              onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_REGISTRATIONS}` })}
+              onClick={() => void navigateWithLogin(`/${ROUTES.MINE_REGISTRATIONS}`)}
             >
               我的报名
             </Button>
           </View>
         </RefreshableScrollView>
       </View>
-    </AuthGuard>
+    </>
   )
 }

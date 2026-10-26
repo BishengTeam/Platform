@@ -1,3 +1,4 @@
+import { request } from '../utils/request.ts'
 /**
  * 认证服务 — 登录 / 刷新 / 退出 / 实名认证 / 注销 / 解绑
  */
@@ -40,14 +41,14 @@ export interface AuthTokens {
 
 export async function wxLogin(code: string): Promise<AuthTokens> {
   if (USE_MOCK) throw new Error('认证模块禁止使用 mock 登录')
-  const res = await post<AuthTokens>('/api/auth/login', { code })
+  const res = await request<AuthTokens>({ url: '/api/auth/login', method: 'POST', data: { code }, auth: 'public' })
   return res.data
 }
 
 /** POST /api/auth/refresh — 刷新 token，需传 refresh_token */
 export async function refreshToken(refresh_token: string): Promise<AuthTokens> {
   if (USE_MOCK) throw new Error('认证模块禁止使用 mock 刷新')
-  const res = await post<AuthTokens>('/api/auth/refresh', { refresh_token })
+  const res = await request<AuthTokens>({ url: '/api/auth/refresh', method: 'POST', data: { refresh_token }, auth: 'public' })
   return res.data
 }
 

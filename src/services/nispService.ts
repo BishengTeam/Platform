@@ -1,3 +1,4 @@
+import { getPublic } from '../utils/request.ts'
 import Taro from '@tarojs/taro'
 import { get, getToken, post } from '../utils/request.ts'
 
@@ -126,7 +127,7 @@ export interface PageData<T> {
 
 export const nispService = {
   async listBatches(level?: NispLevel): Promise<NispBatch[]> {
-    return (await get<NispBatch[]>('/api/nisp/batches', level ? { level } : undefined)).data
+    return (await getPublic<NispBatch[]>('/api/nisp/batches', level ? { level } : undefined)).data
   },
 
   async createOrder(payload: NispOrderCreatePayload): Promise<NispRegistration> {

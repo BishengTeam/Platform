@@ -1,3 +1,4 @@
+import { getPublic } from '../utils/request.ts'
 /**
  * Zone 聚合服务
  * 2026-06-03：从 dataService.ts 提取，Zone 模块从 20 个细粒度端点收敛为 6 个聚合端点
@@ -106,7 +107,7 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
       },
     }
   }
-  const res = await get<HomeAggregationResponse>('/api/zones')
+  const res = await getPublic<HomeAggregationResponse>('/api/zones')
   return resolveMedia(res.data)
 }
 
@@ -128,7 +129,7 @@ export async function getCourseList(): Promise<CourseBrief[]> {
     }))
   }
   if (USE_MOCK) return []
-  const res = await get<{ items?: CourseBrief[] }>('/api/courses')
+  const res = await getPublic<{ items?: CourseBrief[] }>('/api/courses')
   const items = res.data?.items ?? []
   return items.map(item => ({ ...item, cover_url: resolveUrl(item.cover_url) }))
 }
@@ -136,21 +137,21 @@ export async function getCourseList(): Promise<CourseBrief[]> {
 /** GET /api/activities — 活动列表 */
 export async function getActivityList(): Promise<ActivityBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<{ items?: ActivityBrief[] }>('/api/activities')
+  const res = await getPublic<{ items?: ActivityBrief[] }>('/api/activities')
   return res.data?.items ?? []
 }
 
 /** GET /api/jobs — 岗位列表 */
 export async function getJobList(): Promise<JobBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<{ items?: JobBrief[] }>('/api/jobs')
+  const res = await getPublic<{ items?: JobBrief[] }>('/api/jobs')
   return res.data?.items ?? []
 }
 
 /** GET /api/cert/certifications — 认证列表 */
 export async function getCertificationList(): Promise<CertificationResponse[]> {
   if (USE_MOCK) return []
-  const res = await get<CertificationResponse[]>('/api/cert/certifications')
+  const res = await getPublic<CertificationResponse[]>('/api/cert/certifications')
   return Array.isArray(res.data) ? res.data : []
 }
 
@@ -199,14 +200,14 @@ export async function signupCompetition(
 /** GET /api/competition/list — 赛事列表（含赛道与余量） */
 export async function getCompetitionList(): Promise<CompetitionBrief[]> {
   if (USE_MOCK) return []
-  const res = await get<CompetitionBrief[]>('/api/competition/list')
+  const res = await getPublic<CompetitionBrief[]>('/api/competition/list')
   return res.data ?? []
 }
 
 /** GET /api/competition/{id} — 赛事详情（海报 + 在线查阅附件；列表接口不携带） */
 export async function getCompetitionDetail(id: number): Promise<CompetitionBrief | null> {
   if (USE_MOCK) return null
-  const res = await get<CompetitionBrief>(`/api/competition/${id}`)
+  const res = await getPublic<CompetitionBrief>(`/api/competition/${id}`)
   return res.data ?? null
 }
 

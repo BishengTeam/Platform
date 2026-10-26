@@ -38,7 +38,7 @@ export default function DeactivatePage() {
       clearAuthTokens()
       Taro.showToast({ title: STRINGS.MINE_DEACTIVATE_SUCCESS, icon: 'success' })
       setTimeout(() => {
-        Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
+        Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
       }, 800)
     } catch (error) {
       Taro.showToast({ title: error instanceof Error ? error.message : '注销失败', icon: 'none', duration: 3000 })

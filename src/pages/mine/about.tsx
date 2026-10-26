@@ -1,5 +1,4 @@
 import { View, Text, ScrollView, Image } from '@tarojs/components'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
 import { STRINGS } from '@/constants/strings'
@@ -14,7 +13,7 @@ const CULTURE_ITEMS = [
 /** 关于我们 — 企业简介 / 企业文化 / 企业资质 / 公众号 / 地址（内容取自甲方企业宣传页） */
 export default function AboutPage() {
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={STRINGS.SETTINGS_ABOUT_US} shouldShowBack />
         <ScrollView className={styles.body} scrollY>
@@ -86,6 +85,6 @@ export default function AboutPage() {
           </View>
         </ScrollView>
       </View>
-    </AuthGuard>
+    </>
   )
 }

@@ -1,3 +1,4 @@
+import { getPublic } from '../utils/request.ts'
 import Taro from '@tarojs/taro'
 import { get, getToken, post } from '../utils/request.ts'
 import type {
@@ -20,7 +21,7 @@ export const h3cService = {
     return (await get<H3cProfileDefaults>('/api/orders/h3c/profile')).data
   },
   async listBatches(): Promise<H3cExamBatch[]> {
-    return (await get<H3cExamBatch[]>('/api/h3c/exam-batches')).data
+    return (await getPublic<H3cExamBatch[]>('/api/h3c/exam-batches')).data
   },
   async uploadMaterial(
     filePath: string,

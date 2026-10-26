@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text, Input, ScrollView } from '@tarojs/components'
 import { useLoad } from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
 import { EmptyState } from '@/components/EmptyState'
@@ -109,7 +108,7 @@ export default function RegistrationCategoryPage() {
   }, [vendor])
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={pageTitle} shouldShowBack />
         <View className={styles.body}>
@@ -176,6 +175,6 @@ export default function RegistrationCategoryPage() {
           </View>
         </View>
       </View>
-    </AuthGuard>
+    </>
   )
 }

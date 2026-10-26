@@ -7,7 +7,7 @@ import { getMyClassrooms } from '../src/services/classroomService.ts'
 test('my classrooms parses the backend array response', async () => {
   resetRequestStateForTest()
   const calls = []
-  Taro.getStorageSync = () => ''
+  Taro.getStorageSync = key => key === 'auth_token' ? 'test-access' : ''
   Taro.setStorageSync = () => undefined
   Taro.removeStorageSync = () => undefined
   Taro.showLoading = () => undefined

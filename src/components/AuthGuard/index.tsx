@@ -1,25 +1,30 @@
 import type { PropsWithChildren } from 'react'
 import { useEffect } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { useAuth } from '@/hooks/useAuth'
-import { ROUTES } from '@/constants/routes'
+import { parkProtectedTarget } from '@/utils/loginCoordinator'
 
 interface AuthGuardProps {
   onAuthFail?: () => void
 }
 
 function defaultAuthFail() {
-  Taro.reLaunch({ url: `/${ROUTES.AUTH}` })
+  void parkProtectedTarget()
 }
 
 export function AuthGuard({ children, onAuthFail = defaultAuthFail }: PropsWithChildren<AuthGuardProps>) {
   const { isChecked, isLoggedIn } = useAuth()
+  const router = useRouter()
+  const checkActivePage = () => {
+    const pages = Taro.getCurrentPages()
+    const route = pages[pages.length - 1]?.route
+    if (isChecked && !isLoggedIn && route && route === String(router.path || '').replace(/^\//, '')) onAuthFail()
+  }
+  useDidShow(checkActivePage)
 
   useEffect(() => {
-    if (isChecked && !isLoggedIn) {
-      onAuthFail()
-    }
-  }, [isChecked, isLoggedIn, onAuthFail])
+    checkActivePage()
+  }, [isChecked, isLoggedIn, onAuthFail, router.path])
 
   if (!isChecked || !isLoggedIn) {
     return null

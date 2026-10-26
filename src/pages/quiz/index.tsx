@@ -1,3 +1,5 @@
+import { getToken, getAuthSessionId } from '@/utils/authState'
+import { navigateWithLogin } from '@/utils/loginCoordinator'
 import { useCallback, useEffect, useState } from 'react'
 import { Image, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
@@ -22,7 +24,7 @@ interface StatCard { label: string; value: string; color: string; onClick?: () =
 const COLORS = ['#1677FF', '#52C41A', '#722ED1', '#FF4D4F', '#FA8C16', '#13C2C2', '#EB2F96']
 
 export default function QuizIndexPage() {
-  const { isChecked, isLoggedIn } = useAuth()
+  const { isChecked, isLoggedIn, sessionId } = useAuth()
   const [libraries, setLibraries] = useState<QuizLibraryCatalogItem[]>([])
   const [expanded, setExpanded] = useState<Record<number, QuizLibraryCatalogDetail>>({})
   const [progress, setProgress] = useState<Record<number, QuizLibraryProgress>>({})
@@ -30,30 +32,29 @@ export default function QuizIndexPage() {
   const [streakDays, setStreakDays] = useState(0)
   const [loading, setLoading] = useState(true)
   const [catalogError, setCatalogError] = useState(false)
-
-  const requireLogin = useCallback((action: () => void) => {
-    if (isLoggedIn) action()
-    else Taro.navigateTo({ url: `/${ROUTES.AUTH}` })
-  }, [isLoggedIn])
+  useEffect(() => { setStats(null); setProgress({}); setStreakDays(0) }, [sessionId])
 
   const loadPersonal = useCallback(() => {
     if (!isChecked || !isLoggedIn) return
+    const session = getAuthSessionId()
     return Promise.all([getQuizCheckinStatus(), getQuizStats()])
       .then(([checkin, nextStats]) => {
+        if (!getToken() || getAuthSessionId() !== session) return
         setStreakDays(checkin.consecutive_days)
         setStats(nextStats)
       })
       .catch(() => undefined)
-  }, [isChecked, isLoggedIn])
+  }, [isChecked, isLoggedIn, sessionId])
 
   const loadProgress = useCallback((libraryIds: number[]) => {
     if (!isChecked || !isLoggedIn || libraryIds.length === 0) return
+    const session = getAuthSessionId()
     for (const libraryId of libraryIds) {
       getQuizLibraryProgress(libraryId)
-        .then(result => setProgress(previous => ({ ...previous, [libraryId]: result })))
+        .then(result => { if (getToken() && getAuthSessionId() === session) setProgress(previous => ({ ...previous, [libraryId]: result })) })
         .catch(() => undefined)
     }
-  }, [isChecked, isLoggedIn])
+  }, [isChecked, isLoggedIn, sessionId])
 
   useEffect(() => {
     loadProgress(Object.keys(expanded).map(Number))
@@ -84,18 +85,18 @@ export default function QuizIndexPage() {
     if (!isChecked) return
     if (!isLoggedIn) {
       setStats(null)
+      setProgress({})
       setStreakDays(0)
       return
     }
     loadPersonal()
   }, [isChecked, isLoggedIn, loadPersonal])
 
-  const handleGrid = useCallback((item: { mode: string }) => requireLogin(() => {
-    if (item.mode === 'mock') Taro.navigateTo({ url: `/${ROUTES.QUIZ_MOCK}` })
-    else if (item.mode === 'history') Taro.navigateTo({ url: `/${ROUTES.QUIZ_HISTORY}` })
-    else if (item.mode === 'stats') Taro.navigateTo({ url: `/${ROUTES.QUIZ_STATS}` })
+  const handleGrid = useCallback((item: { mode: string }) => {
+    const routes: Record<string, string> = { mock: ROUTES.QUIZ_MOCK, history: ROUTES.QUIZ_HISTORY, stats: ROUTES.QUIZ_STATS }
+    if (routes[item.mode]) void navigateWithLogin(`/${routes[item.mode]}`)
     else Taro.showToast({ title: '请从下方题库目录选择练习范围', icon: 'none' })
-  }), [requireLogin])
+  }, [])
 
   const toggleLibrary = useCallback(async (libraryId: number) => {
     if (expanded[libraryId]) {
@@ -117,10 +118,7 @@ export default function QuizIndexPage() {
   const practiceUrl = (scopeType: QuizPracticeScopeType, scopeId: number) =>
     `/${ROUTES.QUIZ_PREPARE}?scopeType=${scopeType}&scopeId=${scopeId}`
 
-  const openWrongBook = () => requireLogin(() => {
-    Taro.navigateTo({ url: `/${ROUTES.QUIZ_WRONG_BOOK}` })
-      .catch(() => Taro.showToast({ title: '错题本入口打开失败，请稍后重试', icon: 'none' }))
-  })
+  const openWrongBook = () => void navigateWithLogin(`/${ROUTES.QUIZ_WRONG_BOOK}`)
 
   const progressLabel = (item: { question_count: number; answered_questions: number; latest_accuracy: number }) =>
     `已做 ${item.answered_questions}/${item.question_count} · 正确率 ${item.answered_questions > 0 ? `${item.latest_accuracy}%` : '—'}`
@@ -182,7 +180,7 @@ export default function QuizIndexPage() {
                 </View>
                 {detail && (
                   <View className={styles.catalogTree}>
-                    <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('library', library.id) }))}>
+                    <View className={styles.scopeRow} onClick={() => void navigateWithLogin(practiceUrl('library', library.id))}>
                       <View className={styles.scopeMain}>
                         <Text className={styles.scopeName}>练习整库全部 {detail.question_count} 题</Text>
                         {libraryProgress && <Text className={styles.scopeMeta}>{progressLabel(libraryProgress)}</Text>}
@@ -194,7 +192,7 @@ export default function QuizIndexPage() {
                       const moduleTitle = splitBilingualQuizTitle(module.name)
                       return (
                       <View key={module.id} className={styles.moduleBlock}>
-                        <View className={styles.scopeRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('module', module.id) }))}>
+                        <View className={styles.scopeRow} onClick={() => void navigateWithLogin(practiceUrl('module', module.id))}>
                           <View className={styles.scopeMain}>
                             <View className={styles.moduleTitleGroup}>
                               <Text className={styles.moduleName}>{moduleTitle.primary}</Text>
@@ -212,9 +210,7 @@ export default function QuizIndexPage() {
                               className={styles.scopeAction}
                               onClick={e => {
                                 e.stopPropagation()
-                                requireLogin(() => Taro.navigateTo({
-                                  url: `/${ROUTES.QUIZ_QUESTION_SELECT}?scopeType=module&scopeId=${module.id}`,
-                                }))
+                                void navigateWithLogin(`/${ROUTES.QUIZ_QUESTION_SELECT}?scopeType=module&scopeId=${module.id}`)
                               }}
                             >选题</Text>
                           </View>
@@ -222,7 +218,7 @@ export default function QuizIndexPage() {
                         {module.knowledge_points.map(point => {
                           const pointProgress = moduleProgress?.knowledge_points.find(item => item.knowledge_point_id === point.id)
                           return (
-                            <View key={point.id} className={styles.pointRow} onClick={() => requireLogin(() => Taro.navigateTo({ url: practiceUrl('knowledge_point', point.id) }))}>
+                            <View key={point.id} className={styles.pointRow} onClick={() => void navigateWithLogin(practiceUrl('knowledge_point', point.id))}>
                               <View className={styles.scopeMain}>
                                 <Text>{point.name}</Text>
                                 {pointProgress && <Text className={styles.scopeMeta}>{progressLabel(pointProgress)}</Text>}
@@ -233,9 +229,7 @@ export default function QuizIndexPage() {
                                   className={styles.scopeAction}
                                   onClick={e => {
                                     e.stopPropagation()
-                                    requireLogin(() => Taro.navigateTo({
-                                      url: `/${ROUTES.QUIZ_QUESTION_SELECT}?scopeType=knowledge_point&scopeId=${point.id}`,
-                                    }))
+                                    void navigateWithLogin(`/${ROUTES.QUIZ_QUESTION_SELECT}?scopeType=knowledge_point&scopeId=${point.id}`)
                                   }}
                                 >选题 ›</Text>
                               </View>
@@ -250,7 +244,7 @@ export default function QuizIndexPage() {
             )
           })}
         </View>
-        <QuizBottomNav items={QUIZ_BOTTOM} onItemClick={(item: QuizBottomItem) => requireLogin(() => Taro.navigateTo({ url: `/${item.route}` }))} />
+        <QuizBottomNav items={QUIZ_BOTTOM} onItemClick={(item: QuizBottomItem) => void navigateWithLogin(`/${item.route}`)} />
       </RefreshableScrollView>
     </View>
   )

@@ -1,3 +1,4 @@
+import { getPublic } from '../utils/request.ts'
 /**
  * agreementService — P0 电子协议（模板查看 / 签署记录）
  *
@@ -57,7 +58,7 @@ const ALL_AGREEMENT_TYPES: AgreementType[] = [
 ]
 
 export async function getAgreementTemplate(type: AgreementType): Promise<AgreementTemplate> {
-  const res = await get<AgreementTemplate>('/api/agreement-templates', { type })
+  const res = await getPublic<AgreementTemplate>('/api/agreement-templates', { type })
   return res.data
 }
 

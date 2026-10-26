@@ -1,7 +1,7 @@
+import { navigateWithLogin } from '@/utils/loginCoordinator'
 import { useEffect, useState, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -33,13 +33,17 @@ export default function NispIndexPage() {
   useEffect(() => { load() }, [load])
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader
           title={level === '1' ? 'NISP 一级' : level === '2' ? 'NISP 二级' : 'NISP 认证'}
           shouldShowBack
         />
         <RefreshableScrollView className={styles.body} onRefresh={load}>
+          <View className={styles.sectionCard}>
+            <Text className={styles.sectionTitle}>报名前准备</Text>
+            <Text className={styles.materialCount}>办理报名时登录并核验本人实名。需身份证双面PDF、二寸蓝底JPG照片；二级另需学籍报告PDF及二级申请表PDF。材料大小以所选批次要求为准。</Text>
+          </View>
           {loading && <View className={styles.empty}>加载中...</View>}
           {error && <View className={styles.empty} onClick={load}>加载失败，点击重试</View>}
           {!loading && !error && batches.length === 0 && (
@@ -78,9 +82,7 @@ export default function NispIndexPage() {
                 badgeTone={batch.level === '1' ? 'blue' : 'purple'}
                 infoItems={infoItems}
                 actionText='立即报名'
-                onAction={() => Taro.navigateTo({
-                  url: `/${ROUTES.NISP_FORM}?batch_id=${batch.id}&level=${batch.level}`,
-                })}
+                onAction={() => void navigateWithLogin(`/${ROUTES.NISP_FORM}?batch_id=${batch.id}&level=${batch.level}`)}
               />
             )
           })}
@@ -88,13 +90,13 @@ export default function NispIndexPage() {
           <View className={styles.secondaryAction}>
             <Button
               variant='secondary'
-              onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_REGISTRATIONS}` })}
+              onClick={() => void navigateWithLogin(`/${ROUTES.MINE_REGISTRATIONS}`)}
             >
               我的报名
             </Button>
           </View>
         </RefreshableScrollView>
       </View>
-    </AuthGuard>
+    </>
   )
 }

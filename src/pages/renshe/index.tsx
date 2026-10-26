@@ -1,7 +1,7 @@
+import { navigateWithLogin } from '@/utils/loginCoordinator'
 import { useCallback, useMemo, useState } from 'react'
 import { Text, View } from '@tarojs/components'
 import Taro, { useLoad, usePullDownRefresh, useRouter } from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -78,7 +78,7 @@ export default function RensheIndexPage() {
   }
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={pageTitle} shouldShowBack />
         <RefreshableScrollView className={styles.body} onRefresh={load}>
@@ -135,7 +135,7 @@ export default function RensheIndexPage() {
           )}
 
           {!loading && !error && selectedProject && batches.map((batch) => {
-            const acceptsNew = isSelfReportedRule(batch.renshe_config?.qualification_rule) && batch.renshe_config?.reporting_policy?.contract_version === 2
+            const acceptsNew = batch.can_apply ?? (isSelfReportedRule(batch.renshe_config?.qualification_rule) && batch.renshe_config?.reporting_policy?.contract_version === 2)
             const full = batch.capacity > 0 && batch.enrolled >= batch.capacity
             const remaining = batch.capacity === 0
               ? '不限'
@@ -174,9 +174,7 @@ export default function RensheIndexPage() {
                 infoItems={infoItems}
                 actionText={!acceptsNew ? '已有报名请前往我的报名' : full ? '名额已满' : '查看条件并报名'}
                 actionDisabled={!acceptsNew || full}
-                onAction={() => Taro.navigateTo({
-                  url: `/${ROUTES.RENSHE_FORM}?plan_id=${batch.id}`,
-                })}
+                onAction={() => void navigateWithLogin(`/${ROUTES.RENSHE_FORM}?plan_id=${batch.id}`)}
               />
             )
           })}
@@ -184,13 +182,13 @@ export default function RensheIndexPage() {
           <View className={styles.secondaryAction}>
             <Button
               variant='secondary'
-              onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_REGISTRATIONS}` })}
+              onClick={() => void navigateWithLogin(`/${ROUTES.MINE_REGISTRATIONS}`)}
             >
               我的报名
             </Button>
           </View>
         </RefreshableScrollView>
       </View>
-    </AuthGuard>
+    </>
   )
 }

@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { TagFilter } from '@/components/TagFilter'
 import { ZoneCard } from '@/components/ZoneCard'
@@ -152,7 +151,7 @@ export default function ActivityZonePage() {
     (mainTab === 'activity' && !showActivityEmpty)
 
   return (
-    <AuthGuard>
+    <>
       <View className={styles.page}>
         <PageHeader title={STRINGS.ACTIVITY_TITLE} />
 
@@ -265,6 +264,6 @@ export default function ActivityZonePage() {
 
         <CustomTabBar activeTabKey='pages/activity-zone/index' onSwitch={(url) => Taro.switchTab({ url })} />
       </View>
-    </AuthGuard>
+    </>
   )
 }
