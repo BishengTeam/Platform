@@ -165,7 +165,7 @@ export default function RegistrationCategoryPage() {
                       </View>
                     </View>
                     <View className={styles.certRight}>
-                      <Text className={styles.certBadge}>开放报名</Text>
+                      <Text className={styles.certBadge}>查看批次</Text>
                       <Icon name='chevron-right' size={16} color='#C9CDD4' />
                     </View>
                   </View>
