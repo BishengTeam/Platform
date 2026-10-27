@@ -47,7 +47,10 @@ function buildTree(details: QuizLibraryCatalogDetail[]): ScopeNode[] {
       name: module.name,
       question_count: module.question_count,
       libraryId: detail.id,
-      children: module.knowledge_points.map(point => ({
+      // 同名单知识点与模块节点冗余，选择器里合并为一个层级
+      children: module.knowledge_points
+        .filter(point => !(module.knowledge_points.length === 1 && point.name === module.name))
+        .map(point => ({
         type: 'knowledge_point' as const,
         id: point.id,
         name: point.name,

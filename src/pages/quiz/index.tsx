@@ -215,7 +215,10 @@ export default function QuizIndexPage() {
                             >选题</Text>
                           </View>
                         </View>
-                        {module.knowledge_points.map(point => {
+                        {module.knowledge_points
+                          // 模块下仅一个同名知识点（厂商单级分类导入的 SR/SR）与模块行完全冗余，不重复渲染
+                          .filter(point => !(module.knowledge_points.length === 1 && point.name === module.name))
+                          .map(point => {
                           const pointProgress = moduleProgress?.knowledge_points.find(item => item.knowledge_point_id === point.id)
                           return (
                             <View key={point.id} className={styles.pointRow} onClick={() => void navigateWithLogin(practiceUrl('knowledge_point', point.id))}>
