@@ -11,14 +11,13 @@ import { clearAuthTokens } from '@/utils/request'
 import styles from './deactivate.module.scss'
 
 const CONDITIONS = [
-  { label: STRINGS.MINE_DEACTIVATE_CONDITION_1, checked: true },
-  { label: STRINGS.MINE_DEACTIVATE_CONDITION_2, checked: true },
-  { label: STRINGS.MINE_DEACTIVATE_CONDITION_3, checked: true },
-  { label: STRINGS.MINE_DEACTIVATE_CONDITION_4, checked: false },
+  STRINGS.MINE_DEACTIVATE_CONDITION_1,
+  STRINGS.MINE_DEACTIVATE_CONDITION_2,
+  STRINGS.MINE_DEACTIVATE_CONDITION_3,
 ]
 
 export default function DeactivatePage() {
-  const [step, setStep] = useState<'check' | 'unbind' | 'confirm'>('check')
+  const [step, setStep] = useState<'check' | 'confirm'>('check')
   const [checking, setChecking] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -26,7 +25,7 @@ export default function DeactivatePage() {
     setChecking(true)
     setTimeout(() => {
       setChecking(false)
-      setStep('unbind')
+      setStep('confirm')
     }, 1500)
   }
 
@@ -41,8 +40,11 @@ export default function DeactivatePage() {
         Taro.reLaunch({ url: `/${ROUTES.INDEX}` })
       }, 800)
     } catch (error) {
-      Taro.showToast({ title: error instanceof Error ? error.message : '注销失败', icon: 'none', duration: 3000 })
-      Taro.showToast({ title: '注销失败，请重试', icon: 'none' })
+      Taro.showToast({
+        title: error instanceof Error ? error.message : '注销失败，请重试',
+        icon: 'none',
+        duration: 3000,
+      })
     } finally {
       setDeleting(false)
     }
@@ -62,14 +64,10 @@ export default function DeactivatePage() {
 
               <View className={styles.conditionCard}>
                 <Text className={styles.conditionTitle}>{STRINGS.MINE_DEACTIVATE_CHECK_TITLE}</Text>
-                {CONDITIONS.map((c, idx) => (
-                  <View key={idx} className={styles.conditionItem}>
-                    <Text className={c.checked ? styles.checked : styles.unchecked}>
-                      {c.checked ? '✓' : '✗'}
-                    </Text>
-                    <Text className={`${styles.conditionLabel} ${c.checked ? '' : styles.conditionFail}`}>
-                      {c.label}
-                    </Text>
+                {CONDITIONS.map((label) => (
+                  <View key={label} className={styles.conditionItem}>
+                    <Text className={styles.checked}>✓</Text>
+                    <Text className={styles.conditionLabel}>{label}</Text>
                   </View>
                 ))}
               </View>
@@ -82,29 +80,6 @@ export default function DeactivatePage() {
                   disabled={checking}
                 >
                   {checking ? STRINGS.MINE_DEACTIVATE_CHECKING : STRINGS.MINE_DEACTIVATE_TITLE}
-                </Button>
-              </View>
-            </>
-          )}
-
-          {step === 'unbind' && (
-            <>
-              <View className={styles.warnCard}>
-                <Text className={styles.warnDesc}>{STRINGS.MINE_DEACTIVATE_UNBIND_HINT}</Text>
-              </View>
-              <View className={styles.unbindList}>
-                <View className={styles.unbindItem}>
-                  <Text className={styles.unbindLabel}>{STRINGS.MINE_DEACTIVATE_MOCK_PHONE}</Text>
-                  <Button size='sm' variant='secondary'>{STRINGS.MINE_DEACTIVATE_UNBIND}</Button>
-                </View>
-                <View className={styles.unbindItem}>
-                  <Text className={styles.unbindLabel}>{STRINGS.MINE_DEACTIVATE_MOCK_WECHAT}</Text>
-                  <Button size='sm' variant='secondary'>{STRINGS.MINE_DEACTIVATE_UNBIND}</Button>
-                </View>
-              </View>
-              <View className={styles.btnWrap}>
-                <Button variant='gradient' size='lg' onClick={() => setStep('confirm')}>
-                  {STRINGS.MINE_DEACTIVATE_CONTINUE}
                 </Button>
               </View>
             </>

@@ -676,23 +676,17 @@ export const STRINGS = {
   MINE_DEACTIVATE_TITLE: '账号注销',
   MINE_DEACTIVATE_WARN: '注销后所有数据将被清除，无法恢复',
   MINE_DEACTIVATE_CONFIRM: '确认注销',
-  MINE_DEACTIVATE_UNBIND: '解绑账号',
   MINE_DEACTIVATE_CHECKING: '正在检查注销条件...',
 
   // ---- Deactivate Page ----
   MINE_DEACTIVATE_CONDITION_1: '账户无未完成订单',
-  MINE_DEACTIVATE_CONDITION_2: '无进行中的培训协议',
-  MINE_DEACTIVATE_CONDITION_3: '已绑定手机号',
-  MINE_DEACTIVATE_CONDITION_4: '账户余额为零',
+  MINE_DEACTIVATE_CONDITION_2: '无进行中的报名申请',
+  MINE_DEACTIVATE_CONDITION_3: '无处理中的退款申请',
   MINE_DEACTIVATE_CHECK_TITLE: '注销条件检查',
-  MINE_DEACTIVATE_UNBIND_HINT: '请先解绑以下绑定，再进行注销操作。',
-  MINE_DEACTIVATE_CONTINUE: '继续注销',
   MINE_DEACTIVATE_CONFIRM_TITLE: '确认注销',
   MINE_DEACTIVATE_CONFIRM_DESC: '注销后，您的所有数据将被永久删除，无法恢复。包括但不限于：订单记录、学习进度、积分余额、课程收藏等。',
   MINE_DEACTIVATE_CANCEL: '暂不注销',
   MINE_DEACTIVATE_SUCCESS: '注销申请已提交',
-  MINE_DEACTIVATE_MOCK_PHONE: '手机号: 138****8888',
-  MINE_DEACTIVATE_MOCK_WECHAT: '微信: 已绑定',
 
   // ---- Agreements Page ----
   MINE_AGREEMENTS_CREATE: '新建协议',
