@@ -4,6 +4,7 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
+import { formatDateTime } from '@/utils/format'
 import { getPointRecords } from '@/services/dataService'
 import type { PointRecord } from '@/types/mine'
 import styles from './points-history.module.scss'
@@ -41,7 +42,7 @@ export default function PointsHistoryPage() {
             <View key={r.id} className={styles.recordItem}>
               <View className={styles.recordInfo}>
                 <Text className={styles.recordDesc}>{r.description}</Text>
-                <Text className={styles.recordDate}>{r.createdAt}</Text>
+                <Text className={styles.recordDate}>{formatDateTime(r.createdAt)}</Text>
               </View>
               <Text className={`${styles.recordAmount} ${r.type === 'earn' ? styles.earn : styles.redeem}`}>
                 {r.type === 'earn' ? '+' : ''}{r.amount}

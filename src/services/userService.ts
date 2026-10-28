@@ -121,11 +121,25 @@ export async function getPointsBalance() {
   return { total: balance, available: balance }
 }
 
+interface PointHistoryBackendItem {
+  id: number
+  amount: number
+  description?: string | null
+  created_at: string
+}
+
 export async function getPointRecords(): Promise<import('@/types/mine').PointRecord[]> {
   if (USE_MOCK) return pointRecords
-  const res = await get<{ items?: import('@/types/mine').PointRecord[] }>(`/api/points/history`)
+  const res = await get<{ items?: PointHistoryBackendItem[] }>(`/api/points/history`)
   const data = res.data
-  return (data?.items || data || []) as import('@/types/mine').PointRecord[]
+  const items = data?.items || (Array.isArray(data) ? (data as unknown as PointHistoryBackendItem[]) : [])
+  return items.map(item => ({
+    id: String(item.id),
+    type: item.amount >= 0 ? 'earn' : 'redeem',
+    amount: item.amount,
+    description: item.description ?? '',
+    createdAt: item.created_at,
+  }))
 }
 
 /** 后端协议项 DTO */
