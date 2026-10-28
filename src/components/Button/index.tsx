@@ -31,6 +31,9 @@ export function Button({
   color,
 }: ButtonProps) {
   if (variant === 'gradient') {
+    // NutUI 禁用态会给文字内层挂 nut-button-default-disabled 灰底,而渐变背景是内联样式盖不掉类样式,
+    // 会变成蓝底中间一块灰;禁用/加载时整体盖成统一禁用灰
+    const inactive = disabled || loading
     return (
       <NutButton
         className={className}
@@ -39,7 +42,7 @@ export function Button({
         disabled={disabled}
         loading={loading}
         onClick={onClick}
-        style={style}
+        style={inactive ? { background: '#C2C4CC', borderColor: 'transparent', ...style } : style}
       >
         {children}
       </NutButton>
