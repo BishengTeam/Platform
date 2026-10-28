@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Input, Text, View, Picker, RadioGroup, Radio, Label } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
 import { DocumentActions } from '@/components/DocumentActions'
 import { useDocumentActions } from '@/hooks/useDocumentActions'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { assertCertificationBatchOpen, certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
 import { h3cService } from '@/services/h3cService'
 import {
   DEFAULT_H3C_XUEXIN_GUIDE_ENTRY_TEXT,
@@ -56,6 +58,9 @@ const BASE_FIELDS: H3cFieldDef[] = [
 export default function H3CFormPage() {
   const [batchId, setBatchId] = useState(0)
   const [batch, setBatch] = useState<H3cExamBatch | null>(null)
+  const [batchChecking, setBatchChecking] = useState(false)
+  const [batchError, setBatchError] = useState('')
+  const batchRequest = useRef(0)
   const [type, setType] = useState<H3cRegistrationType>('full')
   const [form, setForm] = useState<Record<string, string>>({
     candidate_name: '', gender: '', candidate_idcard: '', school: '', address: '',
@@ -105,12 +110,19 @@ export default function H3CFormPage() {
     })
   }, [])
 
-  useEffect(() => {
-    if (!batchId) return
-    h3cService.listBatches()
-      .then((batches) => setBatch(batches.find((item) => item.id === batchId) || null))
-      .catch(() => Taro.showToast({ title: '加载考试批次失败', icon: 'none' }))
+  const loadBatch = useCallback(async () => {
+    if (!Number.isSafeInteger(batchId) || batchId <= 0) { setBatch(null); return }
+    const request = ++batchRequest.current
+    setBatchChecking(true); setBatchError('')
+    try {
+      const batches = await h3cService.listBatches()
+      if (request === batchRequest.current) setBatch(batches.find(item => item.id === batchId) || null)
+    } catch { if (request === batchRequest.current) setBatchError('批次状态核验失败，请重试') }
+    finally { if (request === batchRequest.current) setBatchChecking(false) }
   }, [batchId])
+  useEffect(() => { void loadBatch(); return () => { batchRequest.current++ } }, [loadBatch])
+  const now = useCertificationBatchClock(batch ? [batch] : [], loadBatch, batchId > 0)
+  const availability = certificationBatchState(batch, now)
 
   useEffect(() => {
     getDocumentScene(H3C_STUDENT_XUEXIN_GUIDE_SCENE)
@@ -121,13 +133,15 @@ export default function H3CFormPage() {
   const update = (key: string, value: string) => setForm((old) => ({ ...old, [key]: value }))
 
   const chooseMaterial = async (materialType: 'coupon_proof' | 'student_proof') => {
-    if (uploadLock.current || submitting) return
+    if (uploadLock.current || submitting || batchChecking || batchError) return
     uploadLock.current = true
     setUploading(true)
     try {
+      assertCertificationBatchOpen(batch)
       const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
       const filePath = result.tempFilePaths[0]
       if (!filePath || !batchId) return
+      assertCertificationBatchOpen(batch)
       Taro.showLoading({ title: '上传中', mask: true })
       const uploaded = await h3cService.uploadMaterial(filePath, batchId, materialType)
       if (materialType === 'coupon_proof') setCouponKey(uploaded.storage_key)
@@ -144,7 +158,9 @@ export default function H3CFormPage() {
   }
 
   const submit = async () => {
-    if (!batch || submitting || uploadLock.current) return
+    if (!batch || submitting || uploadLock.current || batchChecking || batchError) return
+    const current = certificationBatchState(batch)
+    if (!current.canApply) { Taro.showToast({ title: current.message, icon: 'none' }); void loadBatch(); return }
     if (!identityVerified) {
       Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2000 })
       setTimeout(() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` }), 500)
@@ -200,6 +216,7 @@ export default function H3CFormPage() {
     }
 
     try {
+      assertCertificationBatchOpen(batch)
       const registration = await h3cService.createOrder({
         batch_id: batch.id,
         registration_type: type,
@@ -239,7 +256,11 @@ export default function H3CFormPage() {
         <PageHeader title='H3C 报名表单' shouldShowBack />
         <View className={styles.body}>
           <View className={styles.card}>
-            <Text className={styles.title}>{batch?.name || '加载考试批次中...'}</Text>
+            <Text className={styles.title}>{batch?.name || (batchChecking ? '加载考试批次中...' : '批次不可用')}</Text>
+            {batch && <Text className={styles.remark}>{formatCertificationApplyRange(batch)}</Text>}
+            {!availability.canApply && !batchChecking && <Text className={styles.remark}>{availability.message}</Text>}
+            {batchError && <Text className={styles.remark}>{batchError}</Text>}
+            <Text className={styles.remark} onClick={() => void loadBatch()}>{batchChecking ? '正在核验批次状态…' : '刷新批次状态'}</Text>
           </View>
 
           <View className={styles.card}>
@@ -361,10 +382,10 @@ export default function H3CFormPage() {
           <Button
             variant='gradient'
             size='lg'
-            disabled={!identityVerified || submitting || uploading}
+            disabled={!identityVerified || !availability.canApply || batchChecking || Boolean(batchError) || submitting || uploading}
             onClick={submit}
           >
-            {identityVerified
+            {!availability.canApply ? availability.action : batchChecking || batchError ? '请先核验批次状态' : identityVerified
               ? submitting ? '提交中...' : price === 0 ? '提交报名' : '提交报名，前往付款'
               : '请先完成实名认证'}
           </Button>

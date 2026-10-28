@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -8,6 +8,8 @@ import { Button } from '@/components/Button'
 import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { RegistrationSubmitBar, RegistrationSummary } from '@/components/RegistrationParts'
 import { useAuth } from '@/hooks/useAuth'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { assertCertificationBatchOpen, certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
 import { getUserProfile } from '@/services/userService'
 import { sangforService, type SangforBatch, type SangforRegistration, type SangforValues } from '@/services/sangforService'
 import { SANGFOR_LABELS, validateSangforForm, canApplySangfor } from '@/utils/sangforForm'
@@ -27,6 +29,8 @@ export default function SangforFormPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof SangforValues, string>>>({}), [submitError, setSubmitError] = useState('')
   const [agreed, setAgreed] = useState(false), [submitting, setSubmitting] = useState(false), [scrollTarget, setScrollTarget] = useState('')
   const lock = useRef(false)
+  const [batchChecking, setBatchChecking] = useState(false), [batchCheckError, setBatchCheckError] = useState('')
+  const statusRequest = useRef(0)
   useEffect(() => { setForm(INITIAL); setRegistration(null); setErrors({}); setSubmitError(''); setAgreed(false) }, [sessionId])
   useLoad(params => { setBatchId(Number(params?.batch_id || 0)); setRegistrationId(Number(params?.registration_id || 0)); setRouteReady(true) })
   useEffect(() => {
@@ -55,10 +59,39 @@ export default function SangforFormPage() {
     void load().catch(reason => { if (active) setLoadError(reason instanceof Error ? reason.message : '报名信息加载失败') }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [isLoggedIn, sessionId, routeReady, batchId, registrationId, retry])
-  const correctionAllowed = !!registration && registration.status === 'returned' && !!registration.correction_due_at && Date.parse(registration.correction_due_at) >= Date.now()
-  const canSubmit = identity.verified && !loading && !loadError && (registrationId ? correctionAllowed : !!batch && canApplySangfor(batch))
+  const refreshAvailability = useCallback(async () => {
+    if (!isLoggedIn || !routeReady || loading) return
+    const request = ++statusRequest.current
+    setBatchChecking(true); setBatchCheckError('')
+    try {
+      if (registrationId) {
+        const latest = await sangforService.registration(registrationId)
+        if (request !== statusRequest.current) return
+        if (registration && latest.revision !== registration.revision) { setBatchCheckError('报名版本已变化，请返回报名详情重新进入'); return }
+        setRegistration(latest)
+      } else {
+        const latest = await sangforService.batch(batchId)
+        if (request === statusRequest.current) setBatch(latest)
+      }
+    } catch (reason) { if (request === statusRequest.current) setBatchCheckError(reason instanceof Error ? reason.message : '批次状态核验失败，请重试') }
+    finally { if (request === statusRequest.current) setBatchChecking(false) }
+  }, [isLoggedIn, sessionId, routeReady, loading, registrationId, batchId, registration?.revision])
+  useEffect(() => {
+    statusRequest.current++; setBatchChecking(false); setBatchCheckError('')
+    return () => { statusRequest.current++ }
+  }, [sessionId, batchId, registrationId])
+  const now = useCertificationBatchClock(batch ? [batch] : [], refreshAvailability, isLoggedIn && routeReady && !loading, [registration?.correction_due_at])
+  const availability = certificationBatchState(batch ? { ...batch, can_apply: !!batch.exam_date } : null, now)
+  const correctionAllowed = !!registration && registration.status === 'returned' && !!registration.correction_due_at && Date.parse(registration.correction_due_at) >= now
+  const canSubmit = identity.verified && !loading && !loadError && !batchChecking && !batchCheckError && (registrationId ? correctionAllowed : !!batch && canApplySangfor(batch, now))
+  const assertAvailable = () => {
+    if (registrationId) {
+      if (!registration || registration.status !== 'returned' || !registration.correction_due_at || Date.parse(registration.correction_due_at) < Date.now()) throw new Error('当前报名不在有效补正期内')
+    } else assertCertificationBatchOpen(batch ? { ...batch, can_apply: !!batch.exam_date } : null)
+  }
   const submit = async () => {
     if (lock.current || !canSubmit) return
+    try { assertAvailable() } catch (reason) { setSubmitError((reason as Error).message); return }
     const next = validateSangforForm(form)
     setErrors(next); setSubmitError('')
     const first = Object.keys(next)[0]
@@ -67,6 +100,7 @@ export default function SangforFormPage() {
     lock.current = true; setSubmitting(true)
     try {
       if (!(await ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '提交报名前请阅读并同意认证报名信息处理授权协议'))) return
+      assertAvailable()
       const values = Object.fromEntries(Object.entries(form).map(([key, value]) => [key, value.trim()])) as unknown as SangforValues
       if (registration) {
         const result = await sangforService.resubmit(registration.id, registration.revision, values)
@@ -89,7 +123,8 @@ export default function SangforFormPage() {
       {loadError && <View className={styles.card}><Text className={styles.error}>{loadError}</Text><Button variant='secondary' onClick={() => setRetry(value => value + 1)}>重新加载</Button></View>}
       {!loading && !loadError && <>
         <RegistrationSummary title={batch?.name || summary?.name || '深信服报名'} badge='深信服' subtitle={batch?.exam_direction || summary?.exam_direction} priceCents={batch?.price_cents ?? registration?.price_cents}
-          items={[{ label: '考试时间', value: (batch?.exam_date || summary?.exam_date) ? formatDateTime(batch?.exam_date || summary?.exam_date || '') : '以通知为准', wide: true }, { label: '考试地点', value: batch?.exam_location || summary?.exam_location || '以通知为准', wide: true }]} />
+          items={[...(batch ? [{ label: '报名时间', value: formatCertificationApplyRange(batch), wide: true }] : []), { label: '考试时间', value: (batch?.exam_date || summary?.exam_date) ? formatDateTime(batch?.exam_date || summary?.exam_date || '') : '以通知为准', wide: true }, { label: '考试地点', value: batch?.exam_location || summary?.exam_location || '以通知为准', wide: true }]} />
+        {batchCheckError && <View className={styles.card}><Text className={styles.error}>{batchCheckError}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
         <View className={styles.card}><Text className={styles.title}>本人身份</Text><View className={styles.row}><Text className={styles.label}>姓名</Text><Text className={styles.value}>{identity.name || '未实名'}</Text></View>
           <View className={styles.row}><Text className={styles.label}>身份证号</Text><Text className={styles.value}>{identity.id ? `${identity.id.slice(0, 3)}***********${identity.id.slice(-4)}` : '未实名'}</Text></View>
           {!identity.verified && <Button variant='secondary' onClick={() => Taro.navigateTo({ url: '/pages/mine/edit-profile' })}>完成本人实名认证</Button>}</View>
@@ -99,7 +134,7 @@ export default function SangforFormPage() {
         <View className={styles.card}><Text className={styles.title}>联系信息</Text><View className={styles.fields}>{field('phone', true, false, 11)}{field('email')}{field('mailing_address', false, true, 256)}</View></View>
         <View className={styles.card}><Text className={styles.title}>补充说明</Text>{field('remark1', false, true, 500)}{field('remark2', false, true, 500)}</View>
         <View className={styles.card}><AgreementCheckbox agreed={agreed} onChange={setAgreed}>我已阅读并同意<Text onClick={() => void ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读认证报名信息处理授权协议')}>《认证报名信息处理授权协议》</Text></AgreementCheckbox>
-          {!canSubmit && <Text className={styles.error}>{!identity.verified ? '请先完成本人实名认证' : registrationId ? '当前报名不在有效补正期内' : '该批次当前不可报名，请返回列表重新选择'}</Text>}
+          {!canSubmit && <Text className={styles.error}>{batchChecking ? '正在核验批次状态…' : !identity.verified ? '请先完成本人实名认证' : registrationId ? '当前报名不在有效补正期内' : availability.message || batchCheckError}</Text>}
           {submitError && <Text className={styles.error}>{submitError}</Text>}</View>
       </>}
     </View></ScrollView>

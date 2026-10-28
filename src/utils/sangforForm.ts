@@ -1,4 +1,5 @@
 import type { SangforBatch, SangforValues } from '../services/sangforService.ts'
+import { certificationBatchState } from './certificationBatch.ts'
 
 export const SANGFOR_LABELS: Record<keyof SangforValues, string> = {
   phone: '手机号', organization: '所属机构', first_name: '名字拼音（firstName）', last_name: '姓氏拼音（lastName）',
@@ -22,6 +23,5 @@ export function validateSangforForm(values: SangforValues): Partial<Record<keyof
   return errors
 }
 export function canApplySangfor(batch: SangforBatch, time = Date.now()): boolean {
-  return batch.status === 'published' && batch.remaining_count !== 0 && !!batch.exam_date && !!batch.apply_start && !!batch.apply_end
-    && Date.parse(batch.apply_start) <= time && Date.parse(batch.apply_end) >= time
+  return !!batch.exam_date && certificationBatchState(batch, time).canApply
 }

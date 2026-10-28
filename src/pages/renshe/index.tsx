@@ -9,10 +9,12 @@ import { CertBatchCard, type CertBatchInfoItem } from '@/components/CertBatchCar
 import { ZoneCard } from '@/components/ZoneCard'
 import { ROUTES } from '@/constants/routes'
 import { rensheService, type RenshePlan, type RensheProject } from '@/services/rensheService'
-import { formatDate, formatDateTime } from '@/utils/format'
+import { formatDateTime } from '@/utils/format'
 import { resolveMediaUrl } from '@/utils/media'
 import styles from './renshe.module.scss'
-import { GRADUATED_RULE, isEmploymentRule, isSelfReportedRule } from '@/utils/rensheGraduated'
+import { GRADUATED_RULE, isEmploymentRule, rensheBatchWindow } from '@/utils/rensheGraduated'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
 
 export default function RensheIndexPage() {
   const { params } = useRouter()
@@ -60,6 +62,8 @@ export default function RensheIndexPage() {
   }, [validProjectId])
 
   useLoad(() => { void load() })
+  const now = useCertificationBatchClock(batches, load)
+  const visibleBatches = batches.filter(batch => certificationBatchState(rensheBatchWindow(batch), now).visible)
   usePullDownRefresh(async () => {
     await load()
     Taro.stopPullDownRefresh()
@@ -128,22 +132,21 @@ export default function RensheIndexPage() {
             </>}
           </View>}
 
-          {!loading && !error && selectedProject && batches.length === 0 && (
+          {!loading && !error && selectedProject && visibleBatches.length === 0 && (
             <View className={styles.empty}>
               <Text>该产品暂无开放批次</Text>
             </View>
           )}
 
-          {!loading && !error && selectedProject && batches.map((batch) => {
-            const acceptsNew = batch.can_apply ?? (isSelfReportedRule(batch.renshe_config?.qualification_rule) && batch.renshe_config?.reporting_policy?.contract_version === 2)
-            const full = batch.capacity > 0 && batch.enrolled >= batch.capacity
+          {!loading && !error && selectedProject && visibleBatches.map((batch) => {
+            const availability = certificationBatchState(rensheBatchWindow(batch), now)
             const remaining = batch.capacity === 0
               ? '不限'
               : `${Math.max(batch.capacity - batch.enrolled, 0)} 人`
             const infoItems: CertBatchInfoItem[] = [
               {
                 label: '报名时间',
-                value: `${formatDate(batch.apply_start)} ~ ${formatDate(batch.apply_end)}`,
+                value: formatCertificationApplyRange(batch),
                 full: true,
               },
               { label: '考试时间', value: formatDateTime(batch.exam_date, '待公布') },
@@ -169,12 +172,16 @@ export default function RensheIndexPage() {
               <CertBatchCard
                 key={batch.id}
                 title={batch.name}
-                badge={!acceptsNew ? '历史批次' : full ? '名额已满' : '报名中'}
-                badgeTone={!acceptsNew || full ? 'gray' : 'green'}
+                badge={availability.label}
+                badgeTone={availability.tone}
                 infoItems={infoItems}
-                actionText={!acceptsNew ? '已有报名请前往我的报名' : full ? '名额已满' : '查看条件并报名'}
-                actionDisabled={!acceptsNew || full}
-                onAction={() => void navigateWithLogin(`/${ROUTES.RENSHE_FORM}?plan_id=${batch.id}`)}
+                actionText={availability.canApply ? '查看条件并报名' : availability.action}
+                actionDisabled={!availability.canApply}
+                onAction={() => {
+                  const current = certificationBatchState(rensheBatchWindow(batch))
+                  if (!current.canApply) { Taro.showToast({ title: current.message, icon: 'none' }); void load(); return }
+                  void navigateWithLogin(`/${ROUTES.RENSHE_FORM}?plan_id=${batch.id}`)
+                }}
               />
             )
           })}

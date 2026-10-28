@@ -10,28 +10,14 @@ import { h3cService } from '@/services/h3cService'
 import { ROUTES } from '@/constants/routes'
 import { formatDate } from '@/utils/format'
 import type { H3cExamBatch, H3cRegistrationType } from '@/types/h3c'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
 import styles from './h3c.module.scss'
-
-const BATCH_STATUS_META: Record<string, {
-  label: string
-  buttonLabel: string
-  tone: 'green' | 'orange' | 'gray'
-}> = {
-  published: { label: '报名中', buttonLabel: '立即报名', tone: 'green' },
-  registration_closed: { label: '已截止', buttonLabel: '报名已结束', tone: 'orange' },
-  finalized: { label: '已结束', buttonLabel: '报名已结束', tone: 'gray' },
-}
 
 const PRICE_LABELS: Partial<Record<H3cRegistrationType, string>> = {
   student: '学生价',
   coupon: '考券价',
   full: '全额价',
-}
-
-const getStatusMeta = (status: string) => BATCH_STATUS_META[status] ?? {
-  label: status,
-  buttonLabel: '暂不可报名',
-  tone: 'gray' as const,
 }
 
 export default function H3CListPage() {
@@ -55,16 +41,15 @@ export default function H3CListPage() {
   }, [])
 
   useLoad(() => { void load() })
+  const now = useCertificationBatchClock(batches, load)
   usePullDownRefresh(async () => {
     await load()
     Taro.stopPullDownRefresh()
   })
 
   const visibleBatches = useMemo(() => (
-    certCode
-      ? batches.filter(batch => batch.certification_code === certCode)
-      : batches
-  ), [batches, certCode])
+    batches.filter(batch => (!certCode || batch.certification_code === certCode) && certificationBatchState(batch, now).visible)
+  ), [batches, certCode, now])
 
   return (
     <>
@@ -89,12 +74,12 @@ export default function H3CListPage() {
           )}
 
           {!loading && !error && visibleBatches.map((batch) => {
-            const statusMeta = getStatusMeta(batch.status)
-            const canRegister = batch.status === 'published'
+            const statusMeta = certificationBatchState(batch, now)
+            const canRegister = statusMeta.canApply
             const infoItems: CertBatchInfoItem[] = [
               {
                 label: '报名时间',
-                value: `${formatDate(batch.apply_start)} ~ ${formatDate(batch.apply_end)}`,
+                value: formatCertificationApplyRange(batch),
                 full: true,
               },
               { label: '考试时间', value: formatDate(batch.exam_date, '待公布') },
@@ -119,9 +104,13 @@ export default function H3CListPage() {
                 badge={statusMeta.label}
                 badgeTone={statusMeta.tone}
                 infoItems={infoItems}
-                actionText={statusMeta.buttonLabel}
+                actionText={statusMeta.action}
                 actionDisabled={!canRegister}
-                onAction={() => void navigateWithLogin(`/${ROUTES.H3C_FORM}?batch_id=${batch.id}`)}
+                onAction={() => {
+                  const current = certificationBatchState(batch)
+                  if (!current.canApply) { Taro.showToast({ title: current.message, icon: 'none' }); void load(); return }
+                  void navigateWithLogin(`/${ROUTES.H3C_FORM}?batch_id=${batch.id}`)
+                }}
               />
             )
           })}

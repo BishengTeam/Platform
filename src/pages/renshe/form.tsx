@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -8,6 +8,8 @@ import { FormInput } from '@/components/FormInput'
 import { RegistrationSubmitBar } from '@/components/RegistrationParts'
 import { PriceRow } from '@/components/PriceRow'
 import { useIdentityCheck } from '@/hooks/useIdentityCheck'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { assertCertificationBatchOpen, certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
 import { ROUTES } from '@/constants/routes'
 import { getUserProfile } from '@/services/dataService'
 import {
@@ -19,13 +21,13 @@ import {
 } from '@/services/rensheService'
 import type { UserProfileAggregated } from '@/types/profile'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
-import { formatDate, formatDateTime } from '@/utils/format'
+import { formatDateTime } from '@/utils/format'
 import { validateEmail, validatePhone, validateRequired } from '@/utils/validator'
 import type { ValidationResult } from '@/utils/validator'
 import styles from './renshe.module.scss'
 import GraduatedForm from './graduated-form'
 import ReportingFields from './reporting-fields'
-import { validateReportingInfo, isSelfReportedRule } from '@/utils/rensheGraduated'
+import { correctionAvailable, validateReportingInfo, isSelfReportedRule, rensheBatchWindow } from '@/utils/rensheGraduated'
 
 export default function RensheFormPage() {
   const [planId, setPlanId] = useState(0)
@@ -44,6 +46,9 @@ export default function RensheFormPage() {
   const [loadError, setLoadError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const identity = useIdentityCheck()
+  const [batchChecking, setBatchChecking] = useState(false)
+  const [batchCheckError, setBatchCheckError] = useState('')
+  const statusRequest = useRef(0)
 
   useLoad((options) => {
     setPlanId(Number(options?.plan_id || 0))
@@ -83,6 +88,32 @@ export default function RensheFormPage() {
   }, [applicationId, planId])
 
   useEffect(() => { void load() }, [load])
+  const refreshAvailability = useCallback(async () => {
+    if (!planId) return
+    const request = ++statusRequest.current
+    setBatchChecking(true); setBatchCheckError('')
+    try {
+      const [latestPlan, latestApplication] = await Promise.all([
+        rensheService.getBatch(planId),
+        application?.id ? rensheService.getApplication(application.id) : Promise.resolve(null),
+      ])
+      if (request !== statusRequest.current) return
+      if (latestApplication && latestApplication.current_version_id !== application?.current_version_id) { setBatchCheckError('报名版本已变化，请返回报名详情重新进入'); return }
+      setPlan(latestPlan)
+      if (latestApplication) setApplication(latestApplication)
+    } catch (error) { if (request === statusRequest.current) setBatchCheckError(error instanceof Error ? error.message : '批次状态核验失败，请重试') }
+    finally { if (request === statusRequest.current) setBatchChecking(false) }
+  }, [planId, application?.id, application?.current_version_id])
+  useEffect(() => () => { statusRequest.current++ }, [])
+  const now = useCertificationBatchClock(plan ? [plan] : [], refreshAvailability, Boolean(plan), [application?.correction_due_at])
+  const availability = certificationBatchState(plan ? rensheBatchWindow(plan) : null, now)
+  const correcting = Boolean(application && ['initial_rejected', 'external_rejected'].includes(application.status))
+  const applicationEditable = correcting ? Boolean(plan && application && correctionAvailable(application, plan, now)) : (!application || application.status === 'draft') && availability.canApply
+  const assertAvailable = () => {
+    if (correcting) {
+      if (!plan || !application || !correctionAvailable(application, plan, Date.now())) throw new Error('当前报名不在有效补正期内')
+    } else assertCertificationBatchOpen(plan ? rensheBatchWindow(plan) : null)
+  }
 
   const realname = profile?.realname
   const student = profile?.student
@@ -104,7 +135,7 @@ export default function RensheFormPage() {
     && realname?.identity_status === 'verified'
     && student?.student_status === 'verified'
   const materialsReady = materialChecks.every(item => !item.required || Boolean(item.value))
-  const canSubmit = identityReady && materialsReady && !submitting
+  const canSubmit = identityReady && materialsReady && applicationEditable && !batchChecking && !batchCheckError && !submitting
 
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
@@ -120,6 +151,7 @@ export default function RensheFormPage() {
 
   const handleSubmit = async () => {
     if (!plan || !canSubmit || !handleValidate()) return
+    try { assertAvailable() } catch (error) { Taro.showToast({ title: (error as Error).message, icon: 'none' }); return }
     if (!(await ensureAgreementSigned(
       'cert_registration',
       '认证报名信息处理授权协议',
@@ -128,6 +160,7 @@ export default function RensheFormPage() {
 
     setSubmitting(true)
     try {
+      assertAvailable()
       const saved = await rensheService.saveDraft({
         plan_id: plan.id,
         contact_phone: phone.trim(),
@@ -135,12 +168,17 @@ export default function RensheFormPage() {
         email: email.trim(),
         reporting_info: { ...reporting, occupation_years: reporting.occupation_years === '' ? null : reporting.occupation_years } as RensheReportingInfo,
       })
+      assertAvailable()
       const submitted = await rensheService.submit(saved.id)
       Taro.showToast({ title: '报名信息已提交', icon: 'success' })
       if (submitted.payment_required) {
         Taro.navigateTo({
           url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${submitted.order_id}`,
         })
+        return
+      }
+      if (!correcting) {
+        Taro.redirectTo({ url: `/${ROUTES.PAYMENT_RESULT}?order_id=${submitted.order_id}` })
         return
       }
       Taro.redirectTo({
@@ -180,7 +218,7 @@ export default function RensheFormPage() {
   }
 
   if (isSelfReportedRule(plan.renshe_config?.qualification_rule)) {
-    return <GraduatedForm key={`${plan.id}-${application?.id || 0}`} plan={plan} profile={profile} application={application} />
+    return <GraduatedForm key={`${plan.id}-${application?.id || 0}`} plan={plan} profile={profile} application={application} now={now} batchChecking={batchChecking} batchCheckError={batchCheckError} onRefreshBatch={refreshAvailability} />
   }
 
   if (identity.phase !== 'verified') {
@@ -214,6 +252,7 @@ export default function RensheFormPage() {
       <View className={styles.page}>
         <PageHeader title='人社认证报名' shouldShowBack />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY>
+          {(batchCheckError || batchChecking || !applicationEditable) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : batchCheckError || (correcting ? '当前报名不在有效补正期内' : availability.message || '请在我的报名查看已提交的报名')}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
           <View className={styles.card}>
             <View className={styles.cardHeader}>
               <Text className={styles.title}>{plan.name}</Text>
@@ -223,7 +262,7 @@ export default function RensheFormPage() {
             <View className={styles.row}>
               <Text className={styles.label}>报名时间</Text>
               <Text className={styles.value}>
-                {formatDate(plan.apply_start)} ~ {formatDate(plan.apply_end)}
+                {formatCertificationApplyRange(plan)}
               </Text>
             </View>
             <View className={styles.row}>
@@ -343,7 +382,7 @@ export default function RensheFormPage() {
         </ScrollView>
 
         <RegistrationSubmitBar priceCents={plan.price_cents} loading={submitting} disabled={!canSubmit}
-          onSubmit={() => { void handleSubmit() }} label={applicationId ? '重新提交审核' : '提交报名'} />
+          onSubmit={() => { void handleSubmit() }} label={!correcting && !availability.canApply ? availability.action : applicationId ? '重新提交审核' : '提交报名'} />
       </View>
     </AuthGuard>
   )

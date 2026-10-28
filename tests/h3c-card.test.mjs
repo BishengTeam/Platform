@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
+import { certificationBatchState } from '../src/utils/certificationBatch.ts'
 
 test('H3C exam batch card separates prices and highlights urgent quota', async () => {
   const [page, shared, stylesheet] = await Promise.all([
@@ -24,14 +25,15 @@ test('H3C exam batch card separates prices and highlights urgent quota', async (
   assert.match(stylesheet, /linear-gradient\(90deg, #3366ff, #7c3aed\)/)
 })
 
-test('H3C cards stay visible after enrollment closes or exam finishes', async () => {
+test('H3C public cards hide closed and finished batches using the shared state mechanism', async () => {
   const page = await readFile('src/pages/h3c/index.tsx', 'utf8')
 
-  assert.match(page, /published: \{ label: '报名中', buttonLabel: '立即报名'/)
-  assert.match(page, /registration_closed: \{ label: '已截止', buttonLabel: '报名已结束'/)
-  assert.match(page, /finalized: \{ label: '已结束', buttonLabel: '报名已结束'/)
-  assert.match(page, /const canRegister = batch\.status === 'published'/)
-  assert.match(page, /actionText=\{statusMeta\.buttonLabel\}/)
+  assert.match(page, /useCertificationBatchClock\(batches, load\)/)
+  assert.match(page, /certificationBatchState\(batch, now\)\.visible/)
+  const window = { apply_start: '2026-10-01T00:00:00+08:00', apply_end: '2026-10-20T00:00:00+08:00' }
+  const time = Date.parse('2026-10-20T00:00:00+08:00')
+  for (const status of ['published', 'registration_closed', 'finalized']) assert.equal(certificationBatchState({ ...window, status }, time).visible, false)
+  assert.match(page, /actionText=\{statusMeta\.action\}/)
   assert.match(page, /actionDisabled=\{!canRegister\}/)
   assert.equal(page.includes('暂无可报名考试'), false)
 })

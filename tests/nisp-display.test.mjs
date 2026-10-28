@@ -10,15 +10,15 @@ test('NISP apply period is formatted for batch cards and order summary', () => {
       apply_start: '2026-10-06T12:00:00Z',
       apply_end: '2026-10-31T12:00:00Z',
     }),
-    '2026-10-06 ~ 2026-10-31',
+    '2026-10-06 20:00 至 2026-10-31 20:00（北京时间）',
   )
   assert.equal(
     formatNispApplyRange({ apply_start: '2026-10-06T12:00:00Z', apply_end: null }),
-    '2026-10-06 起',
+    '2026-10-06 20:00 起（北京时间）',
   )
   assert.equal(
     formatNispApplyRange({ apply_start: null, apply_end: '2026-10-31T12:00:00Z' }),
-    '2026-10-31 截止',
+    '2026-10-31 20:00 截止（北京时间）',
   )
   assert.equal(formatNispApplyRange({ apply_start: null, apply_end: null }), '以批次安排为准')
 })

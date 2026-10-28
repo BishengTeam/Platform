@@ -15,7 +15,8 @@ import type { UserProfileAggregated } from '@/types/profile'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { validatePhone, validateEmail } from '@/utils/validator'
 import { formatDateTime } from '@/utils/format'
-import { CHANGE_LABELS, INSTITUTION_LABELS, EDUCATION_LABELS, chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation, workDateHint } from '@/utils/rensheGraduated'
+import { assertCertificationBatchOpen, certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
+import { CHANGE_LABELS, INSTITUTION_LABELS, EDUCATION_LABELS, chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation, workDateHint, rensheBatchWindow } from '@/utils/rensheGraduated'
 import styles from './renshe.module.scss'
 import EmploymentFields, { emptyExperience } from './employment-fields'
 import { validateEmploymentInfo } from '@/utils/rensheEmployment'
@@ -25,9 +26,9 @@ import { validateLevelThreeInfo } from '@/utils/rensheLevelThree'
 import TitleCertificateFields from './title-certificate-fields'
 import { levelFiveAgeBasis, validateLevelFiveAge } from '@/utils/rensheLevelFive'
 
-interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; application: RensheApplicationDetail | null }
+interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; application: RensheApplicationDetail | null; now?: number; batchChecking?: boolean; batchCheckError?: string; onRefreshBatch?: () => void }
 
-export default function GraduatedForm({ plan, profile, application }: Props) {
+export default function GraduatedForm({ plan, profile, application, now = Date.now(), batchChecking = false, batchCheckError = '', onRefreshBatch }: Props) {
   const draft = application?.draft_data
   const employment = isEmploymentRule(plan.renshe_config?.qualification_rule)
   const levelThree = plan.renshe_config?.qualification_rule === LEVEL_THREE_RULE
@@ -68,8 +69,14 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
   const fiveAgeError = levelFive ? validateLevelFiveAge(realname?.birth_date, application?.versions) : null
   const identityReady = realname?.identity_status === 'verified'
   const correcting = Boolean(application && ['initial_rejected', 'external_rejected'].includes(application.status))
-  const editable = !application || application.status === 'draft' || (correcting && correctionAvailable(application, plan))
+  const availability = certificationBatchState(rensheBatchWindow(plan), now)
+  const editable = ((!application || application.status === 'draft') && availability.canApply) || (correcting && correctionAvailable(application!, plan, now))
   const locked = !editable || Boolean(application?.frozen_at)
+  const assertAvailable = () => {
+    if (correcting) {
+      if (!application || !correctionAvailable(application, plan, Date.now())) throw new Error('当前报名不在有效补正期内')
+    } else assertCertificationBatchOpen(rensheBatchWindow(plan))
+  }
   const requirements = (plan.renshe_config?.materials || []).filter(item => !levelThree || (branch ? branch.material_kinds.includes(item.kind) : ['id_card_front', 'id_card_back', 'registration_portrait', 'commitment_letter'].includes(item.kind))).map(item => levelThree ? { ...item, required: true } : item)
   const uploadRequirements = requirements.filter(item => !['id_card_front', 'id_card_back', 'portrait'].includes(item.kind))
   const uploadedCount = uploadRequirements.filter(item => materials[item.kind]).length
@@ -129,8 +136,9 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
   }
 
   const submit = async () => {
-    if (busy || operationLock.current || locked) return
+    if (busy || operationLock.current || locked || batchChecking || batchCheckError) return
     setError('')
+    try { assertAvailable() } catch (value) { fail(value); return }
     if (!identityReady) { setError('请先完成本人实名认证'); return }
     if (levelFive) {
       const ageError = validateLevelFiveAge(realname?.birth_date, application?.versions)
@@ -164,9 +172,12 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     setBusy('submit')
     try {
       if (!(await ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读并同意认证报名信息处理授权协议'))) return
+      assertAvailable()
       const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), ...(employment ? { qualification_info: qualification } : {}), ...(educationRequired ? { education_info: { ...education, graduated: true } as RensheEducationInfo } : {}), reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
+      assertAvailable()
       const result = await rensheService.submit(saved.id)
       if (result.payment_required) await Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` })
+      else if (!correcting) await Taro.redirectTo({ url: `/${ROUTES.PAYMENT_RESULT}?order_id=${result.order_id}` })
       else await Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${saved.id}` })
     } catch (value) { fail(value) } finally { operationLock.current = false; setBusy('') }
   }
@@ -194,7 +205,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
     <PageHeader title={levelThree ? '三级报名' : employment ? '工龄及证书路径报名' : '已毕业学历型报名'} shouldShowBack />
     <ScrollView scrollY className={`${styles.body} ${styles.bodyWithFooter}`}>
       <RegistrationSummary title={plan.name} subtitle={`${plan.occupation_name} · ${plan.skill_level}`} badge={plan.application_type} priceCents={plan.price_cents}
-        items={[{ label: '报名时间', value: `${formatDateTime(plan.apply_start, '待公布')} 至 ${formatDateTime(plan.apply_end, '待公布')}`, wide: true }, { label: '考试时间', value: formatDateTime(plan.exam_date, '待公布') }, { label: '考试地点', value: plan.exam_location || '以批次安排为准' }]}>
+        items={[{ label: '报名时间', value: formatCertificationApplyRange(plan), wide: true }, { label: '考试时间', value: formatDateTime(plan.exam_date, '待公布') }, { label: '考试地点', value: plan.exam_location || '以批次安排为准' }]}>
         <RequirementDisclosure title='查看报考要求'>
           <Text className={styles.sectionDesc}>{levelThree ? branch?.condition || '请选择符合本人情况的具体三级申报路径。' : employment ? levelFive ? '五级须年满16周岁并从事相关职业，不设最低工龄。' : compound ? '须取得五级证书后累计相关工作满3年。' : '须累计相关职业工作满5年。' : '仅接受已取得毕业证、本专业或相关专业的申请人。'}</Text>
           {options?.rule_profile?.related_majors && <Text className={styles.sectionDesc}>相关专业：{options.rule_profile.related_majors}</Text>}
@@ -209,8 +220,9 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
         <Text className={styles.sectionDesc}>已支付报名补正后重新初审，复用原订单。</Text>
       </View>}
       {!options && <View className={styles.warning}><Text>{optionsError || '正在加载本批次填报要求…'}</Text>{optionsError && <Button variant='secondary' onClick={() => setRetry(value => value + 1)}>重新加载</Button>}</View>}
+      {(batchCheckError || batchChecking) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : batchCheckError}</Text>{onRefreshBatch && <Button variant='secondary' onClick={onRefreshBatch}>刷新批次状态</Button>}</View>}
       {locked && <View className={styles.warning}>
-        <Text>{application?.frozen_at ? '退款处理中，资料已冻结。' : correcting ? '补正期限或批次状态不允许修改，请联系管理员。' : '报名已提交，可在报名详情查看进度、查看付款进度或取消待支付订单。'}</Text>
+        <Text>{application?.frozen_at ? '退款处理中，资料已冻结。' : correcting ? '补正期限或批次状态不允许修改，请联系管理员。' : (!application || application.status === 'draft') && !availability.canApply ? availability.message : '报名已提交，可在报名详情查看进度、查看付款进度或取消待支付订单。'}</Text>
         {application && <Button variant='secondary' onClick={() => Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${application.id}` })}>查看报名详情</Button>}
       </View>}
       <View className={styles.card}>
@@ -303,7 +315,7 @@ export default function GraduatedForm({ plan, profile, application }: Props) {
       </View>
     </ScrollView>
     <RegistrationSubmitBar priceCents={plan.price_cents} priceLabel={correcting ? '本次补正' : '报名费'} priceText={correcting ? '无需重复支付' : undefined}
-      disabled={locked || Boolean(busy) || !identityReady || !options} loading={busy === 'submit'} onSubmit={() => void submit()}
-      label={correcting ? '提交补正' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
+      disabled={locked || batchChecking || Boolean(batchCheckError) || Boolean(busy) || !identityReady || !options} loading={busy === 'submit'} onSubmit={() => void submit()}
+      label={correcting ? '提交补正' : !availability.canApply ? availability.action : batchChecking || batchCheckError ? '请先核验批次状态' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
   </View></AuthGuard>
 }

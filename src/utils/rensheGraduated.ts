@@ -1,4 +1,4 @@
-import type { RensheEducationInfo, RensheReportingInfo, RensheReportingOptions } from '../services/rensheService.ts'
+import type { RensheEducationInfo, RensheReportingInfo, RensheReportingOptions, RenshePlan } from '../services/rensheService.ts'
 
 export const GRADUATED_RULE = 'related_major_graduated_degree_v1'
 export const EMPLOYMENT_RULE = 'documented_employment_v1'
@@ -9,6 +9,9 @@ export function isEmploymentRule(rule?: string): boolean {
 }
 export function isSelfReportedRule(rule?: string): boolean {
   return rule === GRADUATED_RULE || isEmploymentRule(rule)
+}
+export function rensheBatchWindow(plan: RenshePlan) {
+  return { ...plan, can_apply: plan.can_apply ?? (isSelfReportedRule(plan.renshe_config?.qualification_rule) && plan.renshe_config?.reporting_policy?.contract_version === 2) }
 }
 export const INSTITUTION_LABELS: Record<string, string> = {
   technical: '技工院校', vocational: '中等及以上职业院校', general_higher: '普通高等学校（专科及以上）',

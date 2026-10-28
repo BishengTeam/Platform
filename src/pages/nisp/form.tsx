@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView, Picker } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -8,6 +8,8 @@ import { FormInput } from '@/components/FormInput'
 import { MaterialItem, RegistrationSummary, RegistrationSubmitBar } from '@/components/RegistrationParts'
 import { DocumentActions } from '@/components/DocumentActions'
 import { useDocumentActions } from '@/hooks/useDocumentActions'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { assertCertificationBatchOpen, certificationBatchState } from '@/utils/certificationBatch'
 import { AgreementCheckbox } from '@/components/AgreementCheckbox'
 import { nispService } from '@/services/nispService'
 import { getUserProfile } from '@/services/userService'
@@ -70,6 +72,7 @@ export default function NispFormPage() {
   const [educationGuideSlot, setEducationGuideSlot] = useState<DocumentSceneSlot | null>(null)
   const [applicationFormSlot, setApplicationFormSlot] = useState<DocumentSceneSlot | null>(null)
   const [identityVerified, setIdentityVerified] = useState(false)
+  const batchRequest = useRef(0)
 
   useLoad((options) => {
     setBatchId(Number(options?.batch_id || 0))
@@ -105,21 +108,24 @@ export default function NispFormPage() {
     })
   }, [])
 
-  useEffect(() => {
+  const loadBatch = useCallback(async () => {
     if (!routeReady) return
-    let active = true
-    setBatch(null); setBatchError(''); setBatchState('loading')
+    const request = ++batchRequest.current
+    setBatchError(''); setBatchState('loading')
     if (!Number.isSafeInteger(batchId) || batchId <= 0) { setBatchState('missing'); return }
-    findNispBatch(batchId, () => nispService.listBatches()).then(found => {
-      if (!active) return
-      if (!found) { setBatchState('missing'); return }
+    try {
+      const found = await findNispBatch(batchId, () => nispService.listBatches())
+      if (request !== batchRequest.current) return
+      if (!found) { setBatch(null); setBatchState('missing'); return }
       setBatch(found); setLevel(found.level); setBatchState('ready')
-    }).catch(error => {
-      if (!active) return
+    } catch (error) {
+      if (request !== batchRequest.current) return
       setBatchState('error'); setBatchError(nispErrorMessage(error, '批次加载失败，请重试'))
-    })
-    return () => { active = false }
+    }
   }, [batchId, batchRetry, routeReady])
+  useEffect(() => { void loadBatch(); return () => { batchRequest.current++ } }, [loadBatch])
+  const now = useCertificationBatchClock(batch ? [batch] : [], loadBatch, routeReady && batchId > 0)
+  const availability = certificationBatchState(batch, now)
 
   useEffect(() => {
     if (level !== '2') return
@@ -147,6 +153,7 @@ export default function NispFormPage() {
     setUploading(fileType)
     setErrors(previous => ({ ...previous, [fileType]: undefined }))
     try {
+      assertCertificationBatchOpen(batch)
       let filePath = ''
       let fileSize = 0
       let originalFilename = ''
@@ -167,6 +174,7 @@ export default function NispFormPage() {
       if (!filePath) return
       const maxBytes = batch?.max_material_bytes || DEFAULT_MATERIAL_MAX_BYTES
       if (fileSize > maxBytes) throw new Error(`文件不能超过${Number((maxBytes / 1024 / 1024).toFixed(2))}MB`)
+      assertCertificationBatchOpen(batch)
       const uploaded = await nispService.uploadMaterial(filePath, fileType, originalFilename)
       setter(uploaded.storage_key)
       setFileInfo(previous => ({ ...previous, [fileType]: { filename: uploaded.original_filename || originalFilename, size: uploaded.size_bytes || fileSize } }))
@@ -190,6 +198,8 @@ export default function NispFormPage() {
   const submit = async () => {
     if (operationLock.current || documentActions.isBusy() || batchState !== 'ready') return
     setSubmitError('')
+    const current = certificationBatchState(batch)
+    if (!current.canApply) { setSubmitError(current.message); void loadBatch(); return }
     if (!identityVerified) {
       Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2000 })
       setTimeout(() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` }), 500)
@@ -204,6 +214,7 @@ export default function NispFormPage() {
         STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION,
         '提交认证报名前，请先阅读并同意认证报名信息处理授权协议',
       ))) return
+      assertCertificationBatchOpen(batch)
       const payload: NispOrderCreatePayload = {
         batch_id: batch.id,
         level,
@@ -308,6 +319,7 @@ export default function NispFormPage() {
             items={[{ label: '报名时间', value: batch ? formatNispApplyRange(batch) : '以批次安排为准', wide: true }, { label: '考试时间', value: batch?.exam_date ? formatDate(batch.exam_date) : '以批次安排为准' }, { label: '考试地点', value: batch?.exam_location || '以批次安排为准' }]}>
             {batchState === 'error' && <View><Text className={styles.fieldError}>{batchError}</Text><Button variant='secondary' onClick={() => setBatchRetry(value => value + 1)}>重新加载批次</Button></View>}
             {batchState === 'missing' && <Text className={styles.fieldError}>该批次不可用，请返回重新选择批次。</Text>}
+            {batchState === 'ready' && !availability.canApply && <Text className={styles.fieldError}>{availability.message}</Text>}
           </RegistrationSummary>
 
           <View className={styles.sectionCard}>
@@ -386,8 +398,8 @@ export default function NispFormPage() {
           </View>
         </ScrollView>
         <RegistrationSubmitBar priceCents={batch ? Math.round(price * 100) : null}
-          disabled={!identityVerified || batchState !== 'ready' || Boolean(uploading) || Boolean(documentActions.busy) || submitting} loading={submitting} onSubmit={() => void submit()}
-          label={!identityVerified ? '请先完成实名认证' : batchState !== 'ready' ? '请先加载有效批次' : uploading ? '材料上传中…' : documentActions.busy ? '文件操作中…' : price === 0 ? '提交报名' : '提交报名，前往付款'} />
+          disabled={!identityVerified || !availability.canApply || batchState !== 'ready' || Boolean(uploading) || Boolean(documentActions.busy) || submitting} loading={submitting} onSubmit={() => void submit()}
+          label={batchState === 'ready' && !availability.canApply ? availability.action : !identityVerified ? '请先完成实名认证' : batchState !== 'ready' ? '请先加载有效批次' : uploading ? '材料上传中…' : documentActions.busy ? '文件操作中…' : price === 0 ? '提交报名' : '提交报名，前往付款'} />
       </View>
     </AuthGuard>
   )
