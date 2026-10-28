@@ -1,132 +1,44 @@
 @use '../../styles/variables' as *;
 
-.page {
-  min-height: 100vh;
-  background: $color-bg;
-}
-
-.body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 100px $spacing-lg 60px;
-}
-
-// ---- Icons ----
-.successIcon {
-  width: 128px;
-  height: 128px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #26C283, #1FA870);
-  box-shadow: 0 8px 32px rgba(38, 194, 131, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 48px;
-}
-
-.failIcon {
-  width: 128px;
-  height: 128px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #FF6B6B, #FF5252);
-  box-shadow: 0 8px 32px rgba(255, 82, 82, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 48px;
-}
-
-.iconText {
-  font-size: 72px;
-  color: #ffffff;
-  font-weight: 700;
-  line-height: 1;
-}
-
-// ---- Title & Description ----
-.title {
-  font-size: 56px;
-  font-weight: 600;
-  color: #333333;
-  margin-bottom: $spacing-sm;
-}
-
-.desc {
-  font-size: 36px;
-  font-weight: 400;
-  color: #666666;
-  margin-bottom: 48px;
-  text-align: center;
-  line-height: 1.6;
-}
-
-// ---- Order Detail Card ----
-.orderCard {
-  width: 100%;
-  background: #F8F9FA;
-  border-radius: $radius-sm;
-  padding: $spacing-lg;
-  margin-bottom: 48px;
-}
-
-.cardRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid #EAEAEA;
-  }
-}
-
-.cardLabel {
-  font-size: 26px;
-  color: #999999;
-  flex-shrink: 0;
-}
-
-.cardValueSm {
-  font-size: 26px;
-  color: #999999;
-  flex: 1;
-  min-width: 0;
-  text-align: right;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cardValue {
-  font-size: 26px;
-  color: #333333;
-  text-align: right;
-  flex: 1;
-  min-width: 0;
-}
-
-.cardValuePrice {
-  font-size: 26px;
-  color: $color-text;
-  font-weight: 500;
-}
-
-// ---- Action Buttons ----
-.actions {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
-}
-
-.actionBtn {
-  width: 100%;
-}
-
-.actionBtnSecondary {
-  width: 100%;
-  border: 1px solid #E0E0E0;
-  color: #666666;
-  background: #ffffff;
-}
+.page { min-height: 100vh; background: $color-bg; }
+.body { display: flex; flex-direction: column; gap: 24px; padding: 24px 28px calc(40px + env(safe-area-inset-bottom)); }
+.statusCard { padding: 40px 28px 36px; border-radius: 24px; background: #fff; text-align: center; }
+.statusIcon { display: flex; align-items: center; justify-content: center; width: 112px; height: 112px; margin: 0 auto 24px; border-radius: 50%; font-size: 66px; font-weight: 600; line-height: 1; }
+.tone_waiting .statusIcon { color: #1677ff; background: #eaf2ff; }
+.tone_warning .statusIcon { color: #b86d0c; background: #fff3dc; }
+.tone_success .statusIcon { color: #13834b; background: #e8f7ee; }
+.tone_neutral .statusIcon { color: #667085; background: #f0f2f5; }
+.title { display: block; color: #17233d; font-size: 38px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+.description { display: block; margin-top: 16px; color: #667085; font-size: 26px; line-height: 1.7; }
+.autoRefresh { display: block; margin-top: 18px; color: #8a94a6; font-size: 22px; }
+.noticeCard { padding: 24px 26px; border-radius: 16px; border-left: 6px solid #efa33d; background: #fff8ef; }
+.noticeTitle { display: block; color: #925400; font-size: 25px; font-weight: 700; }
+.noticeText { display: block; margin-top: 10px; color: #7a4510; font-size: 27px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.deadlineCard { padding: 24px 26px; border: 1px solid transparent; border-radius: 16px; }
+.deadline_normal { color: #245995; background: #eaf3ff; border-color: #d6e8ff; }
+.deadline_warning { color: #925400; background: #fff7e6; border-color: #ffe0a3; }
+.deadline_urgent { color: #b42318; background: #fff0ee; border-color: #ffc9c3; }
+.deadlineTitle { display: block; font-size: 28px; line-height: 1.5; font-weight: 700; }
+.deadlineExact { display: block; margin-top: 8px; font-size: 22px; line-height: 1.6; }
+.orderCard, .contactCard { padding: 28px; border-radius: 20px; background: #fff; min-width: 0; }
+.cardLabel { display: block; color: #667085; font-size: 24px; line-height: 1.6; }
+.productTitle { display: block; margin-top: 6px; color: #17233d; font-size: 29px; line-height: 1.6; font-weight: 600; overflow-wrap: anywhere; }
+.amountRow { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; padding: 22px 0; }
+.amount { color: #17233d; font-size: 38px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+.detailLink { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #edf0f5; color: #667085; font-size: 24px; line-height: 1.6; }
+.actions { display: flex; flex-direction: column; gap: 20px; text-align: center; }
+.primaryButton { width: 100%; min-height: 88px; }
+.secondaryActions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 32px; min-height: 54px; }
+.textLink { display: inline-block; color: #1677ff; font-size: 25px; line-height: 1.8; }
+.errorCard { padding: 22px 26px; border: 1px solid #e2e8f0; border-radius: 14px; background: #fff; }
+.errorText { display: block; color: #667085; font-size: 24px; line-height: 1.65; overflow-wrap: anywhere; }
+.contactHeading, .contactRow, .contactActions { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.contactHeading .productTitle { margin: 0; }
+.contactName { display: block; margin-top: 16px; color: #344054; font-size: 27px; line-height: 1.6; }
+.contactRow { padding: 20px 0; border-bottom: 1px solid #edf0f5; }
+.contactRow > view, .contactRow > div { min-width: 0; }
+.contactActions { flex-shrink: 0; }
+.contactValue { display: block; margin-top: 4px; color: #17233d; font-size: 27px; line-height: 1.6; overflow-wrap: anywhere; }
+.serviceHours { display: block; margin-top: 18px; color: #667085; font-size: 23px; line-height: 1.6; }
+.homeLink { align-self: center; margin-top: 8px; padding: 14px 28px; color: #8a94a6; font-size: 24px; line-height: 1.6; }
+@media (max-width: 340px) { .contactRow { flex-wrap: wrap; } .title { font-size: 35px; } }

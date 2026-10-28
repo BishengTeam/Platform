@@ -11,6 +11,8 @@ import type { NispBatch } from '@/services/nispService'
 import { ROUTES } from '@/constants/routes'
 import { formatDate } from '@/utils/format'
 import { formatNispApplyRange } from '@/utils/nisp'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { certificationBatchState } from '@/utils/certificationBatch'
 import styles from './nisp.module.scss'
 
 export default function NispIndexPage() {
@@ -31,6 +33,8 @@ export default function NispIndexPage() {
   }, [level])
 
   useEffect(() => { load() }, [load])
+  const now = useCertificationBatchClock(batches, load)
+  const visibleBatches = batches.filter(batch => certificationBatchState(batch, now).visible)
 
   return (
     <>
@@ -46,14 +50,16 @@ export default function NispIndexPage() {
           </View>
           {loading && <View className={styles.empty}>加载中...</View>}
           {error && <View className={styles.empty} onClick={load}>加载失败，点击重试</View>}
-          {!loading && !error && batches.length === 0 && (
+          {!loading && !error && visibleBatches.length === 0 && (
             <View className={styles.empty}>
               {level ? '该级别批次暂未开放，敬请期待' : '暂无可报名的考试批次'}
             </View>
           )}
 
-          {!loading && !error && batches.map((batch) => {
+          {!loading && !error && visibleBatches.map((batch) => {
+            const availability = certificationBatchState(batch, now)
             const infoItems: CertBatchInfoItem[] = [
+              { label: '报考级别', value: batch.level === '1' ? 'NISP一级' : 'NISP二级' },
               { label: '报名时间', value: formatNispApplyRange(batch), full: true },
               ...(batch.exam_date
                 ? [{ label: '考试时间', value: formatDate(batch.exam_date) }]
@@ -78,11 +84,16 @@ export default function NispIndexPage() {
               <CertBatchCard
                 key={batch.id}
                 title={batch.name}
-                badge={batch.level === '1' ? 'NISP一级' : 'NISP二级'}
-                badgeTone={batch.level === '1' ? 'blue' : 'purple'}
+                badge={availability.label}
+                badgeTone={availability.tone}
                 infoItems={infoItems}
-                actionText='立即报名'
-                onAction={() => void navigateWithLogin(`/${ROUTES.NISP_FORM}?batch_id=${batch.id}&level=${batch.level}`)}
+                actionText={availability.action}
+                actionDisabled={!availability.canApply}
+                onAction={() => {
+                  const current = certificationBatchState(batch)
+                  if (!current.canApply) { Taro.showToast({ title: current.message, icon: 'none' }); void load(); return }
+                  void navigateWithLogin(`/${ROUTES.NISP_FORM}?batch_id=${batch.id}&level=${batch.level}`)
+                }}
               />
             )
           })}

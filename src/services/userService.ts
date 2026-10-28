@@ -97,13 +97,13 @@ export async function getOrders() {
   return items.map(toOrder)
 }
 
-export async function getOrderDetail(id: number) {
+export async function getOrderDetail(id: number, quiet = false) {
   if (USE_MOCK) {
     const found = orderDetails[id]
     if (found) return found
     return Object.values(orderDetails).find(d => d.orderId === String(id)) || null
   }
-  const res = await get<OrderBackendItem>(`/api/orders/${id}`)
+  const res = await get<OrderBackendItem>(`/api/orders/${id}`, undefined, !quiet, !quiet)
   const data = res.data
   return toOrderDetail(data)
 }

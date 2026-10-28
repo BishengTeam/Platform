@@ -58,6 +58,8 @@ export interface RequestOptions {
   header?: Record<string, string>
   /** 是否显示 loading，默认 true */
   showLoading?: boolean
+  /** Background progress refreshes report failures inline instead of interrupting with a toast. */
+  showError?: boolean
   /** public不带令牌；optional支持匿名回退；required在本地检查登录。 */
   auth?: 'public' | 'optional' | 'required'
 }
@@ -112,7 +114,7 @@ export async function restoreAuthSession(): Promise<boolean> {
 }
 
 export async function request<T = unknown>(options: RequestOptions, allowRefresh = true): Promise<ApiResponse<T>> {
-  const { url, method = 'GET', data, header = {}, showLoading = true, auth = 'required' } = options
+  const { url, method = 'GET', data, header = {}, showLoading = true, showError = true, auth = 'required' } = options
 
   if (auth === 'required' && (!getToken() || accessTokenExpired()) && !(await restoreAuthSession())) {
     throw new ApiError('请先登录后继续操作', 40100, 401)
@@ -199,7 +201,7 @@ export async function request<T = unknown>(options: RequestOptions, allowRefresh
     const rawMsg = err instanceof Error ? err.message : ''
     const isNetworkError = /fail|timeout|abort|ssl|dns/i.test(rawMsg)
     const msg = isNetworkError ? '网络连接失败，请检查网络后重试' : (rawMsg || '操作失败，请稍后重试')
-    Taro.showToast({ title: msg, icon: 'none' })
+    if (showError) Taro.showToast({ title: msg, icon: 'none' })
     throw err
   }
 }
@@ -211,8 +213,8 @@ export function resetRequestStateForTest(): void {
 
 // ---- 便捷方法 ----
 
-export function get<T = unknown>(url: string, data?: Record<string, unknown>, showLoading?: boolean) {
-  return request<T>({ url, method: 'GET', data, showLoading })
+export function get<T = unknown>(url: string, data?: Record<string, unknown>, showLoading?: boolean, showError?: boolean) {
+  return request<T>({ url, method: 'GET', data, showLoading, showError })
 }
 
 export function post<T = unknown>(url: string, data?: Record<string, unknown>, showLoading?: boolean) {

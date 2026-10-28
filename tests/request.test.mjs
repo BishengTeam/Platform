@@ -41,6 +41,18 @@ function response(statusCode, code, data = null, message = '') {
   return { statusCode, data: { code, data, message }, header: {}, cookies: [], errMsg: 'ok' }
 }
 
+test('background progress requests can report network failures inline without changing default toasts', async () => {
+  resetRequestStateForTest()
+  const env = installTaroMock(async () => { throw new Error('request:fail timeout') })
+  setAuthTokens('quiet-access', 'quiet-refresh')
+  try {
+    await assert.rejects(request({ url: '/api/orders/7', showLoading: false, showError: false }), /timeout/)
+    assert.equal(env.toastCount(), 0)
+    await assert.rejects(request({ url: '/api/orders/7', showLoading: false }), /timeout/)
+    assert.equal(env.toastCount(), 1)
+  } finally { clearAuthTokens() }
+})
+
 test('startup authentication restoration is single-flight and rotates both tokens', async () => {
   resetRequestStateForTest()
   const env = installTaroMock(async options => {
