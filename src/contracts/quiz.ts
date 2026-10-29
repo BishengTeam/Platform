@@ -535,7 +535,7 @@ function optionsAt(value: unknown, path: string): Record<string, string> {
   const object = objectAt(value, path)
   const options: Record<string, string> = {}
   for (const [key, item] of Object.entries(object)) {
-    if (!['A', 'B', 'C', 'D', 'E', 'F'].includes(key)) throw new QuizContractError(`${path}.${key}`, 'A | B | C | D | E | F')
+    if (!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].includes(key)) throw new QuizContractError(`${path}.${key}`, 'A | B | C | D | E | F | G | H')
     options[key] = stringAt(item, `${path}.${key}`)
   }
   return options
@@ -549,7 +549,7 @@ function optionImageUrlsAt(value: unknown, path: string): Record<string, string>
   const object = objectAt(value, path)
   const result: Record<string, string> = {}
   for (const [key, item] of Object.entries(object)) {
-    if (!['A', 'B', 'C', 'D', 'E', 'F'].includes(key)) throw new QuizContractError(`${path}.${key}`, '选项图片键只能为 A-F')
+    if (!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].includes(key)) throw new QuizContractError(`${path}.${key}`, '选项图片键只能为 A-H')
     result[key] = stringAt(item, `${path}.${key}`)
   }
   return result

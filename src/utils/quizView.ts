@@ -39,7 +39,7 @@ export function shuffledQuizOptions(
   return items
 }
 
-const DISPLAY_KEYS = ['A', 'B', 'C', 'D', 'E', 'F'] as const
+const DISPLAY_KEYS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const
 
 export function relabeledQuizOptions(
   options: Record<string, string>,
