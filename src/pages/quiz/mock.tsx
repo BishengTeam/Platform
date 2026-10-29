@@ -489,7 +489,12 @@ export default function QuizMockPage() {
       title: '确认交卷',
       content: unanswered > 0 ? `还有 ${unanswered} 题未作答。交卷后不能修改，确定继续吗？` : '全部题目均已作答，交卷后不能修改。',
       success: async result => {
-        if (!result.confirm) return
+        if (!result.confirm) {
+          // 继续作答必须落到实处：末题时底栏只有「交卷」入口，原地不动会反复触发本弹窗
+          const firstUnansweredIndex = exam.questions.findIndex(question => question.user_answer === null)
+          if (firstUnansweredIndex >= 0) setCurrentIndex(firstUnansweredIndex)
+          return
+        }
         setActionBusy(true)
         try {
           const action = await submitQuizExam(exam.id)

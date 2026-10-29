@@ -399,7 +399,12 @@ export default function QuizPracticePage() {
       confirmText: '确认交卷',
       cancelText: '继续作答',
       success: async result => {
-        if (!result.confirm) return
+        if (!result.confirm) {
+          // 继续作答必须落到实处：末题时底栏只有「交卷」入口，原地不动会反复触发本弹窗
+          const firstUnanswered = session.questions.find(question => !question.answered)
+          if (firstUnanswered) setCurrentSessionQuestionId(firstUnanswered.session_question_id)
+          return
+        }
         setActionBusy(true)
         try {
           applySession(await submitPracticeSession(session.id), currentSessionQuestionId ?? undefined)
