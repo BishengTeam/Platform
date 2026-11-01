@@ -21,12 +21,9 @@ import { ensureAgreementSigned } from '@/utils/agreementGate'
 import type { H3cExamBatch, H3cProfileDefaults, H3cRegistrationType } from '@/types/h3c'
 import styles from './h3c.module.scss'
 import { H3C_EDUCATIONS, H3C_STUDENT_METHODS, studentProofLabel, studentQualificationError, type H3cStudentVerificationMethod } from '@/utils/h3cStudent'
+import { H3C_REGISTRATION_TYPE_LABELS, isValidH3cPhone } from '@/utils/h3cRegistration'
 
-const TYPE_LABELS: Record<H3cRegistrationType, string> = {
-  coupon: '考券报名',
-  student: '学生报名',
-  full: '全额报名',
-}
+const TYPE_LABELS = H3C_REGISTRATION_TYPE_LABELS
 
 const TYPE_DESCRIPTIONS: Record<H3cRegistrationType, string> = {
   coupon: '参加新华三大赛获奖、持有厂商赠送考券的考生',
@@ -174,7 +171,7 @@ export default function H3CFormPage() {
       Taro.showToast({ title: '请选择学历', icon: 'none' })
       return
     }
-    if (!/^1\d{10}$/.test(form.phone)) {
+    if (!isValidH3cPhone(form.phone)) {
       Taro.showToast({ title: '请输入正确的手机号', icon: 'none' })
       return
     }

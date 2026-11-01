@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { findNispBatch, validateNispForm, nispErrorMessage } from '../src/utils/nispForm.ts'
+import { findNispBatch, validateNispForm, nispErrorMessage, nispContactFieldError } from '../src/utils/nispForm.ts'
 import { workDateHint } from '../src/utils/rensheGraduated.ts'
 
 const form = { name: '张三', pinyin: 'ZHANG SAN', major: '信息安全', school: '示例学校', id_card: '110101199001011234', phone: '13800138000', email: 'user@example.cn', province: '四川', gender: '男', age: '22', education: '本科', address: '示例地址', zip_code: '610000' }
@@ -35,6 +35,23 @@ test('length checks follow API limits without inventing a pinyin-character eligi
   assert.match(errors.pinyin, /128/)
   assert.match(errors.school, /128/)
   assert.deepEqual(validateNispForm(form, '2', materials), {})
+})
+
+test('signup and correction share strict mobile and six-digit postcode validation', () => {
+  for (const phone of ['12345678901', '12800138000', '1380013800a', '１3800138000']) {
+    assert.equal(nispContactFieldError('phone', phone), '手机号格式不正确')
+    assert.equal(validateNispForm({ ...form, phone }, '1', materials).phone, '手机号格式不正确')
+  }
+  for (const phone of ['13800138000', '19900138000', ' 16600138000 ']) {
+    assert.equal(nispContactFieldError('phone', phone), undefined)
+    assert.equal(validateNispForm({ ...form, phone }, '2', materials).phone, undefined)
+  }
+  for (const zip_code of ['12345', 'abcdef', '１２３４５６', '1234567']) {
+    assert.equal(nispContactFieldError('zip_code', zip_code), '邮编须为6位数字')
+    assert.equal(validateNispForm({ ...form, zip_code }, '2', materials).zip_code, '邮编须为6位数字')
+  }
+  assert.equal(nispContactFieldError('zip_code', ' 010000 '), undefined)
+  assert.equal(nispContactFieldError('email', 'user@example.cn'), undefined)
 })
 
 test('material errors identify each applicable upload independently', () => {

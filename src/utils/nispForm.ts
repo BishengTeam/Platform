@@ -22,6 +22,14 @@ export const NISP_MATERIAL_LABELS: Record<NispMaterialType, string> = {
 export type NispErrorKey = keyof NispFormValues | NispMaterialType | 'agreement'
 export type NispFormErrors = Partial<Record<NispErrorKey, string>>
 
+export function nispContactFieldError(field: string, value: string): string | undefined {
+  const text = value.trim()
+  if (!text) return undefined
+  if (field === 'phone' && !/^1[3-9][0-9]{9}$/.test(text)) return '手机号格式不正确'
+  if (field === 'zip_code' && !/^[0-9]{6}$/.test(text)) return '邮编须为6位数字'
+  return undefined
+}
+
 export function validateNispForm(form: NispFormValues, level: '1' | '2', materials: Partial<Record<NispMaterialType, string>>): NispFormErrors {
   const errors: NispFormErrors = {}
   const required: (keyof NispFormValues)[] = ['name', 'pinyin', 'major', 'province', 'school', 'id_card']
@@ -34,11 +42,13 @@ export function validateNispForm(form: NispFormValues, level: '1' | '2', materia
     else if (key in limits && value.length > limits[key as keyof typeof limits]) errors[key] = `${NISP_FIELD_LABELS[key]}不能超过${limits[key as keyof typeof limits]}字`
   }
   if (form.id_card.trim() && form.id_card.trim().length !== 18) errors.id_card = '身份证号必须为18位'
-  if (form.phone.trim() && !/^1\d{10}$/.test(form.phone.trim())) errors.phone = '手机号格式不正确'
+  const phoneError = nispContactFieldError('phone', form.phone)
+  if (phoneError) errors.phone = phoneError
   if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = '邮箱格式不正确'
   if (level === '2') {
     if (form.age.trim() && (!/^\d+$/.test(form.age.trim()) || Number(form.age) < 16 || Number(form.age) > 80)) errors.age = '年龄须为16至80之间的整数'
-    if (form.zip_code.trim() && !/^\d{6}$/.test(form.zip_code.trim())) errors.zip_code = '邮编须为6位数字'
+    const zipError = nispContactFieldError('zip_code', form.zip_code)
+    if (zipError) errors.zip_code = zipError
   }
   const kinds: NispMaterialType[] = ['id_card_both_sides', 'portrait_photo', ...(level === '2' ? ['xuexin_report', 'application_form'] as NispMaterialType[] : [])]
   for (const kind of kinds) if (!materials[kind]) errors[kind] = `请上传${NISP_MATERIAL_LABELS[kind]}`

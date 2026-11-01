@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { H3C_REGISTRATION_TYPE_LABELS } from '@/utils/h3cRegistration'
 import { Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -48,11 +49,7 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   closed: { label: '已关闭', cls: styles.statusNeutral },
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  full: '全款报名',
-  coupon: '优惠卷报名',
-  student: '学生报名',
-}
+const TYPE_LABELS = H3C_REGISTRATION_TYPE_LABELS
 
 export default function MyRegistrationsPage() {
   const [items, setItems] = useState<UnifiedRegistration[]>([])

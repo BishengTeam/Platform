@@ -37,6 +37,10 @@ import type { CompetitionMyRegistration } from '@/types'
 import sharedStyles from './registrations.module.scss'
 import styles from './registration-detail.module.scss'
 import { CHANGE_LABELS, correctionAvailable } from '@/utils/rensheGraduated'
+import { nispContactFieldError } from '@/utils/nispForm'
+import { H3C_REGISTRATION_TYPE_LABELS, isValidH3cPhone } from '@/utils/h3cRegistration'
+import { correctionDeadlineState } from '@/utils/correctionDeadline'
+import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
 
 function PaymentProgress({ orderId, onLoaded }: { orderId: number; onLoaded: (order: OrderDetail) => void }) {
   const [order, setOrder] = useState<OrderDetail | null>(null)
@@ -73,11 +77,7 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   closed: { label: '已关闭', cls: sharedStyles.statusNeutral },
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  full: '全款报名',
-  coupon: '优惠卷报名',
-  student: '学生报名',
-}
+const TYPE_LABELS = H3C_REGISTRATION_TYPE_LABELS
 
 const FIELD_LABELS: Record<string, string> = {
   candidate_name: '姓名',
@@ -264,6 +264,11 @@ export default function RegistrationDetailPage() {
     void load()
   }, [load])
 
+  const correctionNow = useCertificationBatchClock([], load, kind === 'h3c' || kind === 'nisp', [
+    certRegistration?.pending_correction?.due_at || certRegistration?.resubmission_due_at,
+  ])
+  const correctionDeadline = correctionDeadlineState(certRegistration, correctionNow)
+
   const promptCorrectionField = async (
     field: string,
     currentValue: string,
@@ -316,6 +321,10 @@ export default function RegistrationDetailPage() {
         String(registration.candidate_snapshot[field] ?? ''),
       )
       if (value === null || !value) return false
+      if (field === 'phone' && !isValidH3cPhone(value)) {
+        Taro.showToast({ title: '请输入正确的手机号', icon: 'none' })
+        return false
+      }
       fieldValues[field] = value
     }
 
@@ -366,6 +375,11 @@ export default function RegistrationDetailPage() {
         String(registration.candidate_snapshot[field] ?? ''),
       )
       if (value === null || !value) return false
+      const error = nispContactFieldError(field, value)
+      if (error) {
+        Taro.showToast({ title: error, icon: 'none' })
+        return false
+      }
       fieldValues[field] = value
     }
 
@@ -417,6 +431,11 @@ export default function RegistrationDetailPage() {
 
   const submitCorrection = async () => {
     if (!certRegistration || actionLoading) return
+    if (correctionDeadlineState(certRegistration)?.expired) {
+      Taro.showToast({ title: '补正期限已过，请联系管理员', icon: 'none' })
+      void load()
+      return
+    }
     setActionLoading(true)
     try {
       const submitted = certRegistration.kind === 'H3C'
@@ -586,7 +605,7 @@ export default function RegistrationDetailPage() {
     ? snapshotText(certRegistration.candidate_snapshot, 'phone')
     : null
 
-  const showCorrectionAction = certRegistration?.status === 'rejected_awaiting_resubmission'
+  const showCorrectionAction = certRegistration?.status === 'rejected_awaiting_resubmission' && !correctionDeadline?.expired
   const showCancelAction = certRegistration?.status === 'pending_payment' && cancellable
   const showCompetitionSave = Boolean(competitionRegistration?.editable)
   const showRensheCorrection = Boolean(
@@ -649,6 +668,13 @@ export default function RegistrationDetailPage() {
                 </Text>
               </View>
               <Text className={styles.subtitle}>{registrationTypeLabel}</Text>
+
+              {correctionDeadline && (
+                <View className={`${sharedStyles.correctionNotice} ${correctionDeadline.expired ? sharedStyles.correctionExpired : ''}`}>
+                  <Text className={sharedStyles.correctionDeadline}>补正截止：{correctionDeadline.label}</Text>
+                  <Text>{correctionDeadline.message}</Text>
+                </View>
+              )}
 
               {certRegistration.status === 'rejected_awaiting_resubmission'
                 && certRegistration.latest_review && (
