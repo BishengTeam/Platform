@@ -236,7 +236,7 @@ export function OfflinePaymentPanel({ orderId, title }: { orderId: number; title
       {showAccount && <View className={styles.expandedContent}>
         {row('收款户名', payment.account.account_name, true)}{row('开户行', payment.account.bank_name)}
         <View className={styles.accountNumberBox}><Text className={styles.transferLabel}>银行账号</Text><Text className={styles.accountNumber}>{payment.account.account_number.replace(/\s/g, '').replace(/(.{4})(?=.)/g, '$1 ') || '—'}</Text><Text className={styles.copyButton} onClick={() => copy(payment.account.account_number)}>复制银行账号</Text></View>
-        {row('转账备注', payment.out_trade_no, true)}
+        {row('订单号（可附在转账备注）', payment.out_trade_no, true)}
         {payment.account.transfer_note && <Text className={styles.transferHint}>{payment.account.transfer_note}</Text>}
         {!editable && <Text className={styles.transferHint}>账户仅供核对，请勿重复转账。</Text>}
       </View>}
