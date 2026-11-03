@@ -22,6 +22,7 @@ export {
   listWrongBook, listQuizCollections, addQuizCollection, removeQuizCollection,
   clearWrongBookItem,
   getQuizCheckinStatus, manualQuizCheckin, getQuizCheckinCalendar, getQuizStats,
+  redeemLibraryCode,
   createQuizExam, getCurrentQuizExam, listQuizExams, getQuizExam,
   createManualQuizExam, listQuizLibraryQuestions,
   saveQuizExamAnswer, submitQuizExam, abandonQuizExam,

@@ -1,7 +1,7 @@
 import { getToken, getAuthSessionId } from '@/utils/authState'
-import { navigateWithLogin } from '@/utils/loginCoordinator'
+import { navigateWithLogin, requireLogin } from '@/utils/loginCoordinator'
 import { useCallback, useEffect, useState } from 'react'
-import { Image, Text, View } from '@tarojs/components'
+import { Image, Input, Text, View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { CheckinBar } from '@/components/CheckinBar'
 import { PageHeader } from '@/components/PageHeader'
@@ -15,7 +15,8 @@ import { ROUTES } from '@/constants/routes'
 import { STRINGS } from '@/constants/strings'
 import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizLibraryProgress, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import { useAuth } from '@/hooks/useAuth'
-import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries } from '@/services/dataService'
+import { getQuizCheckinStatus, getQuizLibrary, getQuizLibraryProgress, getQuizStats, listQuizLibraries, redeemLibraryCode } from '@/services/dataService'
+import { ApiError } from '@/utils/request'
 import { splitBilingualQuizTitle } from '@/utils/quizView'
 import styles from './index.module.scss'
 
@@ -32,6 +33,9 @@ export default function QuizIndexPage() {
   const [streakDays, setStreakDays] = useState(0)
   const [loading, setLoading] = useState(true)
   const [catalogError, setCatalogError] = useState(false)
+  const [activationOpen, setActivationOpen] = useState<Record<number, boolean>>({})
+  const [codeDrafts, setCodeDrafts] = useState<Record<number, string>>({})
+  const [redeeming, setRedeeming] = useState<Record<number, boolean>>({})
   useEffect(() => { setStats(null); setProgress({}); setStreakDays(0) }, [sessionId])
 
   const loadPersonal = useCallback(() => {
@@ -99,6 +103,12 @@ export default function QuizIndexPage() {
   }, [])
 
   const toggleLibrary = useCallback(async (libraryId: number) => {
+    const library = libraries.find(item => item.id === libraryId)
+    if (library && library.access_mode === 'activation_code' && !library.accessible) {
+      // 锁定题库不拉目录，展开的是激活码输入面板
+      setActivationOpen(previous => ({ ...previous, [libraryId]: !previous[libraryId] }))
+      return
+    }
     if (expanded[libraryId]) {
       setExpanded(previous => {
         const next = { ...previous }
@@ -113,7 +123,36 @@ export default function QuizIndexPage() {
     } catch {
       Taro.showToast({ title: '题库目录加载失败', icon: 'none' })
     }
-  }, [expanded])
+  }, [expanded, libraries])
+
+  const submitActivation = useCallback(async (library: QuizLibraryCatalogItem) => {
+    const draft = (codeDrafts[library.id] ?? '').trim()
+    if (!draft) {
+      Taro.showToast({ title: '请输入激活码', icon: 'none' })
+      return
+    }
+    if (!(await requireLogin(`/${ROUTES.QUIZ_INDEX}`))) return
+    setRedeeming(previous => ({ ...previous, [library.id]: true }))
+    try {
+      await redeemLibraryCode(library.id, draft)
+      setLibraries(previous => previous.map(item => item.id === library.id ? { ...item, accessible: true } : item))
+      setCodeDrafts(previous => ({ ...previous, [library.id]: '' }))
+      setActivationOpen(previous => ({ ...previous, [library.id]: false }))
+      Taro.showToast({ title: '激活成功，开始练习吧', icon: 'success' })
+      try {
+        const detail = await getQuizLibrary(library.id)
+        setExpanded(previous => ({ ...previous, [library.id]: detail }))
+      } catch { /* 目录拉取失败时保持收起，下次展开会重试 */ }
+    } catch (error) {
+      Taro.showToast({
+        title: error instanceof ApiError ? error.message : '激活失败，请稍后重试',
+        icon: 'none',
+        duration: 2500,
+      })
+    } finally {
+      setRedeeming(previous => ({ ...previous, [library.id]: false }))
+    }
+  }, [codeDrafts])
 
   const practiceUrl = (scopeType: QuizPracticeScopeType, scopeId: number) =>
     `/${ROUTES.QUIZ_PREPARE}?scopeType=${scopeType}&scopeId=${scopeId}`
@@ -167,6 +206,8 @@ export default function QuizIndexPage() {
           {libraries.map(library => {
             const detail = expanded[library.id]
             const libraryProgress = progress[library.id]
+            const locked = library.access_mode === 'activation_code' && !library.accessible
+            const activationShown = Boolean(activationOpen[library.id])
             return (
               <View key={library.id} className={styles.libraryCard}>
                 <View className={styles.libraryHeader} onClick={() => void toggleLibrary(library.id)}>
@@ -174,11 +215,30 @@ export default function QuizIndexPage() {
                   <View className={styles.libraryInfo}>
                     <Text className={styles.libraryName}>{library.name}</Text>
                     <Text className={styles.libraryDescription}>{library.description}</Text>
-                    <Text className={styles.libraryMeta}>{library.module_count} 个模块 · {library.question_count} 题 · {library.access_mode === 'free' ? '免费' : '课程附赠'}</Text>
+                    <Text className={styles.libraryMeta}>{library.module_count} 个模块 · {library.question_count} 题 · {library.access_mode === 'free' ? '免费' : library.access_mode === 'activation_code' ? (library.accessible ? '已激活' : '激活码解锁') : '课程附赠'}</Text>
                   </View>
-                  <Text className={styles.expandIcon}>{detail ? '收起' : '展开'}</Text>
+                  <Text className={styles.expandIcon}>{detail || (locked && activationShown) ? '收起' : '展开'}</Text>
                 </View>
-                {detail && (
+                {locked && activationShown && (
+                  <View className={styles.activationPanel}>
+                    <Text className={styles.activationTitle}>输入激活码解锁练习</Text>
+                    <Text className={styles.activationHint}>请输入发放方提供的激活码，一个激活码仅可激活一次</Text>
+                    <View className={styles.activationForm}>
+                      <Input
+                        className={styles.activationInput}
+                        value={codeDrafts[library.id] ?? ''}
+                        placeholder='例如 ABCD-1234-EFGH-5678'
+                        maxlength={24}
+                        onInput={event => setCodeDrafts(previous => ({ ...previous, [library.id]: event.detail.value }))}
+                      />
+                      <Text
+                        className={`${styles.activationBtn} ${redeeming[library.id] ? styles.activationBtnDisabled : ''}`}
+                        onClick={() => { if (!redeeming[library.id]) void submitActivation(library) }}
+                      >{redeeming[library.id] ? '激活中…' : '激活'}</Text>
+                    </View>
+                  </View>
+                )}
+                {detail && !locked && (
                   <View className={styles.catalogTree}>
                     <View className={styles.scopeRow} onClick={() => void navigateWithLogin(practiceUrl('library', library.id))}>
                       <View className={styles.scopeMain}>

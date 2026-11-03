@@ -29,7 +29,7 @@ export interface QuizCategoryNode {
   children: QuizCategoryNode[]
 }
 
-export type QuizLibraryAccessMode = 'free' | 'course_entitlement'
+export type QuizLibraryAccessMode = 'free' | 'course_entitlement' | 'activation_code'
 
 export interface QuizKnowledgePointCatalogItem {
   id: number
@@ -60,6 +60,8 @@ export interface QuizLibraryCatalogItem {
   vendor_tag: QuizVendorTag
   question_count: number
   module_count: number
+  /** schema=2 目录固定返回；激活码模式下 false 表示需先兑换激活码 */
+  accessible: boolean
 }
 
 export interface QuizLibraryCatalogDetail extends QuizLibraryCatalogItem {
@@ -604,7 +606,7 @@ function parseModule(value: unknown, path: string): QuizModuleCatalogItem {
 }
 
 function parseLibraryBase(value: unknown, path: string, detail: boolean): QuizLibraryCatalogItem | QuizLibraryCatalogDetail {
-  const keys = ['id', 'library_code', 'name', 'description', 'cover_url', 'access_mode', 'vendor_tag', 'question_count', 'module_count']
+  const keys = ['id', 'library_code', 'name', 'description', 'cover_url', 'access_mode', 'vendor_tag', 'question_count', 'module_count', 'accessible']
   const object = exactObject(value, path, detail ? [...keys, 'details', 'modules'] : keys)
   const base: QuizLibraryCatalogItem = {
     id: integerAt(object.id, `${path}.id`),
@@ -612,10 +614,11 @@ function parseLibraryBase(value: unknown, path: string, detail: boolean): QuizLi
     name: stringAt(object.name, `${path}.name`),
     description: stringAt(object.description, `${path}.description`),
     cover_url: stringAt(object.cover_url, `${path}.cover_url`),
-    access_mode: literalAt(object.access_mode, `${path}.access_mode`, ['free', 'course_entitlement'] as const),
+    access_mode: literalAt(object.access_mode, `${path}.access_mode`, ['free', 'course_entitlement', 'activation_code'] as const),
     vendor_tag: literalAt(object.vendor_tag, `${path}.vendor_tag`, ['h3c', 'nisp', 'sangfor', 'none'] as const),
     question_count: integerAt(object.question_count, `${path}.question_count`),
     module_count: integerAt(object.module_count, `${path}.module_count`),
+    accessible: booleanAt(object.accessible, `${path}.accessible`),
   }
   if (!detail) return base
   return {

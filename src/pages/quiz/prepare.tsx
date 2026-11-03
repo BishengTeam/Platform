@@ -31,6 +31,10 @@ function isConflict(error: unknown): boolean {
   return error instanceof ApiError && (error.statusCode === 409 || error.code === 40201)
 }
 
+function isActivationRequired(error: unknown): boolean {
+  return error instanceof ApiError && error.statusCode === 403 && error.code === 40301
+}
+
 function findScopeProgress(
   progress: QuizLibraryProgress,
   scopeType: QuizPracticeScopeType,
@@ -78,7 +82,12 @@ export default function QuizPreparePage() {
         setScopeProgress(null)
       }
     } catch (error) {
-      setLoadError(messageOf(error))
+      // 深链进入未激活题库：给出明确指引，而不是笼统的失败文案
+      setLoadError(
+        isActivationRequired(error)
+          ? '该题库需激活码解锁，请到题库页展开题库输入激活码'
+          : messageOf(error),
+      )
     } finally {
       setLoading(false)
     }

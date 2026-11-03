@@ -92,11 +92,19 @@ test('V2 library catalog and fixed hierarchy reject contract drift', () => {
     vendor_tag: 'h3c',
     question_count: 120,
     module_count: 1,
+    accessible: true,
   }
   assert.equal(parseQuizLibraries([summary])[0].library_code, 'QL00000011')
   assert.equal(parseQuizLibraries([summary])[0].vendor_tag, 'h3c')
+  // quiz018：激活码模式 + accessible 标记
+  const activationItem = parseQuizLibraries([{ ...summary, access_mode: 'activation_code', accessible: false }])[0]
+  assert.equal(activationItem.access_mode, 'activation_code')
+  assert.equal(activationItem.accessible, false)
+  assert.throws(() => parseQuizLibraries([{ ...summary, accessible: 'yes' }]), QuizContractError)
+  assert.throws(() => parseQuizLibraries([{ ...summary, accessible: undefined }]), QuizContractError)
   const detail = parseQuizLibrary({
     ...summary,
+    accessible: false,
     details: null,
     modules: [{
       id: 21,

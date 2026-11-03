@@ -90,13 +90,19 @@ export async function listQuizCategories(): Promise<QuizCategoryNode[]> {
 }
 
 export async function listQuizLibraries(): Promise<QuizLibraryCatalogItem[]> {
-  const response = await getOptional<unknown>('/api/quiz/libraries')
+  // schema=2：目录含激活码题库与 accessible 标记（后端对旧客户端保持旧契约）
+  const response = await getOptional<unknown>('/api/quiz/libraries', { schema: '2' })
   return parseQuizLibraries(response.data)
 }
 
 export async function getQuizLibrary(libraryId: number): Promise<QuizLibraryCatalogDetail> {
-  const response = await getOptional<unknown>(`/api/quiz/libraries/${libraryId}`)
+  const response = await getOptional<unknown>(`/api/quiz/libraries/${libraryId}`, { schema: '2' })
   return parseQuizLibrary(response.data)
+}
+
+export async function redeemLibraryCode(libraryId: number, code: string): Promise<{ library_id: number; activated: boolean }> {
+  const response = await post<unknown>(`/api/quiz/libraries/${libraryId}/redeem`, { code })
+  return response.data as { library_id: number; activated: boolean }
 }
 
 export async function getQuizLibraryProgress(libraryId: number): Promise<QuizLibraryProgress> {

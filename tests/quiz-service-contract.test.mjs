@@ -29,7 +29,7 @@ function normalizeTemplatePath(path) {
     .replaceAll('${examQuestionId}', '{exam_question_id}')
 }
 
-test('quiz service implements exactly the frozen 33 user operations', async () => {
+test('quiz service implements exactly the frozen 34 user operations', async () => {
   const [source, manifestText] = await Promise.all([
     readFile(SERVICE_FILE, 'utf8'),
     readFile(MANIFEST_FILE, 'utf8'),
@@ -49,7 +49,8 @@ test('quiz service implements exactly the frozen 33 user operations', async () =
   }
   actual.sort()
 
-  assert.equal(expected.length, 33)
+  // quiz018：新增激活码兑换 POST /api/quiz/libraries/{library_id}/redeem（33 → 34）
+  assert.equal(expected.length, 34)
   assert.deepEqual(actual, expected)
 })
 

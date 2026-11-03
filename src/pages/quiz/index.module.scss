@@ -195,3 +195,55 @@
   font-size: $font-2xs;
   color: $color-text-tertiary;
 }
+
+/* 激活码锁定题库的展开面板（quiz018） */
+.activationPanel {
+  margin: 0 $spacing-md $spacing-md;
+  padding: $spacing-md;
+  background: $color-blue-tint;
+  border-radius: $radius-md;
+}
+
+.activationTitle {
+  display: block;
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.activationHint {
+  display: block;
+  margin-top: $spacing-2xs;
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+}
+
+.activationForm {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-sm;
+  gap: $spacing-sm;
+}
+
+.activationInput {
+  flex: 1;
+  height: 72px;
+  padding: 0 $spacing-sm;
+  background: #fff;
+  border-radius: $radius-sm;
+  font-size: $font-base;
+}
+
+.activationBtn {
+  flex-shrink: 0;
+  padding: $spacing-xs $spacing-md;
+  color: #fff;
+  background: $color-primary;
+  border-radius: $radius-sm;
+  font-size: $font-base;
+  font-weight: 600;
+}
+
+.activationBtnDisabled {
+  opacity: 0.6;
+}
