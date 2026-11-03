@@ -221,7 +221,7 @@ export default function PointsPage() {
     }
     Taro.showModal({
       title: '课程已兑换',
-      content: '课程权益已发放，请前往视频网站使用学习账号观看课程。',
+      content: '课程权益已开通，请前往学习网站查看课程内容。',
       showCancel: false,
     })
   }
@@ -285,7 +285,7 @@ export default function PointsPage() {
           Taro.hideLoading()
           Taro.showModal({
             title: order.idempotent ? '已完成兑换' : '兑换成功',
-            content: `订单号：${order.order_no}\n剩余积分：${order.balance} 分`,
+            content: `${product.product_type === 'course' ? '课程权益已开通，请前往学习网站查看课程内容。\n' : ''}订单号：${order.order_no}\n剩余积分：${order.balance} 分`,
             showCancel: false,
           })
           loadBalance()

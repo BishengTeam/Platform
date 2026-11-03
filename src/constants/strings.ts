@@ -763,7 +763,7 @@ export const STRINGS = {
 
   // ---- VideoWeb Login Code Page ----
   MINE_VIDEO_LOGIN_TITLE: '网站登录码',
-  MINE_VIDEO_LOGIN_DESC: '在课程视频中心登录页输入一次性登录码，5 分钟内有效且只能使用一次。',
+  MINE_VIDEO_LOGIN_DESC: '在课程学习网站登录页输入一次性登录码，5 分钟内有效且只能使用一次。',
   MINE_VIDEO_LOGIN_GENERATE: '生成登录码',
   MINE_VIDEO_LOGIN_REGENERATE: '重新生成',
   MINE_VIDEO_LOGIN_GENERATING: '生成中...',

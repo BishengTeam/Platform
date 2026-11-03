@@ -50,7 +50,10 @@ export interface CourseChapter {
   id: number
   course_id?: number
   title: string
-  duration: number
+  duration: number | null
+  resource_type: "video" | "document"
+  resource_version: number
+  page_count: number | null
   sort_order: number
   is_preview: boolean
   can_play: boolean
@@ -79,6 +82,8 @@ export interface CourseChapterPlayback {
 export interface CourseChapterProgress {
   last_chapter_id: number | null
   last_position_seconds: number
+  last_page?: number
+  resource_version?: number
   completed_chapter_ids: number[]
 }
 
