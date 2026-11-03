@@ -39,10 +39,14 @@ async function buildFlags(mode, env = {}) {
 }
 
 for (const edition of ['full', 'trim']) {
-  test(`production ${edition} hides the shortcut even with a development override, without changing business flags`, async () => {
+  test(`production ${edition} follows the explicit shortcut override, without changing business flags`, async () => {
     const flags = await buildFlags('production', { TARO_EDITION: edition, TARO_APP_HOME_CERT_ENTRY_VISIBLE: 'true' })
-    assert.equal(flags.homeCertEntryVisible, false)
+    assert.equal(flags.homeCertEntryVisible, true)
     assert.deepEqual(flags.FEATURES, edition === 'trim' ? FEATURES_TRIM : FEATURES_FULL)
+  })
+  test(`production ${edition} hides the shortcut by default`, async () => {
+    const flags = await buildFlags('production', { TARO_EDITION: edition })
+    assert.equal(flags.homeCertEntryVisible, false)
   })
 }
 
@@ -84,4 +88,19 @@ test('development shortcut follows the independent display switch and does not e
   const options = { homeCertEntryVisible: true, certRegistration: true, hasActivities: false }
   assert.equal(getHomeQuickEntries(options)[0].url, '/pages/registration/index')
   assert.equal(getHomeQuickEntries({ ...options, certRegistration: false }).length, 2)
+})
+
+test('production with the override renders the certification shortcut first in the four-entry grid', () => {
+  const items = getHomeQuickEntries({ homeCertEntryVisible: true, certRegistration: true, hasActivities: true })
+  assert.deepEqual(items.map(item => item.url), [
+    '/pages/registration/index', '/pages/training/index', '/pages/activity-zone/index', '/pages/activity-zone/index',
+  ])
+  const html = renderToStaticMarkup(React.createElement(KingKongZone, { items, columns: 2 }))
+  assert.match(html, /认证专区/)
+})
+
+test('trim edition suppresses the certification shortcut even when the override is on', async () => {
+  const flags = await buildFlags('production', { TARO_EDITION: 'trim', TARO_APP_HOME_CERT_ENTRY_VISIBLE: 'true' })
+  const items = getHomeQuickEntries({ ...flags, certRegistration: flags.FEATURES.certRegistration, hasActivities: false })
+  assert.equal(items.length, 2)
 })

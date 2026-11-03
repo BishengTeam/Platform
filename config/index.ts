@@ -9,9 +9,9 @@ import prodConfig from './prod'
 const edition = process.env.TARO_EDITION === 'trim' ? 'trim' : 'full'
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
-export default defineConfig<'vite'>(async (merge, { command, mode }) => {
-  // 仅供开发时显式查看首页认证入口，生产构建始终关闭。
-  const homeCertEntryVisible = mode === 'development' && process.env.TARO_APP_HOME_CERT_ENTRY_VISIBLE === 'true'
+export default defineConfig<'vite'>(async (merge, { command }) => {
+  // 首页认证快捷入口按显式开关显示（.env.production 已开启）：全量版生效，裁剪版因 certRegistration=false 不生成。
+  const homeCertEntryVisible = process.env.TARO_APP_HOME_CERT_ENTRY_VISIBLE === 'true'
   console.log(`\n==== weapp 构建 EDITION=${edition}${edition === 'trim' ? '（v1 提审裁剪清单）' : '（全量）'} ====\n`)
   const baseConfig: UserConfigExport<'vite'> = {
     projectName: 'Platform',
