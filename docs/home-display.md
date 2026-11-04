@@ -4,7 +4,7 @@
 
 入口按实际内容排列：无认证入口时学习、竞赛为两列，有可用活动时增加活动入口并使用三列；有认证入口时共三至四个入口，四个入口使用两列。无活动时不显示占位。
 
-裁剪版（`build:weapp:trim`，v1 提审口径）认证业务开关 `certRegistration` 为 `false`，即使快捷入口开关为 `true` 也不生成不可用按钮。
+历史裁剪清单仍保留为源码归档，但生产构建统一使用 `npm run build:weapp`（full）。`check:weapp` 会拒绝 `dist/EDITION !== full` 的上传包。
 
 如需开发调试认证快捷入口，也可在 PowerShell 中临时覆盖（优先级高于 env 文件）：
 

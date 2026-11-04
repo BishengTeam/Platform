@@ -4,8 +4,7 @@ import { defineConfig, type UserConfigExport } from '@tarojs/cli'
 import devConfig from './dev'
 import prodConfig from './prod'
 
-// 版本口径：build:weapp:trim / dev:weapp:trim 注入 TARO_EDITION=trim 时按 v1 提审裁剪清单构建，默认全量。
-// 仓库里同时保留两份清单（src/constants/features.trim.ts / features.full.ts），不存在「改开关切版」。
+// 版本口径：生产统一默认全量。历史 trim 清单仅作源码归档，不再提供 npm 构建入口。
 const edition = process.env.TARO_EDITION === 'trim' ? 'trim' : 'full'
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数

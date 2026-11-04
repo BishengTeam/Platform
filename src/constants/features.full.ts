@@ -1,6 +1,5 @@
 /**
- * 全量口径：功能恢复/新增后把对应开关置 true，日常构建默认走这份。
- * 提审裁剪版用 npm run build:weapp:trim（冻结清单见 features.trim.ts）。
+ * 全量口径：生产统一开启已上线能力，日常构建默认且唯一使用这份。
  */
 export const FEATURES_FULL = {
   certRegistration: true,
