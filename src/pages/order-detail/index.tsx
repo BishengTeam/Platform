@@ -3,6 +3,7 @@ import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow, useLoad, usePullDownRefresh } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { OfflinePaymentPanel } from '@/components/OfflinePaymentPanel'
+import { OrderEnrollmentLink } from '@/components/CertificationEnrollment/JourneyPanel'
 import { PageHeader } from '@/components/PageHeader'
 import { EmptyState } from '@/components/EmptyState'
 import { cancelOrder, getOrderDetail } from '@/services/dataService'
@@ -186,7 +187,7 @@ export default function OrderDetailPage() {
         ) : !detail ? (
           <EmptyState icon='file-text' title='订单不存在' description='未找到该订单信息' />
         ) : detail.paymentChannel === 'bank_transfer' ? (
-          <OfflinePaymentPanel orderId={detail.numericId} title={detail.productTitle} />
+          <><OrderEnrollmentLink orderId={detail.numericId} /><OfflinePaymentPanel orderId={detail.numericId} title={detail.productTitle} /></>
         ) : (
           <>
             <View className={styles.body}>

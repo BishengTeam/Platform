@@ -1,3 +1,6 @@
+import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
+import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
+import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Input, Text, View, Picker, RadioGroup, Radio, Label } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
@@ -75,7 +78,8 @@ export default function H3CFormPage() {
   const [guideSlot, setGuideSlot] = useState<DocumentSceneSlot | null>(null)
   const [identityVerified, setIdentityVerified] = useState(false)
 
-  useLoad((options) => setBatchId(Number(options?.batch_id || 0)))
+  const confirmation = useEnrollmentConfirmation('h3c', batchId, type)
+  useLoad((options) => { setBatchId(Number(options?.batch_id || 0)); if (['coupon', 'student', 'full'].includes(options?.registration_type || '')) setType(options!.registration_type as H3cRegistrationType) })
 
   useEffect(() => {
     h3cService.profileDefaults().then((data: H3cProfileDefaults) => {
@@ -93,9 +97,9 @@ export default function H3CFormPage() {
         gender: data.gender || '',
         candidate_idcard: data.candidate_idcard || '',
         school: data.school || '',
-        address: data.address || '',
-        phone: data.phone || '',
-        email: data.email || '',
+        address: enrollmentContactDraft().address || data.address || '',
+        phone: enrollmentContactDraft().phone || data.phone || '',
+        email: enrollmentContactDraft().email || data.email || '',
         education: H3C_EDUCATIONS.includes(data.education || '') ? data.education! : '',
         first_name_en: data.first_name_en || '',
         last_name_en: data.last_name_en || '',
@@ -215,6 +219,7 @@ export default function H3CFormPage() {
     try {
       assertCertificationBatchOpen(batch)
       const registration = await h3cService.createOrder({
+        notice_hash: await confirmation.requireConfirmation(),
         batch_id: batch.id,
         registration_type: type,
         candidate_name: form.candidate_name,
@@ -234,7 +239,7 @@ export default function H3CFormPage() {
         student_proof_key: type === 'student' ? studentKey : null,
       })
       if (registration.price_cents === 0) {
-        Taro.navigateTo({ url: `/${ROUTES.PAYMENT_RESULT}?order_id=${registration.order_id}&status=success&cert_name=${encodeURIComponent(batch.name)}&price=0` })
+        Taro.redirectTo({ url: enrollmentDetailUrl('h3c', registration.id) })
       } else {
         Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${registration.order_id}` })
       }
@@ -252,6 +257,7 @@ export default function H3CFormPage() {
       <View className={styles.page}>
         <PageHeader title='H3C 报名表单' shouldShowBack />
         <View className={styles.body}>
+          <ConfirmationSummary vendor='h3c' batchId={batchId} type={type} notice={confirmation.notice} contact={form} disabled={submitting || uploading} />
           <View className={styles.card}>
             <Text className={styles.title}>{batch?.name || (batchChecking ? '加载考试批次中...' : '批次不可用')}</Text>
             {batch && <Text className={styles.remark}>{formatCertificationApplyRange(batch)}</Text>}

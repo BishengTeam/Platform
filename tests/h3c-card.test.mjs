@@ -3,21 +3,18 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import { certificationBatchState } from '../src/utils/certificationBatch.ts'
 
-test('H3C exam batch card separates prices and highlights urgent quota', async () => {
+test('H3C notice separates registration methods and preserves the common summary design', async () => {
   const [page, shared, stylesheet] = await Promise.all([
-    readFile('src/pages/h3c/index.tsx', 'utf8'),
+    readFile('src/pages/registration/notice.tsx', 'utf8'),
     readFile('src/components/CertBatchCard/index.tsx', 'utf8'),
     readFile('src/components/CertBatchCard/index.module.scss', 'utf8'),
   ])
 
-  assert.match(page, /student: '学生价'/)
-  assert.match(page, /coupon: '考券价'/)
-  assert.match(page, /full: '全额价'/)
+  assert.match(page, /请选择考券／学生／全额报名方式/)
   assert.match(page, /batch\.prices\.map/)
-  assert.match(page, /剩余名额/)
-  assert.match(page, /batch\.remaining_count/)
+  assert.match(page, /price_cents \/ 100/)
   assert.match(page, /考试时间/)
-  assert.match(page, /CertBatchCard/)
+  assert.match(page, /报名截止/)
   assert.match(shared, /badgeTone/)
   assert.match(stylesheet, /\.card\s*\{/)
   assert.match(stylesheet, /border-radius: 20px;/)
@@ -26,15 +23,14 @@ test('H3C exam batch card separates prices and highlights urgent quota', async (
 })
 
 test('H3C public cards hide closed and finished batches using the shared state mechanism', async () => {
-  const page = await readFile('src/pages/h3c/index.tsx', 'utf8')
+  const page = await readFile('src/pages/registration/notice.tsx', 'utf8')
 
-  assert.match(page, /useCertificationBatchClock\(batches, load\)/)
-  assert.match(page, /certificationBatchState\(batch, now\)\.visible/)
+  assert.match(page, /useCertificationBatchClock\(catalog\?\.batches \|\| \[\], load\)/)
+  assert.match(page, /certificationBatchState\(batch, now\)\.canApply/)
   const window = { apply_start: '2026-10-01T00:00:00+08:00', apply_end: '2026-10-20T00:00:00+08:00' }
   const time = Date.parse('2026-10-20T00:00:00+08:00')
   for (const status of ['published', 'registration_closed', 'finalized']) assert.equal(certificationBatchState({ ...window, status }, time).visible, false)
-  assert.match(page, /actionText=\{statusMeta\.action\}/)
-  assert.match(page, /actionDisabled=\{!canRegister\}/)
+  assert.match(page, /disabled=\{!notice \|\| !batch/)
   assert.equal(page.includes('暂无可报名考试'), false)
 })
 

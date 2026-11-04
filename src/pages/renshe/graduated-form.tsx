@@ -1,3 +1,6 @@
+import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
+import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
+import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
 import { useEffect, useRef, useState } from 'react'
 import { Checkbox, Picker, ScrollView, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
@@ -29,6 +32,7 @@ import { levelFiveAgeBasis, validateLevelFiveAge } from '@/utils/rensheLevelFive
 interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; application: RensheApplicationDetail | null; now?: number; batchChecking?: boolean; batchCheckError?: string; onRefreshBatch?: () => void }
 
 export default function GraduatedForm({ plan, profile, application, now = Date.now(), batchChecking = false, batchCheckError = '', onRefreshBatch }: Props) {
+  const confirmation = useEnrollmentConfirmation('renshe', plan.id)
   const draft = application?.draft_data
   const employment = isEmploymentRule(plan.renshe_config?.qualification_rule)
   const levelThree = plan.renshe_config?.qualification_rule === LEVEL_THREE_RULE
@@ -39,9 +43,9 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
     school: profile?.student?.school || '', major: profile?.student?.major || '', education: profile?.student?.education || '',
   })
   const [graduated, setGraduated] = useState(Boolean(draft?.education_info?.graduated))
-  const [phone, setPhone] = useState(draft?.contact_phone || profile?.profile.phone || '')
-  const [email, setEmail] = useState(draft?.email || profile?.profile.email || '')
-  const [address, setAddress] = useState(draft?.mailing_address || profile?.profile.address || '')
+  const [phone, setPhone] = useState(draft?.contact_phone || enrollmentContactDraft().phone || profile?.profile.phone || '')
+  const [email, setEmail] = useState(draft?.email || enrollmentContactDraft().email || profile?.profile.email || '')
+  const [address, setAddress] = useState(draft?.mailing_address || enrollmentContactDraft().address || profile?.profile.address || '')
   const [materials, setMaterials] = useState<Record<string, RensheUploadedMaterial>>(draft?.materials || {})
   const [busy, setBusy] = useState('')
   const operationLock = useRef(false)
@@ -175,9 +179,9 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
       assertAvailable()
       const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), ...(employment ? { qualification_info: qualification } : {}), ...(educationRequired ? { education_info: { ...education, graduated: true } as RensheEducationInfo } : {}), reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
       assertAvailable()
-      const result = await rensheService.submit(saved.id)
+      const result = await rensheService.submit(saved.id, correcting ? undefined : await confirmation.requireConfirmation())
       if (result.payment_required) await Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` })
-      else if (!correcting) await Taro.redirectTo({ url: `/${ROUTES.PAYMENT_RESULT}?order_id=${result.order_id}` })
+      else if (!correcting) await Taro.redirectTo({ url: enrollmentDetailUrl('renshe', saved.id) })
       else await Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${saved.id}` })
     } catch (value) { fail(value) } finally { operationLock.current = false; setBusy('') }
   }
@@ -204,6 +208,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   return <AuthGuard><View className={styles.page}>
     <PageHeader title={levelThree ? '三级报名' : employment ? '工龄及证书路径报名' : '已毕业学历型报名'} shouldShowBack />
     <ScrollView scrollY className={`${styles.body} ${styles.bodyWithFooter}`}>
+      <ConfirmationSummary vendor='renshe' batchId={plan.id} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={Boolean(busy)} />
       <RegistrationSummary title={plan.name} subtitle={`${plan.occupation_name} · ${plan.skill_level}`} badge={plan.application_type} priceCents={plan.price_cents}
         items={[{ label: '报名时间', value: formatCertificationApplyRange(plan), wide: true }, { label: '考试时间', value: formatDateTime(plan.exam_date, '待公布') }, { label: '考试地点', value: plan.exam_location || '以批次安排为准' }]}>
         <RequirementDisclosure title='查看报考要求'>

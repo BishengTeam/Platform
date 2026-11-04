@@ -1,0 +1,29 @@
+.page { min-height: 100vh; background: #f5f7fb; }
+.body { padding: 24rpx; box-sizing: border-box; }
+.card { background: #fff; border-radius: 20rpx; padding: 28rpx; margin-bottom: 24rpx; }
+.title { display: block; color: #1d2129; font-size: 32rpx; font-weight: 600; margin-bottom: 20rpx; }
+.paragraph { display: block; color: #4e5969; font-size: 28rpx; line-height: 1.8; white-space: pre-wrap; margin-bottom: 20rpx; overflow-wrap: anywhere; }
+.hint { display: block; color: #86909c; font-size: 24rpx; line-height: 1.7; margin-top: 12rpx; }
+.error { display: block; color: #d4380d; font-size: 26rpx; line-height: 1.6; margin-bottom: 16rpx; }
+.link { display: block; color: #1677ff; font-size: 26rpx; padding: 12rpx 0; }
+.subject { padding: 20rpx 0; border-bottom: 1rpx solid #f2f3f5; }
+.subjectName { font-size: 28rpx; font-weight: 500; color: #1d2129; }
+.imageBlock { margin-bottom: 20rpx; }
+.noticeImage { width: 100%; display: block; border-radius: 12rpx; }
+.field { margin-bottom: 24rpx; }
+.label { display: block; font-size: 26rpx; color: #4e5969; margin-bottom: 12rpx; }
+.picker { background: #f7f8fa; border: 1rpx solid #e5e6eb; border-radius: 12rpx; padding: 22rpx; font-size: 28rpx; line-height: 1.5; color: #1d2129; }
+.row { display: flex; justify-content: space-between; gap: 20rpx; margin: 16rpx 0; font-size: 26rpx; color: #4e5969; }
+.rowValue { text-align: right; color: #1d2129; flex: 1; }
+.deadline { display: block; background: #fff7e6; color: #ad6800; border-radius: 12rpx; padding: 20rpx; font-size: 27rpx; line-height: 1.6; margin-bottom: 16rpx; }
+.agreement { display: flex; align-items: flex-start; gap: 12rpx; font-size: 26rpx; line-height: 1.7; padding: 16rpx 0; }
+.sticky { padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom)); background: #fff; }
+.stages { display: flex; margin: 24rpx 0; gap: 6rpx; }
+.stage { flex: 1; text-align: center; font-size: 22rpx; color: #86909c; border-top: 6rpx solid #e5e6eb; padding-top: 16rpx; }
+.stageDone { color: #1677ff; border-top-color: #1677ff; }
+.stageCurrent { font-weight: 600; color: #1677ff; border-top-color: #1677ff; }
+.event { padding: 16rpx 0; border-bottom: 1rpx solid #f2f3f5; font-size: 26rpx; }
+.consultation { position: fixed; right: 24rpx; bottom: calc(144rpx + env(safe-area-inset-bottom)); z-index: 10; box-shadow: 0 6rpx 24rpx rgba(22,119,255,.15); border-radius: 20rpx; }
+.mask { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 999; display: flex; align-items: flex-end; }
+.sheet { background: #fff; border-radius: 24rpx 24rpx 0 0; padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom)); width: 100%; height: 75vh; box-sizing: border-box; }
+.actions { display: flex; gap: 20rpx; margin: 20rpx 0; flex-wrap: wrap; }

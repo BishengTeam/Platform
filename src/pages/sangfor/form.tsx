@@ -1,3 +1,6 @@
+import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
+import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
+import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
@@ -31,6 +34,7 @@ export default function SangforFormPage() {
   const lock = useRef(false)
   const [batchChecking, setBatchChecking] = useState(false), [batchCheckError, setBatchCheckError] = useState('')
   const statusRequest = useRef(0)
+  const confirmation = useEnrollmentConfirmation('sangfor', batchId)
   useEffect(() => { setForm(INITIAL); setRegistration(null); setErrors({}); setSubmitError(''); setAgreed(false) }, [sessionId])
   useLoad(params => { setBatchId(Number(params?.batch_id || 0)); setRegistrationId(Number(params?.registration_id || 0)); setRouteReady(true) })
   useEffect(() => {
@@ -52,7 +56,7 @@ export default function SangforFormPage() {
         const info = await sangforService.batch(batchId)
         if (!active) return
         setBatch(info)
-        setForm(old => ({ ...old, phone: old.phone || profile.profile.phone || '', email: old.email || profile.profile.email || '',
+        setForm(old => ({ ...old, phone: old.phone || enrollmentContactDraft().phone || profile.profile.phone || '', email: old.email || enrollmentContactDraft().email || profile.profile.email || '', mailing_address: old.mailing_address || enrollmentContactDraft().address || '',
           organization: old.organization || profile.enterprise?.organization || '', first_name: old.first_name || realname?.first_name_en || '', last_name: old.last_name || realname?.last_name_en || '' }))
       }
     }
@@ -106,8 +110,8 @@ export default function SangforFormPage() {
         const result = await sangforService.resubmit(registration.id, registration.revision, values)
         await Taro.redirectTo({ url: `/${ROUTES.SANGFOR_DETAIL}?id=${result.id}` })
       } else if (batch) {
-        const result = await sangforService.create(batch.id, values)
-        await Taro.redirectTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` })
+        const result = await sangforService.create(batch.id, values, await confirmation.requireConfirmation())
+        await Taro.redirectTo({ url: result.price_cents ? `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` : enrollmentDetailUrl('sangfor', result.id) })
       }
     } catch (reason) { setSubmitError(reason instanceof Error ? reason.message : '提交失败，请重试') }
     finally { lock.current = false; setSubmitting(false) }
@@ -122,6 +126,7 @@ export default function SangforFormPage() {
       {loading && <View className={styles.empty}>加载中…</View>}
       {loadError && <View className={styles.card}><Text className={styles.error}>{loadError}</Text><Button variant='secondary' onClick={() => setRetry(value => value + 1)}>重新加载</Button></View>}
       {!loading && !loadError && <>
+        <ConfirmationSummary vendor='sangfor' batchId={batchId} notice={confirmation.notice} correcting={Boolean(registrationId)} contact={{ phone: form.phone, email: form.email, address: form.mailing_address }} disabled={submitting} />
         <RegistrationSummary title={batch?.name || summary?.name || '深信服报名'} badge='深信服' subtitle={batch?.exam_direction || summary?.exam_direction} priceCents={batch?.price_cents ?? registration?.price_cents}
           items={[...(batch ? [{ label: '报名时间', value: formatCertificationApplyRange(batch), wide: true }] : []), { label: '考试时间', value: (batch?.exam_date || summary?.exam_date) ? formatDateTime(batch?.exam_date || summary?.exam_date || '') : '以通知为准', wide: true }, { label: '考试地点', value: batch?.exam_location || summary?.exam_location || '以通知为准', wide: true }]} />
         {batchCheckError && <View className={styles.card}><Text className={styles.error}>{batchCheckError}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}

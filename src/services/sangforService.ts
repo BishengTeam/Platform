@@ -20,7 +20,7 @@ export interface SangforRegistration {
 export const sangforService = {
   async listBatches(code?: string): Promise<SangforBatch[]> { return (await getPublic<SangforBatch[]>('/api/sangfor/batches', code ? { product_code: code } : undefined)).data },
   async batch(id: number): Promise<SangforBatch> { return (await getPublic<SangforBatch>(`/api/sangfor/batches/${id}`)).data },
-  async create(batchId: number, values: SangforValues): Promise<SangforRegistration> { return (await post<SangforRegistration>('/api/sangfor/registrations', { ...values, batch_id: batchId })).data },
+  async create(batchId: number, values: SangforValues, noticeHash?: string): Promise<SangforRegistration> { return (await post<SangforRegistration>('/api/sangfor/registrations', { ...values, batch_id: batchId, ...(noticeHash ? { notice_hash: noticeHash } : {}) })).data },
   async registrations(page = 1): Promise<{ items: SangforRegistration[]; total: number }> { return (await get<{ items: SangforRegistration[]; total: number }>('/api/sangfor/registrations', { page, page_size: 100 })).data },
   async registration(id: number): Promise<SangforRegistration> { return (await get<SangforRegistration>(`/api/sangfor/registrations/${id}`)).data },
   async resubmit(id: number, revision: number, values: SangforValues): Promise<SangforRegistration> { return (await post<SangforRegistration>(`/api/sangfor/registrations/${id}/resubmit`, { ...values, expected_revision: revision })).data },

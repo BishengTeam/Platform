@@ -14,7 +14,7 @@ test('internal scroll lists use a real ScrollView refresher instead of dead page
     'pages/service/index.tsx',
     'pages/orders/index.tsx',
     'pages/registration/index.tsx',
-    'pages/nisp/index.tsx',
+    'components/CertificationEnrollment/index.tsx',
     'pages/mine/points.tsx',
     'pages/mine/points-history.tsx',
     'pages/mine/registrations.tsx',
@@ -34,7 +34,7 @@ test('internal scroll lists use a real ScrollView refresher instead of dead page
 
 test('natural-scroll pages enable native pull refresh and wait for data loading', async () => {
   const h3cConfig = await readFile(file('pages/h3c/index.config.ts'), 'utf8')
-  const h3cPage = await readFile(file('pages/h3c/index.tsx'), 'utf8')
+  const h3cPage = await readFile(file('components/CertificationEnrollment/index.tsx'), 'utf8')
   const orderConfig = await readFile(file('pages/order-detail/index.config.ts'), 'utf8')
   const orderPage = await readFile(file('pages/order-detail/index.tsx'), 'utf8')
 

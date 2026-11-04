@@ -4,6 +4,7 @@ import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { JourneyPanel } from '@/components/CertificationEnrollment/JourneyPanel'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { sangforService, type SangforRegistration } from '@/services/sangforService'
 import { useAuth } from '@/hooks/useAuth'
@@ -31,6 +32,7 @@ export default function SangforDetailPage() {
       {loading && <View className={styles.empty}>加载中…</View>}
       {error && <View className={styles.empty} onClick={() => void load()}>{error}，点击重试</View>}
       {!loading && !error && record && <>
+        <JourneyPanel vendor='sangfor' id={record.id} />
         <View className={styles.card}><Text className={styles.title}>{record.batch_snapshot.name}</Text><Text className={styles.hint}>{record.batch_snapshot.exam_direction}</Text>
           <View className={styles.row}><Text className={styles.label}>报名状态</Text><Text className={styles.value}>{SANGFOR_STATUS[record.status] || record.status}</Text></View>
           <Text className={styles.hint}>报名编号：{record.registration_no}</Text><Text className={styles.hint}>当前资料：第{record.current_version}版</Text>
@@ -39,7 +41,7 @@ export default function SangforDetailPage() {
         <View className={styles.card}><Text className={styles.title}>报名资料</Text><View className={styles.row}><Text className={styles.label}>姓名</Text><Text>{record.candidate_snapshot.name}</Text></View>
           {Object.entries(SANGFOR_LABELS).map(([key, label]) => <View className={styles.row} key={key}><Text className={styles.label}>{label}</Text><Text className={styles.value}>{record.candidate_snapshot[key] || '—'}</Text></View>)}</View>
         <View className={styles.card}><Text className={styles.title}>审核记录</Text>{!record.reviews.length && <Text className={styles.hint}>核账确认后进入报名审核。</Text>}
-          {record.reviews.map((item, index) => <View key={index}><Text className={styles.hint}>第{item.version}版 · {formatDateTime(item.created_at)}</Text><Text className={styles.hint}>{({ approve: '初审通过', return: '退回补正', final_approve: '外审通过', final_return: '外审退回' })[item.action] || item.action}：{item.reason || '已核验'}</Text>
+          {record.reviews.map((item, index) => <View key={index}><Text className={styles.hint}>第{item.version}版 · {formatDateTime(item.created_at)}</Text><Text className={styles.hint}>{({ approve: '初审通过', return: '退回补正', final_approve: '终审通过', final_return: '终审退回' })[item.action] || item.action}：{item.reason || '已核验'}</Text>
             {item.correction_due_at && <Text className={styles.error}>补正截止：{formatDateTime(item.correction_due_at)}</Text>}</View>)}</View>
       </>}
     </View></RefreshableScrollView>

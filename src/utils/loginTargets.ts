@@ -4,6 +4,7 @@ export const PUBLIC_PAGES = new Set([
   ROUTES.INDEX, 'pages/training/index', ROUTES.PROFILE, ROUTES.REGISTRATION_INDEX,
   ROUTES.REGISTRATION_CATEGORY, ROUTES.H3C_INDEX, ROUTES.NISP_INDEX, ROUTES.RENSHE_INDEX,
   ROUTES.SANGFOR_INDEX,
+  ROUTES.REGISTRATION_NOTICE,
   ROUTES.ACTIVITY, 'pages/activity-zone/detail', 'pages/competition/detail', 'pages/employment-zone/detail',
   ROUTES.QUIZ_INDEX, ROUTES.MINE_POINTS, ROUTES.MINE_ABOUT, ROUTES.AGREEMENT_VIEW, ROUTES.WEBVIEW,
   'pages/competition/attachment',
@@ -17,7 +18,8 @@ const NUMERIC_PARAMS = new Set(['id', 'plan_id', 'certId', 'batch_id', 'project_
 const ENUM_PARAMS: Record<string, readonly string[]> = {
   level: ['1', '2'], vendor: ['H3C', 'NISP', '人社', '深信服'],
   scopeType: ['library', 'module', 'knowledge_point'], scope_type: ['library', 'module', 'knowledge_point'],
-  type: ['h3c', 'nisp', 'renshe', 'competition', 'user_terms', 'privacy', 'identity_auth', 'cert_registration'],
+  type: ['h3c', 'nisp', 'renshe', 'sangfor', 'competition', 'user_terms', 'privacy', 'identity_auth', 'cert_registration'],
+  registration_type: ['coupon', 'student', 'full'], editing: ['1'],
   kind: ['h3c', 'nisp', 'renshe', 'competition'], tab: ['activity', 'competition', 'employment', 'mall', 'virtual', 'orders', 'coupons'],
   mode: ['full', 'wrong_only', 'practice', 'mock'], requireSign: ['0', '1'],
 }

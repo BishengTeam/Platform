@@ -28,7 +28,7 @@ test('Sangfor product cards go to public batches and login resume only accepts s
   const calls = []
   Taro.navigateTo = options => calls.push(options)
   navigateToCertRegistration({ vendor: '深信服', code: 'SCSA-T' })
-  assert.deepEqual(calls, [{ url: '/pages/sangfor/index?cert_code=SCSA-T' }])
+  assert.deepEqual(calls, [{ url: '/pages/registration/category?vendor=' + encodeURIComponent('深信服') }])
   assert.equal(isPublicPage('/pages/sangfor/index?cert_code=SCSA-T'), true)
   assert.equal(isPublicPage('/pages/sangfor/form?batch_id=1'), false)
   assert.equal(safeLoginTarget('/pages/sangfor/form?batch_id=1'), '/pages/sangfor/form?batch_id=1')

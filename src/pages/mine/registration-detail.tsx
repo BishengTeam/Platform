@@ -13,7 +13,7 @@ import {
 } from '@/components/CompetitionRegForm'
 import { getOrderDetail } from '@/services/dataService'
 import type { OrderDetail } from '@/types/orders'
-import { ConsultationGroupCard } from '@/components/ConsultationGroupCard'
+import { JourneyPanel } from '@/components/CertificationEnrollment/JourneyPanel'
 import { ROUTES } from '@/constants/routes'
 import { h3cService } from '@/services/h3cService'
 import {
@@ -59,12 +59,12 @@ type NispRegistrationDetail = NispRegistration & {
 type CertificationRegistrationDetail = H3cRegistrationDetail | NispRegistrationDetail
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  pending_payment: { label: '待支付', cls: sharedStyles.statusPending },
+  pending_payment: { label: '待付款核验', cls: sharedStyles.statusPending },
   pending_review: { label: '审核中', cls: sharedStyles.statusReview },
   rejected_awaiting_resubmission: { label: '待补交材料', cls: sharedStyles.statusRejected },
   pending_refund_confirmation: { label: '待确认退款', cls: sharedStyles.statusPending },
   refund_processing: { label: '退款中', cls: sharedStyles.statusPending },
-  approved: { label: '审核通过', cls: sharedStyles.statusApproved },
+  approved: { label: '初审通过', cls: sharedStyles.statusApproved },
   final_approved: { label: '终审通过', cls: sharedStyles.statusApproved },
   refunded_closed: { label: '已退款关闭', cls: sharedStyles.statusNeutral },
   cancelled: { label: '已取消', cls: sharedStyles.statusNeutral },
@@ -647,6 +647,7 @@ export default function RegistrationDetailPage() {
           onRefresh={load}
         >
           {loading && <View className={styles.placeholder}>加载中...</View>}
+          {!loading && !error && kind && kind !== 'competition' && (certRegistration || rensheRegistration?.current_order_id) && <JourneyPanel vendor={kind} id={registrationId} />}
 
           {!loading && error && (
             <View className={styles.placeholder}>
@@ -713,9 +714,6 @@ export default function RegistrationDetailPage() {
                 </View>
               )}
 
-              {certRegistration.consultation_group && (
-                <ConsultationGroupCard group={certRegistration.consultation_group} />
-              )}
 
               {certRegistration.status === 'approved' && (examDate || examLocation) && (
                 <>
@@ -868,11 +866,6 @@ export default function RegistrationDetailPage() {
                 </View>
               )}
 
-              {rensheRegistration.consultation_group && (
-                <ConsultationGroupCard
-                  group={rensheRegistration.consultation_group}
-                />
-              )}
 
               <Text className={sharedStyles.sectionTitle}>版本记录</Text>
               {rensheRegistration.versions.map(version => (

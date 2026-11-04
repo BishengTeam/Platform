@@ -97,6 +97,7 @@ export interface NispRegistration {
 }
 
 export interface NispOrderCreatePayload {
+  notice_hash?: string
   batch_id: number
   level: '1' | '2'
   name: string

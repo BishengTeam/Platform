@@ -286,8 +286,8 @@ export const rensheService = {
     )).data
   },
 
-  async submit(id: number): Promise<RensheSubmitResult> {
-    return (await post<RensheSubmitResult>(`/api/renshe/applications/${id}/submit`)).data
+  async submit(id: number, noticeHash?: string): Promise<RensheSubmitResult> {
+    return (await post<RensheSubmitResult>(`/api/renshe/applications/${id}/submit`, noticeHash ? { notice_hash: noticeHash } : undefined)).data
   },
 
   async listApplications(page = 1, pageSize = 20): Promise<PageData<RensheApplicationListItem>> {

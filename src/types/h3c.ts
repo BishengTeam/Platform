@@ -110,6 +110,7 @@ export interface H3cRegistration {
 }
 
 export interface H3cOrderCreatePayload {
+  notice_hash?: string
   batch_id: number
   registration_type: H3cRegistrationType
   candidate_name: string

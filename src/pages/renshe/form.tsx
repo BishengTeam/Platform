@@ -26,6 +26,9 @@ import { validateEmail, validatePhone, validateRequired } from '@/utils/validato
 import type { ValidationResult } from '@/utils/validator'
 import styles from './renshe.module.scss'
 import GraduatedForm from './graduated-form'
+import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
+import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
+import { enrollmentContactDraft } from '@/utils/enrollment'
 import ReportingFields from './reporting-fields'
 import { correctionAvailable, validateReportingInfo, isSelfReportedRule, rensheBatchWindow } from '@/utils/rensheGraduated'
 
@@ -49,6 +52,7 @@ export default function RensheFormPage() {
   const [batchChecking, setBatchChecking] = useState(false)
   const [batchCheckError, setBatchCheckError] = useState('')
   const statusRequest = useRef(0)
+  const confirmation = useEnrollmentConfirmation('renshe', planId)
 
   useLoad((options) => {
     setPlanId(Number(options?.plan_id || 0))
@@ -72,9 +76,9 @@ export default function RensheFormPage() {
       setProfile(profileDetail)
       setApplication(applicationDetail)
       const draft = applicationDetail?.draft_data
-      setPhone(draft?.contact_phone || profileDetail?.profile.phone || '')
-      setEmail(draft?.email || profileDetail?.profile.email || '')
-      setAddress(draft?.mailing_address || profileDetail?.profile.address || '')
+      setPhone(draft?.contact_phone || enrollmentContactDraft().phone || profileDetail?.profile.phone || '')
+      setEmail(draft?.email || enrollmentContactDraft().email || profileDetail?.profile.email || '')
+      setAddress(draft?.mailing_address || enrollmentContactDraft().address || profileDetail?.profile.address || '')
       if (!isSelfReportedRule(planDetail.renshe_config?.qualification_rule)) {
         setReportingOptions(await rensheService.getReportingOptions(planDetail.id))
         setReporting(draft?.reporting_info || { ethnicity: profileDetail?.realname?.ethnicity || '', political_status: profileDetail?.realname?.political_status || '' })
@@ -169,7 +173,7 @@ export default function RensheFormPage() {
         reporting_info: { ...reporting, occupation_years: reporting.occupation_years === '' ? null : reporting.occupation_years } as RensheReportingInfo,
       })
       assertAvailable()
-      const submitted = await rensheService.submit(saved.id)
+      const submitted = await rensheService.submit(saved.id, correcting ? undefined : await confirmation.requireConfirmation())
       Taro.showToast({ title: '报名信息已提交', icon: 'success' })
       if (submitted.payment_required) {
         Taro.navigateTo({
@@ -252,6 +256,7 @@ export default function RensheFormPage() {
       <View className={styles.page}>
         <PageHeader title='人社认证报名' shouldShowBack />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY>
+          <ConfirmationSummary vendor='renshe' batchId={planId} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={submitting} />
           {(batchCheckError || batchChecking || !applicationEditable) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : batchCheckError || (correcting ? '当前报名不在有效补正期内' : availability.message || '请在我的报名查看已提交的报名')}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
           <View className={styles.card}>
             <View className={styles.cardHeader}>

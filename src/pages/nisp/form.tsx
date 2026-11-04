@@ -1,3 +1,6 @@
+import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
+import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
+import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView, Picker } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
@@ -73,6 +76,7 @@ export default function NispFormPage() {
   const [applicationFormSlot, setApplicationFormSlot] = useState<DocumentSceneSlot | null>(null)
   const [identityVerified, setIdentityVerified] = useState(false)
   const batchRequest = useRef(0)
+  const confirmation = useEnrollmentConfirmation('nisp', batchId, level)
 
   useLoad((options) => {
     setBatchId(Number(options?.batch_id || 0))
@@ -101,6 +105,9 @@ export default function NispFormPage() {
         major: profile.student?.major || old.major,
         school: profile.student?.school || old.school,
         education: profile.student?.education || old.education,
+        phone: old.phone || enrollmentContactDraft().phone || profile.profile.phone || '',
+        email: old.email || enrollmentContactDraft().email || profile.profile.email || '',
+        address: old.address || enrollmentContactDraft().address || profile.profile.address || '',
       }))
     }).catch(() => {
       setIdentityVerified(false)
@@ -216,6 +223,7 @@ export default function NispFormPage() {
       ))) return
       assertCertificationBatchOpen(batch)
       const payload: NispOrderCreatePayload = {
+        notice_hash: await confirmation.requireConfirmation(),
         batch_id: batch.id,
         level,
         name: form.name.trim(),
@@ -242,7 +250,7 @@ export default function NispFormPage() {
       const certName = level === '1' ? 'NISP一级认证' : 'NISP二级认证'
       if (registration.price_cents === 0 && registration.status === 'pending_review') {
         await Taro.redirectTo({
-          url: `/${ROUTES.PAYMENT_RESULT}?order_id=${registration.order_id}&status=success&cert_name=${encodeURIComponent(certName)}&price=0`,
+          url: enrollmentDetailUrl('nisp', registration.id),
         })
         return
       }
@@ -314,6 +322,7 @@ export default function NispFormPage() {
       <View className={styles.page}>
         <PageHeader title={`NISP${level === '1' ? '一级' : '二级'}报名`} shouldShowBack />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY scrollIntoView={scrollTarget} scrollWithAnimation>
+          <ConfirmationSummary vendor='nisp' batchId={batchId} notice={confirmation.notice} contact={form} disabled={submitting || Boolean(uploading)} />
           <RegistrationSummary badge={`NISP${level === '1' ? '一级' : '二级'}`} title={batch?.name || (batchState === 'loading' ? '加载考试批次中…' : batchState === 'missing' ? '批次不存在或已下架' : '批次加载失败')}
             priceCents={batch ? Math.round(price * 100) : null}
             items={[{ label: '报名时间', value: batch ? formatNispApplyRange(batch) : '以批次安排为准', wide: true }, { label: '考试时间', value: batch?.exam_date ? formatDate(batch.exam_date) : '以批次安排为准' }, { label: '考试地点', value: batch?.exam_location || '以批次安排为准' }]}>

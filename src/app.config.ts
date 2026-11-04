@@ -23,7 +23,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/registration',
-      pages: ['index', 'category', 'form', 'form-sangfor', 'xuexin-guide', 'confirm'],
+      pages: ['index', 'category', 'notice', 'form', 'form-sangfor', 'xuexin-guide', 'confirm'],
     },
     {
       root: 'pages/h3c',

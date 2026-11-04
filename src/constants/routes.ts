@@ -14,6 +14,7 @@ export const ROUTES = {
   REGISTRATION_FORM_SANGFOR: 'pages/registration/form-sangfor',
   REGISTRATION_XUEXIN_GUIDE: 'pages/registration/xuexin-guide',
   REGISTRATION_CONFIRM: 'pages/registration/confirm',
+  REGISTRATION_NOTICE: 'pages/registration/notice',
   H3C_INDEX: 'pages/h3c/index',
   H3C_FORM: 'pages/h3c/form',
   NISP_INDEX: 'pages/nisp/index',

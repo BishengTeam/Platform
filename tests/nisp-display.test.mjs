@@ -24,11 +24,10 @@ test('NISP apply period is formatted for batch cards and order summary', () => {
 })
 
 test('NISP batch and form cards show the apply period', async () => {
-  const index = await readFile(new URL('../src/pages/nisp/index.tsx', import.meta.url), 'utf8')
+  const notice = await readFile(new URL('../src/pages/registration/notice.tsx', import.meta.url), 'utf8')
   const form = await readFile(new URL('../src/pages/nisp/form.tsx', import.meta.url), 'utf8')
 
-  assert.match(index, /formatNispApplyRange\(batch\)/)
-  assert.match(index, /label: '报名时间'/)
+  assert.match(notice, /报名截止：.*enrollmentDeadline\(notice.batch.apply_end\)/)
   assert.match(form, /formatNispApplyRange\(batch\)/)
   assert.match(form, /label: '报名时间'/)
 })
