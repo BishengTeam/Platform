@@ -21,7 +21,7 @@ export const STRINGS = {
   INDEX_AI_ACTIVITY: '活动专区正在筹备中，上线后第一时间通知你。可以先看看正在报名的竞赛或认证课程',
   INDEX_AI_EMPLOYMENT: '岗位服务正在筹备中，欢迎先了解认证培训，提升就业竞争力',
   INDEX_AI_DEFAULT: '收到您的问题，我正在为您整理相关信息。\n\n您也可以直接访问下方专区获取更详细的内容，或继续向我提问。',
-  INDEX_ONLINE_COURSES: '在线课程',
+  INDEX_ONLINE_COURSES: '在线练习',
   INDEX_TRAINING_ACTIVITIES: '在线培训',
   INDEX_VIEW_ALL: '全部',
   // ---- Zones Page ----
