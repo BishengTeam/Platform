@@ -200,3 +200,56 @@
   font-size: $font-sm;
   line-height: 1.5;
 }
+
+// 40301 锁定态的内联激活码面板（与题库页卡片内面板同款样式）
+.activationPanel {
+  margin: $spacing-lg;
+  padding: $spacing-lg;
+  background: $color-white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+}
+
+.activationTitle {
+  display: block;
+  font-size: $font-base;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.activationHint {
+  display: block;
+  margin-top: $spacing-2xs;
+  font-size: $font-xs;
+  color: $color-text-tertiary;
+}
+
+.activationForm {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-sm;
+  gap: $spacing-sm;
+}
+
+.activationInput {
+  flex: 1;
+  height: 72px;
+  padding: 0 $spacing-sm;
+  background: $color-bg;
+  border-radius: $radius-sm;
+  font-size: $font-base;
+}
+
+.activationBtn {
+  flex-shrink: 0;
+  padding: $spacing-xs $spacing-md;
+  color: #fff;
+  background: $color-primary;
+  border-radius: $radius-sm;
+  font-size: $font-base;
+  font-weight: 600;
+}
+
+.activationBtnDisabled {
+  opacity: 0.6;
+}

@@ -37,17 +37,22 @@ export interface ApiResponse<T = unknown> {
   code: number
   data: T
   message: string
+  /** 部分业务错误附带的结构化信息（如 40301 激活码库的 library_id） */
+  detail?: Record<string, unknown>
 }
 
 export class ApiError extends Error {
   code: number
   statusCode: number
+  /** 后端错误体附带的 detail，供调用方做结构化分支（与 ApiResponse.detail 同源） */
+  detail?: Record<string, unknown>
 
-  constructor(message: string, code: number, statusCode = 0) {
+  constructor(message: string, code: number, statusCode = 0, detail?: Record<string, unknown>) {
     super(message)
     this.name = 'ApiError'
     this.code = code
     this.statusCode = statusCode
+    this.detail = detail
   }
 }
 
@@ -181,6 +186,7 @@ export async function request<T = unknown>(options: RequestOptions, allowRefresh
       result?.message || '请求失败',
       result?.code ?? -1,
       res.statusCode,
+      result?.detail,
     )
   } catch (err: unknown) {
     if (showLoading) {

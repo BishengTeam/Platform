@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { ScrollView, Text, View } from '@tarojs/components'
+import { useEffect, useRef, useState } from 'react'
+import { Input, ScrollView, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import { ROUTES } from '@/constants/routes'
 import type { QuizLibraryProgress, QuizPracticeScopePreview, QuizPracticeScopeType } from '@/contracts/quiz'
-import { createQuizExam, getCurrentQuizExam, getQuizLibraryProgress, previewPracticeScope } from '@/services/dataService'
+import { createQuizExam, getCurrentQuizExam, getQuizLibraryProgress, previewPracticeScope, redeemLibraryCode } from '@/services/dataService'
 import { ApiError } from '@/utils/request'
 import styles from './prepare.module.scss'
 
@@ -67,10 +67,16 @@ export default function QuizPreparePage() {
   const [reciteMode, setReciteMode] = useState(true)
   const [questionCount, setQuestionCount] = useState<number>(20)
   const [starting, setStarting] = useState(false)
+  // 40301 锁定态：本页内联兑换激活码，成功后原地重载预览
+  const [lockedLibraryId, setLockedLibraryId] = useState<number | null>(null)
+  const [codeDraft, setCodeDraft] = useState('')
+  const [redeeming, setRedeeming] = useState(false)
+  const scopeRef = useRef<{ scopeType: QuizPracticeScopeType; scopeId: number } | null>(null)
 
   const load = async (scopeType: QuizPracticeScopeType, scopeId: number) => {
     setLoading(true)
     setLoadError('')
+    setLockedLibraryId(null)
     try {
       const nextPreview = await previewPracticeScope({ scope_type: scopeType, scope_id: scopeId })
       setPreview(nextPreview)
@@ -82,14 +88,44 @@ export default function QuizPreparePage() {
         setScopeProgress(null)
       }
     } catch (error) {
-      // 深链进入未激活题库：给出明确指引，而不是笼统的失败文案
-      setLoadError(
-        isActivationRequired(error)
-          ? '该题库需激活码解锁，请到题库页展开题库输入激活码'
-          : messageOf(error),
-      )
+      // 深链进入未激活题库：优先在本页内联输入激活码（后端 40301 detail 带 library_id）
+      if (isActivationRequired(error)) {
+        const detail = error instanceof ApiError ? error.detail : undefined
+        const rawLibraryId = detail?.library_id
+        const libraryId = typeof rawLibraryId === 'number' && rawLibraryId > 0
+          ? rawLibraryId
+          : scopeType === 'library' ? scopeId : 0
+        if (libraryId > 0) {
+          setLockedLibraryId(libraryId)
+          return
+        }
+        setLoadError('该题库需激活码解锁，请到题库页展开题库输入激活码')
+        return
+      }
+      setLoadError(messageOf(error))
     } finally {
       setLoading(false)
+    }
+  }
+
+  const submitActivation = async () => {
+    const code = codeDraft.trim()
+    if (!code) {
+      Taro.showToast({ title: '请输入激活码', icon: 'none' })
+      return
+    }
+    if (!lockedLibraryId || redeeming) return
+    setRedeeming(true)
+    try {
+      await redeemLibraryCode(lockedLibraryId, code)
+      setCodeDraft('')
+      Taro.showToast({ title: '激活成功，开始练习吧', icon: 'success' })
+      const scope = scopeRef.current
+      if (scope) void load(scope.scopeType, scope.scopeId)
+    } catch (error) {
+      Taro.showToast({ title: messageOf(error), icon: 'none', duration: 2500 })
+    } finally {
+      setRedeeming(false)
     }
   }
 
@@ -102,6 +138,7 @@ export default function QuizPreparePage() {
       setLoading(false)
       return
     }
+    scopeRef.current = { scopeType: nextScopeType, scopeId }
     void load(nextScopeType, scopeId)
   })
 
@@ -171,6 +208,25 @@ export default function QuizPreparePage() {
         <ScrollView className={styles.body} scrollY>
           {loading && <Text className={styles.stateText}>正在加载练习范围…</Text>}
           {!loading && loadError && <EmptyState title={loadError} />}
+          {!loading && !loadError && lockedLibraryId && (
+            <View className={styles.activationPanel}>
+              <Text className={styles.activationTitle}>输入激活码解锁练习</Text>
+              <Text className={styles.activationHint}>请输入发放方提供的激活码，一个激活码仅可激活一次</Text>
+              <View className={styles.activationForm}>
+                <Input
+                  className={styles.activationInput}
+                  value={codeDraft}
+                  placeholder='例如 ABCD-1234-EFGH-5678'
+                  maxlength={24}
+                  onInput={event => setCodeDraft(event.detail.value)}
+                />
+                <Text
+                  className={`${styles.activationBtn} ${redeeming ? styles.activationBtnDisabled : ''}`}
+                  onClick={() => { if (!redeeming) void submitActivation() }}
+                >{redeeming ? '激活中…' : '激活'}</Text>
+              </View>
+            </View>
+          )}
           {!loading && !loadError && preview && (
             <View className={styles.content}>
               <View className={styles.scopeCard}>
