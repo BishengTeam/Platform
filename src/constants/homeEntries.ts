@@ -5,6 +5,8 @@ interface HomeEntryOptions {
   homeCertEntryVisible: boolean
   certRegistration: boolean
   hasActivities: boolean
+  /** 公众号推文已同步：专区恰好三个时用新闻资讯补位第四格 */
+  hasNews: boolean
 }
 
 /** 只生成实际可用入口，不用占位项补齐网格。 */
@@ -41,6 +43,16 @@ export function getHomeQuickEntries(options: HomeEntryOptions): KingKongItem[] {
       icon: 'gift',
       url: '/pages/activity-zone/index',
       tab: 'activity',
+    })
+  }
+  if (options.hasNews && items.length === 3) {
+    items.push({
+      name: STRINGS.INDEX_NEWS_TAB,
+      bg: '#FFF1F0',
+      iconColor: '#cf1322',
+      icon: 'bell',
+      url: '',
+      tab: 'news',
     })
   }
   return items

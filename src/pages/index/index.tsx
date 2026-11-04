@@ -129,6 +129,11 @@ export default function IndexPage() {
   }
 
   const handleKingKongClick = (item: KingKongItem) => {
+    // 新闻资讯没有独立页面：点击切到首页板块导航的资讯 tab
+    if (item.tab === 'news') {
+      setActiveSection('news')
+      return
+    }
     if (!item.url) return
     const path = item.url.replace(/^\//, '')
     if (TAB_BAR_CONFIG.some(t => t.key === path)) {
@@ -209,7 +214,8 @@ export default function IndexPage() {
     homeCertEntryVisible,
     certRegistration: FEATURES.certRegistration,
     hasActivities: activities.length > 0,
-  }), [activities.length])
+    hasNews: gzhArticles.length > 0,
+  }), [activities.length, gzhArticles.length])
 
   return (
     <>
