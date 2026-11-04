@@ -4,30 +4,31 @@
  * 2026.10.22 口径调整：积分海报入口上线（points=true），积分页为只读态，
  * 兑换商城仍不开放（pointsExchange=false）。
  * 2026.10.26 口径调整：就业专区隐藏（employmentZone=false）。
+ * 2026.11.04 口径调整：除就业专区（employmentZone=false）外其余入口全开。
  * 本清单不得随手修改，tests/features-edition.test.mjs 有冻结断言拦防；
  * 恢复功能请改 features.full.ts，走全量构建。
  */
 export const FEATURES_TRIM = {
   /** 认证功能口径：false=隐藏首页认证内容，true=开放现有认证入口 */
-  certRegistration: false,
+  certRegistration: true,
   /** 首页 AI 智能咨询卡 */
-  aiConsult: false,
+  aiConsult: true,
   /** 发现页「活动」tab */
-  activityTab: false,
+  activityTab: true,
   /** 就业专区：false=首页板块 tab 与活动页「就业」tab 一并隐藏 */
   employmentZone: false,
   /** 我的页「订单」（认证/课程支付链路） */
-  orders: false,
+  orders: true,
   /** 我的页「视频登录」 */
-  videoLogin: false,
+  videoLogin: true,
   /** 我的页「激活码」 */
-  videoCodes: false,
+  videoCodes: true,
   /** 我的页「查成绩」 */
-  examQuery: false,
+  examQuery: true,
   /** 我的页「积分」：true=海报入口可见，积分页只读态（余额+打卡记录）；兑换是否开放由 pointsExchange 控制 */
   points: true,
   /** 积分兑换商城：false=积分页只读并提示即将开放，true=开放兑换相关 tab */
-  pointsExchange: false,
+  pointsExchange: true,
   /** 打卡：我的页入口 + 题库页打卡条 */
   checkin: true,
 } as const

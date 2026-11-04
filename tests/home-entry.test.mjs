@@ -99,8 +99,32 @@ test('production with the override renders the certification shortcut first in t
   assert.match(html, /认证专区/)
 })
 
-test('trim edition suppresses the certification shortcut even when the override is on', async () => {
-  const flags = await buildFlags('production', { TARO_EDITION: 'trim', TARO_APP_HOME_CERT_ENTRY_VISIBLE: 'true' })
+test('trim edition suppresses the certification shortcut unless the override is on', async () => {
+  // 2026.11.04 口径：trim certRegistration=true 后，认证快捷按钮只由 TARO_APP_HOME_CERT_ENTRY_VISIBLE
+  // 控制；trim 构建不注入该变量，默认不生成，注入后排在首位。
+  const flags = await buildFlags('production', { TARO_EDITION: 'trim' })
   const items = getHomeQuickEntries({ ...flags, certRegistration: flags.FEATURES.certRegistration, hasActivities: false })
-  assert.equal(items.length, 2)
+  assert.deepEqual(items.map(item => item.url), ['/pages/training/index', '/pages/activity-zone/index'])
+
+  const override = await buildFlags('production', { TARO_EDITION: 'trim', TARO_APP_HOME_CERT_ENTRY_VISIBLE: 'true' })
+  const withOverride = getHomeQuickEntries({ ...override, certRegistration: override.FEATURES.certRegistration, hasActivities: false })
+  assert.deepEqual(withOverride.map(item => item.url), [
+    '/pages/registration/index', '/pages/training/index', '/pages/activity-zone/index',
+  ])
+})
+
+test('news shortcut fills the fourth cell only when exactly three entries exist', () => {
+  // 资讯入口无独立页面（url 为空，点击切首页资讯板块），仅在专区恰好三个时补位第四格；
+  // 只有两个专区时不补位（保持两列布局）。
+  const base = { homeCertEntryVisible: false, certRegistration: false }
+
+  const twoEntries = getHomeQuickEntries({ ...base, hasActivities: false, hasNews: true })
+  assert.deepEqual(twoEntries.map(item => item.tab), [undefined, 'competition'])
+
+  const withActivity = getHomeQuickEntries({ ...base, hasActivities: true, hasNews: true })
+  assert.deepEqual(withActivity.map(item => item.tab), [undefined, 'competition', 'activity', 'news'])
+  assert.equal(withActivity[3].url, '')
+
+  const withCert = getHomeQuickEntries({ homeCertEntryVisible: true, certRegistration: true, hasActivities: false, hasNews: true })
+  assert.deepEqual(withCert.map(item => item.tab), [undefined, undefined, 'competition', 'news'])
 })
