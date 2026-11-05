@@ -8,6 +8,7 @@ import { certificationJourneyService, type CertificationVendor, type EnrollmentC
 import { VENDOR_KEYS, currentNotice, enrollmentBatchLabel, enrollmentCountdown, enrollmentDeadline, enrollmentFormUrl, rememberNotice } from '@/utils/enrollment'
 import { certificationBatchState } from '@/utils/certificationBatch'
 import { navigateWithLogin, requireLogin } from '@/utils/loginCoordinator'
+import { safeNavigateBack } from '@/utils/navigation'
 import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
 import styles from '@/components/CertificationEnrollment/index.module.scss'
 
@@ -70,9 +71,9 @@ export default function EnrollmentNoticePage() {
       const pages = Taro.getCurrentPages(), previous = pages[pages.length - 2] as { route?: string; options?: Record<string, string> } | undefined
       const same = previous?.route === `pages/${vendor}/form` && Number(previous.options?.[vendor === 'renshe' ? 'plan_id' : 'batch_id']) === batch.id
         && (vendor !== 'h3c' || (previous.options?.registration_type || 'full') === type)
-      if (editing && same) await Taro.navigateBack()
+      if (editing && same) await safeNavigateBack({ fallbackUrl: target })
       else if (editing && previous?.route === `pages/${vendor}/form`) {
-        if (await requireLogin(target)) { await Taro.navigateBack(); await Taro.redirectTo({ url: target }) }
+        if (await requireLogin(target) && await safeNavigateBack({ fallbackUrl: target }) === 'back') await Taro.redirectTo({ url: target })
       }
       else await navigateWithLogin(target)
     } catch (reason) { setError(reason instanceof Error ? reason.message : '批次状态核对失败，请重试') }

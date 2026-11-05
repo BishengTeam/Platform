@@ -25,6 +25,7 @@ function driver({ vendor = 'nisp', catalog, getNotice }) {
       enrollmentCountdown: () => '', enrollmentFormUrl: (vendor, batch, type) => `${vendor}:${batch.id}:${type}`, rememberNotice: value => remembered.push(value) },
     '@/utils/certificationBatch': { certificationBatchState: batch => ({ canApply: batch.can_apply }) },
     '@/utils/loginCoordinator': { navigateWithLogin: async target => calls.push(target), requireLogin: async () => true },
+    '@/utils/navigation': { safeNavigateBack: async () => { calls.push('back'); return 'back' } },
     '@/hooks/useCertificationBatchClock': { useCertificationBatchClock: () => Date.parse('2026-11-04') },
   }
   const source = ts.transpileModule(readFileSync('src/pages/registration/notice.tsx', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText
