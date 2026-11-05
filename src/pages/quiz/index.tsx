@@ -35,6 +35,7 @@ export default function QuizIndexPage() {
   const [catalogError, setCatalogError] = useState(false)
   const [activationOpen, setActivationOpen] = useState<Record<number, boolean>>({})
   const [codeDrafts, setCodeDrafts] = useState<Record<number, string>>({})
+  const [activationErrors, setActivationErrors] = useState<Record<number, string>>({})
   const [redeeming, setRedeeming] = useState<Record<number, boolean>>({})
   useEffect(() => { setStats(null); setProgress({}); setStreakDays(0) }, [sessionId])
 
@@ -133,6 +134,7 @@ export default function QuizIndexPage() {
     }
     if (!(await requireLogin(`/${ROUTES.QUIZ_INDEX}`))) return
     setRedeeming(previous => ({ ...previous, [library.id]: true }))
+    setActivationErrors(previous => ({ ...previous, [library.id]: '' }))
     try {
       await redeemLibraryCode(library.id, draft)
       setLibraries(previous => previous.map(item => item.id === library.id ? { ...item, accessible: true } : item))
@@ -144,11 +146,10 @@ export default function QuizIndexPage() {
         setExpanded(previous => ({ ...previous, [library.id]: detail }))
       } catch { /* 目录拉取失败时保持收起，下次展开会重试 */ }
     } catch (error) {
-      Taro.showToast({
-        title: error instanceof ApiError ? error.message : '激活失败，请稍后重试',
-        icon: 'none',
-        duration: 2500,
-      })
+      setActivationErrors(previous => ({
+        ...previous,
+        [library.id]: error instanceof ApiError ? error.message : '激活失败，请稍后重试',
+      }))
     } finally {
       setRedeeming(previous => ({ ...previous, [library.id]: false }))
     }
@@ -229,13 +230,17 @@ export default function QuizIndexPage() {
                         value={codeDrafts[library.id] ?? ''}
                         placeholder='例如 ABCD-1234-EFGH-5678'
                         maxlength={24}
-                        onInput={event => setCodeDrafts(previous => ({ ...previous, [library.id]: event.detail.value }))}
+                        onInput={event => {
+                          setCodeDrafts(previous => ({ ...previous, [library.id]: event.detail.value }))
+                          setActivationErrors(previous => ({ ...previous, [library.id]: '' }))
+                        }}
                       />
                       <Text
                         className={`${styles.activationBtn} ${redeeming[library.id] ? styles.activationBtnDisabled : ''}`}
                         onClick={() => { if (!redeeming[library.id]) void submitActivation(library) }}
                       >{redeeming[library.id] ? '激活中…' : '激活'}</Text>
                     </View>
+                    {activationErrors[library.id] && <Text className={styles.activationError}>{activationErrors[library.id]}</Text>}
                   </View>
                 )}
                 {detail && !locked && (

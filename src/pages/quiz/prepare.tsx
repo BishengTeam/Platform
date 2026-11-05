@@ -70,6 +70,7 @@ export default function QuizPreparePage() {
   // 40301 锁定态：本页内联兑换激活码，成功后原地重载预览
   const [lockedLibraryId, setLockedLibraryId] = useState<number | null>(null)
   const [codeDraft, setCodeDraft] = useState('')
+  const [activationError, setActivationError] = useState('')
   const [redeeming, setRedeeming] = useState(false)
   const scopeRef = useRef<{ scopeType: QuizPracticeScopeType; scopeId: number } | null>(null)
 
@@ -116,6 +117,7 @@ export default function QuizPreparePage() {
     }
     if (!lockedLibraryId || redeeming) return
     setRedeeming(true)
+    setActivationError('')
     try {
       await redeemLibraryCode(lockedLibraryId, code)
       setCodeDraft('')
@@ -123,7 +125,7 @@ export default function QuizPreparePage() {
       const scope = scopeRef.current
       if (scope) void load(scope.scopeType, scope.scopeId)
     } catch (error) {
-      Taro.showToast({ title: messageOf(error), icon: 'none', duration: 2500 })
+      setActivationError(messageOf(error))
     } finally {
       setRedeeming(false)
     }
@@ -218,13 +220,17 @@ export default function QuizPreparePage() {
                   value={codeDraft}
                   placeholder='例如 ABCD-1234-EFGH-5678'
                   maxlength={24}
-                  onInput={event => setCodeDraft(event.detail.value)}
+                  onInput={event => {
+                    setCodeDraft(event.detail.value)
+                    setActivationError('')
+                  }}
                 />
                 <Text
                   className={`${styles.activationBtn} ${redeeming ? styles.activationBtnDisabled : ''}`}
                   onClick={() => { if (!redeeming) void submitActivation() }}
                 >{redeeming ? '激活中…' : '激活'}</Text>
               </View>
+              {activationError && <Text className={styles.activationError}>{activationError}</Text>}
             </View>
           )}
           {!loading && !loadError && preview && (
