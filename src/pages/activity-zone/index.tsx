@@ -73,7 +73,8 @@ export default function ActivityZonePage() {
     return { ongoing, upcoming, ended }
   }
 
-  const { ongoingActivities, upcomingActivities, endedActivities } = useMemo(
+  // 分组返回 { ongoing, upcoming, ended }：解构时别名为页面沿用名，缺别名会在运行时拿到 undefined
+  const { ongoing: ongoingActivities, upcoming: upcomingActivities, ended: endedActivities } = useMemo(
     () => groupActivitiesByTime(allActivities),
     [allActivities],
   )
