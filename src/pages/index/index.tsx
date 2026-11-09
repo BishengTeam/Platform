@@ -60,6 +60,9 @@ const DEFAULT_CERT_CARD_META = {
   tagColor: '#1677FF',
 }
 
+/** 滚动容器顶部锚点：资讯全屏切换后内容高度变化，用 scroll-into-view 把视口带回顶部 */
+const HOME_TOP_ANCHOR_ID = 'homeTopAnchor'
+
 /** 「今日不再弹出」的本地存储 key，按天失效 */
 function popupDismissKey(id: number): string {
   const d = new Date()
@@ -95,6 +98,11 @@ export default function IndexPage() {
   // 每次冷启动只在首次拿到聚合数据时尝试弹窗，下拉刷新不重复触发
   const popupShownRef = useRef(false)
   const [activeSection, setActiveSection] = useState<string>('cert')
+  // 资讯全屏视图（2026-11-09 甲方要求）：进入资讯板块时隐藏 banner/AI 卡/跑马灯/金刚区，
+  // 页头下直接是板块导航 + 资讯列表，整屏都是资讯内容。
+  const [newsFullScreen, setNewsFullScreen] = useState(false)
+  // 全屏切换后内容高度骤变，切回其它板块/进入全屏时用顶部锚点把滚动位置归零
+  const [scrollAnchor, setScrollAnchor] = useState('')
 
   const loadHome = useCallback(() => {
     return getHomeAggregation().then((data) => {
@@ -128,9 +136,11 @@ export default function IndexPage() {
   }
 
   const handleKingKongClick = (item: KingKongItem) => {
-    // 新闻资讯没有独立页面：点击切到首页板块导航的资讯 tab
+    // 新闻资讯没有独立页面：点击切到资讯板块并进入全屏视图（整屏资讯，切其它板块退出）
     if (item.tab === 'news') {
       setActiveSection('news')
+      setNewsFullScreen(true)
+      setScrollAnchor(HOME_TOP_ANCHOR_ID)
       return
     }
     if (!item.url) return
@@ -202,12 +212,24 @@ export default function IndexPage() {
     return tabs
   }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, yingcaiActivities.length, gzhArticles.length])
 
-  // 后台下架导致当前 tab 消失时回落到第一个 tab
+  // 后台下架导致当前 tab 消失时回落到第一个 tab（资讯全屏一并退出）
   useEffect(() => {
     if (sectionTabs.length > 0 && !sectionTabs.some(tab => tab.key === activeSection)) {
       setActiveSection(sectionTabs[0].key)
+      setNewsFullScreen(false)
+      setScrollAnchor('')
     }
   }, [sectionTabs, activeSection])
+
+  // 板块导航切换：资讯进入全屏，其它板块退回普通首页（banner/金刚区恢复显示）
+  const handleSectionChange = (key: string) => {
+    setActiveSection(key)
+    setNewsFullScreen(key === 'news')
+    setScrollAnchor(key === 'news' ? HOME_TOP_ANCHOR_ID : '')
+  }
+
+  // 渲染口径：仅当还有其它板块 tab 可切回时才全屏，避免只剩资讯一个 tab 时无路可退
+  const newsExpanded = newsFullScreen && sectionTabs.length > 1
 
   const kingKongItems = useMemo(() => getHomeQuickEntries({
     homeCertEntryVisible,
@@ -221,21 +243,25 @@ export default function IndexPage() {
       <View className={styles.page}>
         <PageHeader title={STRINGS.INDEX_PAGE_TITLE} />
 
-        <RefreshableScrollView className={styles.main} onRefresh={loadHome}>
+        <RefreshableScrollView className={styles.main} onRefresh={loadHome} scrollIntoView={scrollAnchor}>
+          <View id={HOME_TOP_ANCHOR_ID} />
           {homeError && <View className={styles.browseNotice} onClick={() => void loadHome()}>首页加载失败，点击重试</View>}
           {!isLoggedIn && <View className={styles.browseNotice} onClick={() => void requireLogin(loginIntent?.target || '/pages/index/index')}>
             {loginIntent?.parked ? `${loginIntent.purpose}，点击继续办理` : '先浏览，使用个人服务时再登录 · 微信登录／注册'}
           </View>}
-          <View className={styles.bannerWrap}>
-            <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
-              id: b.id,
-              title: '',
-              image_url: resolveMediaUrl(b.image_url),
-              jump_link: b.jump_link,
-            }))} />
-          </View>
+          {/* 资讯全屏时隐藏 banner/AI 卡/跑马灯/金刚区：页头下直接是板块导航 + 资讯列表 */}
+          {!newsExpanded && (
+            <View className={styles.bannerWrap}>
+              <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
+                id: b.id,
+                title: '',
+                image_url: resolveMediaUrl(b.image_url),
+                jump_link: b.jump_link,
+              }))} />
+            </View>
+          )}
 
-          {FEATURES.aiConsult && (
+          {!newsExpanded && FEATURES.aiConsult && (
             <View className={styles.aiCard} onClick={handleGoConsult}>
               <View className={styles.aiCardLeft}>
                 <Avatar size='44' icon={<Icon name='sparkles' size={20} color='#1677FF' />} background='#E6F7FF' />
@@ -251,18 +277,20 @@ export default function IndexPage() {
             </View>
           )}
 
-          {tickerArticle && (
+          {!newsExpanded && tickerArticle && (
             <NewsTicker article={tickerArticle} onClick={handleOpenArticle} />
           )}
 
-          <KingKongZone items={kingKongItems} columns={kingKongItems.length === 3 ? 3 : 2} onItemClick={handleKingKongClick} />
+          {!newsExpanded && (
+            <KingKongZone items={kingKongItems} columns={kingKongItems.length === 3 ? 3 : 2} onItemClick={handleKingKongClick} />
+          )}
 
-          {/* 板块导航位于金刚区（各专区宫格）下方，列表内容随 tab 切换 */}
+          {/* 板块导航：普通模式位于金刚区下方；资讯全屏时紧跟页头，点其它板块即退回普通首页 */}
           {sectionTabs.length > 0 && (
             <HomeSectionTabs
               tabs={sectionTabs}
               activeKey={activeSection}
-              onChange={setActiveSection}
+              onChange={handleSectionChange}
             />
           )}
 
