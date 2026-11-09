@@ -642,13 +642,6 @@ export async function getCompetitionTracks(): Promise<string[]> {
   return res.data?.tracks || []
 }
 
-export async function getJobs(): Promise<import('@/types').JobBrief[]> {
-  if (USE_MOCK) return []
-  const res = await get<{ items?: import('@/types').JobBrief[] }>('/api/jobs')
-  const data = res.data
-  return data?.items ?? []
-}
-
 export async function createTicket(data: { content: string }): Promise<{ id: string }> {
   if (USE_MOCK) return { id: 'mock_ticket' }
   const res = await post<{ id: string }>('/api/tickets', data as unknown as Record<string, unknown>)

@@ -8,7 +8,7 @@ import { FloatingService } from '@/components/FloatingService'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG, ZONE_ROUTES } from '@/constants/routes'
 import {
-  KEYWORD_TEACHER, KEYWORD_EXAM, KEYWORD_EMPLOYMENT,
+  KEYWORD_TEACHER, KEYWORD_EXAM,
   KEYWORD_COMPETITION, KEYWORD_ACTIVITY, KEYWORD_COURSE,
 } from '@/constants/keywords'
 import { getInitialMessages, fetchQuickQuestions } from '@/services/dataService'
@@ -17,12 +17,12 @@ import { safeNavigateBack } from '@/utils/navigation'
 import type { Message } from '@/types'
 import styles from './index.module.scss'
 
-type Intent = 'teacher' | 'exam' | 'employment' | 'competition' | 'activity' | 'course'
+type Intent = 'teacher' | 'exam' | 'competition' | 'activity' | 'course'
 
 const INTENT_RULES: { intent: Intent; keywords: readonly string[] }[] = [
   { intent: 'teacher', keywords: KEYWORD_TEACHER },
   { intent: 'exam', keywords: KEYWORD_EXAM },
-  { intent: 'employment', keywords: KEYWORD_EMPLOYMENT },
+  // 就业岗位意图已随就业专区下线移除（2026.11.09），相关提问走默认回复
   { intent: 'competition', keywords: KEYWORD_COMPETITION },
   { intent: 'activity', keywords: KEYWORD_ACTIVITY },
   { intent: 'course', keywords: KEYWORD_COURSE },
@@ -45,9 +45,6 @@ const RESPONSE_BUILDERS: Record<Intent, (id: number) => Message> = {
   exam: (id) => ({
     id, type: 'ai', text: STRINGS.INDEX_AI_EXAM,
     card: { type: 'exam', title: STRINGS.AI_EXAM_CARD_TITLE, description: STRINGS.AI_EXAM_CARD_DESC, price: '¥1,200', tag: STRINGS.AI_EXAM_CARD_TAG },
-  }),
-  employment: (id) => ({
-    id, type: 'ai', text: STRINGS.INDEX_AI_EMPLOYMENT,
   }),
   competition: (id) => ({
     id, type: 'ai', text: STRINGS.INDEX_AI_COMPETITION,

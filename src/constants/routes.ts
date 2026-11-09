@@ -72,7 +72,8 @@ export const ZONE_ROUTES: Record<string, string> = {
   learn: '/pages/training/index',
   compete: '/pages/activity-zone/index?tab=competition',
   activity: '/pages/activity-zone/index',
-  job: '/pages/activity-zone/index',
+  // 就业专区已关闭，原位由英才计划专区替代（ZonesContent 遗留专区宫格同步走英才 tab）
+  yingcai: '/pages/activity-zone/index?tab=yingcai',
 }
 
-export const ZONE_ROUTE_KEYS = ['exam', 'learn', 'compete', 'activity', 'job'] as const
+export const ZONE_ROUTE_KEYS = ['exam', 'learn', 'compete', 'activity', 'yingcai'] as const

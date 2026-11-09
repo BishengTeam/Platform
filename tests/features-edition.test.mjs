@@ -11,11 +11,13 @@ test('features.trim 冻结为 v1 提审口径（2026.10.21 提审版）', () => 
   // 2026.10.26：就业专区隐藏（employmentZone=false，首页板块 tab 与活动页「就业」tab 一并隐藏）。
   // 2026.11.04：除就业专区外其余入口全开（认证/AI咨询/活动tab/订单/视频登录/激活码/查成绩/积分兑换），
   // 仅保留 employmentZone=false。
+  // 2026.11.09：就业专区彻底关闭（无资质），employmentZone 开关退役，原位更名
+  // yingcaiZone（英才计划专区）；trim 归档口径该专区保持关闭（yingcaiZone=false）。
   assert.deepEqual({ ...FEATURES_TRIM }, {
     certRegistration: true,
     aiConsult: true,
     activityTab: true,
-    employmentZone: false,
+    yingcaiZone: false,
     orders: true,
     videoLogin: true,
     videoCodes: true,

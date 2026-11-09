@@ -14,7 +14,7 @@ export interface SafeNavigateBackOptions {
   beforeFallback?: () => void
 }
 
-export type ActivityZoneTab = 'activity' | 'competition' | 'employment'
+export type ActivityZoneTab = 'activity' | 'competition' | 'yingcai'
 
 const DEFAULT_FALLBACK_URL = `/${ROUTES.INDEX}`
 const TAB_ROUTES = new Set(TAB_BAR_CONFIG.map(item => `/${item.key}`))
@@ -67,7 +67,7 @@ export async function navigateToUrl(url: string): Promise<void> {
     if (isTabRoute(path)) {
       if (path === `/${ROUTES.ACTIVITY}`) {
         const tab = queryValue(normalized, 'tab')
-        if (tab && !['activity', 'competition', 'employment'].includes(tab)) {
+        if (tab && !['activity', 'competition', 'yingcai'].includes(tab)) {
           navigationNotice('目标标签不可用，请联系管理员')
           return
         }
@@ -75,8 +75,8 @@ export async function navigateToUrl(url: string): Promise<void> {
           navigationNotice('当前版本暂未开放活动')
           return
         }
-        if (tab === 'employment' && !FEATURES.employmentZone) {
-          navigationNotice('当前版本暂未开放就业专区')
+        if (tab === 'yingcai' && !FEATURES.yingcaiZone) {
+          navigationNotice('当前版本暂未开放英才计划')
           return
         }
         if (tab) {

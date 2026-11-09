@@ -1,10 +1,12 @@
 /**
- * 提审冻结口径（仅归档）：2026.11.04 除就业专区外其余入口全开。
- * 生产已统一 full（含就业专区），不再提供 trim 构建入口。
+ * 提审冻结口径（仅归档）：2026.11.09 英才计划专区关闭（yingcaiZone=false），
+ * 其余入口全开。生产已统一 full，不再提供 trim 构建入口。
  * 2026.10.22 口径调整：积分海报入口上线（points=true），积分页为只读态，
  * 兑换商城仍不开放（pointsExchange=false）。
- * 2026.10.26 口径调整：就业专区隐藏（employmentZone=false）。
- * 2026.11.04 口径调整：除就业专区（employmentZone=false）外其余入口全开。
+ * 2026.10.26 口径调整：就业专区隐藏（employmentZone=false，原位开关）。
+ * 2026.11.04 口径调整：除就业专区外其余入口全开。
+ * 2026.11.09 口径调整：就业专区彻底关闭（无资质），开关更名为英才计划
+ * 专区（yingcaiZone=false，该版无英才内容故关闭）；employmentZone 开关退役。
  * 本清单不得随手修改，tests/features-edition.test.mjs 有冻结断言拦防；
  * 恢复功能请改 features.full.ts，走全量构建。
  */
@@ -15,8 +17,8 @@ export const FEATURES_TRIM = {
   aiConsult: true,
   /** 发现页「活动」tab */
   activityTab: true,
-  /** 就业专区：false=首页板块 tab 与活动页「就业」tab 一并隐藏 */
-  employmentZone: false,
+  /** 英才计划专区：false=首页板块 tab 与发现页「英才计划」tab 一并隐藏 */
+  yingcaiZone: false,
   /** 我的页「订单」（认证/课程支付链路） */
   orders: true,
   /** 我的页「视频登录」 */

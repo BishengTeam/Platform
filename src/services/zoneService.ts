@@ -47,7 +47,6 @@ import type {
   ActivityBrief,
   CompetitionBrief,
   CompetitionMyRegistration,
-  JobBrief,
   CertificationResponse,
 } from '@/types'
 
@@ -98,11 +97,11 @@ export async function getHomeAggregation(): Promise<HomeAggregationResponse> {
           ],
           activities: homeActivities as unknown as ActivityBrief[],
         },
-        employment: {
+        yingcai: {
           items: [
-            { id: 7, zone_type: 'employment', title: '网络工程师', cover_url: null, description: 'H3C 合作伙伴招聘', sort_order: 0 },
-            { id: 8, zone_type: 'employment', title: '安全运维工程师', cover_url: null, description: '深信服生态企业', sort_order: 1 },
+            { id: 7, zone_type: 'yingcai', title: '英才计划宣讲会', cover_url: null, description: '英才计划活动宣传', sort_order: 0 },
           ],
+          yingcai_activities: homeActivities as unknown as ActivityBrief[],
         },
       },
     }
@@ -134,17 +133,11 @@ export async function getCourseList(): Promise<CourseBrief[]> {
   return items.map(item => ({ ...item, cover_url: resolveUrl(item.cover_url) }))
 }
 
-/** GET /api/activities — 活动列表 */
-export async function getActivityList(): Promise<ActivityBrief[]> {
+/** GET /api/activities — 活动列表（category='yingcai' 取英才计划活动，缺省为普通活动） */
+export async function getActivityList(params?: { category?: 'yingcai' }): Promise<ActivityBrief[]> {
   if (USE_MOCK) return []
-  const res = await getPublic<{ items?: ActivityBrief[] }>('/api/activities')
-  return res.data?.items ?? []
-}
-
-/** GET /api/jobs — 岗位列表 */
-export async function getJobList(): Promise<JobBrief[]> {
-  if (USE_MOCK) return []
-  const res = await getPublic<{ items?: JobBrief[] }>('/api/jobs')
+  const query = params?.category ? `?category=${params.category}` : ''
+  const res = await getPublic<{ items?: ActivityBrief[] }>(`/api/activities${query}`)
   return res.data?.items ?? []
 }
 
@@ -156,7 +149,7 @@ export async function getCertificationList(): Promise<CertificationResponse[]> {
 }
 
 // ================================================================
-// 活动报名 / 竞赛报名 / 就业投递
+// 活动报名 / 竞赛报名
 // ================================================================
 
 /** POST /api/activities/{activity_id}/enroll — 活动报名 */

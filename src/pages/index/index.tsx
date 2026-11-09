@@ -9,7 +9,6 @@ import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import { HomeSectionTabs } from '@/components/HomeSectionTabs'
 import { HomeCard } from '@/components/HomeCard'
-import { JobGrid } from '@/components/JobGrid'
 import { ZoneBanner } from '@/components/ZoneBanner'
 import { AdPopup } from '@/components/AdPopup'
 import { KingKongZone } from '@/components/KingKongZone'
@@ -160,8 +159,8 @@ export default function IndexPage() {
     Taro.switchTab({ url: `/${ROUTES.ACTIVITY}` })
   }
 
-  const handleGoEmploymentZone = () => {
-    Taro.setStorageSync('activityZoneTab', 'employment')
+  const handleGoYingcaiZone = () => {
+    Taro.setStorageSync('activityZoneTab', 'yingcai')
     Taro.switchTab({ url: `/${ROUTES.ACTIVITY}` })
   }
 
@@ -171,9 +170,9 @@ export default function IndexPage() {
     if (cert) navigateToCertRegistration(cert)
   }
 
-  // 活动/就业板块由后台内容驱动：管理端上架才出现，下架自动隐藏。
+  // 活动/英才板块由后台内容驱动：管理端上架才出现，下架自动隐藏。
   const activities = homeData?.zones['activity']?.activities ?? []
-  const employmentJobs = homeData?.zones['employment']?.jobs ?? []
+  const yingcaiActivities = homeData?.zones['yingcai']?.yingcai_activities ?? []
   // 在线课程同为主页内容驱动板块：后台配置了课程才显示
   const studyCourses = homeData?.zones['study']?.courses ?? []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
@@ -197,11 +196,11 @@ export default function IndexPage() {
     if (studyCourses.length > 0) tabs.push({ key: 'study', label: STRINGS.INDEX_ONLINE_COURSES })
     if (competitionList.length > 0) tabs.push({ key: 'competition', label: STRINGS.ZONE_NAMES[2] })
     if (activities.length > 0) tabs.push({ key: 'activity', label: STRINGS.INDEX_TRAINING_ACTIVITIES })
-    if (FEATURES.employmentZone && employmentJobs.length > 0) tabs.push({ key: 'employment', label: STRINGS.ZONE_NAMES[4] })
+    if (FEATURES.yingcaiZone && yingcaiActivities.length > 0) tabs.push({ key: 'yingcai', label: STRINGS.INDEX_YINGCAI_TAB })
     // 新闻资讯固定排最右：同步到公众号推文才出现
     if (gzhArticles.length > 0) tabs.push({ key: 'news', label: STRINGS.INDEX_NEWS_TAB })
     return tabs
-  }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, employmentJobs.length, gzhArticles.length])
+  }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, yingcaiActivities.length, gzhArticles.length])
 
   // 后台下架导致当前 tab 消失时回落到第一个 tab
   useEffect(() => {
@@ -299,16 +298,8 @@ export default function IndexPage() {
               {activeSection === 'activity' && (
                 <HomeCard items={activities} onCardClick={handleGoActivityZone} />
               )}
-              {activeSection === 'employment' && (
-                <JobGrid
-                  items={employmentJobs.map((job) => ({
-                    id: job.id,
-                    title: job.title,
-                    location: job.location,
-                    salary: job.salary_range,
-                  }))}
-                  onCardClick={handleGoEmploymentZone}
-                />
+              {activeSection === 'yingcai' && (
+                <HomeCard items={yingcaiActivities} onCardClick={handleGoYingcaiZone} />
               )}
               {activeSection === 'news' && (
                 <HomeCard

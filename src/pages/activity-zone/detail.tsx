@@ -34,8 +34,12 @@ export default function ActivityDetailPage() {
       setLoading(false)
       return
     }
-    getActivityList()
-      .then((items) => setActivity(items.find((a) => a.id === activityId) ?? null))
+    // 公开活动列表已按专区分类隔离（缺省排除英才活动），详情页在两个列表里找 id
+    Promise.all([getActivityList(), getActivityList({ category: 'yingcai' })])
+      .then(([normal, yingcai]) => {
+        const all = [...normal, ...yingcai]
+        setActivity(all.find((a) => a.id === activityId) ?? null)
+      })
       .catch(() => setActivity(null))
       .finally(() => setLoading(false))
   }, [activityId])

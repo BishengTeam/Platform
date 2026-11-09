@@ -19,10 +19,10 @@ export const STRINGS = {
   INDEX_AI_COURSE: '根据 H3CNE 考试大纲，为您精选以下学习课程。建议先从基础课程开始，再逐步深入：',
   INDEX_AI_COMPETITION: '为您查询到近期竞赛信息，参与竞赛可获得实践经验和证书加分：',
   INDEX_AI_ACTIVITY: '活动专区正在筹备中，上线后第一时间通知你。可以先看看正在报名的竞赛或认证课程',
-  INDEX_AI_EMPLOYMENT: '岗位服务正在筹备中，欢迎先了解认证培训，提升就业竞争力',
   INDEX_AI_DEFAULT: '收到您的问题，我正在为您整理相关信息。\n\n您也可以直接访问下方专区获取更详细的内容，或继续向我提问。',
   INDEX_ONLINE_COURSES: '在线练习',
   INDEX_TRAINING_ACTIVITIES: '在线培训',
+  INDEX_YINGCAI_TAB: '英才计划',
   INDEX_VIEW_ALL: '全部',
   // ---- Zones Page ----
   ZONES_HEADER: '专区',
@@ -31,10 +31,11 @@ export const STRINGS = {
   ZONES_BANNER_BTN: '立即报名',
   ZONES_GRID_TITLE: '全部专区',
   ZONES_GRID_DETAIL: '查看详情',
-  ZONE_NAMES: ['认证专区', '学习专区', '竞赛专区', '活动专区', '就业专区'] as const,
+  // 就业专区已关闭（2026.11.09），第 5 位由英才计划专区原位替代
+  ZONE_NAMES: ['认证专区', '学习专区', '竞赛专区', '活动专区', '英才计划专区'] as const,
   INDEX_ACTIVITY_COMING_SOON: '功能还在开发中，敬请期待',
-  INDEX_EMPLOYMENT_PLACEHOLDER_TITLE: '岗位服务筹备中',
-  INDEX_EMPLOYMENT_PLACEHOLDER_DESC: '岗位上线后第一时间告诉你',
+  YINGCAI_EMPTY_TITLE: '英才计划暂无活动',
+  YINGCAI_EMPTY_DESC: '英才计划活动上线后第一时间通知你',
 
   // ---- Service Page ----
   SERVICE_HEADER: '人工客服',

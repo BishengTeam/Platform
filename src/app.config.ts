@@ -70,10 +70,6 @@ export default defineAppConfig({
       pages: ['profile', 'feedback', 'personal-info', 'personal-info-list', 'edit-profile', 'points', 'agreements', 'about', 'collections', 'exam-query', 'share', 'deactivate', 'exam-intention', 'contact-teachers', 'registrations', 'registration-detail', 'points-history', 'video-codes', 'video-login'],
     },
     {
-      root: 'pages/employment-zone',
-      pages: ['detail'],
-    },
-    {
       root: 'pages/competition',
       pages: ['detail', 'attachment'],
     },

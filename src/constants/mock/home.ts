@@ -6,7 +6,7 @@ export const zoneIcons: ZoneIcon[] = [
   { id: 'learn', name: STRINGS.ZONE_NAMES[1], icon: 'layout-template', color: '#597EF7', bg: '#F0F5FF' },
   { id: 'compete', name: STRINGS.ZONE_NAMES[2], icon: 'trophy', color: '#FA8C16', bg: '#FFF7E6' },
   { id: 'activity', name: STRINGS.ZONE_NAMES[3], icon: 'gift', color: '#722ED1', bg: '#F9F0FF' },
-  { id: 'job', name: STRINGS.ZONE_NAMES[4], icon: 'briefcase', color: '#13C2C2', bg: '#E6FFFB' },
+  { id: 'yingcai', name: STRINGS.ZONE_NAMES[4], icon: 'award', color: '#722ED1', bg: '#F9F0FF' },
 ]
 
 export const quickQuestions: string[] = [

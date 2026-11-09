@@ -43,7 +43,7 @@ const marketingPages = [
   '/pages/mine/registrations', '/pages/orders/index', '/pages/mine/contact-teachers',
   '/pages/mine/feedback', '/pages/mine/agreements', '/pages/mine/about',
   '/pages/ai-consult/index', '/pages/quiz/index',
-  '/pages/activity-zone/detail?id=7', '/pages/employment-zone/detail?id=9',
+  '/pages/activity-zone/detail?id=7',
 ]
 for (const url of marketingPages) {
   test(`marketing target dispatches to the correct navigation API: ${url}`, async () => {
@@ -54,7 +54,7 @@ for (const url of marketingPages) {
   })
 }
 
-for (const tab of ['activity', 'competition', 'employment']) {
+for (const tab of ['activity', 'competition', 'yingcai']) {
   test(`marketing Tab preserves ${tab} in the existing storage contract before switching`, async () => {
     const mock = installNavigationMock([])
     Taro.switchTab = async options => {
@@ -73,7 +73,7 @@ for (const tab of ['activity', 'competition', 'employment']) {
 
 test('marketing navigation clears stale Tab state and handles invalid or failed targets', async () => {
   const mock = installNavigationMock([])
-  mock.storage.set('activityZoneTab', 'employment')
+  mock.storage.set('activityZoneTab', 'yingcai')
   await navigateToUrl('/pages/activity-zone/index')
   assert.equal(mock.storage.has('activityZoneTab'), false)
   await navigateToUrl('/pages/activity-zone/index?tab=other')
@@ -153,7 +153,7 @@ test('activity-zone back passes the sub-tab only when fallback is needed', async
   ])
 
   const normalEntry = installNavigationMock([{ route: 'a' }, { route: 'b' }])
-  await goBackToActivityZone('employment')
+  await goBackToActivityZone('yingcai')
   assert.equal(normalEntry.storage.has('activityZoneTab'), false)
   assert.deepEqual(normalEntry.calls, [['navigateBack', undefined]])
 })
@@ -183,7 +183,6 @@ test('direct-entry pages keep business-specific fallbacks', async () => {
   const expectations = [
     ['src/pages/activity-zone/detail.tsx', "goBackToActivityZone('activity')"],
     ['src/pages/competition/detail.tsx', "goBackToActivityZone('competition')"],
-    ['src/pages/employment-zone/detail.tsx', "goBackToActivityZone('employment')"],
     ['src/pages/order-detail/index.tsx', "fallbackUrl: '/pages/orders/index'"],
     ['src/pages/registration/xuexin-guide.tsx', "fallbackUrl: '/pages/registration/category'"],
     ['src/pages/quiz/practice.tsx', "fallbackUrl: '/pages/training/index'"],

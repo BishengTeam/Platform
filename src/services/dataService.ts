@@ -60,7 +60,7 @@ export {
 // Zone
 export {
   getHomeAggregation, getCourseList, getActivityList,
-  getJobList, getCertificationList, getCompetitionList,
+  getCertificationList, getCompetitionList,
   enrollActivity, remindActivity, signupCompetition,
   getZoneIcons, getQuickQuestions, getInitialMessages,
   getContactList, getOrderItems, getProfileFunctions,
@@ -99,7 +99,7 @@ export {
   addCollection, removeCollection,
   getActivities, registerActivity,
   getCompetitionStats, getCompetitionTracks,
-  getJobs, createTicket, getTicketDetail,
+  createTicket, getTicketDetail,
   createShare, getShareInfo, getMediaUrl,
   assignCoupon, verifyCoupon, streamChatMessage,
   getPoster, getSharePoster, uploadToOss, getSystemMediaUrl,

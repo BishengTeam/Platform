@@ -138,18 +138,6 @@ export interface ActivityBrief {
   registration_deadline: string | null
 }
 
-/** 岗位简要 */
-export interface JobBrief {
-  id: number
-  title: string
-  company: string | null
-  location: string | null
-  salary_range: string | null
-  description: string | null
-  requirements: string | null
-  contact_info: string | null
-}
-
 /** 认证项目 */
 export interface CertificationResponse {
   id: number
@@ -182,10 +170,11 @@ export interface ZoneSectionData {
   items: ZoneBrief[]
   courses?: CourseBrief[] | null
   activities?: ActivityBrief[] | null
+  /** 英才计划专区活动（Activity category='yingcai'） */
+  yingcai_activities?: ActivityBrief[] | null
   certifications?: CertificationResponse[] | null
   trainings?: TrainingBrief[] | null
   competitions?: CompetitionBrief[] | null
-  jobs?: JobBrief[] | null
 }
 
 /** 公众号推文简要 — 首页资讯栏（后端定时同步公众号发布列表落库） */
@@ -204,7 +193,7 @@ export interface GzhArticleBrief {
 /** GET /api/zones 首页聚合 */
 export interface HomeAggregationResponse {
   banners: BannerBrief[]
-  zones: Record<string, ZoneSectionData> // key = "cert"|"study"|"competition"|"activity"|"employment"
+  zones: Record<string, ZoneSectionData> // key = "cert"|"study"|"competition"|"activity"|"yingcai"
   /** 登录后弹窗海报：后端取时间窗内 sort 最小的一条，无则缺省 */
   popup?: PopupBrief | null
   /** 公众号资讯：最新 10 条，无则缺省（首页 ticker 整条隐藏、新闻资讯 tab 不出现） */

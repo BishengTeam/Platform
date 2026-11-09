@@ -9,18 +9,18 @@ import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { FEATURES } from '@/constants/features'
-import { getActivityList, getJobList, getCompetitionList } from '@/services/dataService'
-import type { ActivityBrief, CompetitionBrief, JobBrief } from '@/types'
+import { getActivityList, getCompetitionList } from '@/services/dataService'
+import type { ActivityBrief, CompetitionBrief } from '@/types'
 import type { TagFilterItem } from '@/types/registration'
 import { resolveMediaUrl } from '@/utils/media'
 import styles from './index.module.scss'
 
-type MainTab = 'activity' | 'competition' | 'employment'
+type MainTab = 'activity' | 'competition' | 'yingcai'
 
-// v1 裁剪：「活动」tab 按开关隐藏，storage 回落校验也只认可见 tab，防止老用户被带回隐藏页
+// v1 裁剪：「活动」「英才计划」tab 按开关隐藏，storage 回落校验也只认可见 tab，防止老用户被带回隐藏页
 const VISIBLE_MAIN_TABS: MainTab[] = (
-  ['activity', 'competition', 'employment'] as MainTab[]
-).filter(tab => (tab !== 'activity' || FEATURES.activityTab) && (tab !== 'employment' || FEATURES.employmentZone))
+  ['activity', 'competition', 'yingcai'] as MainTab[]
+).filter(tab => (tab !== 'activity' || FEATURES.activityTab) && (tab !== 'yingcai' || FEATURES.yingcaiZone))
 
 export default function ActivityZonePage() {
   const [mainTab, setMainTab] = useState<MainTab>('competition')
@@ -35,13 +35,14 @@ export default function ActivityZonePage() {
   })
   const [activityTag, setActivityTag] = useState<string>(STRINGS.ACTIVITY_TAG_ALL)
   const [competitionTag, setCompetitionTag] = useState<string>(STRINGS.COMPETITION_TAG_ALL)
+  const [yingcaiTag, setYingcaiTag] = useState<string>(STRINGS.ACTIVITY_TAG_ALL)
 
   const [allActivities, setAllActivities] = useState<ActivityBrief[]>([])
   const [allCompetitions, setAllCompetitions] = useState<CompetitionBrief[]>([])
-  const [allJobs, setAllJobs] = useState<JobBrief[]>([])
+  const [allYingcai, setAllYingcai] = useState<ActivityBrief[]>([])
   const [activitiesLoaded, setActivitiesLoaded] = useState(false)
   const [competitionsLoaded, setCompetitionsLoaded] = useState(false)
-  const [jobsLoaded, setJobsLoaded] = useState(false)
+  const [yingcaiLoaded, setYingcaiLoaded] = useState(false)
 
   const load = useCallback(() => {
     return Promise.all([
@@ -51,25 +52,35 @@ export default function ActivityZonePage() {
       getCompetitionList().then((data) => {
         setAllCompetitions(data)
       }).catch(() => {}).finally(() => setCompetitionsLoaded(true)),
-      getJobList().then((data) => {
-        setAllJobs(data)
-      }).catch(() => {}).finally(() => setJobsLoaded(true)),
+      // 英才计划活动（category=yingcai），与普通活动互不可见
+      getActivityList({ category: 'yingcai' }).then((data) => {
+        setAllYingcai(data)
+      }).catch(() => {}).finally(() => setYingcaiLoaded(true)),
     ])
   }, [])
 
   useEffect(() => { void load() }, [load])
 
-  // Activity time-based grouping
-  const { ongoingActivities, upcomingActivities, endedActivities } = useMemo(() => {
+  // Activity time-based grouping（普通活动与英才活动同构，共用分组逻辑）
+  const groupActivitiesByTime = (items: ActivityBrief[]) => {
     const now = new Date()
-    const ongoing = allActivities.filter(a => {
+    const ongoing = items.filter(a => {
       if (!a.start_time || !a.end_time) return false
       return new Date(a.start_time) <= now && new Date(a.end_time) >= now
     })
-    const upcoming = allActivities.filter(a => a.start_time && new Date(a.start_time) > now)
-    const ended = allActivities.filter(a => a.end_time && new Date(a.end_time) < now)
-    return { ongoingActivities: ongoing, upcomingActivities: upcoming, endedActivities: ended }
-  }, [allActivities])
+    const upcoming = items.filter(a => a.start_time && new Date(a.start_time) > now)
+    const ended = items.filter(a => a.end_time && new Date(a.end_time) < now)
+    return { ongoing, upcoming, ended }
+  }
+
+  const { ongoingActivities, upcomingActivities, endedActivities } = useMemo(
+    () => groupActivitiesByTime(allActivities),
+    [allActivities],
+  )
+  const { ongoing: ongoingYingcai, upcoming: upcomingYingcai, ended: endedYingcai } = useMemo(
+    () => groupActivitiesByTime(allYingcai),
+    [allYingcai],
+  )
 
   const activityData = useMemo(() => {
     if (activityTag === STRINGS.ACTIVITY_TAG_ALL) return allActivities
@@ -78,17 +89,28 @@ export default function ActivityZonePage() {
     return endedActivities
   }, [activityTag, allActivities, ongoingActivities, upcomingActivities, endedActivities])
 
+  // 英才活动筛选维度与活动 tab 相同（全部/进行中/未开始/已结束）
+  const yingcaiData = useMemo(() => {
+    if (yingcaiTag === STRINGS.ACTIVITY_TAG_ALL) return allYingcai
+    if (yingcaiTag === STRINGS.ACTIVITY_ONGOING) return ongoingYingcai
+    if (yingcaiTag === STRINGS.ACTIVITY_UPCOMING) return upcomingYingcai
+    return endedYingcai
+  }, [yingcaiTag, allYingcai, ongoingYingcai, upcomingYingcai, endedYingcai])
+
   // 竞赛赛事列表
   const competitionData = useMemo(() => allCompetitions, [allCompetitions])
 
-  // 就业岗位：无有效筛选维度，直接展示全部
-  const employmentData = useMemo(() => allJobs, [allJobs])
-
-  const getActivityStatusInfo = (item: ActivityBrief) => {
-    if (ongoingActivities.some(a => a.id === item.id)) {
+  const getActivityStatusInfo = (
+    item: ActivityBrief,
+    groups: { ongoing: ActivityBrief[]; upcoming: ActivityBrief[] } = {
+      ongoing: ongoingActivities,
+      upcoming: upcomingActivities,
+    },
+  ) => {
+    if (groups.ongoing.some(a => a.id === item.id)) {
       return { label: STRINGS.ACTIVITY_ONGOING, color: '#1677FF' }
     }
-    if (upcomingActivities.some(a => a.id === item.id)) {
+    if (groups.upcoming.some(a => a.id === item.id)) {
       return { label: STRINGS.ACTIVITY_UPCOMING, color: '#FA8C16' }
     }
     return { label: STRINGS.ACTIVITY_ENDED, color: '#999999' }
@@ -111,13 +133,17 @@ export default function ActivityZonePage() {
 
   const currentActiveTag = mainTab === 'activity'
     ? activityTag
-    : competitionTag
+    : mainTab === 'yingcai'
+      ? yingcaiTag
+      : competitionTag
 
   const onTagChange = mainTab === 'activity'
     ? setActivityTag
-    : setCompetitionTag
+    : mainTab === 'yingcai'
+      ? setYingcaiTag
+      : setCompetitionTag
 
-  // Hardcoded time-based tag filters for activity tab
+  // Hardcoded time-based tag filters for activity tab（英才 tab 复用同一组筛选）
   const activityTagFilters: TagFilterItem[] = [
     { label: STRINGS.ACTIVITY_TAG_ALL, activeColor: '#722ED1', activeBg: '#722ED1', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
     { label: STRINGS.ACTIVITY_ONGOING, activeColor: '#1677FF', activeBg: '#1677FF', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
@@ -130,25 +156,23 @@ export default function ActivityZonePage() {
     { label: STRINGS.COMPETITION_TAG_ALL, activeColor: '#FA8C16', activeBg: '#FA8C16', activeText: '#ffffff', inactiveBg: '#F0F5FF' },
   ]
 
-  // Employment tag filters (matching employment-zone page style)
-  const currentTagFilters = mainTab === 'activity'
+  const currentTagFilters = mainTab === 'activity' || mainTab === 'yingcai'
     ? activityTagFilters
-    : mainTab === 'competition'
-      ? competitionTagFilters
-      : []
+    : competitionTagFilters
 
   const mainTabs = VISIBLE_MAIN_TABS.map(tab => ({
     key: tab,
-    label: tab === 'activity' ? '活动' : tab === 'competition' ? '竞赛' : '就业',
+    label: tab === 'activity' ? '活动' : tab === 'competition' ? '竞赛' : STRINGS.INDEX_YINGCAI_TAB,
   }))
 
   const showActivityEmpty = activitiesLoaded && allActivities.length === 0
   const showCompetitionEmpty = competitionsLoaded && allCompetitions.length === 0
-  const showEmploymentEmpty = jobsLoaded && allJobs.length === 0
+  const showYingcaiEmpty = yingcaiLoaded && allYingcai.length === 0
   // 空态时隐藏筛选标签，避免出现一排筛选 + 空白列表
   const showTagFilter =
     (mainTab === 'competition' && !showCompetitionEmpty) ||
-    (mainTab === 'activity' && !showActivityEmpty)
+    (mainTab === 'activity' && !showActivityEmpty) ||
+    (mainTab === 'yingcai' && !showYingcaiEmpty)
 
   return (
     <>
@@ -230,28 +254,30 @@ export default function ActivityZonePage() {
               )
             )}
 
-            {mainTab === 'employment' && (
-              showEmploymentEmpty ? (
+            {mainTab === 'yingcai' && (
+              showYingcaiEmpty ? (
                 <EmptyState
-                  icon='briefcase'
-                  title={STRINGS.EMPLOYMENT_EMPTY_TITLE}
-                  description={STRINGS.EMPLOYMENT_EMPTY_DESC}
+                  icon='award'
+                  title={STRINGS.YINGCAI_EMPTY_TITLE}
+                  description={STRINGS.YINGCAI_EMPTY_DESC}
                 />
               ) : (
               <View className={styles.cardList}>
-                {employmentData.map((job) => {
+                {yingcaiData.map((item) => {
+                  const status = getActivityStatusInfo(item, {
+                    ongoing: ongoingYingcai,
+                    upcoming: upcomingYingcai,
+                  })
                   return (
                     <ZoneCard
-                      key={job.id}
-                      title={job.title}
-                      subtitle={job.company ?? ''}
-                      tags={[job.location ? `工作地点：${job.location}` : '']}
-                      price={job.salary_range ?? ''}
-                      buttonText='了解详情'
-                      buttonVariant='secondary'
-                      buttonColor='#13C2C2'
+                      key={`yingcai-${item.id}`}
+                      coverUrl={resolveMediaUrl(item.cover_url)}
+                      title={item.title}
+                      statusLabel={status.label}
+                      statusColor={status.color}
+                      isFaded={status.label === STRINGS.ACTIVITY_ENDED}
                       onCardClick={() => {
-                        Taro.navigateTo({ url: `/pages/employment-zone/detail?id=${job.id}` })
+                        Taro.navigateTo({ url: `/pages/activity-zone/detail?id=${item.id}` })
                       }}
                     />
                   )
