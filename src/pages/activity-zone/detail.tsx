@@ -21,6 +21,7 @@ export default function ActivityDetailPage() {
   const activityId = Number(params?.id)
   const [activity, setActivity] = useState<ActivityBrief | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isYingcai, setIsYingcai] = useState(false)
   const [reminded, setReminded] = useState(false)
   const [enrollOpen, setEnrollOpen] = useState(false)
   const [name, setName] = useState('')
@@ -35,10 +36,12 @@ export default function ActivityDetailPage() {
       return
     }
     // 公开活动列表已按专区分类隔离（缺省排除英才活动），详情页在两个列表里找 id
+    // 英才活动命中英才列表时置 isYingcai：详情页不展示「开赛提醒」（英才活动纯展示，无提醒）
     Promise.all([getActivityList(), getActivityList({ category: 'yingcai' })])
       .then(([normal, yingcai]) => {
-        const all = [...normal, ...yingcai]
-        setActivity(all.find((a) => a.id === activityId) ?? null)
+        const yingcaiHit = yingcai.find((a) => a.id === activityId)
+        setActivity(yingcaiHit ?? normal.find((a) => a.id === activityId) ?? null)
+        setIsYingcai(yingcaiHit != null)
       })
       .catch(() => setActivity(null))
       .finally(() => setLoading(false))
@@ -183,9 +186,11 @@ export default function ActivityDetailPage() {
             <Button variant='primary' onClick={openEnroll} className={styles.actionBtn}>
               {enrolled ? '已报名' : '立即报名'}
             </Button>
-            <Button variant='secondary' onClick={handleRemind} className={styles.actionBtn}>
-              {reminded ? '已设提醒' : '开赛提醒'}
-            </Button>
+            {!isYingcai && (
+              <Button variant='secondary' onClick={handleRemind} className={styles.actionBtn}>
+                {reminded ? '已设提醒' : '开赛提醒'}
+              </Button>
+            )}
           </View>
         </View>
       )}
