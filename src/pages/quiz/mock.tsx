@@ -121,6 +121,8 @@ export default function QuizMockPage() {
   const [textDrafts, setTextDrafts] = useState<Record<number, string[] | string>>({})
   const [activePairLeft, setActivePairLeft] = useState(0)
   const [actionBusy, setActionBusy] = useState(false)
+  // 交卷弹窗选「继续作答」后置真：此后「下一题」优先跳下一道未作答题；未走此路径的正常作答保持顺序逐题
+  const [skipAnswered, setSkipAnswered] = useState(false)
   const [remaining, setRemaining] = useState(0)
   const [loadError, setLoadError] = useState('')
   const [terminalAction, setTerminalAction] = useState<TerminalActionFallback | null>(null)
@@ -492,7 +494,11 @@ export default function QuizMockPage() {
         if (!result.confirm) {
           // 继续作答必须落到实处：末题时底栏只有「交卷」入口，原地不动会反复触发本弹窗
           const firstUnansweredIndex = exam.questions.findIndex(question => question.user_answer === null)
-          if (firstUnansweredIndex >= 0) setCurrentIndex(firstUnansweredIndex)
+          if (firstUnansweredIndex >= 0) {
+            setCurrentIndex(firstUnansweredIndex)
+            // 此后进入跳未答题模式，直到前方无未答题可跳，自然回落顺序导航
+            setSkipAnswered(true)
+          }
           return
         }
         setActionBusy(true)
@@ -966,8 +972,16 @@ export default function QuizMockPage() {
           <View
             className={styles.navItem}
             onClick={() => {
-              if (currentIndex < inProgress.question_count - 1) setCurrentIndex(index => Math.min(inProgress.question_count - 1, index + 1))
-              else submit()
+              if (currentIndex < inProgress.question_count - 1) {
+                // 「继续作答」后优先跳下一道未作答题（只向后找不回绕），否则按序号前进
+                const nextUnanswered = skipAnswered
+                  ? inProgress.questions.findIndex((question, index) => index > currentIndex && question.user_answer === null)
+                  : -1
+                if (nextUnanswered >= 0) setCurrentIndex(nextUnanswered)
+                else setCurrentIndex(index => Math.min(inProgress.question_count - 1, index + 1))
+              } else {
+                submit()
+              }
             }}
           >
             <Icon name='quiz-next' size={22} color='#1677FF' />

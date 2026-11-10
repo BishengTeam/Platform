@@ -115,6 +115,8 @@ export default function QuizPracticePage() {
   const [essayDrafts, setEssayDrafts] = useState<Record<number, string>>({})
   const [essayAnswerVisible, setEssayAnswerVisible] = useState(false)
   const [actionBusy, setActionBusy] = useState(false)
+  // 交卷弹窗选「继续作答」后置真：此后「下一题」优先跳下一道未作答题；未走此路径的正常作答保持顺序逐题
+  const [skipAnswered, setSkipAnswered] = useState(false)
   const [collectionBusy, setCollectionBusy] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [drawerVisible, setDrawerVisible] = useState(false)
@@ -402,7 +404,11 @@ export default function QuizPracticePage() {
         if (!result.confirm) {
           // 继续作答必须落到实处：末题时底栏只有「交卷」入口，原地不动会反复触发本弹窗
           const firstUnanswered = session.questions.find(question => !question.answered)
-          if (firstUnanswered) setCurrentSessionQuestionId(firstUnanswered.session_question_id)
+          if (firstUnanswered) {
+            setCurrentSessionQuestionId(firstUnanswered.session_question_id)
+            // 此后进入跳未答题模式，直到前方无未答题可跳，自然回落顺序导航
+            setSkipAnswered(true)
+          }
           return
         }
         setActionBusy(true)
@@ -949,7 +955,9 @@ export default function QuizPracticePage() {
             className={styles.navItem}
             onClick={() => {
               if (session.questions.some(item => item.position > currentQuestion.position)) {
-                const next = session.questions.find(item => item.position > currentQuestion.position)
+                // 「继续作答」后优先跳下一道未作答题（只向后找不回绕），否则按序号前进
+                const later = session.questions.filter(item => item.position > currentQuestion.position)
+                const next = (skipAnswered ? later.find(item => !item.answered) : undefined) ?? later[0]
                 if (next) setCurrentSessionQuestionId(next.session_question_id)
               } else {
                 submit()
