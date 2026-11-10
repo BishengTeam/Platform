@@ -11,7 +11,11 @@ const edition = process.env.TARO_EDITION === 'trim' ? 'trim' : 'full'
 export default defineConfig<'vite'>(async (merge, { command }) => {
   // 首页认证快捷入口按显式开关显示（.env.production 已开启）：全量版生效，裁剪版因 certRegistration=false 不生成。
   const homeCertEntryVisible = process.env.TARO_APP_HOME_CERT_ENTRY_VISIBLE === 'true'
-  console.log(`\n==== weapp 构建 EDITION=${edition}${edition === 'trim' ? '（v1 提审裁剪清单）' : '（全量）'} ====\n`)
+  // 临时屏蔽口径：env 显式传 false 才生效（默认全开），叠加在版本清单之上，用于按需出屏蔽版构建。
+  const certZoneVisible = process.env.TARO_APP_CERT_ZONE_VISIBLE !== 'false'
+  const activityVisible = process.env.TARO_APP_ACTIVITY_VISIBLE !== 'false'
+  const studyCoursesVisible = process.env.TARO_APP_STUDY_COURSES_VISIBLE !== 'false'
+  console.log(`\n==== weapp 构建 EDITION=${edition}${edition === 'trim' ? '（v1 提审裁剪清单）' : '（全量）'} 认证专区=${certZoneVisible ? '开' : '屏蔽'} 活动=${activityVisible ? '开' : '屏蔽'} 在线练习=${studyCoursesVisible ? '开' : '屏蔽'} ====\n`)
   const baseConfig: UserConfigExport<'vite'> = {
     projectName: 'Platform',
     date: '2026-5-6',
@@ -31,6 +35,9 @@ export default defineConfig<'vite'>(async (merge, { command }) => {
       'process.env.TARO_APP_API_BASE': JSON.stringify(process.env.TARO_APP_API_BASE || ''),
       'process.env.TARO_EDITION': JSON.stringify(edition),
       'process.env.TARO_APP_HOME_CERT_ENTRY_VISIBLE': JSON.stringify(String(homeCertEntryVisible)),
+      'process.env.TARO_APP_CERT_ZONE_VISIBLE': JSON.stringify(String(certZoneVisible)),
+      'process.env.TARO_APP_ACTIVITY_VISIBLE': JSON.stringify(String(activityVisible)),
+      'process.env.TARO_APP_STUDY_COURSES_VISIBLE': JSON.stringify(String(studyCoursesVisible)),
     },
     copy: {
       patterns: [

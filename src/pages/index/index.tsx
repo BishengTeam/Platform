@@ -19,7 +19,7 @@ import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
-import { FEATURES, homeCertEntryVisible } from '@/constants/features'
+import { FEATURES, homeCertEntryVisible, studyCoursesVisible } from '@/constants/features'
 import { getHomeQuickEntries } from '@/constants/homeEntries'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
@@ -60,9 +60,6 @@ const DEFAULT_CERT_CARD_META = {
   tagColor: '#1677FF',
 }
 
-/** 滚动容器顶部锚点：资讯全屏切换后内容高度变化，用 scroll-into-view 把视口带回顶部 */
-const HOME_TOP_ANCHOR_ID = 'homeTopAnchor'
-
 /** 「今日不再弹出」的本地存储 key，按天失效 */
 function popupDismissKey(id: number): string {
   const d = new Date()
@@ -98,11 +95,6 @@ export default function IndexPage() {
   // 每次冷启动只在首次拿到聚合数据时尝试弹窗，下拉刷新不重复触发
   const popupShownRef = useRef(false)
   const [activeSection, setActiveSection] = useState<string>('cert')
-  // 资讯全屏视图（2026-11-09 甲方要求）：进入资讯板块时隐藏 banner/AI 卡/跑马灯/金刚区，
-  // 页头下直接是板块导航 + 资讯列表，整屏都是资讯内容。
-  const [newsFullScreen, setNewsFullScreen] = useState(false)
-  // 全屏切换后内容高度骤变，切回其它板块/进入全屏时用顶部锚点把滚动位置归零
-  const [scrollAnchor, setScrollAnchor] = useState('')
 
   const loadHome = useCallback(() => {
     return getHomeAggregation().then((data) => {
@@ -136,11 +128,9 @@ export default function IndexPage() {
   }
 
   const handleKingKongClick = (item: KingKongItem) => {
-    // 新闻资讯没有独立页面：点击切到资讯板块并进入全屏视图（整屏资讯，切其它板块退出）
+    // 新闻资讯没有独立页面：点击切到资讯板块（2026-11-10 起取消全屏模式，金刚区/banner 常驻）
     if (item.tab === 'news') {
       setActiveSection('news')
-      setNewsFullScreen(true)
-      setScrollAnchor(HOME_TOP_ANCHOR_ID)
       return
     }
     if (!item.url) return
@@ -181,10 +171,11 @@ export default function IndexPage() {
   }
 
   // 活动/英才板块由后台内容驱动：管理端上架才出现，下架自动隐藏。
-  const activities = homeData?.zones['activity']?.activities ?? []
+  // 活动内容按 FEATURES.activityTab 门控（TARO_APP_ACTIVITY_VISIBLE=false）：首页板块/金刚区入口与活动页「活动」子tab 同开关。
+  const activities = FEATURES.activityTab ? homeData?.zones['activity']?.activities ?? [] : []
   const yingcaiActivities = homeData?.zones['yingcai']?.yingcai_activities ?? []
-  // 在线课程同为主页内容驱动板块：后台配置了课程才显示
-  const studyCourses = homeData?.zones['study']?.courses ?? []
+  // 在线课程同为主页内容驱动板块：后台配置了课程才显示；TARO_APP_STUDY_COURSES_VISIBLE=false 时整块屏蔽（学习 tab 不受影响）
+  const studyCourses = studyCoursesVisible ? homeData?.zones['study']?.courses ?? [] : []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
   // 资讯：后端同步到公众号推文才显示；无数据（含接口失败）ticker 整条隐藏、新闻 tab 不出现
   const gzhArticles = homeData?.gzh_articles ?? []
@@ -203,7 +194,7 @@ export default function IndexPage() {
   const sectionTabs = useMemo(() => {
     const tabs: { key: string; label: string }[] = []
     if (FEATURES.certRegistration && certificationCards.length > 0) tabs.push({ key: 'cert', label: STRINGS.ZONE_NAMES[0] })
-    if (studyCourses.length > 0) tabs.push({ key: 'study', label: STRINGS.INDEX_ONLINE_COURSES })
+    if (studyCoursesVisible && studyCourses.length > 0) tabs.push({ key: 'study', label: STRINGS.INDEX_ONLINE_COURSES })
     if (competitionList.length > 0) tabs.push({ key: 'competition', label: STRINGS.ZONE_NAMES[2] })
     if (activities.length > 0) tabs.push({ key: 'activity', label: STRINGS.INDEX_TRAINING_ACTIVITIES })
     if (FEATURES.yingcaiZone && yingcaiActivities.length > 0) tabs.push({ key: 'yingcai', label: STRINGS.INDEX_YINGCAI_TAB })
@@ -212,56 +203,46 @@ export default function IndexPage() {
     return tabs
   }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, yingcaiActivities.length, gzhArticles.length])
 
-  // 后台下架导致当前 tab 消失时回落到第一个 tab（资讯全屏一并退出）
+  // 后台下架导致当前 tab 消失时回落到第一个 tab
   useEffect(() => {
     if (sectionTabs.length > 0 && !sectionTabs.some(tab => tab.key === activeSection)) {
       setActiveSection(sectionTabs[0].key)
-      setNewsFullScreen(false)
-      setScrollAnchor('')
     }
   }, [sectionTabs, activeSection])
 
-  // 板块导航切换：资讯进入全屏，其它板块退回普通首页（banner/金刚区恢复显示）
+  // 板块导航切换：普通板块切换，金刚区/banner 常驻（2026-11-10 取消资讯全屏模式）
   const handleSectionChange = (key: string) => {
     setActiveSection(key)
-    setNewsFullScreen(key === 'news')
-    setScrollAnchor(key === 'news' ? HOME_TOP_ANCHOR_ID : '')
   }
-
-  // 渲染口径：仅当还有其它板块 tab 可切回时才全屏，避免只剩资讯一个 tab 时无路可退
-  const newsExpanded = newsFullScreen && sectionTabs.length > 1
 
   const kingKongItems = useMemo(() => getHomeQuickEntries({
     homeCertEntryVisible,
     certRegistration: FEATURES.certRegistration,
     hasActivities: activities.length > 0,
+    hasYingcai: FEATURES.yingcaiZone && yingcaiActivities.length > 0,
     hasNews: gzhArticles.length > 0,
-  }), [activities.length, gzhArticles.length])
+  }), [activities.length, yingcaiActivities.length, gzhArticles.length])
 
   return (
     <>
       <View className={styles.page}>
         <PageHeader title={STRINGS.INDEX_PAGE_TITLE} />
 
-        <RefreshableScrollView className={styles.main} onRefresh={loadHome} scrollIntoView={scrollAnchor}>
-          <View id={HOME_TOP_ANCHOR_ID} />
+        <RefreshableScrollView className={styles.main} onRefresh={loadHome}>
           {homeError && <View className={styles.browseNotice} onClick={() => void loadHome()}>首页加载失败，点击重试</View>}
           {!isLoggedIn && <View className={styles.browseNotice} onClick={() => void requireLogin(loginIntent?.target || '/pages/index/index')}>
             {loginIntent?.parked ? `${loginIntent.purpose}，点击继续办理` : '先浏览，使用个人服务时再登录 · 微信登录／注册'}
           </View>}
-          {/* 资讯全屏时隐藏 banner/AI 卡/跑马灯/金刚区：页头下直接是板块导航 + 资讯列表 */}
-          {!newsExpanded && (
-            <View className={styles.bannerWrap}>
-              <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
-                id: b.id,
-                title: '',
-                image_url: resolveMediaUrl(b.image_url),
-                jump_link: b.jump_link,
-              }))} />
-            </View>
-          )}
+          <View className={styles.bannerWrap}>
+            <ZoneBanner items={(homeData?.banners ?? []).map(b => ({
+              id: b.id,
+              title: '',
+              image_url: resolveMediaUrl(b.image_url),
+              jump_link: b.jump_link,
+            }))} />
+          </View>
 
-          {!newsExpanded && FEATURES.aiConsult && (
+          {FEATURES.aiConsult && (
             <View className={styles.aiCard} onClick={handleGoConsult}>
               <View className={styles.aiCardLeft}>
                 <Avatar size='44' icon={<Icon name='sparkles' size={20} color='#1677FF' />} background='#E6F7FF' />
@@ -277,15 +258,13 @@ export default function IndexPage() {
             </View>
           )}
 
-          {!newsExpanded && tickerArticle && (
+          {tickerArticle && (
             <NewsTicker article={tickerArticle} onClick={handleOpenArticle} />
           )}
 
-          {!newsExpanded && (
-            <KingKongZone items={kingKongItems} columns={kingKongItems.length === 3 ? 3 : 2} onItemClick={handleKingKongClick} />
-          )}
+          <KingKongZone items={kingKongItems} columns={(kingKongItems.length === 2 || kingKongItems.length === 4) ? 2 : 3} onItemClick={handleKingKongClick} />
 
-          {/* 板块导航：普通模式位于金刚区下方；资讯全屏时紧跟页头，点其它板块即退回普通首页 */}
+          {/* 板块导航：位于金刚区下方（2026-10-15 甲方指定位置），随页面内容滚动 */}
           {sectionTabs.length > 0 && (
             <HomeSectionTabs
               tabs={sectionTabs}
@@ -300,7 +279,7 @@ export default function IndexPage() {
               {activeSection === 'cert' && FEATURES.certRegistration && (
                 <HomeCard items={certificationCards} onCardClick={handleCertCardClick} />
               )}
-              {activeSection === 'study' && (
+              {activeSection === 'study' && studyCoursesVisible && (
                 <HomeCard items={studyCourses} onCardClick={handleGoStudyZone} />
               )}
               {activeSection === 'competition' && (

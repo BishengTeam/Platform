@@ -38,16 +38,16 @@ test('activity zone defaults to competition and shows preparing empty states', a
 test('home activity and employment surfaces follow backend content visibility', async () => {
   const source = await readFile(file('pages/index/index.tsx'), 'utf8')
   // 活动入口只随可用内容出现，无活动不补占位。
-  // 岗位不设金刚区入口；2026-11-09 起就业专区关闭，英才计划原位替代且同样不设金刚区入口。
+  // 2026-11-09 起就业专区关闭；英才计划原位替代，同日起新增金刚区入口（有上架活动才出现，与活动入口同规则）。
   assert.match(source, /hasActivities: activities\.length > 0/)
-  const entries = getHomeQuickEntries({ homeCertEntryVisible: false, certRegistration: true, hasActivities: true })
+  assert.match(source, /hasYingcai: FEATURES\.yingcaiZone && yingcaiActivities\.length > 0/)
+  const entries = getHomeQuickEntries({ homeCertEntryVisible: false, certRegistration: true, hasActivities: true, hasYingcai: true })
   assert.equal(entries.find(item => item.tab === 'activity')?.url, '/pages/activity-zone/index')
+  assert.equal(entries.find(item => item.tab === 'yingcai')?.url, '/pages/activity-zone/index')
   assert.equal(entries.some(item => item.tab === 'employment'), false)
-  assert.equal(entries.some(item => item.tab === 'yingcai'), false)
   assert.doesNotMatch(source, /INDEX_ZONE_COMING_SOON|CERT_REG_PLACEHOLDER_ITEM/)
   const activeSource = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')
   assert.doesNotMatch(activeSource, /tab: 'employment'/)
-  assert.doesNotMatch(activeSource, /tab: 'yingcai'/)
   // 首页板块导航（2026-10-15 起）：活动/英才 tab 均按内容有无显示/隐藏。
   assert.match(source, /activities\.length > 0\) tabs\.push\(\{ key: 'activity'/)
   assert.match(source, /FEATURES\.yingcaiZone && yingcaiActivities\.length > 0\) tabs\.push\(\{ key: 'yingcai'/)
@@ -75,6 +75,8 @@ test('home waterfall replaced by content-driven section tabs', async () => {
   assert.match(source, /FEATURES\.yingcaiZone && yingcaiActivities\.length > 0\) tabs\.push\(\{ key: 'yingcai'/)
   // 后台下架导致当前 tab 消失时回落到第一个 tab。
   assert.match(source, /!sectionTabs\.some\(tab => tab\.key === activeSection\)/)
+  // 2026-11-10 取消资讯全屏模式：金刚区/banner 常驻，不允许出现按 newsExpanded 隐藏内容的分支。
+  assert.doesNotMatch(source, /newsExpanded|newsFullScreen|tabsPinned|HOME_TOP_ANCHOR/)
   // 原五段堆叠板块的「查看全部」小节头不再渲染。
   assert.doesNotMatch(source, /SectionHeader/)
   // 组件：横排 tab 点击切换 + 激活态主色下划线。
@@ -87,7 +89,8 @@ test('home king-kong grid keeps the study zone entry visible', async () => {
   const entries = getHomeQuickEntries({ homeCertEntryVisible: false, certRegistration: true, hasActivities: false })
   assert.equal(entries.find(item => item.name === STRINGS.INDEX_ZONE_STUDY)?.url, '/pages/training/index')
   assert.match(source, /getHomeQuickEntries\(\{/)
-  assert.match(source, /columns=\{kingKongItems\.length === 3 \? 3 : 2\}/)
+  // 列数规则（2026.11.09 起入口最多 6 个）：2/4 个用两列（2×1、2×2），3 个三列，5/6 个三列（3+2、3×2）。
+  assert.match(source, /columns=\{\(kingKongItems\.length === 2 \|\| kingKongItems\.length === 4\) \? 2 : 3\}/)
   assert.doesNotMatch(source, /学习专区暂时隐藏/)
 })
 
