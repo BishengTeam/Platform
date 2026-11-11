@@ -99,6 +99,8 @@ export interface CompetitionBrief {
   show_signup?: boolean
   tracks: CompetitionTrackBrief[]
   custom_fields: CompetitionCustomField[] | null
+  /** 绑定的练习题库；仅详情接口返回，后端未返回（旧版本）或未绑定时不显示入口 */
+  quiz_library?: { id: number; name: string } | null
   created_at: string
 }
 

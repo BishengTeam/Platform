@@ -14,6 +14,27 @@
   padding: 24px;
 }
 
+// 绑定了练习题库时内容区让位固定底栏
+.detailWithFooter {
+  padding: 24px 24px calc(140px + env(safe-area-inset-bottom));
+}
+
+// 固定底栏：前往题库练习（照 registration-detail 的 actionFooter 样式）
+.actionFooter {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  padding: 20px 24px calc(20px + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, .06);
+}
+
+.footerBtn {
+  flex: 1;
+}
+
 .cover {
   width: 100%;
   height: 320px;

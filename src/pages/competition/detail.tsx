@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth'
 import { getToken, getAuthSessionId } from '@/utils/authState'
-import { requireLogin } from '@/utils/loginCoordinator'
+import { requireLogin, navigateWithLogin } from '@/utils/loginCoordinator'
 import { useEffect, useState } from 'react'
 import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
@@ -17,6 +17,7 @@ import {
   getMyCompetitionRegistrations,
   signupCompetition,
 } from '@/services/zoneService'
+import { ROUTES } from '@/constants/routes'
 import { resolveMediaUrl } from '@/utils/media'
 import { formatDate, formatDateTime } from '@/utils/format'
 import { goBackToActivityZone } from '@/utils/navigation'
@@ -78,6 +79,8 @@ export default function CompetitionDetailPage() {
   // 后台可按赛事关闭详情页“比赛时间/赛道报名”区块（未返回时按展示处理）
   const showSchedule = competition?.show_schedule !== false
   const showSignup = competition?.show_signup !== false
+  // 后台绑定的练习题库（仅已发布且开启用户入口的题库由后端透出）
+  const practiceLibrary = competition?.quiz_library ?? null
 
   const submitEnroll = async () => {
     if (!enrollTrack || submitting) return
@@ -130,7 +133,7 @@ export default function CompetitionDetailPage() {
       {!loading && !competition && <View className={styles.placeholder}>赛事不存在或未发布</View>}
 
       {!loading && competition && (
-        <View className={styles.detail}>
+        <View className={practiceLibrary ? styles.detailWithFooter : styles.detail}>
           {competition.poster_url ? (
             // 长图海报完整展示；不接预览/长按菜单，配合附件页落实「不可下载」
             <Image className={styles.poster} src={resolveMediaUrl(competition.poster_url)} mode='widthFix' />
@@ -244,6 +247,21 @@ export default function CompetitionDetailPage() {
               {submitting ? '提交中…' : '确认报名'}
             </Button>
           </View>
+        </View>
+      )}
+
+      {practiceLibrary && (
+        <View className={styles.actionFooter}>
+          <Button
+            variant='primary'
+            size='lg'
+            className={styles.footerBtn}
+            onClick={() => void navigateWithLogin(
+              `/${ROUTES.QUIZ_PREPARE}?scopeType=library&scopeId=${practiceLibrary.id}`,
+            )}
+          >
+            前往题库练习
+          </Button>
         </View>
       )}
     </View>
