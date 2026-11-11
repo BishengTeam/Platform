@@ -96,9 +96,7 @@ export default function EnrollmentNoticePage() {
         <Text className={styles.deadline}>报名截止：{enrollmentDeadline(notice.batch.apply_end)}</Text>
         {enrollmentCountdown(notice.batch.apply_end, Math.max(now, countdownNow)) && <Text className={styles.hint}>{enrollmentCountdown(notice.batch.apply_end, Math.max(now, countdownNow))}</Text>}
         <View className={styles.row}><Text>考试时间</Text><Text className={styles.rowValue}>{enrollmentDeadline(notice.batch.exam_date)}</Text></View>
-        {batch?.time_segments?.length ? batch.time_segments.map(seg => (
-          <View key={seg.id} className={styles.row}><Text>{seg.label}</Text><Text className={styles.rowValue}>{seg.start_time.slice(11, 16)} – {seg.end_time.slice(11, 16)}</Text></View>
-        )) : null}
+
         <View className={styles.row}><Text>考试地点</Text><Text className={styles.rowValue}>{notice.batch.exam_location || '待公布'}</Text></View>
         <View className={styles.row}><Text>报名费用</Text><Text className={styles.rowValue}>¥{(notice.price.price_cents / 100).toFixed(2)}</Text></View>
       </View><View className={styles.card}><Text className={styles.title}>{notice.notice.title}</Text><NoticeBlocks blocks={notice.notice.blocks} />
