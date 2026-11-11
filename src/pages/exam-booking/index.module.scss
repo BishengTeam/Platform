@@ -1,0 +1,116 @@
+.examBookingPage {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 40rpx;
+}
+.sectionTitle {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  padding: 24rpx 32rpx 8rpx;
+}
+.sectionSub {
+  display: block;
+  font-size: 26rpx;
+  color: #999;
+  padding: 0 32rpx 16rpx;
+}
+.loading {
+  display: block;
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+.empty {
+  text-align: center;
+  padding: 80rpx 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+.scheduleCard {
+  margin: 12rpx 32rpx;
+  padding: 28rpx 32rpx;
+  background: #fff;
+  border-radius: 16rpx;
+}
+.scheduleName {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+.scheduleDate {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+.dateGrid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 24rpx;
+}
+.dateItem {
+  width: calc(33.33% - 16rpx);
+  margin: 8rpx;
+  padding: 20rpx 0;
+  background: #fff;
+  border-radius: 12rpx;
+  text-align: center;
+  border: 2rpx solid #e8e8e8;
+}
+.dateText {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+.dateWeek {
+  display: block;
+  font-size: 22rpx;
+  color: #1677ff;
+  margin-top: 4rpx;
+}
+.slotCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12rpx 32rpx;
+  padding: 28rpx 32rpx;
+  background: #fff;
+  border-radius: 16rpx;
+}
+.slotCard.full { opacity: 0.5; }
+.slotInfo { display: flex; align-items: center; gap: 16rpx; }
+.slotLabel { font-size: 30rpx; font-weight: 600; color: #333; }
+.slotTime { font-size: 28rpx; color: #666; }
+.slotRemaining { font-size: 26rpx; color: #52c41a; font-weight: 500; }
+.slotRemaining.full { color: #999; }
+.noticeCard {
+  margin: 24rpx 32rpx;
+  padding: 24rpx 32rpx;
+  background: #fff7e6;
+  border-radius: 16rpx;
+}
+.noticeTitle {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #d48806;
+  margin-bottom: 12rpx;
+}
+.noticeText { font-size: 26rpx; color: #666; line-height: 1.6; }
+.successCard { text-align: center; padding: 120rpx 40rpx; }
+.successIcon { font-size: 80rpx; }
+.successTitle {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-top: 24rpx;
+}
+.successInfo { display: block; font-size: 28rpx; color: #666; margin-top: 12rpx; }
+.successActions { margin-top: 48rpx; }
+.actionLink { font-size: 28rpx; color: #1677ff; }
