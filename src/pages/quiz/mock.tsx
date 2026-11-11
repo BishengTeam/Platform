@@ -302,12 +302,19 @@ export default function QuizMockPage() {
 
   const selectedLibraryId = selectedNodes[0]?.libraryId ?? null
   const unionQuestionCount = useMemo(() => {
-    const pointIds = new Set<number>()
-    for (const node of selectedNodes) {
-      for (const pointId of node.pointIds) pointIds.add(pointId)
-    }
+    // quiz023：模块直挂题不在 pointIds 集合里——知识点节点仍按点计数去重，
+    // 库/模块节点直接取自身题量（跨节点重叠由创建时服务端最终校验兜底）。
+    const seenPoints = new Set<number>()
     let total = 0
-    for (const pointId of pointIds) total += pointQuestionCounts.get(pointId) ?? 0
+    for (const node of selectedNodes) {
+      if (node.type === 'knowledge_point') {
+        if (seenPoints.has(node.id)) continue
+        seenPoints.add(node.id)
+        total += pointQuestionCounts.get(node.id) ?? 0
+      } else {
+        total += node.question_count
+      }
+    }
     return total
   }, [selectedNodes, pointQuestionCounts])
 

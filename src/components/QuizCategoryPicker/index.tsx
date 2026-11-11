@@ -61,7 +61,8 @@ export function QuizCategoryPicker<T extends QuizPickerNode>({
             {multiple && isSelected ? '☑ ' : ''}{depth > 1 ? '└─ ' : ''}{node.name}
           </Text>
           <Text className={`${styles.itemCount} ${isSelected ? styles.itemCountSelected : ''}`}>
-            {hasChildren ? `全部 ${node.question_count} 题` : `${node.question_count} 题`}
+            {/* quiz023 单链塌缩后库/模块可为叶子：选它即练习全部，仍标注「全部 N 题」。 */}
+            {hasChildren || depth === 1 ? `全部 ${node.question_count} 题` : `${node.question_count} 题`}
           </Text>
         </View>
         {hasChildren && renderNodes(node.children as T[], depth + 1)}
