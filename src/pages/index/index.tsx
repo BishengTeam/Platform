@@ -178,8 +178,8 @@ export default function IndexPage() {
   const studyCourses = studyCoursesVisible ? homeData?.zones['study']?.courses ?? [] : []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
   // 资讯：后端同步到公众号推文才显示；无数据（含接口失败）ticker 整条隐藏、新闻 tab 不出现。
-  // TARO_APP_NEWS_VISIBLE=false 时整块屏蔽（板块 tab+金刚区入口+资讯条同开关）
-  const gzhArticles = newsVisible ? homeData?.gzh_articles ?? [] : []
+  // 新闻内容保留在瀑布流（2026-11-11 口径）；TARO_APP_NEWS_VISIBLE=false 仅隐藏金刚区新闻入口
+  const gzhArticles = homeData?.gzh_articles ?? []
   const tickerArticle = gzhArticles[0]
 
   // 公众号文章统一跳 webview 容器页（ticker 与新闻资讯列表共用）
@@ -221,7 +221,8 @@ export default function IndexPage() {
     certRegistration: FEATURES.certRegistration,
     hasActivities: activities.length > 0,
     hasYingcai: FEATURES.yingcaiZone && yingcaiActivities.length > 0,
-    hasNews: gzhArticles.length > 0,
+    // 金刚区新闻入口单开闸：板块内容/资讯条保留（TARO_APP_NEWS_VISIBLE=false 仅藏此入口）
+    hasNews: newsVisible && gzhArticles.length > 0,
   }), [activities.length, yingcaiActivities.length, gzhArticles.length])
 
   return (
