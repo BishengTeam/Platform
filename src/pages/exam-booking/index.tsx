@@ -77,7 +77,7 @@ export default function ExamBookingPage() {
     setLoading(true)
     try {
       const res = await get<{ slots: Slot[] }>(
-        `/api/h3c/exam/schedules/${selectedSchedule.id}/slots?date=${date}&subject_id=1`
+        `/api/h3c/exam/schedules/${selectedSchedule.id}/slots?date=${date}`
       )
       setSlots(res.data?.slots || [])
       setStep('select_slot')

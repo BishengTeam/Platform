@@ -27,7 +27,7 @@ export default defineAppConfig({
     },
     {
       root: 'pages/h3c',
-      pages: ['index', 'form'],
+      pages: ['index', 'form', 'exam-booking'],
     },
     {
       root: 'pages/nisp',
