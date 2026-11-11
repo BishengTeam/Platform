@@ -23,10 +23,15 @@ export const FEATURES = {
   certRegistration: EDITION_FEATURES.certRegistration && process.env.TARO_APP_CERT_ZONE_VISIBLE !== 'false',
   /** 活动内容（活动页「活动」子tab+首页在线培训板块+金刚区活动入口）：TARO_APP_ACTIVITY_VISIBLE=false 屏蔽；竞赛/英才不受影响 */
   activityTab: EDITION_FEATURES.activityTab && process.env.TARO_APP_ACTIVITY_VISIBLE !== 'false',
+  /** 英才计划展示层（首页板块 tab+内容卡+金刚区入口+活动页英才子tab）：TARO_APP_YINGCAI_VISIBLE=false 屏蔽；活动详情页保留在包内 */
+  yingcaiZone: EDITION_FEATURES.yingcaiZone && process.env.TARO_APP_YINGCAI_VISIBLE !== 'false',
 }
 
 /** 首页「在线练习」板块（后台课程卡片）：TARO_APP_STUDY_COURSES_VISIBLE=false 屏蔽；学习 tab 与金刚区学习入口不受影响 */
 export const studyCoursesVisible = process.env.TARO_APP_STUDY_COURSES_VISIBLE !== 'false'
+
+/** 首页「新闻资讯」展示层（板块 tab+金刚区入口+资讯条）：TARO_APP_NEWS_VISIBLE=false 屏蔽；webview 详情保留在包内 */
+export const newsVisible = process.env.TARO_APP_NEWS_VISIBLE !== 'false'
 
 /** 仅控制首页快捷按钮；不改变认证内容区、报名或订单功能。 */
 export const homeCertEntryVisible = process.env.TARO_APP_HOME_CERT_ENTRY_VISIBLE === 'true'

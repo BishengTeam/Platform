@@ -19,7 +19,7 @@ import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
-import { FEATURES, homeCertEntryVisible, studyCoursesVisible } from '@/constants/features'
+import { FEATURES, homeCertEntryVisible, newsVisible, studyCoursesVisible } from '@/constants/features'
 import { getHomeQuickEntries } from '@/constants/homeEntries'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
@@ -177,8 +177,9 @@ export default function IndexPage() {
   // 在线课程同为主页内容驱动板块：后台配置了课程才显示；TARO_APP_STUDY_COURSES_VISIBLE=false 时整块屏蔽（学习 tab 不受影响）
   const studyCourses = studyCoursesVisible ? homeData?.zones['study']?.courses ?? [] : []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
-  // 资讯：后端同步到公众号推文才显示；无数据（含接口失败）ticker 整条隐藏、新闻 tab 不出现
-  const gzhArticles = homeData?.gzh_articles ?? []
+  // 资讯：后端同步到公众号推文才显示；无数据（含接口失败）ticker 整条隐藏、新闻 tab 不出现。
+  // TARO_APP_NEWS_VISIBLE=false 时整块屏蔽（板块 tab+金刚区入口+资讯条同开关）
+  const gzhArticles = newsVisible ? homeData?.gzh_articles ?? [] : []
   const tickerArticle = gzhArticles[0]
 
   // 公众号文章统一跳 webview 容器页（ticker 与新闻资讯列表共用）

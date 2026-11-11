@@ -15,7 +15,9 @@ export default defineConfig<'vite'>(async (merge, { command }) => {
   const certZoneVisible = process.env.TARO_APP_CERT_ZONE_VISIBLE !== 'false'
   const activityVisible = process.env.TARO_APP_ACTIVITY_VISIBLE !== 'false'
   const studyCoursesVisible = process.env.TARO_APP_STUDY_COURSES_VISIBLE !== 'false'
-  console.log(`\n==== weapp 构建 EDITION=${edition}${edition === 'trim' ? '（v1 提审裁剪清单）' : '（全量）'} 认证专区=${certZoneVisible ? '开' : '屏蔽'} 活动=${activityVisible ? '开' : '屏蔽'} 在线练习=${studyCoursesVisible ? '开' : '屏蔽'} ====\n`)
+  const yingcaiVisible = process.env.TARO_APP_YINGCAI_VISIBLE !== 'false'
+  const newsVisible = process.env.TARO_APP_NEWS_VISIBLE !== 'false'
+  console.log(`\n==== weapp 构建 EDITION=${edition}${edition === 'trim' ? '（v1 提审裁剪清单）' : '（全量）'} 认证专区=${certZoneVisible ? '开' : '屏蔽'} 活动=${activityVisible ? '开' : '屏蔽'} 在线练习=${studyCoursesVisible ? '开' : '屏蔽'} 英才计划=${yingcaiVisible ? '开' : '屏蔽'} 新闻资讯=${newsVisible ? '开' : '屏蔽'} ====\n`)
   const baseConfig: UserConfigExport<'vite'> = {
     projectName: 'Platform',
     date: '2026-5-6',
@@ -38,6 +40,8 @@ export default defineConfig<'vite'>(async (merge, { command }) => {
       'process.env.TARO_APP_CERT_ZONE_VISIBLE': JSON.stringify(String(certZoneVisible)),
       'process.env.TARO_APP_ACTIVITY_VISIBLE': JSON.stringify(String(activityVisible)),
       'process.env.TARO_APP_STUDY_COURSES_VISIBLE': JSON.stringify(String(studyCoursesVisible)),
+      'process.env.TARO_APP_YINGCAI_VISIBLE': JSON.stringify(String(yingcaiVisible)),
+      'process.env.TARO_APP_NEWS_VISIBLE': JSON.stringify(String(newsVisible)),
     },
     copy: {
       patterns: [
