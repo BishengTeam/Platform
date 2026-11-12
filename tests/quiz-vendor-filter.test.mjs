@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
+import { safeLoginTarget } from '../src/utils/loginTargets.ts'
 
 const file = (p) => new URL(`../src/${p}`, import.meta.url)
 
@@ -22,6 +23,29 @@ test('library selector page exposes the four vendors with Sangfor default', asyn
   // 点题库：先写续练记忆态，再带库名跳 prepare（未激活库由 prepare 内联输码解锁）。
   assert.match(source, /rememberScope\(/)
   assert.match(source, /ROUTES\.QUIZ_PREPARE\}\??scopeType=library/)
+})
+
+test('scopeName whitelist accepts real library names and still blocks junk', () => {
+  const urlOf = (name) => `/pages/quiz/prepare?scopeType=library&scopeId=7&scopeName=${encodeURIComponent(name)}`
+
+  // 2026-11-12 生产在库题库实名回归：H3C 库含「/」，白名单不收会让已登录点击静默回
+  // 首页（navigateWithLogin 的 || HOME 兜底）；「.」「：」为同类命名（如 V4.0）预留。
+  const realNames = [
+    'SCSA-T深信服安全技术认证工程师',
+    'GB0-192/H3C认证路由交换网络工程师',
+    'NISP一级(安全运营方向)国家信息安全水平考试',
+    '全国AI安全竞赛专题训练',
+    'HCIA-Datacom V4.0：新版题库',
+  ]
+  for (const name of realNames) {
+    const safe = safeLoginTarget(urlOf(name))
+    assert.ok(safe, `库名被 scopeName 白名单误拒（会静默跳首页）: ${name}`)
+    assert.equal(decodeURIComponent(/scopeName=([^&]+)/.exec(safe)?.[1] ?? ''), name, '出站 scopeName 须按 encodeURIComponent 回填')
+  }
+
+  // 仍然拦截：超长与控制符/HTML 字符。
+  assert.equal(safeLoginTarget(urlOf('库'.repeat(61))), null)
+  assert.equal(safeLoginTarget(urlOf('<script>alert(1)</script>')), null)
 })
 
 test('training home replaces the action-sheet flow with the remembered scope card', async () => {
