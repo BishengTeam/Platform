@@ -29,6 +29,16 @@ export interface H3cPriceOption {
   price_cents: number
 }
 
+export interface H3cExamBatchProduct {
+  id: number
+  product_id: number
+  product_code: string
+  product_name: string
+  coupon_price_cents: number | null
+  student_price_cents: number | null
+  full_price_cents: number | null
+}
+
 export interface H3cExamBatch {
   id: number
   plan_id: number
@@ -44,6 +54,8 @@ export interface H3cExamBatch {
   prices: H3cPriceOption[]
   payment_timeout_minutes: number
   max_material_bytes: number
+  /** v2 多产品：批次包含的科目列表 */
+  products?: H3cExamBatchProduct[]
 }
 
 export interface H3cMaterialUploadResult {
