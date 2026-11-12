@@ -38,10 +38,38 @@
   box-shadow: $shadow-sm;
 }
 
+.scopeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
 .scopeName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: $color-text;
   font-size: $font-lg;
   font-weight: 700;
+}
+
+.scopeSwitch {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: $color-blue-tint;
+  border-radius: $radius-full;
+}
+
+.scopeSwitchText {
+  color: $color-primary;
+  font-size: $font-xs;
+  font-weight: 500;
 }
 
 .statsRow {

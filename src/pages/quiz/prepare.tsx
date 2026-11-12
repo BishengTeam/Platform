@@ -5,9 +5,13 @@ import { AuthGuard } from '@/components/AuthGuard'
 import { Button } from '@/components/Button'
 import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
+import { Icon } from '@/components/Icon'
+import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
+import type { QuizPickerNode } from '@/components/QuizCategoryPicker'
 import { ROUTES } from '@/constants/routes'
 import type { QuizLibraryProgress, QuizPracticeScopePreview, QuizPracticeScopeType } from '@/contracts/quiz'
-import { createQuizExam, getCurrentQuizExam, getQuizLibraryProgress, previewPracticeScope, redeemLibraryCode } from '@/services/dataService'
+import { createQuizExam, getCurrentQuizExam, getQuizLibrary, getQuizLibraryProgress, previewPracticeScope, redeemLibraryCode } from '@/services/dataService'
+import { rememberScope } from '@/utils/practiceScope'
 import { ApiError } from '@/utils/request'
 import styles from './prepare.module.scss'
 
@@ -73,6 +77,10 @@ export default function QuizPreparePage() {
   const [activationError, setActivationError] = useState('')
   const [redeeming, setRedeeming] = useState(false)
   const scopeRef = useRef<{ scopeType: QuizPracticeScopeType; scopeId: number } | null>(null)
+  // 范围切换（2026-11-12 改版）：点范围名在当前题库内切换整库/模块/知识点
+  const [scopePickerVisible, setScopePickerVisible] = useState(false)
+  const [scopePickerTree, setScopePickerTree] = useState<QuizPickerNode[]>([])
+  const [pickerLibrary, setPickerLibrary] = useState<{ id: number; name: string } | null>(null)
 
   const load = async (scopeType: QuizPracticeScopeType, scopeId: number) => {
     setLoading(true)
@@ -129,6 +137,60 @@ export default function QuizPreparePage() {
     } finally {
       setRedeeming(false)
     }
+  }
+
+  const openScopePicker = () => {
+    const current = preview
+    if (!current || lockedLibraryId || loading) return
+    if (pickerLibrary?.id === current.library_id && scopePickerTree.length > 0) {
+      setScopePickerVisible(true)
+      return
+    }
+    getQuizLibrary(current.library_id)
+      .then(detail => {
+        // quiz023 拍平后 modules 可能为空（单链塌缩）：树根始终是整库
+        setPickerLibrary({ id: detail.id, name: detail.name })
+        setScopePickerTree([{
+          id: detail.id,
+          type: 'library',
+          name: detail.name,
+          question_count: detail.question_count,
+          children: detail.modules.map(module => ({
+            id: module.id,
+            type: 'module',
+            name: module.name,
+            question_count: module.question_count,
+            children: module.knowledge_points.map(point => ({
+              id: point.id,
+              type: 'knowledge_point',
+              name: point.name,
+              question_count: point.question_count,
+              children: [],
+            })),
+          })),
+        }])
+        setScopePickerVisible(true)
+      })
+      .catch(() => Taro.showToast({ title: '题库目录加载失败', icon: 'none' }))
+  }
+
+  const handlePickerSelect = (node: QuizPickerNode) => {
+    setScopePickerVisible(false)
+    const library = pickerLibrary
+    if (!library) return
+    const nextType: QuizPracticeScopeType = node.type === 'module' || node.type === 'knowledge_point' ? node.type : 'library'
+    setScopeName(node.name)
+    scopeRef.current = { scopeType: nextType, scopeId: node.id }
+    // 同步续练记忆态，学习 tab 返回时显示最新范围
+    rememberScope({
+      type: nextType,
+      id: node.id,
+      name: node.name,
+      libraryId: library.id,
+      libraryName: library.name,
+      questionCount: node.question_count,
+    })
+    void load(nextType, node.id)
   }
 
   useLoad(options => {
@@ -236,7 +298,13 @@ export default function QuizPreparePage() {
           {!loading && !loadError && preview && (
             <View className={styles.content}>
               <View className={styles.scopeCard}>
-                <Text className={styles.scopeName}>{scopeName}</Text>
+                <View className={styles.scopeHeader} onClick={openScopePicker}>
+                  <Text className={styles.scopeName}>{scopeName}</Text>
+                  <View className={styles.scopeSwitch}>
+                    <Text className={styles.scopeSwitchText}>切换练习范围</Text>
+                    <Icon name='chevron-right' size={14} color='#1677FF' />
+                  </View>
+                </View>
                 <View className={styles.statsRow}>
                   <View className={styles.statsItem}>
                     <Text className={styles.statsValue}>{scopeQuestionCount}</Text>
@@ -314,6 +382,15 @@ export default function QuizPreparePage() {
             </View>
           )}
         </ScrollView>
+        <QuizCategoryPicker
+          visible={scopePickerVisible}
+          tree={scopePickerTree}
+          selectedId={preview?.scope_id ?? null}
+          selectedType={preview?.scope_type ?? null}
+          onSelect={handlePickerSelect}
+          onClose={() => setScopePickerVisible(false)}
+          title='选择练习范围'
+        />
       </View>
     </AuthGuard>
   )
