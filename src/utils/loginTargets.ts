@@ -39,7 +39,8 @@ export function safeLoginTarget(raw: string, partial = false): string | null {
       seen.add(key)
       const valid = NUMERIC_PARAMS.has(key) ? /^[1-9]\d{0,9}$/.test(value)
         : key === 'cert_code' ? /^[\w.-]{1,64}$/.test(value)
-          : Boolean(ENUM_PARAMS[key]?.includes(value))
+          : key === 'scopeName' ? /^[\u4e00-\u9fa5\w（）()·、\- ]{1,60}$/.test(value)
+            : Boolean(ENUM_PARAMS[key]?.includes(value))
       if (!valid) return null
       params.push(`${key}=${encodeURIComponent(value)}`)
     }

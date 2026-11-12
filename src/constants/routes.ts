@@ -29,6 +29,7 @@ export const ROUTES = {
   AI_CONSULT: 'pages/ai-consult/index',
   WEBVIEW: 'pages/webview/index',
   QUIZ_INDEX: 'pages/quiz/index',
+  QUIZ_LIBRARIES: 'pages/quiz/libraries',
   QUIZ_PREPARE: 'pages/quiz/prepare',
   QUIZ_PRACTICE: 'pages/quiz/practice',
   QUIZ_MOCK: 'pages/quiz/mock',

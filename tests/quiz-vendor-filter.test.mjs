@@ -4,10 +4,10 @@ import test from 'node:test'
 
 const file = (p) => new URL(`../src/${p}`, import.meta.url)
 
-test('practice assistant exposes the four vendor buttons with Sangfor default', async () => {
-  const source = await readFile(file('pages/training/index.tsx'), 'utf8')
+test('library selector page exposes the four vendors with Sangfor default', async () => {
+  const source = await readFile(file('pages/quiz/libraries.tsx'), 'utf8')
 
-  // 默认深信服（SCSA-T 题库上线），四个页签覆盖全部题库（none 归入「其他」）。
+  // 默认深信服（SCSA-T 题库上线），四个厂商覆盖全部题库（none 归入「其他」）。
   assert.match(source, /DEFAULT_VENDOR_TAG: QuizVendorTag = 'sangfor'/)
   // 小程序会按页面路径解析无前导斜杠的相对路径，logo 必须指向包根的 assets。
   assert.match(source, /tag: 'h3c', label: 'H3C', logo: '\/assets\/vendor\/h3c\.png'/)
@@ -16,10 +16,35 @@ test('practice assistant exposes the four vendor buttons with Sangfor default', 
   assert.match(source, /tag: 'none', label: '其他'/)
   assert.doesNotMatch(source, /logo: 'assets\/vendor\//)
 
-  // 厂商按钮只做筛选并自动选中该厂商第一个可用题库；不自动跳到其他厂商。
+  // 右侧列表按厂商本地过滤；空厂商显示筹备中文案。
   assert.match(source, /item\.vendor_tag === activeVendor/)
-  assert.match(source, /item\.vendor_tag === DEFAULT_VENDOR_TAG/)
   assert.match(source, /该厂商题库筹备中/)
+  // 点题库：先写续练记忆态，再带库名跳 prepare（未激活库由 prepare 内联输码解锁）。
+  assert.match(source, /rememberScope\(/)
+  assert.match(source, /ROUTES\.QUIZ_PREPARE\}\??scopeType=library/)
+})
+
+test('training home replaces the action-sheet flow with the remembered scope card', async () => {
+  const source = await readFile(file('pages/training/index.tsx'), 'utf8')
+
+  // 2026-11-12 改版：厂商页签与 ActionSheet 选题已被独立题库列表页取代。
+  assert.doesNotMatch(source, /showActionSheet|QuizCategoryPicker|VENDOR_TABS/)
+  assert.match(source, /ROUTES\.QUIZ_LIBRARIES/)
+  // 记忆态三件套：读取、写入、失效清理。
+  assert.match(source, /readRememberedScope\(\)/)
+  assert.match(source, /rememberScope\(/)
+  assert.match(source, /clearRememberedScope\(\)/)
+})
+
+test('prepare page switches scope inside the current library', async () => {
+  const source = await readFile(file('pages/quiz/prepare.tsx'), 'utf8')
+
+  // 范围条可点，弹出既有 QuizCategoryPicker，只在当前库内切换整库/模块/知识点。
+  assert.match(source, /切换练习范围/)
+  assert.match(source, /<QuizCategoryPicker/)
+  assert.match(source, /getQuizLibrary\(current\.library_id\)/)
+  // 切换范围后同步续练记忆态，学习 tab 返回时展示最新范围。
+  assert.match(source, /rememberScope\(/)
 })
 
 test('vendor logo assets ship with the mini program package', async () => {
@@ -42,11 +67,9 @@ test('practice assistant body follows the Swiss card redesign', async () => {
   assert.match(source, /<PageHeader title=\{STRINGS\.STUDY_TITLE\}/)
   assert.doesNotMatch(source, /MAIN_TABS|TagFilter/)
 
-  // 空状态与数据状态互斥；空状态不再渲染禁用按钮和数据面板。
-  assert.match(source, /vendorLibraries\.length === 0 \? \(/)
+  // 空状态与数据状态互斥；记忆态范围卡驱动统计与续练入口。
+  assert.match(source, /quizLibraries\.length === 0 \? \(/)
   assert.match(source, /styles\.emptyIllustration/)
-  assert.match(source, /handleSwitchToAvailableVendor/)
-  assert.match(source, /切换到其他厂商/)
   assert.match(source, /styles\.statsGrid/)
   assert.match(source, /styles\.practiceCta/)
 

@@ -1,22 +1,23 @@
 import { getToken, getAuthSessionId } from '@/utils/authState'
 import { useAuth } from '@/hooks/useAuth'
 import { navigateWithLogin } from '@/utils/loginCoordinator'
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, Image } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Icon } from '@/components/Icon'
-import { QuizCategoryPicker } from '@/components/QuizCategoryPicker'
 import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES } from '@/constants/routes'
 import { toBase64 } from '@/utils/base64'
 import { getQuizLibrary, getQuizStats, listQuizLibraries } from '@/services/dataService'
-import type { QuizLibraryCatalogDetail, QuizLibraryCatalogItem, QuizPracticeScopeType, QuizStats, QuizVendorTag } from '@/contracts/quiz'
+import { clearRememberedScope, readRememberedScope, rememberScope } from '@/utils/practiceScope'
+import type { QuizLibraryCatalogItem, QuizPracticeScopeType, QuizStats } from '@/contracts/quiz'
 import styles from './index.module.scss'
 
 // 在线课程已下线，学习页仅承载练习助手。
+// 选题交互改版（2026-11-12）：首页只保留记忆态范围卡，「选择」跳独立题库列表页（pages/quiz/libraries）。
 
 interface QuickAction {
   label: string
@@ -33,16 +34,6 @@ const QUICK_ACTIONS: QuickAction[] = [
   { label: '我的收藏', icon: 'star', route: ROUTES.QUIZ_COLLECTIONS, iconBg: '#FEFCE8', iconColor: '#EA580C' },
 ]
 
-// 题库厂商筛选：默认深信服；none 归入「其他」，保证四个页签覆盖全部题库。
-const VENDOR_TABS: Array<{ tag: QuizVendorTag; label: string; logo?: string }> = [
-  { tag: 'sangfor', label: '深信服', logo: '/assets/vendor/sangfor.png' },
-  { tag: 'h3c', label: 'H3C', logo: '/assets/vendor/h3c.png' },
-  { tag: 'nisp', label: 'NISP', logo: '/assets/vendor/nisp.png' },
-  { tag: 'none', label: '其他' },
-]
-
-const DEFAULT_VENDOR_TAG: QuizVendorTag = 'sangfor'
-
 const EMPTY_STATE_ILLUSTRATION = `data:image/svg+xml;base64,${toBase64(`
   <svg xmlns="http://www.w3.org/2000/svg" width="160" height="112" viewBox="0 0 160 112" fill="none">
     <defs>
@@ -58,57 +49,114 @@ const EMPTY_STATE_ILLUSTRATION = `data:image/svg+xml;base64,${toBase64(`
   </svg>
 `.trim())}`
 
-interface TrainingScope {
+interface PracticeScope {
   type: QuizPracticeScopeType
   id: number
   name: string
+  libraryId: number
+  libraryName: string
   questionCount: number
 }
 
-interface TrainingScopePickerNode extends TrainingScope {
-  question_count: number
-  children: TrainingScopePickerNode[]
+function libraryScopeOf(library: QuizLibraryCatalogItem): PracticeScope {
+  return {
+    type: 'library',
+    id: library.id,
+    name: library.name,
+    libraryId: library.id,
+    libraryName: library.name,
+    questionCount: library.question_count,
+  }
 }
 
 export default function TrainingPage() {
   const { isLoggedIn, sessionId } = useAuth()
   const [quizLibraries, setQuizLibraries] = useState<QuizLibraryCatalogItem[]>([])
-  const [activeVendor, setActiveVendor] = useState<QuizVendorTag>(DEFAULT_VENDOR_TAG)
-  const [selectedLibrary, setSelectedLibrary] = useState<QuizLibraryCatalogDetail | null>(null)
-  const [selectedScope, setSelectedScope] = useState<TrainingScope | null>(null)
-  const [scopePickerVisible, setScopePickerVisible] = useState(false)
+  const [selectedScope, setSelectedScope] = useState<PracticeScope | null>(null)
   const [quizStats, setQuizStats] = useState<QuizStats | null>(null)
-  // 厂商切换会连发题库详情请求，用递增序号丢弃过期响应，避免快照回写。
-  const librarySelectionEpoch = useRef(0)
+  const librariesLoadedRef = useRef(false)
+  const quizLibrariesRef = useRef<QuizLibraryCatalogItem[]>([])
+  // 记忆态校验含异步详情请求，用递增序号丢弃过期回写（快速进出列表页时防串台）
+  const syncEpoch = useRef(0)
 
-  const selectFirstLibrary = useCallback((libraries: QuizLibraryCatalogItem[]) => {
-    const epoch = ++librarySelectionEpoch.current
-    const first = libraries[0]
-    if (!first) {
-      setSelectedLibrary(null)
-      setSelectedScope(null)
-      return
-    }
-    getQuizLibrary(first.id).then(detail => {
-      if (librarySelectionEpoch.current !== epoch) return
-      setSelectedLibrary(detail)
-      setSelectedScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
-    }).catch(() => {
-      if (librarySelectionEpoch.current !== epoch) return
-      Taro.showToast({ title: '题库目录加载失败', icon: 'none' })
-    })
+  const applyScope = useCallback((scope: PracticeScope | null, persistClear: boolean) => {
+    setSelectedScope(scope)
+    if (!scope && persistClear) clearRememberedScope()
   }, [])
 
+  // 校验记忆态：库没了→清空；模块/知识点没了→降级到库级
+  const syncScope = useCallback(async (libraries: QuizLibraryCatalogItem[], loaded: boolean) => {
+    const epoch = ++syncEpoch.current
+    const memory = readRememberedScope()
+    if (!memory) {
+      applyScope(null, false)
+      return
+    }
+    const library = libraries.find(item => item.id === memory.libraryId)
+    if (!library) {
+      applyScope(null, loaded)
+      return
+    }
+    if (memory.type === 'library') {
+      applyScope(libraryScopeOf(library), false)
+      return
+    }
+    try {
+      const detail = await getQuizLibrary(library.id)
+      if (syncEpoch.current !== epoch) return
+      if (memory.type === 'module') {
+        const module = detail.modules.find(item => item.id === memory.id)
+        if (module) {
+          applyScope({
+            type: 'module',
+            id: module.id,
+            name: module.name,
+            libraryId: library.id,
+            libraryName: library.name,
+            questionCount: module.question_count,
+          }, false)
+          return
+        }
+      } else {
+        for (const module of detail.modules) {
+          const point = module.knowledge_points.find(item => item.id === memory.id)
+          if (point) {
+            applyScope({
+              type: 'knowledge_point',
+              id: point.id,
+              name: point.name,
+              libraryId: library.id,
+              libraryName: library.name,
+              questionCount: point.question_count,
+            }, false)
+            return
+          }
+        }
+      }
+    } catch {
+      // 详情加载失败按库级降级，下次进入再校验
+    }
+    if (syncEpoch.current !== epoch) return
+    applyScope(libraryScopeOf(library), false)
+  }, [applyScope])
+
   const loadInitialData = useCallback(() => {
-    return listQuizLibraries().then((libraries) => {
+    return listQuizLibraries().then(libraries => {
       setQuizLibraries(libraries)
-      selectFirstLibrary(libraries.filter(item => item.vendor_tag === DEFAULT_VENDOR_TAG))
+      quizLibrariesRef.current = libraries
+      librariesLoadedRef.current = true
+      return syncScope(libraries, true)
     }).catch(() => {
       // 无权益时服务端返回空目录；加载失败保持题库区域为空。
     })
-  }, [selectFirstLibrary])
+  }, [syncScope])
 
   useEffect(() => { void loadInitialData() }, [loadInitialData])
+
+  // 从题库列表页/练习页返回时，同步可能更新的记忆态
+  useDidShow(() => {
+    if (librariesLoadedRef.current) void syncScope(quizLibrariesRef.current, true)
+  })
 
   useEffect(() => {
     if (!selectedScope || !isLoggedIn) {
@@ -128,142 +176,42 @@ export default function TrainingPage() {
     return () => { active = false }
   }, [selectedScope?.id, selectedScope?.type, isLoggedIn, sessionId])
 
-  const vendorLibraries = useMemo(
-    () => quizLibraries.filter(item => item.vendor_tag === activeVendor),
-    [quizLibraries, activeVendor],
-  )
-
-  const handleVendorChange = useCallback((tag: QuizVendorTag) => {
-    if (tag === activeVendor) return
-    setActiveVendor(tag)
-    setScopePickerVisible(false)
-    selectFirstLibrary(quizLibraries.filter(item => item.vendor_tag === tag))
-  }, [activeVendor, quizLibraries, selectFirstLibrary])
-
-  const scopeTree = useMemo<TrainingScopePickerNode[]>(() => {
-    if (!selectedLibrary) return []
-    return [{
-      type: 'library',
-      id: selectedLibrary.id,
-      name: selectedLibrary.name,
-      questionCount: selectedLibrary.question_count,
-      question_count: selectedLibrary.question_count,
-      children: selectedLibrary.modules.map(module => ({
-        type: 'module',
-        id: module.id,
-        name: module.name,
-        questionCount: module.question_count,
-        question_count: module.question_count,
-        children: module.knowledge_points.map(point => ({
-          type: 'knowledge_point',
-          id: point.id,
-          name: point.name,
-          questionCount: point.question_count,
-          question_count: point.question_count,
-          children: [],
-        })),
-      })),
-    }]
-  }, [selectedLibrary])
-
-  const openLibraryScope = useCallback((library: QuizLibraryCatalogItem) => {
-    const epoch = ++librarySelectionEpoch.current
-    getQuizLibrary(library.id).then(detail => {
-      if (librarySelectionEpoch.current !== epoch) return
-      setSelectedLibrary(detail)
-      setSelectedScope({ type: 'library', id: detail.id, name: detail.name, questionCount: detail.question_count })
-      setScopePickerVisible(true)
-    }).catch(() => Taro.showToast({ title: '题库目录加载失败', icon: 'none' }))
+  const handleOpenLibraries = useCallback(() => {
+    void Taro.navigateTo({ url: `/${ROUTES.QUIZ_LIBRARIES}` })
   }, [])
 
-  const handleQuizSelect = useCallback(() => {
-    if (vendorLibraries.length === 0) return
-    if (vendorLibraries.length === 1) {
-      if (selectedLibrary?.id === vendorLibraries[0].id) setScopePickerVisible(true)
-      else openLibraryScope(vendorLibraries[0])
-      return
-    }
-    Taro.showActionSheet({
-      itemList: vendorLibraries.map(item => `${item.name}（${item.question_count}题）`),
-      success: result => {
-        const library = vendorLibraries[result.tapIndex]
-        if (!library) return
-        if (selectedLibrary?.id === library.id) setScopePickerVisible(true)
-        else openLibraryScope(library)
-      },
-    })
-  }, [openLibraryScope, vendorLibraries, selectedLibrary?.id])
-
-  const handleScopeSelect = useCallback((node: TrainingScopePickerNode) => {
-    setSelectedScope({
-      type: node.type,
-      id: node.id,
-      name: node.name,
-      questionCount: node.questionCount,
-    })
-    setScopePickerVisible(false)
-  }, [])
+  const handleStartPractice = useCallback(() => {
+    if (!selectedScope) return
+    rememberScope(selectedScope)
+    void navigateWithLogin(
+      `/${ROUTES.QUIZ_PREPARE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}&scopeName=${encodeURIComponent(selectedScope.name)}`,
+    )
+  }, [selectedScope])
 
   const handleQuickActionClick = useCallback((item: QuickAction) => {
     void navigateWithLogin(`/${item.route}`)
   }, [])
 
-  const handleSwitchToAvailableVendor = useCallback(() => {
-    const availableVendor = VENDOR_TABS.find(vendor => (
-      vendor.tag !== activeVendor &&
-      quizLibraries.some(library => library.vendor_tag === vendor.tag)
-    ))
-    if (!availableVendor) {
-      Taro.showToast({ title: '其他厂商题库筹备中', icon: 'none' })
-      return
-    }
-    handleVendorChange(availableVendor.tag)
-  }, [activeVendor, handleVendorChange, quizLibraries])
-
   const renderQuizTab = () => (
     <View>
       <View className={styles.practiceLayout}>
-        <View className={styles.vendorCard}>
-          <View className={styles.vendorRow}>
-            {VENDOR_TABS.map(vendor => {
-              const active = vendor.tag === activeVendor
-              return (
-                <View
-                  key={vendor.tag}
-                  className={`${styles.vendorButton} ${active ? styles.vendorButtonActive : ''}`}
-                  onClick={() => handleVendorChange(vendor.tag)}
-                >
-                  <View className={styles.vendorLogoBox}>
-                    {vendor.logo
-                      ? <Image className={styles.vendorLogo} src={vendor.logo} mode='aspectFit' />
-                      : <Icon name='book-open' size={24} color={active ? '#165DFF' : '#8c8c8c'} />}
-                  </View>
-                  <Text className={active ? styles.vendorLabelActive : styles.vendorLabel}>{vendor.label}</Text>
-                </View>
-              )
-            })}
-          </View>
-        </View>
-
-        {vendorLibraries.length === 0 ? (
+        {quizLibraries.length === 0 ? (
           <View className={styles.emptyCard}>
             <Image className={styles.emptyIllustration} src={EMPTY_STATE_ILLUSTRATION} mode='aspectFit' />
-            <Text className={styles.emptyTitle}>该厂商题库筹备中</Text>
-            <Text className={styles.emptyDesc}>题库上架后将展示练习范围、答题进度与正确率</Text>
-            <View className={styles.emptyAction} onClick={handleSwitchToAvailableVendor}>
-              <Text className={styles.emptyActionText}>切换到其他厂商</Text>
-              <Icon name='chevron-right' size={14} color='#165DFF' />
-            </View>
+            <Text className={styles.emptyTitle}>题库筹备中</Text>
+            <Text className={styles.emptyDesc}>题库上架后即可在这里选择练习范围</Text>
           </View>
         ) : (
           <View className={styles.practiceCard}>
-            <View className={styles.scopeSelector} onClick={handleQuizSelect}>
+            <View className={styles.scopeSelector} onClick={handleOpenLibraries}>
               <View className={styles.scopeInfo}>
                 <Text className={styles.scopeLabel}>练习范围</Text>
                 <Text className={styles.scopeTitle}>
-                  {selectedScope?.name || selectedLibrary?.name || '题库目录加载中'}
+                  {selectedScope ? selectedScope.name : '选择厂商与题库'}
                 </Text>
-                <Text className={styles.scopeHint}>按题库、模块或知识点选择</Text>
+                <Text className={styles.scopeHint}>
+                  {selectedScope ? `${selectedScope.libraryName} · 点击更换题库` : '按厂商浏览题库列表'}
+                </Text>
               </View>
               <Icon name='chevron-right' size={18} color='#94A3B8' />
             </View>
@@ -289,7 +237,7 @@ export default function TrainingPage() {
 
             <View
               className={`${styles.practiceCta} ${selectedScope ? '' : styles.practiceCtaDisabled}`}
-              onClick={() => selectedScope && void navigateWithLogin(`/${ROUTES.QUIZ_PREPARE}?scopeType=${selectedScope.type}&scopeId=${selectedScope.id}`)}
+              onClick={handleStartPractice}
             >
               <Text className={styles.practiceCtaText}>开始练习</Text>
             </View>
@@ -326,14 +274,6 @@ export default function TrainingPage() {
         </RefreshableScrollView>
       </>
       <CustomTabBar activeTabKey='pages/training/index' onSwitch={(url: string) => Taro.switchTab({ url })} />
-      <QuizCategoryPicker
-        visible={scopePickerVisible}
-        tree={scopeTree}
-        selectedId={selectedScope?.id ?? null}
-        onSelect={handleScopeSelect}
-        onClose={() => setScopePickerVisible(false)}
-        title='选择练习范围'
-      />
     </View>
   )
 }
