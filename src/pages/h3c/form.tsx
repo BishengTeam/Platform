@@ -57,6 +57,7 @@ const BASE_FIELDS: H3cFieldDef[] = [
 
 export default function H3CFormPage() {
   const [batchId, setBatchId] = useState(0)
+  const [batchProductId, setBatchProductId] = useState<number>(0)
   const [batch, setBatch] = useState<H3cExamBatch | null>(null)
   const [batchChecking, setBatchChecking] = useState(false)
   const [batchError, setBatchError] = useState('')
@@ -221,6 +222,7 @@ export default function H3CFormPage() {
       const registration = await h3cService.createOrder({
         notice_hash: await confirmation.requireConfirmation(),
         batch_id: batch.id,
+        batch_product_id: batchProductId || undefined,
         registration_type: type,
         candidate_name: form.candidate_name,
         gender: form.gender,

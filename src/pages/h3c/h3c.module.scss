@@ -196,3 +196,39 @@
   background: #E0E0E0;
   margin: 0 auto 24px;
 }
+
+// v2 多产品：选科目卡片
+.productCard {
+  margin: 12rpx 0;
+  padding: 24rpx 32rpx;
+  border-radius: 16rpx;
+  background: #fff;
+  border: 2rpx solid #e8e8e8;
+  transition: border-color 0.2s;
+
+  &.productActive {
+    border-color: #1677ff;
+    background: #f0f7ff;
+  }
+}
+
+.productName {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.priceRow {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
+.priceTag {
+  font-size: 24rpx;
+  color: #666;
+  background: #f5f5f5;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+}
