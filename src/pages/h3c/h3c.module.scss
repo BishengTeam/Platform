@@ -232,3 +232,51 @@
   padding: 4rpx 16rpx;
   border-radius: 8rpx;
 }
+
+// v2 多产品：选科目卡片
+.subjectCard {
+  margin: 16rpx 0;
+  padding: 24rpx 32rpx;
+  border-radius: 16rpx;
+  background: #f8f8f8;
+  border: 3rpx solid transparent;
+  transition: all 0.2s;
+  position: relative;
+
+  &.subjectActive {
+    border-color: #1677ff;
+    background: #e8f3ff;
+  }
+}
+
+.subjectName {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.subjectPrices {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 10rpx;
+  flex-wrap: wrap;
+}
+
+.subjectPrice {
+  font-size: 22rpx;
+  color: #666;
+  background: #fff;
+  padding: 4rpx 14rpx;
+  border-radius: 6rpx;
+  border: 1rpx solid #e0e0e0;
+}
+
+.subjectCheck {
+  position: absolute;
+  top: 16rpx;
+  right: 24rpx;
+  font-size: 24rpx;
+  color: #1677ff;
+  font-weight: 600;
+}

@@ -140,6 +140,11 @@ export default function H3CFormPage() {
     setUploading(true)
     try {
       assertCertificationBatchOpen(batch)
+      // v2 多产品：未选科目时不可提交
+      if (batch?.products && batch.products.length > 1 && !batchProductId) {
+        Taro.showToast({ title: '请先选择考试科目', icon: 'none' })
+        return
+      }
       const result = await Taro.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'] })
       const filePath = result.tempFilePaths[0]
       if (!filePath || !batchId) return
@@ -252,7 +257,13 @@ export default function H3CFormPage() {
     }
   }
 
-  const price = batch?.prices.find((item) => item.registration_type === type)?.price_cents ?? 0
+  // v2 多产品：价格从选中科目的产品级读取
+  const selectedProduct = batch?.products?.find((bp) => bp.id === batchProductId)
+  const price = selectedProduct
+    ? (type === 'coupon' ? selectedProduct.coupon_price_cents
+       : type === 'student' ? selectedProduct.student_price_cents
+       : selectedProduct.full_price_cents) ?? 0
+    : batch?.prices.find((item) => item.registration_type === type)?.price_cents ?? 0
 
   return (
     <AuthGuard>
@@ -267,6 +278,29 @@ export default function H3CFormPage() {
             {batchError && <Text className={styles.remark}>{batchError}</Text>}
             <Text className={styles.remark} onClick={() => void loadBatch()}>{batchChecking ? '正在核验批次状态…' : '刷新批次状态'}</Text>
           </View>
+
+          {/* v2 多产品：选科目（batch.products 长度 > 1 时显示） */}
+          {batch?.products && batch.products.length > 1 && (
+            <View className={styles.card}>
+              <Text className={styles.title}>选择考试科目</Text>
+              {batch.products.map((bp) => (
+                <View
+                  key={bp.id}
+                  className={`${styles.subjectCard} ${batchProductId === bp.id ? styles.subjectActive : ''}`}
+                  onClick={() => { if (!uploading && !submitting) setBatchProductId(bp.id) }}
+                >
+                  <Text className={styles.subjectName}>{bp.product_name}</Text>
+                  <View className={styles.subjectPrices}>
+                    <Text className={styles.subjectPrice}>考券 ¥{((bp.coupon_price_cents ?? 0) / 100).toFixed(0)}</Text>
+                    <Text className={styles.subjectPrice}>学生 ¥{((bp.student_price_cents ?? 0) / 100).toFixed(0)}</Text>
+                    <Text className={styles.subjectPrice}>全额 ¥{((bp.full_price_cents ?? 0) / 100).toFixed(0)}</Text>
+                  </View>
+                  {batchProductId === bp.id && <Text className={styles.subjectCheck}>✓ 已选</Text>}
+                </View>
+              ))}
+              {batchProductId === 0 && <Text className={styles.remark}>请先选择考试科目，再选择报名类型</Text>}
+            </View>
+          )}
 
           <View className={styles.card}>
             <Text className={styles.title}>报名类型</Text>
