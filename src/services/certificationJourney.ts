@@ -3,6 +3,7 @@ export type CertificationVendor = 'h3c' | 'nisp' | 'renshe' | 'sangfor'
 export interface EnrollmentBatch {
   id: number; plan_id: number; subject_id: string; name: string; status: string
   plan_product_id?: number
+  batch_product_id?: number
   apply_start: string | null; apply_end: string | null; exam_date: string | null; exam_location: string | null
   time_segments?: Array<{ id: number; label: string; start_time: string; end_time: string }>
   remaining_count: number; can_apply: boolean; capacity: number; level: '1' | '2' | null

@@ -14,6 +14,13 @@ test('one selected batch dispatches to the correct dedicated form with no person
   assert.equal(enrollmentFormUrl('sangfor', batch, 'default'), '/pages/sangfor/form?batch_id=7')
   for (const vendor of ['h3c', 'nisp', 'renshe', 'sangfor']) assert.ok(safeLoginTarget(enrollmentFormUrl(vendor, batch, 'student')))
 })
+
+test('an H3C subject handoff survives the notice-to-form navigation', () => {
+  assert.equal(
+    enrollmentFormUrl('h3c', { ...batch, batch_product_id: 11 }, 'full'),
+    '/pages/h3c/form?batch_id=7&registration_type=full&batch_product_id=11',
+  )
+})
 test('confirmation is scoped to vendor, batch and H3C registration method', () => {
   rememberNotice({ vendor: 'h3c', batch, price: { value: 'student' }, notice_hash: 'confirmed' })
   assert.equal(currentNotice('h3c', 7, 'student').notice_hash, 'confirmed')

@@ -55,3 +55,13 @@ test('H3C online-code branch links to the PDF guide and offers the alternative s
   assert.match(page, /请上传有学院盖章的学籍证图片/)
   assert.doesNotMatch(config, /h3c\/assets\/docs/)
 })
+
+test('H3C subject selected on the notice page is restored on the form', async () => {
+  const form = await readFile('src/pages/h3c/form.tsx', 'utf8')
+  const types = await readFile('src/services/certificationJourney.ts', 'utf8')
+
+  assert.match(types, /batch_product_id\?: number/)
+  assert.match(form, /Number\(options\?\.batch_product_id \|\| 0\)/)
+  assert.match(form, /if \(urlBatchProductId > 0\) setBatchProductId\(urlBatchProductId\)/)
+  assert.match(form, /batch_product_id: batchProductId \|\| undefined/)
+})

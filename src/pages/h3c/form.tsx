@@ -80,7 +80,12 @@ export default function H3CFormPage() {
   const [identityVerified, setIdentityVerified] = useState(false)
 
   const confirmation = useEnrollmentConfirmation('h3c', batchId, type)
-  useLoad((options) => { setBatchId(Number(options?.batch_id || 0)); if (['coupon', 'student', 'full'].includes(options?.registration_type || '')) setType(options!.registration_type as H3cRegistrationType) })
+  useLoad((options) => {
+    setBatchId(Number(options?.batch_id || 0))
+    const urlBatchProductId = Number(options?.batch_product_id || 0)
+    if (urlBatchProductId > 0) setBatchProductId(urlBatchProductId)
+    if (['coupon', 'student', 'full'].includes(options?.registration_type || '')) setType(options!.registration_type as H3cRegistrationType)
+  })
 
   useEffect(() => {
     h3cService.profileDefaults().then((data: H3cProfileDefaults) => {
