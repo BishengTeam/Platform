@@ -16,10 +16,10 @@ test('one selected batch dispatches to the correct dedicated form with no person
 })
 
 test('an H3C subject handoff survives the notice-to-form navigation', () => {
-  assert.equal(
-    enrollmentFormUrl('h3c', { ...batch, batch_product_id: 11 }, 'full'),
-    '/pages/h3c/form?batch_id=7&registration_type=full&batch_product_id=11',
-  )
+  const target = enrollmentFormUrl('h3c', { ...batch, batch_product_id: 11 }, 'full')
+  assert.equal(target, '/pages/h3c/form?batch_id=7&registration_type=full&batch_product_id=11')
+  assert.equal(safeLoginTarget(target), target)
+  assert.equal(safeLoginTarget(`${target}x`), null)
 })
 test('confirmation is scoped to vendor, batch and H3C registration method', () => {
   rememberNotice({ vendor: 'h3c', batch, price: { value: 'student' }, notice_hash: 'confirmed' })
