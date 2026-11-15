@@ -69,3 +69,20 @@ test('price or notice changes during final confirmation clear the acknowledgemen
   assert.deepEqual(runtime.remembered, [])
   assert.ok(runtime.nodes().some(node => node.props?.children === '须知、费用或批次要求已更新，请重新阅读并确认'))
 })
+
+test('H3C notice explains that exam time and location are determined by booking', async t => {
+  const b = batch(7, 'GB0-192')
+  const runtime = driver({
+    vendor: 'h3c',
+    catalog: { subjects: [{ id: 'GB0-192', name: 'H3CNE' }], batches: [b] },
+    getNotice: async () => notice(b),
+  })
+  t.after(runtime.dispose)
+  await runtime.settle()
+
+  const texts = runtime.nodes().map(node => node.props?.children).filter(Boolean)
+  assert.ok(texts.includes('报名审核通过后预约'))
+  assert.ok(texts.includes('考场地址以预约结果为准'))
+  assert.ok(!texts.includes('2026-12-01'))
+  assert.ok(!texts.includes('待公布'))
+})
