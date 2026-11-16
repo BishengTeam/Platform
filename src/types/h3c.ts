@@ -70,6 +70,7 @@ export interface H3cExamScheduleOption {
   name: string
   open_date_start: string
   open_date_end: string
+  exam_location?: string | null
 }
 
 export interface H3cExamTimeSlot {
@@ -84,6 +85,7 @@ export interface H3cExamBooking {
   registration_id: number
   schedule_id?: number
   schedule_name: string
+  exam_location?: string | null
   subject_name: string
   slot_label: string
   slot_time: string

@@ -206,6 +206,7 @@ export default function H3cExamBookingPage() {
         registration_id: registrationId,
         schedule_id: scheduleId,
         schedule_name: schedule?.name || '',
+        exam_location: schedule?.exam_location || null,
         subject_name: '',
         slot_label: selectedSlot?.label || '',
         slot_time: selectedSlot?.start_time || '',
@@ -303,6 +304,12 @@ export default function H3cExamBookingPage() {
               <Text className={styles.detailLabel}>考场计划</Text>
               <Text className={styles.detailValue}>{currentBooking.schedule_name || '-'}</Text>
             </View>
+            <View className={styles.detailRow}>
+              <Text className={styles.detailLabel}>考试地点</Text>
+              <Text className={styles.detailValue}>
+                {currentBooking.exam_location || '待公布'}
+              </Text>
+            </View>
 
             {notice && (
               <View className={styles.noticeCard}>
@@ -353,6 +360,9 @@ export default function H3cExamBookingPage() {
                     <Text className={styles.optionText}>
                       {displayDate(item.open_date_start)} ~ {displayDate(item.open_date_end)}
                     </Text>
+                    {item.exam_location && (
+                      <Text className={styles.optionText}>{item.exam_location}</Text>
+                    )}
                   </View>
                 ))}
               </View>

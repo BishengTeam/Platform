@@ -45,6 +45,8 @@ test('H3C booking success keeps the current booking visible immediately', async 
   for (const label of ['考试科目', '考试日期', '考试时段', '考场计划']) {
     assert.match(page, new RegExp(label))
   }
+  assert.match(page, /考试地点/)
+  assert.match(page, /currentBooking\.exam_location \|\| '待公布'/)
   assert.match(page, /weekdayLabel\(currentBooking\.exam_date\)/)
   assert.match(page, /取消后可重新选择其他日期和时段。/)
   assert.match(page, /getExamNotice\(bookedScheduleId\)/)
