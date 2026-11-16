@@ -44,6 +44,8 @@ export default function H3cExamBookingPage() {
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [optimisticBooking, setOptimisticBooking] = useState<H3cExamBooking | null>(null)
+  const [justBooked, setJustBooked] = useState(false)
 
   useLoad(options => {
     const id = Number(options?.registration_id || 0)
@@ -53,9 +55,19 @@ export default function H3cExamBookingPage() {
 
   const schedule = schedules.find(item => item.id === scheduleId) || null
   const selectedSlot = slots.find(item => item.slot_id === slotId) || null
-  const currentBooking = bookings.find(
+  const exactBooking = bookings.find(
     item => item.registration_id === registrationId && item.status === 'booked'
   ) || null
+  const listHasRegistrationIds = bookings.some(
+    item => Number.isSafeInteger(item.registration_id)
+  )
+  // Older booking-list payloads did not expose registration_id. In that case a
+  // user with one active booking can safely fall back to that row. New payloads
+  // keep the scope exact because a multi-product user may book two subjects.
+  const legacyActiveBooking = listHasRegistrationIds || bookings.length === 0
+    ? null
+    : bookings.find(item => item.status === 'booked') || null
+  const currentBooking = exactBooking || optimisticBooking || legacyActiveBooking
 
   const loadOverview = useCallback(async () => {
     if (!registrationId) return
@@ -68,6 +80,15 @@ export default function H3cExamBookingPage() {
       ])
       setSchedules(scheduleRows)
       setBookings(bookingRows)
+      const rowsHaveRegistrationIds = bookingRows.some(
+        item => Number.isSafeInteger(item.registration_id)
+      )
+      const hasActiveBookingForThisRegistration = bookingRows.some(
+        item => item.registration_id === registrationId && item.status === 'booked'
+      )
+      if (rowsHaveRegistrationIds && !hasActiveBookingForThisRegistration) {
+        setOptimisticBooking(null)
+      }
       setScheduleId(old => (scheduleRows.some(item => item.id === old) ? old : 0))
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : '考场计划加载失败')
@@ -77,6 +98,12 @@ export default function H3cExamBookingPage() {
   }, [registrationId])
 
   useEffect(() => { void loadOverview() }, [loadOverview])
+
+  useEffect(() => {
+    if (!justBooked) return
+    const timer = setTimeout(() => setJustBooked(false), 1800)
+    return () => clearTimeout(timer)
+  }, [justBooked])
 
   useEffect(() => {
     setDates([])
@@ -146,7 +173,28 @@ export default function H3cExamBookingPage() {
     setSubmitting(true)
     setError('')
     try {
-      await h3cService.bookExamSeat(scheduleId, registrationId, slotId, examDate)
+      const result = await h3cService.bookExamSeat(
+        scheduleId,
+        registrationId,
+        slotId,
+        examDate,
+      )
+      const booked: H3cExamBooking = {
+        id: result.booking_id,
+        registration_id: registrationId,
+        schedule_name: schedule?.name || '',
+        subject_name: '',
+        slot_label: selectedSlot?.label || '',
+        slot_time: selectedSlot?.start_time || '',
+        exam_date: result.exam_date || examDate,
+        status: 'booked',
+      }
+      setBookings(previous => [
+        ...previous.filter(item => item.id !== booked.id),
+        booked,
+      ])
+      setOptimisticBooking(booked)
+      setJustBooked(true)
       Taro.showToast({ title: '预约成功', icon: 'success' })
       await loadOverview()
       setSlotId(0)
@@ -173,6 +221,8 @@ export default function H3cExamBookingPage() {
     setError('')
     try {
       await h3cService.cancelExamBooking(booking.id, booking.registration_id)
+      setOptimisticBooking(previous => previous?.id === booking.id ? null : previous)
+      setJustBooked(false)
       Taro.showToast({ title: '已取消预约', icon: 'success' })
       await loadOverview()
     } catch (reason) {
@@ -187,17 +237,24 @@ export default function H3cExamBookingPage() {
   return <AuthGuard>
     <View className={styles.page}>
       <PageHeader title='H3C 考试预约' shouldShowBack />
-      <RefreshableScrollView className={styles.body} onRefresh={loadOverview}>
-        <View className={styles.card}>
+      <RefreshableScrollView
+        className={styles.body}
+        onRefresh={loadOverview}
+        scrollIntoView={justBooked ? 'booking-summary' : ''}
+      >
+        <View id='booking-summary' className={styles.card}>
           <Text className={styles.title}>预约说明</Text>
           <Text className={styles.text}>
             报名审核通过后可在此选择考场计划、考试日期和时段。预约成功后，下方显示的日期与时段即为最终考试时间。
           </Text>
           {currentBooking && (
-            <View className={styles.currentBooking}>
-              <Text className={styles.bookingTitle}>当前预约</Text>
+            <View className={`${styles.currentBooking} ${justBooked ? styles.bookingHighlight : ''}`}>
+              <Text className={styles.bookingTitle}>
+                {justBooked ? '✅ 当前预约' : '当前预约'}
+              </Text>
               <Text className={styles.bookingText}>
-                {currentBooking.subject_name}｜{displayDate(currentBooking.exam_date)}{' '}
+                {currentBooking.subject_name && `${currentBooking.subject_name}｜`}
+                {displayDate(currentBooking.exam_date)}{' '}
                 {currentBooking.slot_label}（{currentBooking.slot_time.slice(0, 5)}）
               </Text>
               {canCancelBooking(currentBooking.exam_date) ? (
