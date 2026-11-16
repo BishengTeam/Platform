@@ -82,6 +82,7 @@ export interface H3cExamTimeSlot {
 export interface H3cExamBooking {
   id: number
   registration_id: number
+  schedule_id?: number
   schedule_name: string
   subject_name: string
   slot_label: string

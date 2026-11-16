@@ -1,7 +1,7 @@
 import { OFFLINE_PAYMENT_LABELS as labels } from '@/utils/offlinePayment'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Text, View } from '@tarojs/components'
-import Taro, { useRouter } from '@tarojs/taro'
+import Taro, { useDidShow, useRouter } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
@@ -31,7 +31,7 @@ import {
   type RensheApplicationDetail,
   type RenshePlan,
 } from '@/services/rensheService'
-import type { H3cRegistration } from '@/types/h3c'
+import type { H3cExamBooking, H3cRegistration } from '@/types/h3c'
 import { H3C_STUDENT_METHODS, studentProofLabel, type H3cStudentVerificationMethod } from '@/utils/h3cStudent'
 import type { CompetitionMyRegistration } from '@/types'
 import sharedStyles from './registrations.module.scss'
@@ -79,6 +79,7 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
 }
 
 const TYPE_LABELS = H3C_REGISTRATION_TYPE_LABELS
+const H3C_BOOKING_ELIGIBLE_STATUSES = ['approved', 'final_approved']
 
 const FIELD_LABELS: Record<string, string> = {
   candidate_name: '姓名',
@@ -151,6 +152,23 @@ function isUserCancelled(error: unknown): boolean {
   return Boolean((error as { errMsg?: string } | null)?.errMsg?.includes('cancel'))
 }
 
+function findCurrentBooking(
+  rows: H3cExamBooking[],
+  registrationId: number,
+): H3cExamBooking | null {
+  const exact = rows.find(
+    item => item.registration_id === registrationId && item.status === 'booked'
+  )
+  if (exact) return exact
+  // Compatibility with older booking-list payloads that omitted registration_id.
+  // New payloads stay exact so two H3C subjects do not display each other's booking.
+  const rowsHaveRegistrationIds = rows.some(
+    item => Number.isSafeInteger(item.registration_id)
+  )
+  if (rowsHaveRegistrationIds || rows.length === 0) return null
+  return rows.find(item => item.status === 'booked') || null
+}
+
 async function chooseNispFile(materialType: NispMaterialType): Promise<string> {
   if (materialType === 'portrait_photo') {
     const result = await Taro.chooseImage({
@@ -208,6 +226,8 @@ export default function RegistrationDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [savingEdit, setSavingEdit] = useState(false)
+  const [examBooking, setExamBooking] = useState<H3cExamBooking | null>(null)
+  const firstBookingShow = useRef(true)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -272,6 +292,35 @@ export default function RegistrationDetailPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  const loadExamBooking = useCallback(async () => {
+    if (
+      certRegistration?.kind !== 'H3C'
+      || !H3C_BOOKING_ELIGIBLE_STATUSES.includes(certRegistration.status)
+    ) {
+      setExamBooking(null)
+      return
+    }
+    try {
+      const rows = await h3cService.listExamBookings()
+      setExamBooking(findCurrentBooking(rows, certRegistration.id))
+    } catch {
+      setExamBooking(null)
+    }
+  }, [certRegistration?.id, certRegistration?.kind, certRegistration?.status])
+
+  useEffect(() => {
+    firstBookingShow.current = true
+    void loadExamBooking()
+  }, [loadExamBooking])
+
+  useDidShow(() => {
+    if (firstBookingShow.current) {
+      firstBookingShow.current = false
+      return
+    }
+    void loadExamBooking()
+  })
 
   const correctionNow = useCertificationBatchClock([], load, kind === 'h3c' || kind === 'nisp', [
     certRegistration?.pending_correction?.due_at || certRegistration?.resubmission_due_at,
@@ -705,14 +754,18 @@ export default function RegistrationDetailPage() {
               <Text className={styles.subtitle}>{registrationTypeLabel}</Text>
 
               {certRegistration.kind === 'H3C'
-                && ['approved', 'final_approved'].includes(certRegistration.status) && (
+                && H3C_BOOKING_ELIGIBLE_STATUSES.includes(certRegistration.status) && (
                 <View
-                  className={styles.retryBtn}
+                  className={`${styles.retryBtn} ${examBooking ? styles.viewBookingBtn : ''}`}
                   onClick={() => Taro.navigateTo({
                     url: `/${ROUTES.H3C_EXAM_BOOKING}?registration_id=${certRegistration.id}`,
                   })}
                 >
-                  <Text>预约考试日期</Text>
+                  <Text>
+                    {examBooking
+                      ? `📅 ${examBooking.exam_date.slice(0, 10)} ${examBooking.slot_label}`
+                      : '预约考试日期'}
+                  </Text>
                 </View>
               )}
 

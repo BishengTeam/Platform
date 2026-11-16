@@ -25,6 +25,14 @@
   font-weight: 700;
 }
 
+.stepTitle {
+  display: block;
+  margin-bottom: 18rpx;
+  color: #17233d;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
 .text {
   color: #526176;
   font-size: 26rpx;
@@ -89,13 +97,6 @@
   box-sizing: border-box;
 }
 
-.currentBooking {
-  margin-top: 22rpx;
-  padding: 22rpx;
-  border-radius: 16rpx;
-  background: #effaff;
-}
-
 .bookingHighlight {
   border: 3rpx solid #22c55e;
   animation: booking-pulse 0.6s ease 2;
@@ -107,20 +108,74 @@
   100% { transform: scale(1); }
 }
 
-.bookingTitle {
-  display: block;
-  margin-bottom: 8rpx;
-  color: #0d6efd;
-  font-size: 26rpx;
+.bookingSuccessHeader {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #e8f5e9;
+}
+
+.successIcon {
+  font-size: 40rpx;
+}
+
+.successTitle {
+  color: #2e7d32;
+  font-size: 34rpx;
   font-weight: 700;
 }
 
-.bookingText {
-  display: block;
-  margin-bottom: 18rpx;
-  color: #253a5e;
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f0f2f6;
+}
+
+.detailRow:last-of-type {
+  border-bottom: none;
+}
+
+.detailLabel {
+  flex-shrink: 0;
+  color: #76809a;
   font-size: 26rpx;
-  line-height: 1.5;
+}
+
+.detailValue {
+  max-width: 68%;
+  color: #17233d;
+  font-size: 28rpx;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-all;
+}
+
+.noticeCard {
+  margin-top: 24rpx;
+  padding: 20rpx;
+  background: #fff8e1;
+  border-radius: 12rpx;
+}
+
+.noticeTitle {
+  display: block;
+  margin-bottom: 8rpx;
+  color: #b7791f;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.noticeText {
+  display: block;
+  color: #5f4b0a;
+  font-size: 24rpx;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 
 .warning {

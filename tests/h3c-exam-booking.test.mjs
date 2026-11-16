@@ -7,13 +7,18 @@ test('H3C booking page follows schedule, date, slot order and scopes slots to re
   const page = await readFile('src/pages/h3c/exam-booking/index.tsx', 'utf8')
   const detail = await readFile('src/pages/mine/registration-detail.tsx', 'utf8')
 
-  assert.match(page, /1\. 选择考场计划/)
-  assert.match(page, /2\. 选择考试日期/)
-  assert.match(page, /3\. 选择考试时段/)
+  assert.match(page, /① 选择考场计划/)
+  assert.match(page, /② 选择考试日期/)
+  assert.match(page, /③ 选择考试时段/)
   assert.match(page, /h3cService\.listExamSlots\(scheduleId, examDate, registrationId\)/)
   assert.match(page, /h3cService\.bookExamSeat\(\s*scheduleId,\s*registrationId,\s*slotId,\s*examDate,?\s*\)/)
   assert.match(page, /剩余 \$\{item\.remaining\} 位/)
   assert.match(page, /考前 3 天内不可自助取消/)
+  assert.match(detail, /findCurrentBooking\(rows, certRegistration\.id\)/)
+  assert.match(detail, /useDidShow\(\(\) => \{[\s\S]*?void loadExamBooking\(\)/)
+  assert.match(detail, /examBooking \?/)
+  assert.match(detail, /📅 \$\{examBooking\.exam_date\.slice\(0, 10\)\} \$\{examBooking\.slot_label\}/)
+  assert.match(detail, /: '预约考试日期'/)
   assert.match(detail, /H3C_EXAM_BOOKING\}\?registration_id=\$\{certRegistration\.id\}/)
   assert.equal(
     safeLoginTarget('/pages/h3c/exam-booking/index?registration_id=12'),
@@ -34,7 +39,15 @@ test('H3C booking success keeps the current booking visible immediately', async 
   assert.match(page, /setOptimisticBooking\(booked\)/)
   assert.match(page, /setJustBooked\(true\)/)
   assert.match(page, /scrollIntoView=\{justBooked \? 'booking-summary' : ''\}/)
-  assert.match(page, /\{justBooked \? '✅ 当前预约' : '当前预约'\}/)
+  assert.match(page, /title=\{currentBooking \? '考试安排' : 'H3C 考试预约'\}/)
+  assert.match(page, /<Text className=\{styles\.successIcon\}>✅<\/Text>/)
+  assert.match(page, /<Text className=\{styles\.successTitle\}>预约成功<\/Text>/)
+  for (const label of ['考试科目', '考试日期', '考试时段', '考场计划']) {
+    assert.match(page, new RegExp(label))
+  }
+  assert.match(page, /weekdayLabel\(currentBooking\.exam_date\)/)
+  assert.match(page, /取消后可重新选择其他日期和时段。/)
+  assert.match(page, /getExamNotice\(bookedScheduleId\)/)
   assert.match(style, /\.bookingHighlight\s*\{[\s\S]*?border: 3rpx solid #22c55e;[\s\S]*?animation: booking-pulse/)
   assert.match(style, /@keyframes booking-pulse\s*\{[\s\S]*?transform: scale\(1\.02\)/)
 })

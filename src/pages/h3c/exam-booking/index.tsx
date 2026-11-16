@@ -12,9 +12,17 @@ import { serverNow } from '@/utils/timeSync'
 import styles from './index.module.scss'
 
 const DAY_MS = 24 * 60 * 60 * 1000
+const WEEKDAY_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
 function displayDate(value: string) {
   return value.slice(0, 10)
+}
+
+function weekdayLabel(value: string) {
+  const time = Date.parse(`${displayDate(value)}T00:00:00Z`)
+  return Number.isFinite(time)
+    ? WEEKDAY_LABELS[new Date(time).getUTCDay()]
+    : ''
 }
 
 function canCancelBooking(examDate: string) {
@@ -100,6 +108,20 @@ export default function H3cExamBookingPage() {
   useEffect(() => { void loadOverview() }, [loadOverview])
 
   useEffect(() => {
+    const bookedScheduleId = currentBooking?.schedule_id
+    if (!bookedScheduleId) return
+    let cancelled = false
+    h3cService.getExamNotice(bookedScheduleId)
+      .then(value => {
+        if (!cancelled) setNotice(value)
+      })
+      .catch(reason => {
+        if (!cancelled) setError(reason instanceof Error ? reason.message : '考前注意事项加载失败')
+      })
+    return () => { cancelled = true }
+  }, [currentBooking?.schedule_id])
+
+  useEffect(() => {
     if (!justBooked) return
     const timer = setTimeout(() => setJustBooked(false), 1800)
     return () => clearTimeout(timer)
@@ -182,6 +204,7 @@ export default function H3cExamBookingPage() {
       const booked: H3cExamBooking = {
         id: result.booking_id,
         registration_id: registrationId,
+        schedule_id: scheduleId,
         schedule_name: schedule?.name || '',
         subject_name: '',
         slot_label: selectedSlot?.label || '',
@@ -236,38 +259,12 @@ export default function H3cExamBookingPage() {
 
   return <AuthGuard>
     <View className={styles.page}>
-      <PageHeader title='H3C 考试预约' shouldShowBack />
+      <PageHeader title={currentBooking ? '考试安排' : 'H3C 考试预约'} shouldShowBack />
       <RefreshableScrollView
         className={styles.body}
         onRefresh={loadOverview}
         scrollIntoView={justBooked ? 'booking-summary' : ''}
       >
-        <View id='booking-summary' className={styles.card}>
-          <Text className={styles.title}>预约说明</Text>
-          <Text className={styles.text}>
-            报名审核通过后可在此选择考场计划、考试日期和时段。预约成功后，下方显示的日期与时段即为最终考试时间。
-          </Text>
-          {currentBooking && (
-            <View className={`${styles.currentBooking} ${justBooked ? styles.bookingHighlight : ''}`}>
-              <Text className={styles.bookingTitle}>
-                {justBooked ? '✅ 当前预约' : '当前预约'}
-              </Text>
-              <Text className={styles.bookingText}>
-                {currentBooking.subject_name && `${currentBooking.subject_name}｜`}
-                {displayDate(currentBooking.exam_date)}{' '}
-                {currentBooking.slot_label}（{currentBooking.slot_time.slice(0, 5)}）
-              </Text>
-              {canCancelBooking(currentBooking.exam_date) ? (
-                <Button size='sm' variant='secondary' disabled={submitting} onClick={() => void cancel(currentBooking)}>
-                  取消预约
-                </Button>
-              ) : (
-                <Text className={styles.warning}>考前 3 天内不可自助取消，请联系管理员</Text>
-              )}
-            </View>
-          )}
-        </View>
-
         {loading && <Text className={styles.hint}>正在加载考场计划…</Text>}
         {error && (
           <View className={styles.errorCard}>
@@ -276,95 +273,156 @@ export default function H3cExamBookingPage() {
           </View>
         )}
 
-        {!loading && !error && schedules.length === 0 && (
-          <View className={styles.card}>
-            <EmptyState title={currentBooking ? '已有有效预约' : '暂无可预约考场计划'} />
-          </View>
-        )}
-
-        {!loading && schedules.length > 0 && (
-          <View className={styles.card}>
-            <Text className={styles.title}>1. 选择考场计划</Text>
-            {currentBooking ? (
-              <Text className={styles.hint}>已有有效预约。如需更换时间，请先取消当前预约。</Text>
-            ) : schedules.map(item => (
-              <View
-                key={item.id}
-                className={`${styles.option} ${item.id === scheduleId ? styles.active : ''}`}
-                onClick={() => chooseSchedule(item.id)}
-              >
-                <Text className={styles.optionTitle}>{item.name}</Text>
-                <Text className={styles.optionText}>
-                  {displayDate(item.open_date_start)} ~ {displayDate(item.open_date_end)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {scheduleId > 0 && !currentBooking && (
-          <View className={styles.card}>
-            <Text className={styles.title}>2. 选择考试日期</Text>
-            {datesLoading && <Text className={styles.hint}>正在加载可预约日期…</Text>}
-            {!datesLoading && dates.length === 0 && (
-              <Text className={styles.hint}>当前考场计划暂无可预约日期。</Text>
-            )}
-            <View className={styles.dateGrid}>
-              {dates.map(item => (
-                <View
-                  key={item}
-                  className={`${styles.dateItem} ${item === examDate ? styles.active : ''}`}
-                  onClick={() => chooseDate(item)}
-                >
-                  <Text>{displayDate(item)}</Text>
-                </View>
-              ))}
+        {currentBooking ? (
+          <View
+            id='booking-summary'
+            className={`${styles.card} ${justBooked ? styles.bookingHighlight : ''}`}
+          >
+            <View className={styles.bookingSuccessHeader}>
+              <Text className={styles.successIcon}>✅</Text>
+              <Text className={styles.successTitle}>预约成功</Text>
             </View>
-          </View>
-        )}
+            <View className={styles.detailRow}>
+              <Text className={styles.detailLabel}>考试科目</Text>
+              <Text className={styles.detailValue}>{currentBooking.subject_name || '-'}</Text>
+            </View>
+            <View className={styles.detailRow}>
+              <Text className={styles.detailLabel}>考试日期</Text>
+              <Text className={styles.detailValue}>
+                {displayDate(currentBooking.exam_date)}
+                {weekdayLabel(currentBooking.exam_date) && `（${weekdayLabel(currentBooking.exam_date)}）`}
+              </Text>
+            </View>
+            <View className={styles.detailRow}>
+              <Text className={styles.detailLabel}>考试时段</Text>
+              <Text className={styles.detailValue}>
+                {currentBooking.slot_label}（{currentBooking.slot_time.slice(0, 5)}）
+              </Text>
+            </View>
+            <View className={styles.detailRow}>
+              <Text className={styles.detailLabel}>考场计划</Text>
+              <Text className={styles.detailValue}>{currentBooking.schedule_name || '-'}</Text>
+            </View>
 
-        {examDate && !currentBooking && (
-          <View className={styles.card}>
-            <Text className={styles.title}>3. 选择考试时段</Text>
-            {slotsLoading && <Text className={styles.hint}>正在加载时段与剩余机位…</Text>}
-            {!slotsLoading && slots.length === 0 && (
-              <Text className={styles.hint}>该日期暂无可预约时段，请更换日期或考场计划。</Text>
+            {notice && (
+              <View className={styles.noticeCard}>
+                <Text className={styles.noticeTitle}>考前注意事项</Text>
+                <Text className={styles.noticeText}>{notice}</Text>
+              </View>
             )}
-            {slots.map(item => {
-              const disabled = item.remaining === 0
-              return (
-                <View
-                  key={item.slot_id}
-                  className={`${styles.option} ${item.slot_id === slotId ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
-                  onClick={() => chooseSlot(item.slot_id, item.remaining)}
-                >
-                  <Text className={styles.optionTitle}>
-                    {item.label}（{item.start_time.slice(0, 5)}）
-                  </Text>
-                  <Text className={styles.optionText}>
-                    {disabled ? '已满' : item.remaining < 0 ? '余量不限' : `剩余 ${item.remaining} 位`}
-                  </Text>
+
+            {canCancelBooking(currentBooking.exam_date) ? (
+              <>
+                <Button
+                  variant='secondary'
+                  disabled={submitting}
+                  loading={submitting}
+                  onClick={() => void cancel(currentBooking)}
+                >取消预约</Button>
+                <Text className={styles.hint}>取消后可重新选择其他日期和时段。</Text>
+              </>
+            ) : (
+              <Text className={styles.warning}>考前 3 天内不可自助取消，请联系管理员</Text>
+            )}
+          </View>
+        ) : (
+          <>
+            <View id='booking-summary' className={styles.card}>
+              <Text className={styles.title}>预约说明</Text>
+              <Text className={styles.text}>
+                报名审核通过后可在此选择考场计划、考试日期和时段。预约成功后，下方显示的日期与时段即为最终考试时间。
+              </Text>
+            </View>
+
+            {!loading && !error && schedules.length === 0 && (
+              <View className={styles.card}>
+                <EmptyState title='暂无可预约考场计划' />
+              </View>
+            )}
+
+            {!loading && schedules.length > 0 && (
+              <View className={styles.card}>
+                <Text className={styles.stepTitle}>① 选择考场计划</Text>
+                {schedules.map(item => (
+                  <View
+                    key={item.id}
+                    className={`${styles.option} ${item.id === scheduleId ? styles.active : ''}`}
+                    onClick={() => chooseSchedule(item.id)}
+                  >
+                    <Text className={styles.optionTitle}>{item.name}</Text>
+                    <Text className={styles.optionText}>
+                      {displayDate(item.open_date_start)} ~ {displayDate(item.open_date_end)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {scheduleId > 0 && (
+              <View className={styles.card}>
+                <Text className={styles.stepTitle}>② 选择考试日期</Text>
+                {datesLoading && <Text className={styles.hint}>正在加载可预约日期…</Text>}
+                {!datesLoading && dates.length === 0 && (
+                  <Text className={styles.hint}>当前考场计划暂无可预约日期。</Text>
+                )}
+                <View className={styles.dateGrid}>
+                  {dates.map(item => (
+                    <View
+                      key={item}
+                      className={`${styles.dateItem} ${item === examDate ? styles.active : ''}`}
+                      onClick={() => chooseDate(item)}
+                    >
+                      <Text>{displayDate(item)}</Text>
+                    </View>
+                  ))}
                 </View>
-              )
-            })}
-            {!slotsLoading && slots.length > 0 && (
-              <Button
-                variant='gradient'
-                disabled={!selectedSlot || Boolean(currentBooking) || submitting}
-                loading={submitting}
-                onClick={() => void book()}
-              >
-                {selectedSlot ? `预约 ${displayDate(examDate)} ${selectedSlot.start_time.slice(0, 5)}` : '请选择考试时段'}
-              </Button>
+              </View>
             )}
-          </View>
-        )}
 
-        {notice && (
-          <View className={styles.card}>
-            <Text className={styles.title}>考前注意事项</Text>
-            <Text className={styles.text}>{notice}</Text>
-          </View>
+            {examDate && (
+              <View className={styles.card}>
+                <Text className={styles.stepTitle}>③ 选择考试时段</Text>
+                {slotsLoading && <Text className={styles.hint}>正在加载时段与剩余机位…</Text>}
+                {!slotsLoading && slots.length === 0 && (
+                  <Text className={styles.hint}>该日期暂无可预约时段，请更换日期或考场计划。</Text>
+                )}
+                {slots.map(item => {
+                  const disabled = item.remaining === 0
+                  return (
+                    <View
+                      key={item.slot_id}
+                      className={`${styles.option} ${item.slot_id === slotId ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
+                      onClick={() => chooseSlot(item.slot_id, item.remaining)}
+                    >
+                      <Text className={styles.optionTitle}>
+                        {item.label}（{item.start_time.slice(0, 5)}）
+                      </Text>
+                      <Text className={styles.optionText}>
+                        {disabled ? '已满' : item.remaining < 0 ? '余量不限' : `剩余 ${item.remaining} 位`}
+                      </Text>
+                    </View>
+                  )
+                })}
+                {!slotsLoading && slots.length > 0 && (
+                  <Button
+                    variant='gradient'
+                    disabled={!selectedSlot || Boolean(currentBooking) || submitting}
+                    loading={submitting}
+                    onClick={() => void book()}
+                  >
+                    {selectedSlot ? '确认预约' : '请选择考试时段'}
+                  </Button>
+                )}
+              </View>
+            )}
+
+            {scheduleId > 0 && notice && (
+              <View className={styles.card}>
+                <Text className={styles.stepTitle}>📋 考前注意事项</Text>
+                <Text className={styles.text}>{notice}</Text>
+              </View>
+            )}
+          </>
         )}
       </RefreshableScrollView>
     </View>
