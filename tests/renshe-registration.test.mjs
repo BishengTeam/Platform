@@ -70,7 +70,8 @@ test('My registrations and the standalone detail page include Renshe records', a
   ])
 
   assert.match(list, /rensheService\.listApplications\(\)/)
-  assert.match(list, /openRegistrationDetail\('renshe', item\.id\)/)
+  assert.match(list, /function rensheCard\(item: RensheApplicationListItem\)/)
+  assert.match(list, /registrationDetailUrl\('renshe', item\.id\)/)
   assert.match(detail, /value === 'renshe'/)
   assert.match(detail, /rensheService\.getApplication\(registrationId\)/)
   assert.match(detail, /setRenshePlan\(detail\.plan\)/)
