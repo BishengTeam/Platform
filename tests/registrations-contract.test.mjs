@@ -64,6 +64,28 @@ test('my registrations uses data-driven cascading pill filters', async () => {
   assert.match(style, /\.filterTagActive\s*\{[\s\S]*?background: #e8f3ff/)
 })
 
+test('registration navigation hands off an immediate preview and press feedback', async () => {
+  const [list, detail, style, auth] = await Promise.all([
+    readFile('src/pages/mine/registrations.tsx', 'utf8'),
+    readFile('src/pages/mine/registration-detail.tsx', 'utf8'),
+    readFile('src/pages/mine/registrations.module.scss', 'utf8'),
+    readFile('src/hooks/useAuth.ts', 'utf8'),
+  ])
+
+  assert.match(list, /preloadRegistrationPreview\(\{[\s\S]*?key: card\.key/)
+  assert.match(list, /const openRegistrationCard = \(card: RegistrationCard\) =>/)
+  assert.match(list, /openingKey === card\.key \? styles\.cardOpening/)
+  assert.match(style, /\.cardOpening\s*\{[\s\S]*?transform: scale\(\.985\)/)
+  assert.match(detail, /readRegistrationPreview\(previewKey\)/)
+  assert.match(detail, /loading && preview/)
+  assert.match(detail, /详情加载中\.\.\./)
+  const sangforDetail = await readFile('src/pages/sangfor/detail.tsx', 'utf8')
+  assert.match(sangforDetail, /readRegistrationPreview\(`sangfor-\$\{id\}`\)/)
+  assert.match(sangforDetail, /loading && preview/)
+  assert.match(auth, /useState\(initiallyLoggedIn\)/)
+  assert.match(auth, /const \[isChecked, setIsChecked\] = useState\(initiallyLoggedIn\)/)
+})
+
 test('NISP picker indexes options with a validated numeric index', async () => {
   const page = await readFile('src/pages/nisp/form.tsx', 'utf8')
 

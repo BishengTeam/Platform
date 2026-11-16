@@ -21,6 +21,7 @@ import {
 } from '@/services/rensheService'
 import type { H3cRegistration } from '@/types/h3c'
 import type { CompetitionMyRegistration } from '@/types'
+import { preloadRegistrationPreview } from '@/utils/registrationPreview'
 import styles from './registrations.module.scss'
 
 type H3cRegistrationCard = H3cRegistration & { type: 'H3C' }
@@ -219,6 +220,7 @@ export default function MyRegistrationsPage() {
   const [error, setError] = useState(false)
   const [activeCategory, setActiveCategory] = useState<'all' | RegistrationCategory>('all')
   const [activeStatus, setActiveStatus] = useState<'all' | StatusGroup>('all')
+  const [openingKey, setOpeningKey] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -307,6 +309,22 @@ export default function MyRegistrationsPage() {
     setActiveStatus('all')
   }
 
+  const openRegistrationCard = (card: RegistrationCard) => {
+    if (openingKey) return
+    setOpeningKey(card.key)
+    preloadRegistrationPreview({
+      key: card.key,
+      title: card.title,
+      categoryLabel: card.categoryLabel,
+      statusLabel: card.statusLabel,
+      statusGroup: card.statusGroup,
+      extraRows: card.extraRows,
+    })
+    Taro.navigateTo({ url: card.detailUrl })
+      .catch(() => Taro.showToast({ title: '打开详情失败', icon: 'none' }))
+      .finally(() => setOpeningKey(''))
+  }
+
   return (
     <AuthGuard>
       <View className={styles.page}>
@@ -365,8 +383,8 @@ export default function MyRegistrationsPage() {
           {!loading && !error && finalFiltered.map(card => (
             <View
               key={card.key}
-              className={styles.card}
-              onClick={() => Taro.navigateTo({ url: card.detailUrl })}
+              className={`${styles.card} ${openingKey === card.key ? styles.cardOpening : ''}`}
+              onClick={() => openRegistrationCard(card)}
             >
               <View className={styles.cardHeader}>
                 <Text className={styles.title}>{card.title}</Text>

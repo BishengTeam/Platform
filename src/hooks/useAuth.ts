@@ -4,8 +4,12 @@ import { restoreAuthSession } from '@/utils/request'
 import { getToken, getAuthSessionId, subscribeAuth, accessTokenExpired } from '@/utils/authState'
 
 export function useAuth() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getToken()) && !accessTokenExpired())
-  const [isChecked, setIsChecked] = useState(false)
+  const initiallyLoggedIn = Boolean(getToken()) && !accessTokenExpired()
+  const [isLoggedIn, setIsLoggedIn] = useState(initiallyLoggedIn)
+  // A locally unexpired access token is enough to render the protected shell;
+  // every business API remains server-authoritative. This removes one blank
+  // render while navigating between already-authenticated mini-program pages.
+  const [isChecked, setIsChecked] = useState(initiallyLoggedIn)
   const [revision, setRevision] = useState(0)
   useEffect(() => subscribeAuth(() => setRevision(value => value + 1)), [])
   useDidShow(() => setRevision(value => value + 1))

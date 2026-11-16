@@ -41,6 +41,7 @@ import { nispContactFieldError } from '@/utils/nispForm'
 import { H3C_REGISTRATION_TYPE_LABELS, isValidH3cPhone } from '@/utils/h3cRegistration'
 import { correctionDeadlineState } from '@/utils/correctionDeadline'
 import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
+import { readRegistrationPreview, type RegistrationPreview } from '@/utils/registrationPreview'
 
 function PaymentProgress({ orderId, onLoaded }: { orderId: number; onLoaded: (order: OrderDetail) => void }) {
   const [order, setOrder] = useState<OrderDetail | null>(null)
@@ -188,6 +189,7 @@ export default function RegistrationDetailPage() {
   const { params } = useRouter()
   const kind = parseRegistrationKind(params?.type)
   const registrationId = Number(params?.id)
+  const previewKey = kind ? `${kind}-${registrationId}` : ''
 
   const [certRegistration, setCertRegistration] = useState<CertificationRegistrationDetail | null>(null)
   const [rensheRegistration, setRensheRegistration] = useState<RensheApplicationDetail | null>(null)
@@ -200,6 +202,9 @@ export default function RegistrationDetailPage() {
     custom: {},
   })
   const [loading, setLoading] = useState(true)
+  const [preview, setPreview] = useState<RegistrationPreview | null>(() => (
+    previewKey ? readRegistrationPreview(previewKey) : null
+  ))
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [savingEdit, setSavingEdit] = useState(false)
@@ -225,6 +230,7 @@ export default function RegistrationDetailPage() {
       if (kind === 'h3c') {
         const detail = await h3cService.getRegistration(registrationId)
         setCertRegistration({ ...detail, kind: 'H3C' })
+        setPreview(null)
         return
       }
 
@@ -235,6 +241,7 @@ export default function RegistrationDetailPage() {
           kind: 'NISP',
           levelLabel: detail.level === '1' ? '一级' : '二级',
         })
+        setPreview(null)
         return
       }
 
@@ -242,6 +249,7 @@ export default function RegistrationDetailPage() {
         const detail = await rensheService.getApplication(registrationId)
         setRensheRegistration(detail)
         setRenshePlan(detail.plan)
+        setPreview(null)
         return
       }
 
@@ -253,6 +261,7 @@ export default function RegistrationDetailPage() {
       }
       setCompetitionRegistration(detail)
       setEditValues(competitionEditValues(detail))
+      setPreview(null)
     } catch {
       setError('加载失败，请稍后重试')
     } finally {
@@ -646,7 +655,32 @@ export default function RegistrationDetailPage() {
           className={`${styles.body} ${showActionFooter ? styles.bodyWithFooter : ''}`}
           onRefresh={load}
         >
-          {loading && <View className={styles.placeholder}>加载中...</View>}
+          {loading && preview && (
+            <View className={styles.contentCard}>
+              <View className={styles.header}>
+                <Text className={styles.title}>{preview.title}</Text>
+                <Text className={`${sharedStyles.status} ${
+                  preview.statusGroup === 'passed'
+                    ? sharedStyles.statusApproved
+                    : preview.statusGroup === 'closed'
+                      ? sharedStyles.statusNeutral
+                      : sharedStyles.statusPending
+                }`}>
+                  {preview.statusLabel}
+                </Text>
+              </View>
+              {preview.extraRows.map(row => (
+                <View key={row.label} className={sharedStyles.row}>
+                  <Text className={sharedStyles.label}>{row.label}</Text>
+                  <Text className={row.label === '金额' ? sharedStyles.amount : sharedStyles.value}>
+                    {row.value}
+                  </Text>
+                </View>
+              ))}
+              <Text className={styles.previewLoading}>详情加载中...</Text>
+            </View>
+          )}
+          {loading && !preview && <View className={styles.placeholder}>加载中...</View>}
           {!loading && !error && kind && kind !== 'competition' && (certRegistration || rensheRegistration?.current_order_id) && <JourneyPanel vendor={kind} id={registrationId} />}
 
           {!loading && error && (

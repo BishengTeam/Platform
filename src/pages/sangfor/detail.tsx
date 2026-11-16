@@ -11,17 +11,21 @@ import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/constants/routes'
 import { SANGFOR_LABELS, SANGFOR_STATUS } from '@/utils/sangforForm'
 import { formatDateTime } from '@/utils/format'
+import { readRegistrationPreview, type RegistrationPreview } from '@/utils/registrationPreview'
 import styles from './sangfor.module.scss'
 
 export default function SangforDetailPage() {
   const id = Number(useRouter().params?.id), { isLoggedIn, sessionId } = useAuth()
   const [record, setRecord] = useState<SangforRegistration | null>(null), [error, setError] = useState(''), [loading, setLoading] = useState(true)
+  const [preview, setPreview] = useState<RegistrationPreview | null>(() => (
+    Number.isSafeInteger(id) && id > 0 ? readRegistrationPreview(`sangfor-${id}`) : null
+  ))
   const generation = useRef(0)
   const load = useCallback(async () => {
     if (!isLoggedIn) return
     const seq = ++generation.current
     setLoading(true); setError('')
-    try { if (!Number.isSafeInteger(id) || id <= 0) throw new Error('报名记录无效'); const value = await sangforService.registration(id); if (seq === generation.current) setRecord(value) }
+    try { if (!Number.isSafeInteger(id) || id <= 0) throw new Error('报名记录无效'); const value = await sangforService.registration(id); if (seq === generation.current) { setRecord(value); setPreview(null) } }
     catch (reason) { if (seq === generation.current) setError(reason instanceof Error ? reason.message : '报名详情加载失败') }
     finally { if (seq === generation.current) setLoading(false) }
   }, [id, isLoggedIn, sessionId])
@@ -30,6 +34,12 @@ export default function SangforDetailPage() {
   return <AuthGuard><View className={styles.page}><PageHeader title='深信服报名详情' shouldShowBack />
     <RefreshableScrollView className={styles.body} onRefresh={load}><View className={styles.content}>
       {loading && <View className={styles.empty}>加载中…</View>}
+      {loading && preview && <View className={styles.card}>
+        <Text className={styles.title}>{preview.title}</Text>
+        <View className={styles.row}><Text className={styles.label}>状态</Text><Text className={styles.value}>{preview.statusLabel}</Text></View>
+        {preview.extraRows.map(row => <View key={row.label} className={styles.row}><Text className={styles.label}>{row.label}</Text><Text className={styles.value}>{row.value}</Text></View>)}
+        <Text className={styles.hint}>详情加载中...</Text>
+      </View>}
       {error && <View className={styles.empty} onClick={() => void load()}>{error}，点击重试</View>}
       {!loading && !error && record && <>
         <JourneyPanel vendor='sangfor' id={record.id} />

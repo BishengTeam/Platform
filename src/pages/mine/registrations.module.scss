@@ -62,6 +62,11 @@
   box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
 }
 
+.cardOpening {
+  opacity: .72;
+  transform: scale(.985);
+}
+
 .cardHeader {
   display: flex;
   align-items: center;
