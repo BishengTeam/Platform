@@ -38,12 +38,32 @@ test('my registrations uses a standalone detail page for every vendor', async ()
   assert.match(detail, /snapshotText\(certRegistration\.candidate_snapshot, 'phone'\)/)
   assert.match(detail, /<JourneyPanel vendor=\{kind\} id=\{registrationId\}/)
   const journey = await readFile('src/components/CertificationEnrollment/JourneyPanel.tsx', 'utf8')
-  assert.match(journey, /<ConsultationGroupCard group=\{journey\.consultation_group\}/)
+  assert.match(journey, /<ConsultationGroupCard group=\{journey\.consultation_group\} embedded \/>/)
   assert.match(consultation, /resolveMediaUrl\(group\.qrcode_url\)/)
   assert.match(consultation, /批次咨询群/)
   assert.match(consultation, /长按识别加入咨询群/)
   assert.match(consultation, /二维码暂时无法显示/)
   assert.match(consultation, /contact_phone/)
+})
+
+test('embedded consultation group content avoids a card inside the sheet', async () => {
+  const [component, style] = await Promise.all([
+    readFile('src/components/ConsultationGroupCard/index.tsx', 'utf8'),
+    readFile('src/components/ConsultationGroupCard/index.module.scss', 'utf8'),
+  ])
+
+  assert.match(component, /embedded = false/)
+  assert.match(component, /embedded \? styles\.embeddedWrapper : styles\.card/)
+  assert.match(component, /\{!embedded && <Text className=\{styles\.title\}>批次咨询群<\/Text>\}/)
+
+  const embeddedStart = style.indexOf('.embeddedWrapper')
+  const embeddedEnd = style.indexOf('.title')
+  const embeddedStyle = style.slice(embeddedStart, embeddedEnd)
+  assert.match(embeddedStyle, /text-align: center/)
+  assert.doesNotMatch(embeddedStyle, /border|background|padding/)
+
+  assert.match(style, /\.qrcodeWrap\s*\{[\s\S]*?width: 100%;[\s\S]*?max-width: 320px;[\s\S]*?aspect-ratio: 1;/)
+  assert.match(style, /\.contactRow\s*\{[\s\S]*?flex-wrap: wrap;/)
 })
 
 test('my registrations uses data-driven cascading pill filters', async () => {

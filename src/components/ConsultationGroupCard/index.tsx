@@ -14,9 +14,14 @@ export interface ConsultationGroupInfo {
 
 interface ConsultationGroupCardProps {
   group: ConsultationGroupInfo
+  /** Inside a sheet that already supplies a title and horizontal padding. */
+  embedded?: boolean
 }
 
-export function ConsultationGroupCard({ group }: ConsultationGroupCardProps) {
+export function ConsultationGroupCard({
+  group,
+  embedded = false,
+}: ConsultationGroupCardProps) {
   const [imageFailed, setImageFailed] = useState(false)
   const qrcodeUrl = resolveMediaUrl(group.qrcode_url)
 
@@ -43,8 +48,8 @@ export function ConsultationGroupCard({ group }: ConsultationGroupCardProps) {
   }
 
   return (
-    <View className={styles.card}>
-      <Text className={styles.title}>批次咨询群</Text>
+    <View className={embedded ? styles.embeddedWrapper : styles.card}>
+      {!embedded && <Text className={styles.title}>批次咨询群</Text>}
       {group.join_instructions && (
         <Text className={styles.instructions}>{group.join_instructions}</Text>
       )}

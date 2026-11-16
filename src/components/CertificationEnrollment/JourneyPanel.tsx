@@ -46,7 +46,7 @@ export function JourneyPanel({ vendor, id }: { vendor: CertificationVendor; id: 
       {journey.contact.contact_wechat && <View className={styles.row}><Text>联系微信：{journey.contact.contact_wechat}</Text><Text className={styles.link} onClick={() => void Taro.setClipboardData({ data: journey.contact.contact_wechat }).catch(() => Taro.showToast({ title: '复制失败，请手动记录', icon: 'none' }))}>复制</Text></View>}
       {journey.contact.service_hours && <Text className={styles.hint}>服务时间：{journey.contact.service_hours}</Text>}
       {!journey.contact.contact_phone && !journey.contact.contact_wechat && <Text className={styles.hint}>该批次暂未配置联系方式，请通过“我的 → 联系老师”咨询。</Text>}
-      <Text className={styles.title}>批次咨询群</Text>{journey.consultation_group ? <ConsultationGroupCard group={journey.consultation_group} /> : <Text className={styles.hint}>{journey.group_message}</Text>}
+      <Text className={styles.title}>批次咨询群</Text>{journey.consultation_group ? <ConsultationGroupCard group={journey.consultation_group} embedded /> : <Text className={styles.hint}>{journey.group_message}</Text>}
       <Button variant='secondary' onClick={() => setOpen(false)}>关闭</Button>
     </ScrollView></View>}
   </>
