@@ -657,7 +657,7 @@ export default function RegistrationDetailPage() {
     ? certRegistration.exam_date
     : snapshotText(certRegistration?.candidate_snapshot, 'exam_date')
   const examLocation = certRegistration?.kind === 'H3C'
-    ? certRegistration.exam_location
+    ? examBooking?.exam_location || '以考试预约结果为准'
     : snapshotText(certRegistration?.candidate_snapshot, 'exam_location')
   const nispPhone = certRegistration?.kind === 'NISP'
     ? snapshotText(certRegistration.candidate_snapshot, 'phone')

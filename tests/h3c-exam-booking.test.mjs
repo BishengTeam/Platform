@@ -19,6 +19,7 @@ test('H3C booking page follows schedule, date, slot order and scopes slots to re
   assert.match(detail, /examBooking \?/)
   assert.match(detail, /📅 \$\{examBooking\.exam_date\.slice\(0, 10\)\} \$\{examBooking\.slot_label\}/)
   assert.match(detail, /: '预约考试日期'/)
+  assert.match(detail, /examBooking\?\.exam_location \|\| '以考试预约结果为准'/)
   assert.match(detail, /H3C_EXAM_BOOKING\}\?registration_id=\$\{certRegistration\.id\}/)
   assert.equal(
     safeLoginTarget('/pages/h3c/exam-booking/index?registration_id=12'),
