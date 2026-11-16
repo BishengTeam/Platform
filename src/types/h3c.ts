@@ -65,6 +65,31 @@ export interface H3cMaterialUploadResult {
   sha256: string
 }
 
+export interface H3cExamScheduleOption {
+  id: number
+  name: string
+  open_date_start: string
+  open_date_end: string
+}
+
+export interface H3cExamTimeSlot {
+  slot_id: number
+  label: string
+  start_time: string
+  remaining: number
+}
+
+export interface H3cExamBooking {
+  id: number
+  registration_id: number
+  schedule_name: string
+  subject_name: string
+  slot_label: string
+  slot_time: string
+  exam_date: string
+  status: 'booked' | 'cancelled' | 'completed' | 'no_show'
+}
+
 export interface H3cMaterial {
   id: number
   material_type: string

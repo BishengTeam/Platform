@@ -1,0 +1,135 @@
+.page {
+  min-height: 100vh;
+  background: #f2f6fc;
+}
+
+.body {
+  height: calc(100vh - 132px);
+  padding: 20rpx 28rpx 48rpx;
+  box-sizing: border-box;
+}
+
+.card {
+  padding: 28rpx;
+  margin-bottom: 22rpx;
+  background: #fff;
+  border-radius: 22rpx;
+  box-shadow: 0 8rpx 28rpx rgba(15, 23, 42, 0.05);
+}
+
+.title {
+  display: block;
+  margin-bottom: 18rpx;
+  color: #17233d;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.text {
+  color: #526176;
+  font-size: 26rpx;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.hint {
+  display: block;
+  margin-top: 12rpx;
+  color: #76809a;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.option {
+  padding: 24rpx;
+  margin-top: 16rpx;
+  border: 2rpx solid #e2e8f3;
+  border-radius: 16rpx;
+  background: #f9fbff;
+}
+
+.optionTitle {
+  display: block;
+  color: #22314d;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.optionText {
+  display: block;
+  margin-top: 8rpx;
+  color: #68738d;
+  font-size: 24rpx;
+}
+
+.active {
+  border-color: #1677ff;
+  background: #edf5ff;
+}
+
+.disabled {
+  opacity: 0.55;
+}
+
+.dateGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.dateItem {
+  min-width: 176rpx;
+  padding: 18rpx 14rpx;
+  color: #35435d;
+  font-size: 24rpx;
+  text-align: center;
+  border: 2rpx solid #e2e8f3;
+  border-radius: 14rpx;
+  background: #f9fbff;
+  box-sizing: border-box;
+}
+
+.currentBooking {
+  margin-top: 22rpx;
+  padding: 22rpx;
+  border-radius: 16rpx;
+  background: #effaff;
+}
+
+.bookingTitle {
+  display: block;
+  margin-bottom: 8rpx;
+  color: #0d6efd;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.bookingText {
+  display: block;
+  margin-bottom: 18rpx;
+  color: #253a5e;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.warning {
+  display: block;
+  margin-top: 12rpx;
+  color: #b7791f;
+  font-size: 24rpx;
+}
+
+.errorCard {
+  padding: 26rpx;
+  margin-bottom: 20rpx;
+  background: #fff4f4;
+  border-radius: 18rpx;
+}
+
+.error {
+  display: block;
+  margin-bottom: 14rpx;
+  color: #d92d20;
+  font-size: 25rpx;
+  line-height: 1.5;
+}

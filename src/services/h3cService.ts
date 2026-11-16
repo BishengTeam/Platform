@@ -1,12 +1,15 @@
 import { getOptional, getPublic } from '../utils/request.ts'
 import Taro from '@tarojs/taro'
-import { get, getToken, post } from '../utils/request.ts'
+import { del, get, getToken, post } from '../utils/request.ts'
 import type {
   H3cExamBatch,
   H3cMaterialUploadResult,
   H3cOrderCreatePayload,
   H3cProfileDefaults,
   H3cRegistration,
+  H3cExamBooking,
+  H3cExamScheduleOption,
+  H3cExamTimeSlot,
 } from '../types/h3c.ts'
 
 export interface PageData<T> {
@@ -62,6 +65,44 @@ export const h3cService = {
   },
   async cancelPayment(id: number): Promise<H3cRegistration> {
     return (await post<H3cRegistration>(`/api/h3c/registrations/${id}/cancel-payment`)).data
+  },
+  async listExamSchedules(registrationId: number): Promise<H3cExamScheduleOption[]> {
+    return (await get<H3cExamScheduleOption[]>('/api/h3c/exam/schedules', {
+      registration_id: registrationId,
+    })).data
+  },
+  async listExamDates(scheduleId: number): Promise<string[]> {
+    return (await get<{ dates: string[] }>(`/api/h3c/exam/schedules/${scheduleId}/dates`)).data.dates
+  },
+  async listExamSlots(
+    scheduleId: number,
+    examDate: string,
+    registrationId: number,
+  ): Promise<H3cExamTimeSlot[]> {
+    return (await get<{ slots: H3cExamTimeSlot[] }>(
+      `/api/h3c/exam/schedules/${scheduleId}/slots`,
+      { date: examDate, registration_id: registrationId },
+    )).data.slots
+  },
+  async getExamNotice(scheduleId: number): Promise<string> {
+    return (await get<{ notice: string }>(`/api/h3c/exam/schedules/${scheduleId}/notice`)).data.notice
+  },
+  async bookExamSeat(
+    scheduleId: number,
+    registrationId: number,
+    slotId: number,
+    examDate: string,
+  ): Promise<{ booking_id: number; exam_date: string }> {
+    return (await post<{ booking_id: number; exam_date: string }>(
+      `/api/h3c/exam/schedules/${scheduleId}/book?registration_id=${registrationId}`,
+      { slot_id: slotId, exam_date: examDate },
+    )).data
+  },
+  async listExamBookings(): Promise<H3cExamBooking[]> {
+    return (await get<H3cExamBooking[]>('/api/h3c/exam/bookings')).data
+  },
+  async cancelExamBooking(bookingId: number, registrationId: number): Promise<void> {
+    await del(`/api/h3c/exam/bookings/${bookingId}?registration_id=${registrationId}`)
   },
   async resubmitMaterials(
     id: number,

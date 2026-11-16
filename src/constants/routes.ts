@@ -17,6 +17,7 @@ export const ROUTES = {
   REGISTRATION_NOTICE: 'pages/registration/notice',
   H3C_INDEX: 'pages/h3c/index',
   H3C_FORM: 'pages/h3c/form',
+  H3C_EXAM_BOOKING: 'pages/h3c/exam-booking/index',
   NISP_INDEX: 'pages/nisp/index',
   NISP_FORM: 'pages/nisp/form',
   SANGFOR_INDEX: 'pages/sangfor/index',

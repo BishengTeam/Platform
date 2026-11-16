@@ -670,6 +670,18 @@ export default function RegistrationDetailPage() {
               </View>
               <Text className={styles.subtitle}>{registrationTypeLabel}</Text>
 
+              {certRegistration.kind === 'H3C'
+                && ['approved', 'final_approved'].includes(certRegistration.status) && (
+                <View
+                  className={styles.retryBtn}
+                  onClick={() => Taro.navigateTo({
+                    url: `/${ROUTES.H3C_EXAM_BOOKING}?registration_id=${certRegistration.id}`,
+                  })}
+                >
+                  <Text>预约考试日期</Text>
+                </View>
+              )}
+
               {correctionDeadline && (
                 <View className={`${sharedStyles.correctionNotice} ${correctionDeadline.expired ? sharedStyles.correctionExpired : ''}`}>
                   <Text className={sharedStyles.correctionDeadline}>补正截止：{correctionDeadline.label}</Text>

@@ -88,10 +88,47 @@ test('H3C pages and independent entry are registered', async () => {
   const appConfig = await readFile('src/app.config.ts', 'utf8')
   const routes = await readFile('src/constants/routes.ts', 'utf8')
   assert.match(appConfig, /root: 'pages\/h3c'/)
-  assert.match(appConfig, /pages: \['index', 'form'\]/)
+  assert.match(appConfig, /pages: \['index', 'form', 'exam-booking\/index'\]/)
   assert.match(routes, /H3C_INDEX: 'pages\/h3c\/index'/)
   assert.match(routes, /H3C_FORM: 'pages\/h3c\/form'/)
+  assert.match(routes, /H3C_EXAM_BOOKING: 'pages\/h3c\/exam-booking\/index'/)
   assert.equal(routes.includes('H3C_RECORDS'), false)
   assert.match(routes, /MINE_REGISTRATIONS: 'pages\/mine\/registrations'/)
   assert.match(appConfig, /'registrations'/)
+})
+
+test('H3C booking service calls the frozen exam booking endpoints', async () => {
+  resetRequestStateForTest()
+  installStorage()
+  const calls = []
+  Taro.showLoading = () => undefined
+  Taro.hideLoading = () => undefined
+  Taro.showToast = () => undefined
+  Taro.request = async options => {
+    calls.push(options)
+    if (options.url.includes('/dates')) return envelope({ dates: ['2026-11-20'] })
+    if (options.url.includes('/slots')) return envelope({ slots: [] })
+    if (options.url.includes('/bookings')) return envelope([])
+    if (options.url.includes('/book')) return envelope({ booking_id: 8, exam_date: '2026-11-20' })
+    return envelope([{ id: 4, name: '考场计划', open_date_start: '2026-11-01', open_date_end: '2026-12-31' }])
+  }
+  setAuthTokens('access-token', 'refresh-token')
+
+  const schedules = await h3cService.listExamSchedules(12)
+  const dates = await h3cService.listExamDates(schedules[0].id)
+  const slots = await h3cService.listExamSlots(schedules[0].id, dates[0], 12)
+  const booking = await h3cService.bookExamSeat(schedules[0].id, 12, 9, dates[0])
+  const bookings = await h3cService.listExamBookings()
+
+  assert.equal(schedules.length, 1)
+  assert.deepEqual(dates, ['2026-11-20'])
+  assert.deepEqual(slots, [])
+  assert.equal(booking.booking_id, 8)
+  assert.deepEqual(bookings, [])
+  assert.equal(calls[0].data.registration_id, 12)
+  assert.equal(calls[2].data.registration_id, 12)
+  assert.equal(calls[2].data.date, '2026-11-20')
+  assert.equal(calls[3].url.includes('/book?registration_id=12'), true)
+  assert.deepEqual(calls[3].data, { slot_id: 9, exam_date: '2026-11-20' })
+  clearAuthTokens()
 })
