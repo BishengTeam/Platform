@@ -30,8 +30,5 @@ export const FEATURES = {
 /** 首页「在线练习」板块（后台课程卡片）：TARO_APP_STUDY_COURSES_VISIBLE=false 屏蔽；学习 tab 与金刚区学习入口不受影响 */
 export const studyCoursesVisible = process.env.TARO_APP_STUDY_COURSES_VISIBLE !== 'false'
 
-/** 金刚区「新闻资讯」入口：TARO_APP_NEWS_VISIBLE=false 屏蔽；首页资讯板块 tab/资讯条/内容不受影响（2026-11-11 口径：瀑布流保留新闻内容） */
-export const newsVisible = process.env.TARO_APP_NEWS_VISIBLE !== 'false'
-
 /** 仅控制首页快捷按钮；不改变认证内容区、报名或订单功能。 */
 export const homeCertEntryVisible = process.env.TARO_APP_HOME_CERT_ENTRY_VISIBLE === 'true'

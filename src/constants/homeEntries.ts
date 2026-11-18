@@ -7,8 +7,6 @@ interface HomeEntryOptions {
   hasActivities: boolean
   /** 英才计划有上架活动（内容驱动 + yingcaiZone 开关共同决定） */
   hasYingcai: boolean
-  /** 公众号推文已同步：有推文即显示新闻资讯入口（2026.11.09 起不再限补位） */
-  hasNews: boolean
 }
 
 /** 只生成实际可用入口，不用占位项补齐网格。 */
@@ -55,17 +53,6 @@ export function getHomeQuickEntries(options: HomeEntryOptions): KingKongItem[] {
       icon: 'star',
       url: '/pages/activity-zone/index',
       tab: 'yingcai',
-    })
-  }
-  // 新闻资讯没有独立页面：点击切首页资讯板块（2026-11-10 起取消全屏模式）
-  if (options.hasNews) {
-    items.push({
-      name: STRINGS.INDEX_NEWS_TAB,
-      bg: '#FFF1F0',
-      iconColor: '#cf1322',
-      icon: 'bell',
-      url: '',
-      tab: 'news',
     })
   }
   return items

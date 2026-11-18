@@ -113,19 +113,17 @@ test('trim edition suppresses the certification shortcut unless the override is 
   ])
 })
 
-test('news and yingcai shortcuts appear whenever their content is synced, appended after zone entries', () => {
-  // 2026.11.09 起：新闻入口不再限补位，有推文即显示；英才计划新增金刚区入口（有上架活动即显示）。
-  // 资讯入口无独立页面（url 为空，点击切首页资讯板块；2026-11-10 起无全屏模式）。
+test('yingcai shortcut appears whenever its content is synced, appended after zone entries', () => {
+  // 2026-11-18 起：新闻资讯金刚区入口删除（资讯板块 tab/资讯条保留）；英才计划入口有上架活动即显示。
   const base = { homeCertEntryVisible: false, certRegistration: false }
 
-  const twoEntries = getHomeQuickEntries({ ...base, hasActivities: false, hasYingcai: false, hasNews: true })
-  assert.deepEqual(twoEntries.map(item => item.tab), [undefined, 'competition', 'news'])
-  assert.equal(twoEntries[2].url, '')
+  const twoEntries = getHomeQuickEntries({ ...base, hasActivities: false, hasYingcai: false })
+  assert.deepEqual(twoEntries.map(item => item.tab), [undefined, 'competition'])
 
-  // 屏蔽版口径（认证/活动/在线练习隐藏）：学习/竞赛/英才/新闻 四格 2×2。
-  const maskedLike = getHomeQuickEntries({ ...base, hasActivities: false, hasYingcai: true, hasNews: true })
-  assert.deepEqual(maskedLike.map(item => item.tab), [undefined, 'competition', 'yingcai', 'news'])
+  // 屏蔽版口径（认证/活动/在线练习隐藏）：学习/竞赛/英才 三格。
+  const maskedLike = getHomeQuickEntries({ ...base, hasActivities: false, hasYingcai: true })
+  assert.deepEqual(maskedLike.map(item => item.tab), [undefined, 'competition', 'yingcai'])
 
-  const withCert = getHomeQuickEntries({ homeCertEntryVisible: true, certRegistration: true, hasActivities: false, hasYingcai: true, hasNews: true })
-  assert.deepEqual(withCert.map(item => item.tab), [undefined, undefined, 'competition', 'yingcai', 'news'])
+  const withCert = getHomeQuickEntries({ homeCertEntryVisible: true, certRegistration: true, hasActivities: false, hasYingcai: true })
+  assert.deepEqual(withCert.map(item => item.tab), [undefined, undefined, 'competition', 'yingcai'])
 })

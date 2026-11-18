@@ -19,7 +19,7 @@ import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
-import { FEATURES, homeCertEntryVisible, newsVisible, studyCoursesVisible } from '@/constants/features'
+import { FEATURES, homeCertEntryVisible, studyCoursesVisible } from '@/constants/features'
 import { getHomeQuickEntries } from '@/constants/homeEntries'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
@@ -128,11 +128,6 @@ export default function IndexPage() {
   }
 
   const handleKingKongClick = (item: KingKongItem) => {
-    // 新闻资讯没有独立页面：点击切到资讯板块（2026-11-10 起取消全屏模式，金刚区/banner 常驻）
-    if (item.tab === 'news') {
-      setActiveSection('news')
-      return
-    }
     if (!item.url) return
     const path = item.url.replace(/^\//, '')
     if (TAB_BAR_CONFIG.some(t => t.key === path)) {
@@ -178,7 +173,7 @@ export default function IndexPage() {
   const studyCourses = studyCoursesVisible ? homeData?.zones['study']?.courses ?? [] : []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
   // 资讯：后端同步到公众号推文才显示；无数据（含接口失败）ticker 整条隐藏、新闻 tab 不出现。
-  // 新闻内容保留在瀑布流（2026-11-11 口径）；TARO_APP_NEWS_VISIBLE=false 仅隐藏金刚区新闻入口
+  // 新闻内容保留在瀑布流（2026-11-11 口径）
   const gzhArticles = homeData?.gzh_articles ?? []
   const tickerArticle = gzhArticles[0]
 
@@ -221,9 +216,7 @@ export default function IndexPage() {
     certRegistration: FEATURES.certRegistration,
     hasActivities: activities.length > 0,
     hasYingcai: FEATURES.yingcaiZone && yingcaiActivities.length > 0,
-    // 金刚区新闻入口单开闸：板块内容/资讯条保留（TARO_APP_NEWS_VISIBLE=false 仅藏此入口）
-    hasNews: newsVisible && gzhArticles.length > 0,
-  }), [activities.length, yingcaiActivities.length, gzhArticles.length])
+  }), [activities.length, yingcaiActivities.length])
 
   return (
     <>
