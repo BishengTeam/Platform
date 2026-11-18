@@ -62,9 +62,6 @@
 .cardContent {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-2xs;
 }
 
 .cardTitleRow {
@@ -90,15 +87,6 @@
   background: #F3F4F6;
   border-radius: $radius-full;
   padding: 3px 10px;
-}
-
-.cardDesc {
-  font-size: $font-sm;
-  color: #6B7280;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .loadingWrap {

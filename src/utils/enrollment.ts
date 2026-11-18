@@ -2,7 +2,7 @@ import type { CertificationVendor, EnrollmentBatch, EnrollmentNotice } from '../
 import { formatCertificationTime } from './certificationBatch.ts'
 import { getAuthSessionId } from './authState.ts'
 
-export const CERTIFICATION_LABELS = { h3c: 'H3C认证', nisp: 'NISP认证', renshe: '人社认证', sangfor: '深信服认证' }
+export const CERTIFICATION_LABELS = { h3c: 'H3C认证', nisp: '国家信息安全水平考试认证', renshe: '职业技能等级认证', sangfor: '深信服认证' }
 export const VENDOR_KEYS: Record<string, CertificationVendor> = { H3C: 'h3c', NISP: 'nisp', 人社: 'renshe', 深信服: 'sangfor', h3c: 'h3c', nisp: 'nisp', renshe: 'renshe', sangfor: 'sangfor' }
 export function enrollmentFormUrl(vendor: CertificationVendor, batch: EnrollmentBatch, type: string) {
   const base = `/pages/${vendor}/form?${vendor === 'renshe' ? 'plan_id' : 'batch_id'}=${batch.id}${vendor === 'nisp' ? `&level=${batch.level}` : vendor === 'h3c' ? `&registration_type=${type}` : ''}`

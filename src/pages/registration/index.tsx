@@ -16,11 +16,11 @@ const VENDOR_DISPLAY_MAP: Record<string, string> = {
   '人社': STRINGS.REGISTRATION_TAG_RS,
 }
 
-const VENDOR_META: Record<string, { title: string; desc: string; color: string; icon: string }> = {
-  'H3C': { title: 'H3C 认证', desc: '新华三网络工程师认证', color: '#1677FF', icon: 'award' },
-  '深信服': { title: '深信服认证', desc: '安全技术方向认证', color: '#52C41A', icon: 'shield' },
-  'NISP': { title: 'NISP 认证', desc: '国家信息安全水平考试', color: '#FAAD14', icon: 'terminal' },
-  '人社': { title: '人社认证', desc: '职业技能等级认证', color: '#EB2F96', icon: 'file-text' },
+const VENDOR_META: Record<string, { title: string; color: string; icon: string }> = {
+  'H3C': { title: 'H3C 认证', color: '#1677FF', icon: 'award' },
+  '深信服': { title: '深信服认证', color: '#52C41A', icon: 'shield' },
+  'NISP': { title: '国家信息安全水平考试认证', color: '#FAAD14', icon: 'terminal' },
+  '人社': { title: '职业技能等级认证', color: '#EB2F96', icon: 'file-text' },
 }
 
 const VENDOR_ORDER = ['H3C', '深信服', 'NISP', '人社']
@@ -51,7 +51,6 @@ export default function RegistrationIndexPage() {
     return VENDOR_ORDER.filter(v => grouped[v]).map(v => ({
       vendor: v,
       title: VENDOR_META[v]?.title || VENDOR_DISPLAY_MAP[v] || v,
-      desc: VENDOR_META[v]?.desc || '',
       color: VENDOR_META[v]?.color || '#1677FF',
       icon: VENDOR_META[v]?.icon || 'award',
       count: grouped[v]?.length || 0,
@@ -91,7 +90,6 @@ export default function RegistrationIndexPage() {
                       <Text className={styles.cardTitle}>{item.title}</Text>
                       <Text className={styles.badge}>{STRINGS.REGISTRATION_CATEGORY_COUNT.replace('{count}', String(item.count))}</Text>
                     </View>
-                    <Text className={styles.cardDesc}>{item.desc}</Text>
                   </View>
                   <Icon name='chevron-right' size={20} color='#CCCCCC' />
                 </View>
