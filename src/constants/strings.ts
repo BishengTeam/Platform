@@ -505,7 +505,7 @@ export const STRINGS = {
   FORM_NOTES_PLACEHOLDER: '请输入备注信息...',
 
   // ---- Renshe Form ----
-  RENSHE_FORM_TITLE: '人社认证报名',
+  RENSHE_FORM_TITLE: '职业技能等级认证报名',
   FORM_RENSHE_BRANCH: '认证分支',
   FORM_RENSHE_BRANCH_PLACEHOLDER: '请选择认证分支',
   RENSHE_BRANCH_NETWORK_SECURITY: '网络与信息安全',

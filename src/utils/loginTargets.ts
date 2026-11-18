@@ -60,7 +60,7 @@ export function isLoginTab(url: string): boolean { return TAB_BAR_CONFIG.some(ta
 export function loginPurpose(url: string): string {
   if (/\/h3c\/form/.test(url)) return '登录后继续报名H3C认证'
   if (/\/nisp\/form/.test(url)) return url.includes('level=2') ? '登录后继续报名NISP二级' : '登录后继续报名NISP认证'
-  if (/\/renshe\/form/.test(url)) return '登录后继续报名人社认证'
+  if (/\/renshe\/form/.test(url)) return '登录后继续报名职业技能等级认证'
   if (/\/sangfor\//.test(url)) return '登录后继续办理深信服认证'
   if (/\/quiz\//.test(url)) return '登录后继续使用个人学习功能'
   if (url.includes('/mine/points')) return '登录后继续使用积分功能'

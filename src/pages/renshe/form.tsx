@@ -159,7 +159,7 @@ export default function RensheFormPage() {
     if (!(await ensureAgreementSigned(
       'cert_registration',
       '认证报名信息处理授权协议',
-      '提交人社认证报名前，请先阅读并同意授权协议',
+      '提交职业技能等级认证报名前，请先阅读并同意授权协议',
     ))) return
 
     setSubmitting(true)
@@ -203,7 +203,7 @@ export default function RensheFormPage() {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title='人社认证报名' shouldShowBack />
+          <PageHeader title='职业技能等级认证报名' shouldShowBack />
           <View className={styles.loading}>加载中...</View>
         </View>
       </AuthGuard>
@@ -214,7 +214,7 @@ export default function RensheFormPage() {
     return (
       <AuthGuard>
         <View className={styles.page}>
-          <PageHeader title='人社认证报名' shouldShowBack />
+          <PageHeader title='职业技能等级认证报名' shouldShowBack />
           <View className={styles.empty}><Text>{loadError || '批次不存在或已关闭'}</Text><Button onClick={() => void load()}>重新加载</Button></View>
         </View>
       </AuthGuard>
@@ -234,7 +234,7 @@ export default function RensheFormPage() {
             <View className={styles.card}>
               <Text className={styles.sectionTitle}>请先完成本人实名认证</Text>
               <Text className={styles.sectionDesc}>
-                人社认证报名必须由本人提交。系统将锁定已审核通过的实名身份，不能在报名页手工更换姓名或身份证号。
+                职业技能等级认证报名必须由本人提交。系统将锁定已审核通过的实名身份，不能在报名页手工更换姓名或身份证号。
               </Text>
               <Button
                 variant='gradient'
@@ -254,7 +254,7 @@ export default function RensheFormPage() {
   return (
     <AuthGuard>
       <View className={styles.page}>
-        <PageHeader title='人社认证报名' shouldShowBack />
+        <PageHeader title='职业技能等级认证报名' shouldShowBack />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY>
           <ConfirmationSummary vendor='renshe' batchId={planId} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={submitting} />
           {(batchCheckError || batchChecking || !applicationEditable) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : batchCheckError || (correcting ? '当前报名不在有效补正期内' : availability.message || '请在我的报名查看已提交的报名')}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}

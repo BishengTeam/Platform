@@ -580,7 +580,7 @@ export default function RegistrationDetailPage() {
     if (!rensheRegistration || actionLoading) return
     Taro.showModal({
       title: '取消待支付报名',
-      content: '确定取消本次人社认证报名吗？已填写的版本历史会保留。',
+      content: '确定取消本次职业技能等级认证报名吗？已填写的版本历史会保留。',
       confirmText: '确定取消',
       cancelText: '再想想',
       success: async (res) => {
@@ -696,7 +696,7 @@ export default function RegistrationDetailPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader
-          title={kind === 'competition' ? '竞赛报名详情' : kind === 'renshe' ? '人社报名详情' : '认证报名详情'}
+          title={kind === 'competition' ? '竞赛报名详情' : kind === 'renshe' ? '职业技能等级认证报名详情' : '认证报名详情'}
           shouldShowBack
           fallbackUrl={`/${ROUTES.MINE_REGISTRATIONS}`}
         />
@@ -866,7 +866,7 @@ export default function RegistrationDetailPage() {
             <View className={styles.contentCard}>
               <View className={styles.header}>
                 <Text className={styles.title}>
-                  {renshePlan?.name || `人社认证报名 #${rensheRegistration.id}`}
+                  {renshePlan?.name || `职业技能等级认证报名 #${rensheRegistration.id}`}
                 </Text>
                 <Text className={`${sharedStyles.status} ${STATUS_CONFIG[rensheRegistration.status]?.cls || ''}`}>
                   {STATUS_CONFIG[rensheRegistration.status]?.label || rensheRegistration.status}

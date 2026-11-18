@@ -54,7 +54,7 @@ test('certification order display uses product and masked candidate information'
     extra_data: null,
   }))
 
-  assert.equal(order.title, '人社认证报名')
+  assert.equal(order.title, '职业技能等级认证报名')
   assert.equal(order.description, '张三 · 138****8000')
   assert.equal(order.amount, '免费')
   assert.equal(order.status, 'pending')

@@ -9,7 +9,7 @@ import { paymentProgress } from '../src/utils/paymentProgress.ts'
 
 export const progressFixture = (status = 'under_review', product = 'NISP-1') => ({
   order: { orderId: '7', numericId: 7, orderKind: 'certification', paymentChannel: 'bank_transfer', productType: product,
-    productTitle: { 'NISP-1': 'NISP一级认证', 'GB0-192': 'H3C认证报名', 'RS-ZY': '人社认证报名', 'SCSA-T': '深信服认证报名' }[product],
+    productTitle: { 'NISP-1': 'NISP一级认证', 'GB0-192': 'H3C认证报名', 'RS-ZY': '职业技能等级认证报名', 'SCSA-T': '深信服认证报名' }[product],
     status: status === 'confirmed' ? 'paid' : status === 'closed' ? 'closed' : status === 'refunded' ? 'refunded' : 'pending',
     offlineStatus: status, amountPaid: '1280.00', outTradeNo: 'OF202610290007', closeReason: status === 'closed' ? '用户取消订单' : null },
   payment: { order_id: 7, amount_cents: 128000, status, order_status: status === 'confirmed' ? 'paid' : status === 'closed' ? 'closed' : status === 'refunded' ? 'refunded' : 'pending',
