@@ -29,6 +29,7 @@ import GraduatedForm from './graduated-form'
 import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
 import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
 import { enrollmentContactDraft } from '@/utils/enrollment'
+import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '@/utils/enrollmentFormDraft'
 import ReportingFields from './reporting-fields'
 import { correctionAvailable, validateReportingInfo, isSelfReportedRule, rensheBatchWindow } from '@/utils/rensheGraduated'
 
@@ -52,6 +53,7 @@ export default function RensheFormPage() {
   const [batchChecking, setBatchChecking] = useState(false)
   const [batchCheckError, setBatchCheckError] = useState('')
   const statusRequest = useRef(0)
+  const draftReady = useRef(false)
   const confirmation = useEnrollmentConfirmation('renshe', planId)
 
   useLoad((options) => {
@@ -83,15 +85,30 @@ export default function RensheFormPage() {
         setReportingOptions(await rensheService.getReportingOptions(planDetail.id))
         setReporting(draft?.reporting_info || { ethnicity: profileDetail?.realname?.ethnicity || '', political_status: profileDetail?.realname?.political_status || '' })
       }
+      // 本地暂存最后覆盖：考生明确填过的内容不被服务端/资料带出覆盖
+      const local = loadEnrollmentDraft<{ phone?: string; email?: string; address?: string; reporting?: Partial<RensheReportingInfo> }>(`renshe:${planDetail.id}`)
+      if (local) {
+        setPhone(old => local.phone || old)
+        setEmail(old => local.email || old)
+        setAddress(old => local.address || old)
+        if (local.reporting && !isSelfReportedRule(planDetail.renshe_config?.qualification_rule)) setReporting(old => ({ ...old, ...local.reporting }))
+      }
     } catch (error) {
       setPlan(null)
       setLoadError(error instanceof Error ? error.message : '报名信息加载失败，请重试')
     } finally {
       setLoading(false)
+      draftReady.current = true
     }
   }, [applicationId, planId])
 
   useEffect(() => { void load() }, [load])
+
+  // 本地暂存：初始恢复完成前不写入，避免空表单覆盖已存草稿
+  useEffect(() => {
+    if (!planId || !draftReady.current) return
+    saveEnrollmentDraft(`renshe:${planId}`, { phone, email, address, reporting })
+  }, [planId, phone, email, address, reporting])
   const refreshAvailability = useCallback(async () => {
     if (!planId) return
     const request = ++statusRequest.current
@@ -174,6 +191,7 @@ export default function RensheFormPage() {
       })
       assertAvailable()
       const submitted = await rensheService.submit(saved.id, correcting ? undefined : await confirmation.requireConfirmation())
+      clearEnrollmentDraft(`renshe:${plan.id}`)
       Taro.showToast({ title: '报名信息已提交', icon: 'success' })
       if (submitted.payment_required) {
         Taro.navigateTo({

@@ -1,9 +1,10 @@
 import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
 import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
 import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
+import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '@/utils/enrollmentFormDraft'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Input, Text, View, Picker, RadioGroup, Radio, Label } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import Taro, { useDidShow, useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -42,6 +43,15 @@ interface H3cFieldDef {
   remark?: string
 }
 
+// 本地暂存内容：不含姓名/身份证号（由实名认证自动带出，不落盘）
+interface H3cFormDraft {
+  school?: string; address?: string; phone?: string; email?: string; education?: string
+  first_name_en?: string; last_name_en?: string; coupon_code?: string; verify_code?: string
+  couponKey?: string; studentKey?: string
+  studentMethod?: H3cStudentVerificationMethod | ''
+  batchProductId?: number
+}
+
 const BASE_FIELDS: H3cFieldDef[] = [
   { key: 'candidate_name', label: '姓名', required: true, placeholder: '实名认证姓名', remark: '来自实名认证，不可修改' },
   { key: 'gender', label: '性别', required: true, placeholder: '男 / 女', remark: '可选值：男、女' },
@@ -78,16 +88,43 @@ export default function H3CFormPage() {
   const documentActions = useDocumentActions()
   const [guideSlot, setGuideSlot] = useState<DocumentSceneSlot | null>(null)
   const [identityVerified, setIdentityVerified] = useState(false)
+  const batchIdRef = useRef(0)
+  const draftReady = useRef(false)
+  const draftScope = (id: number) => `h3c:${id}`
 
   const confirmation = useEnrollmentConfirmation('h3c', batchId, type)
   useLoad((options) => {
-    setBatchId(Number(options?.batch_id || 0))
+    const id = Number(options?.batch_id || 0)
+    batchIdRef.current = id
+    setBatchId(id)
     const urlBatchProductId = Number(options?.batch_product_id || 0)
     if (urlBatchProductId > 0) setBatchProductId(urlBatchProductId)
     if (['coupon', 'student', 'full'].includes(options?.registration_type || '')) setType(options!.registration_type as H3cRegistrationType)
   })
 
-  useEffect(() => {
+  const restoreDraft = () => {
+    const draft = loadEnrollmentDraft<H3cFormDraft>(draftScope(batchIdRef.current))
+    if (!draft) return
+    setForm((old) => ({
+      ...old,
+      school: draft.school || old.school,
+      address: draft.address || old.address,
+      phone: draft.phone || old.phone,
+      email: draft.email || old.email,
+      education: draft.education || old.education,
+      first_name_en: draft.first_name_en || old.first_name_en,
+      last_name_en: draft.last_name_en || old.last_name_en,
+      coupon_code: draft.coupon_code || old.coupon_code,
+      verify_code: draft.verify_code || old.verify_code,
+    }))
+    if (draft.couponKey) setCouponKey(draft.couponKey)
+    if (draft.studentKey) setStudentKey(draft.studentKey)
+    if (draft.studentMethod) setStudentMethod(draft.studentMethod)
+    if (draft.batchProductId && !batchProductId) setBatchProductId(draft.batchProductId)
+  }
+
+  // useDidShow：从实名认证页返回时重新拉取实名状态（首次进入同样触发）
+  useDidShow(() => {
     h3cService.profileDefaults().then((data: H3cProfileDefaults) => {
       const verified =
         data.identity_status === 'verified' &&
@@ -95,8 +132,10 @@ export default function H3CFormPage() {
       setIdentityVerified(verified)
       if (!verified) {
         Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2500 })
+        restoreDraft()
         return
       }
+      // 先资料预填、后本地暂存覆盖：考生明确填过的内容不被资料带出覆盖
       setForm((old) => ({
         ...old,
         candidate_name: data.candidate_name || '',
@@ -110,12 +149,24 @@ export default function H3CFormPage() {
         first_name_en: data.first_name_en || '',
         last_name_en: data.last_name_en || '',
       }))
+      restoreDraft()
       if (data.education && !H3C_EDUCATIONS.includes(data.education)) setEducationHint('个人资料中的学历不匹配，请重新选择')
     }).catch(() => {
       setIdentityVerified(false)
+      restoreDraft()
       Taro.showToast({ title: '加载实名信息失败，请先完成实名认证', icon: 'none' })
+    }).finally(() => { draftReady.current = true })
+  })
+
+  // 本地暂存：初始恢复完成前不写入，避免空表单覆盖已存草稿
+  useEffect(() => {
+    if (!batchId || !draftReady.current) return
+    saveEnrollmentDraft(draftScope(batchId), {
+      school: form.school, address: form.address, phone: form.phone, email: form.email, education: form.education,
+      first_name_en: form.first_name_en, last_name_en: form.last_name_en, coupon_code: form.coupon_code, verify_code: form.verify_code,
+      couponKey, studentKey, studentMethod, batchProductId,
     })
-  }, [])
+  }, [batchId, form, couponKey, studentKey, studentMethod, batchProductId])
 
   const loadBatch = useCallback(async () => {
     if (!Number.isSafeInteger(batchId) || batchId <= 0) { setBatch(null); return }
@@ -138,6 +189,8 @@ export default function H3CFormPage() {
   }, [])
 
   const update = (key: string, value: string) => setForm((old) => ({ ...old, [key]: value }))
+
+  const goRealname = () => { if (!uploading && !submitting) Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` }) }
 
   const chooseMaterial = async (materialType: 'coupon_proof' | 'student_proof') => {
     if (uploadLock.current || submitting || batchChecking || batchError) return
@@ -250,6 +303,7 @@ export default function H3CFormPage() {
         coupon_proof_key: type === 'coupon' ? couponKey : null,
         student_proof_key: type === 'student' ? studentKey : null,
       })
+      clearEnrollmentDraft(draftScope(batch.id))
       if (registration.price_cents === 0) {
         Taro.redirectTo({ url: enrollmentDetailUrl('h3c', registration.id) })
       } else {
@@ -338,19 +392,23 @@ export default function H3CFormPage() {
                     <View className={`${styles.input} ${styles.pickerValue}`}>{form.education || '请选择学历'}</View>
                   </Picker>
                   {educationHint && <Text className={styles.remark}>{educationHint}</Text>}
-                </> : <Input
-                  className={`${styles.input} ${
-                    field.key === 'candidate_name' || field.key === 'candidate_idcard'
-                      ? styles.inputDisabled
-                      : ''
-                  }`}
+                </> : field.key === 'candidate_name' || field.key === 'candidate_idcard' ? (identityVerified ? <Input
+                  className={`${styles.input} ${styles.inputDisabled}`}
                   placeholder={field.placeholder}
                   placeholderClass={styles.placeholder}
                   value={form[field.key]}
-                  disabled={field.key === 'candidate_name' || field.key === 'candidate_idcard'}
+                  disabled
+                  onInput={(event) => update(field.key, event.detail.value)}
+                /> : <View className={`${styles.input} ${styles.inputDisabled} ${styles.pickerValue}`} onClick={goRealname}>
+                  <Text className={styles.placeholder}>{field.placeholder}（点击前往实名认证）</Text>
+                </View>) : <Input
+                  className={styles.input}
+                  placeholder={field.placeholder}
+                  placeholderClass={styles.placeholder}
+                  value={form[field.key]}
                   onInput={(event) => update(field.key, event.detail.value)}
                 />}
-                {field.remark && <Text className={styles.remark}>{field.remark}</Text>}
+                {field.remark && <Text className={styles.remark}>{(field.key === 'candidate_name' || field.key === 'candidate_idcard') && !identityVerified ? '实名认证通过后自动带出；点击上方栏目前往实名认证' : field.remark}</Text>}
               </View>
             ))}
           </View>

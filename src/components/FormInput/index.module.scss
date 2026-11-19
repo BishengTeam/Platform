@@ -62,3 +62,7 @@
 .compactInput { @include form.input; height: 78px; padding: 0 16px; }
 .compactDisabled { background: #eef2f6; color: #667085; }
 .compactInput.inputError { border-color: #dc2626; }
+
+.fieldTap { display: flex; align-items: center; }
+.tapText { font-size: $font-base; color: $color-text; }
+.tapPlaceholder { color: $color-text-tertiary; }

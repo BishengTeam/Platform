@@ -3,7 +3,8 @@ import { ConfirmationSummary } from '@/components/CertificationEnrollment/Confir
 import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView, Picker } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import Taro, { useDidShow, useLoad } from '@tarojs/taro'
+import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '@/utils/enrollmentFormDraft'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
@@ -46,6 +47,15 @@ const DEFAULT_MATERIAL_MAX_BYTES = 10 * 1024 * 1024
 
 type FormState = NispFormValues
 
+// 本地暂存内容：不含姓名/身份证号（由实名认证自动带出，不落盘）
+interface NispFormDraft {
+  pinyin?: string; major?: string; school?: string; gender?: string; age?: string
+  education?: string; province?: string; zip_code?: string
+  phone?: string; email?: string; address?: string
+  idCardKey?: string; portraitKey?: string; xuexinKey?: string; appFormKey?: string
+  fileInfo?: Partial<Record<NispMaterialType, { filename: string; size: number }>>
+}
+
 export default function NispFormPage() {
   const [batchId, setBatchId] = useState(0)
   const [level, setLevel] = useState<'1' | '2'>('1')
@@ -76,15 +86,44 @@ export default function NispFormPage() {
   const [applicationFormSlot, setApplicationFormSlot] = useState<DocumentSceneSlot | null>(null)
   const [identityVerified, setIdentityVerified] = useState(false)
   const batchRequest = useRef(0)
+  const batchIdRef = useRef(0)
+  const draftReady = useRef(false)
   const confirmation = useEnrollmentConfirmation('nisp', batchId, level)
 
   useLoad((options) => {
-    setBatchId(Number(options?.batch_id || 0))
+    const id = Number(options?.batch_id || 0)
+    batchIdRef.current = id
+    setBatchId(id)
     setLevel(options?.level === '2' ? '2' : '1')
     setRouteReady(true)
   })
 
-  useEffect(() => {
+  const restoreDraft = () => {
+    const draft = loadEnrollmentDraft<NispFormDraft>(`nisp:${batchIdRef.current}`)
+    if (!draft) return
+    setForm(old => ({
+      ...old,
+      pinyin: draft.pinyin || old.pinyin,
+      major: draft.major || old.major,
+      school: draft.school || old.school,
+      gender: draft.gender || old.gender,
+      age: draft.age || old.age,
+      education: draft.education || old.education,
+      province: draft.province || old.province,
+      zip_code: draft.zip_code || old.zip_code,
+      phone: draft.phone || old.phone,
+      email: draft.email || old.email,
+      address: draft.address || old.address,
+    }))
+    if (draft.idCardKey) setIdCardKey(draft.idCardKey)
+    if (draft.portraitKey) setPortraitKey(draft.portraitKey)
+    if (draft.xuexinKey) setXuexinKey(draft.xuexinKey)
+    if (draft.appFormKey) setAppFormKey(draft.appFormKey)
+    if (draft.fileInfo) setFileInfo(old => ({ ...old, ...draft.fileInfo }))
+  }
+
+  // useDidShow：从实名认证页返回时重新拉取实名状态（首次进入同样触发）
+  useDidShow(() => {
     getUserProfile().then(profile => {
       const realname = profile.realname
       const verified =
@@ -93,8 +132,10 @@ export default function NispFormPage() {
       setIdentityVerified(verified)
       if (!verified || !realname) {
         Taro.showToast({ title: '请先完成实名认证', icon: 'none', duration: 2500 })
+        restoreDraft()
         return
       }
+      // 先资料预填、后本地暂存覆盖：考生明确填过的内容不被资料带出覆盖
       setForm(old => ({
         ...old,
         name: realname.real_name || '',
@@ -109,11 +150,24 @@ export default function NispFormPage() {
         email: old.email || enrollmentContactDraft().email || profile.profile.email || '',
         address: old.address || enrollmentContactDraft().address || profile.profile.address || '',
       }))
+      restoreDraft()
     }).catch(() => {
       setIdentityVerified(false)
+      restoreDraft()
       Taro.showToast({ title: '加载实名信息失败，请先完成实名认证', icon: 'none' })
+    }).finally(() => { draftReady.current = true })
+  })
+
+  // 本地暂存：初始恢复完成前不写入，避免空表单覆盖已存草稿
+  useEffect(() => {
+    if (!batchId || !draftReady.current) return
+    saveEnrollmentDraft(`nisp:${batchId}`, {
+      pinyin: form.pinyin, major: form.major, school: form.school, gender: form.gender, age: form.age,
+      education: form.education, province: form.province, zip_code: form.zip_code,
+      phone: form.phone, email: form.email, address: form.address,
+      idCardKey, portraitKey, xuexinKey, appFormKey, fileInfo,
     })
-  }, [])
+  }, [batchId, form, idCardKey, portraitKey, xuexinKey, appFormKey, fileInfo])
 
   const loadBatch = useCallback(async () => {
     if (!routeReady) return
@@ -247,6 +301,7 @@ export default function NispFormPage() {
         } : {}),
       }
       const registration = await nispService.createOrder(payload)
+      clearEnrollmentDraft(`nisp:${batch.id}`)
       const certName = level === '1' ? 'NISP一级认证' : 'NISP二级认证'
       if (registration.price_cents === 0 && registration.status === 'pending_review') {
         await Taro.redirectTo({
@@ -271,6 +326,8 @@ export default function NispFormPage() {
 
   const materialKinds: NispMaterialType[] = ['id_card_both_sides', 'portrait_photo', ...(level === '2' ? ['xuexin_report', 'application_form'] as NispMaterialType[] : [])]
 
+  const goRealname = () => { if (!submitting && !uploading) Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` }) }
+
   const inputField = (
     key: keyof FormState,
     label: string,
@@ -280,7 +337,10 @@ export default function NispFormPage() {
     readonly = false,
   ) => (
     <View id={`nisp-${key}`} className={`${styles.field} ${wide ? styles.fieldWide : ''}`} key={key}>
-      <FormInput compact label={label} required={required} placeholder={placeholder} value={form[key]} disabled={readonly || submitting}
+      <FormInput compact label={label} required={required}
+        placeholder={readonly && !identityVerified ? `${placeholder}，点击前往实名认证` : placeholder}
+        value={form[key]} disabled={readonly || submitting}
+        onFieldClick={readonly && !identityVerified ? goRealname : undefined}
         onChange={value => setField(key, value)} error={errors[key] ? { valid: false, message: errors[key]! } : undefined} />
     </View>
   )

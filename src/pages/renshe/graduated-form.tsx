@@ -1,6 +1,7 @@
 import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
 import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
 import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
+import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '@/utils/enrollmentFormDraft'
 import { useEffect, useRef, useState } from 'react'
 import { Checkbox, Picker, ScrollView, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
@@ -34,19 +35,25 @@ interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; appli
 export default function GraduatedForm({ plan, profile, application, now = Date.now(), batchChecking = false, batchCheckError = '', onRefreshBatch }: Props) {
   const confirmation = useEnrollmentConfirmation('renshe', plan.id)
   const draft = application?.draft_data
+  // 本地暂存优先于服务端 draft_data：本机最近一次未提交的填写内容最接近用户意图
+  const localDraft = loadEnrollmentDraft<{
+    qualification?: RensheEmploymentInfo; education?: Partial<RensheEducationInfo>; graduated?: boolean
+    phone?: string; email?: string; address?: string
+    materials?: Record<string, RensheUploadedMaterial>; reporting?: Partial<RensheReportingInfo>
+  }>(`renshe_grad:${plan.id}`)
   const employment = isEmploymentRule(plan.renshe_config?.qualification_rule)
   const levelThree = plan.renshe_config?.qualification_rule === LEVEL_THREE_RULE
   const levelFive = plan.renshe_config?.qualification_rule === LEVEL_FIVE_EMPLOYMENT_RULE
   const compound = plan.application_type === '复合型'
-  const [qualification, setQualification] = useState<RensheEmploymentInfo>(draft?.qualification_info || { cultural_education: profile?.student?.education || '', work_experiences: [emptyExperience()] })
-  const [education, setEducation] = useState<Partial<RensheEducationInfo>>(draft?.education_info || {
+  const [qualification, setQualification] = useState<RensheEmploymentInfo>(localDraft?.qualification || draft?.qualification_info || { cultural_education: profile?.student?.education || '', work_experiences: [emptyExperience()] })
+  const [education, setEducation] = useState<Partial<RensheEducationInfo>>(localDraft?.education || draft?.education_info || {
     school: profile?.student?.school || '', major: profile?.student?.major || '', education: profile?.student?.education || '',
   })
-  const [graduated, setGraduated] = useState(Boolean(draft?.education_info?.graduated))
-  const [phone, setPhone] = useState(draft?.contact_phone || enrollmentContactDraft().phone || profile?.profile.phone || '')
-  const [email, setEmail] = useState(draft?.email || enrollmentContactDraft().email || profile?.profile.email || '')
-  const [address, setAddress] = useState(draft?.mailing_address || enrollmentContactDraft().address || profile?.profile.address || '')
-  const [materials, setMaterials] = useState<Record<string, RensheUploadedMaterial>>(draft?.materials || {})
+  const [graduated, setGraduated] = useState(Boolean(localDraft?.graduated ?? draft?.education_info?.graduated))
+  const [phone, setPhone] = useState(localDraft?.phone || draft?.contact_phone || enrollmentContactDraft().phone || profile?.profile.phone || '')
+  const [email, setEmail] = useState(localDraft?.email || draft?.email || enrollmentContactDraft().email || profile?.profile.email || '')
+  const [address, setAddress] = useState(localDraft?.address || draft?.mailing_address || enrollmentContactDraft().address || profile?.profile.address || '')
+  const [materials, setMaterials] = useState<Record<string, RensheUploadedMaterial>>(localDraft?.materials || draft?.materials || {})
   const [busy, setBusy] = useState('')
   const operationLock = useRef(false)
   const [fileShareSupported, setFileShareSupported] = useState(canSendCommitmentTemplate)
@@ -56,7 +63,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   const [options, setOptions] = useState<RensheReportingOptions | null>(null)
   const [optionsError, setOptionsError] = useState('')
   const [retry, setRetry] = useState(0)
-  const [reporting, setReporting] = useState<Partial<RensheReportingInfo>>(draft?.reporting_info || {
+  const [reporting, setReporting] = useState<Partial<RensheReportingInfo>>(localDraft?.reporting || draft?.reporting_info || {
     ethnicity: profile?.realname?.ethnicity || '', political_status: profile?.realname?.political_status || '',
   })
   const reportField = (field: keyof RensheReportingInfo, value: string | boolean | null) => setReporting(previous => ({ ...previous, [field]: value }))
@@ -76,6 +83,11 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   const availability = certificationBatchState(rensheBatchWindow(plan), now)
   const editable = ((!application || application.status === 'draft') && availability.canApply) || (correcting && correctionAvailable(application!, plan, now))
   const locked = !editable || Boolean(application?.frozen_at)
+  // 本地暂存：锁定（已提交/冻结）时不写入；初始值已在 useState 恢复，无覆盖风险
+  useEffect(() => {
+    if (locked) return
+    saveEnrollmentDraft(`renshe_grad:${plan.id}`, { qualification, education, graduated, phone, email, address, materials, reporting })
+  }, [locked, plan.id, qualification, education, graduated, phone, email, address, materials, reporting])
   const assertAvailable = () => {
     if (correcting) {
       if (!application || !correctionAvailable(application, plan, Date.now())) throw new Error('当前报名不在有效补正期内')
@@ -180,6 +192,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
       const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), ...(employment ? { qualification_info: qualification } : {}), ...(educationRequired ? { education_info: { ...education, graduated: true } as RensheEducationInfo } : {}), reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
       assertAvailable()
       const result = await rensheService.submit(saved.id, correcting ? undefined : await confirmation.requireConfirmation())
+      clearEnrollmentDraft(`renshe_grad:${plan.id}`)
       if (result.payment_required) await Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` })
       else if (!correcting) await Taro.redirectTo({ url: enrollmentDetailUrl('renshe', saved.id) })
       else await Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${saved.id}` })
@@ -315,7 +328,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
       </View>
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>协议与提交</Text>
-        <Text className={styles.sectionDesc}>提交前需签署<Text className={styles.agreementLink} onClick={() => Taro.navigateTo({ url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1` })}>《认证报名信息处理授权协议》</Text>。请核对资料后提交；填写信息不会自动保存，请核对后提交。</Text>
+        <Text className={styles.sectionDesc}>提交前需签署<Text className={styles.agreementLink} onClick={() => Taro.navigateTo({ url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1` })}>《认证报名信息处理授权协议》</Text>。请核对资料后提交；填写内容会在本机自动暂存，退出后再次进入可恢复，提交成功后清除。</Text>
         {error && <Text className={styles.submissionError}>{error}</Text>}
       </View>
     </ScrollView>

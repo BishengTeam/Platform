@@ -1,6 +1,7 @@
 import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
 import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
 import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
+import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '@/utils/enrollmentFormDraft'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
@@ -32,6 +33,7 @@ export default function SangforFormPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof SangforValues, string>>>({}), [submitError, setSubmitError] = useState('')
   const [agreed, setAgreed] = useState(false), [submitting, setSubmitting] = useState(false), [scrollTarget, setScrollTarget] = useState('')
   const lock = useRef(false)
+  const draftReady = useRef(false)
   const [batchChecking, setBatchChecking] = useState(false), [batchCheckError, setBatchCheckError] = useState('')
   const statusRequest = useRef(0)
   const confirmation = useEnrollmentConfirmation('sangfor', batchId)
@@ -58,11 +60,31 @@ export default function SangforFormPage() {
         setBatch(info)
         setForm(old => ({ ...old, phone: old.phone || enrollmentContactDraft().phone || profile.profile.phone || '', email: old.email || enrollmentContactDraft().email || profile.profile.email || '', mailing_address: old.mailing_address || enrollmentContactDraft().address || '',
           organization: old.organization || profile.enterprise?.organization || '', first_name: old.first_name || realname?.first_name_en || '', last_name: old.last_name || realname?.last_name_en || '' }))
+        // 本地暂存最后覆盖：考生明确填过的内容不被资料带出覆盖
+        const local = loadEnrollmentDraft<Partial<SangforValues>>(`sangfor:${batchId}`)
+        if (local) setForm(old => ({
+          ...old,
+          phone: local.phone || old.phone,
+          organization: local.organization || old.organization,
+          first_name: local.first_name || old.first_name,
+          last_name: local.last_name || old.last_name,
+          exam_voucher_code: local.exam_voucher_code || old.exam_voucher_code,
+          email: local.email || old.email,
+          mailing_address: local.mailing_address || old.mailing_address,
+          remark1: local.remark1 || old.remark1,
+          remark2: local.remark2 || old.remark2,
+        }))
+        draftReady.current = true
       }
     }
     void load().catch(reason => { if (active) setLoadError(reason instanceof Error ? reason.message : '报名信息加载失败') }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [isLoggedIn, sessionId, routeReady, batchId, registrationId, retry])
+  // 本地暂存：仅新建报名（非补正）；初始恢复完成前不写入，避免空表单覆盖已存草稿
+  useEffect(() => {
+    if (!batchId || registrationId || !draftReady.current) return
+    saveEnrollmentDraft(`sangfor:${batchId}`, form)
+  }, [batchId, registrationId, form])
   const refreshAvailability = useCallback(async () => {
     if (!isLoggedIn || !routeReady || loading) return
     const request = ++statusRequest.current
@@ -111,6 +133,7 @@ export default function SangforFormPage() {
         await Taro.redirectTo({ url: `/${ROUTES.SANGFOR_DETAIL}?id=${result.id}` })
       } else if (batch) {
         const result = await sangforService.create(batch.id, values, await confirmation.requireConfirmation())
+        clearEnrollmentDraft(`sangfor:${batch.id}`)
         await Taro.redirectTo({ url: result.price_cents ? `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` : enrollmentDetailUrl('sangfor', result.id) })
       }
     } catch (reason) { setSubmitError(reason instanceof Error ? reason.message : '提交失败，请重试') }
