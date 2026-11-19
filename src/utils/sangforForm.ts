@@ -5,7 +5,7 @@ export const SANGFOR_LABELS: Record<keyof SangforValues, string> = {
   phone: '手机号', organization: '所属机构', first_name: '名字拼音（firstName）', last_name: '姓氏拼音（lastName）',
   exam_voucher_code: '考试券码', email: '邮箱地址', mailing_address: '邮寄地址', remark1: '备注1', remark2: '备注2',
 }
-export const SANGFOR_STATUS: Record<string, string> = { pending_payment: '待付款／核账', pending_review: '待初审', returned: '待补正', approved: '初审通过，待报送外审',
+export const SANGFOR_STATUS: Record<string, string> = { pending_payment: '待付款', pending_review: '待初审', returned: '待补正', approved: '初审通过，待外审',
   final_approved: '外审通过', refund_processing: '退款处理中', refunded_closed: '已退款', cancelled: '已关闭' }
 
 export function validateSangforForm(values: SangforValues): Partial<Record<keyof SangforValues, string>> {

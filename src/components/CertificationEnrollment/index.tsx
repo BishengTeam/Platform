@@ -8,6 +8,7 @@ import { certificationJourneyService, type CertificationVendor, type EnrollmentC
 import { CERTIFICATION_LABELS } from '@/utils/enrollment'
 import { resolveMediaUrl } from '@/utils/media'
 import styles from './index.module.scss'
+import { PressableLink } from '../PressableLink'
 
 export function NoticeBlocks({ blocks }: { blocks: NoticeBlock[] }) {
   return <>{blocks.map((block, index) => block.type === 'image' ? <NoticeImage key={`${index}:${block.url}`} block={block} /> : <Text key={index} className={styles.paragraph}>{block.text}</Text>)}</>
@@ -15,7 +16,7 @@ export function NoticeBlocks({ blocks }: { blocks: NoticeBlock[] }) {
 function NoticeImage({ block }: { block: NoticeBlock }) {
   const [failed, setFailed] = useState(false), [retry, setRetry] = useState(0)
   const url = resolveMediaUrl(block.url)
-  return <View className={styles.imageBlock}>{failed ? <Text className={styles.link} onClick={() => { setFailed(false); setRetry(value => value + 1) }}>图片加载失败，点击重试</Text>
+  return <View className={styles.imageBlock}>{failed ? <PressableLink onClick={() => { setFailed(false); setRetry(value => value + 1) }} ariaLabel='重新加载须知图片'>图片加载失败，点击重试</PressableLink>
     : <Image key={retry} src={url} mode='widthFix' className={styles.noticeImage} onError={() => setFailed(true)} onClick={() => void Taro.previewImage({ urls: [url] }).catch(() => Taro.showToast({ title: '图片预览失败，请重试', icon: 'none' }))} />}
     {block.caption && <Text className={styles.hint}>{block.caption}</Text>}</View>
 }

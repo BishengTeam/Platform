@@ -452,9 +452,9 @@ export default function NispFormPage() {
                 <Text>我已阅读并同意</Text>
                 <Text
                   className={styles.agreementLink}
-                  onClick={() => Taro.navigateTo({
+                  onClick={event => { event.stopPropagation(); void Taro.navigateTo({
                     url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1`,
-                  })}
+                  }) }}
                 >
                   《{STRINGS.AGREEMENT_TYPE_CERT_REGISTRATION}》
                 </Text>

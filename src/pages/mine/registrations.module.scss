@@ -1,8 +1,11 @@
+@use '../../styles/variables' as *;
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f5f7fb;
+  height: 100dvh;
+  background: $cert-page-bg;
 }
 
 .body {
@@ -33,7 +36,7 @@
 .filterTag {
   padding: 8px 20px;
   border-radius: 999px;
-  color: #667085;
+  color: $cert-text-secondary;
   background: #fff;
   font-size: 24px;
   line-height: 1.4;
@@ -58,8 +61,8 @@
   margin-bottom: 24px;
   padding: 28px;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+  border-radius: $cert-card-radius;
+  box-shadow: $cert-card-shadow;
 }
 
 .cardOpening {
@@ -85,7 +88,7 @@
 
 .title {
   display: block;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 32px;
   font-weight: 700;
   line-height: 1.4;
@@ -104,14 +107,14 @@
 }
 
 .label {
-  color: #667085;
+  color: $cert-text-secondary;
   font-size: 26px;
   flex-shrink: 0;
 }
 
 .value {
   max-width: 65%;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 28px;
   font-weight: 500;
   text-align: right;
@@ -147,7 +150,7 @@
 
 .statusNeutral {
   background: #f3f4f6;
-  color: #6b7280;
+  color: $cert-text-secondary;
 }
 
 .amount {
@@ -158,15 +161,28 @@
 
 .empty {
   padding: 120px 32px;
-  color: #8091a5;
+  color: $cert-text-muted;
   text-align: center;
   font-size: 28px;
+}
+
+.sourceError {
+  margin: 16px 24px 0;
+  padding: 20px 24px;
+  min-height: $touch-min;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  color: $cert-danger-strong;
+  font-size: 25px;
+  background: #fff4f4;
+  border-radius: 14px;
 }
 
 .emptyHint {
   display: block;
   margin-top: 12px;
-  color: #98a2b3;
+  color: $cert-text-muted;
   font-size: 24px;
 }
 
@@ -182,7 +198,7 @@
 
 .loading {
   padding: 120px 32px;
-  color: #8091a5;
+  color: $cert-text-muted;
   text-align: center;
   font-size: 28px;
 }
@@ -191,7 +207,7 @@
   display: block;
   margin-top: 24px;
   margin-bottom: 8px;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 28px;
   font-weight: 600;
 }
@@ -244,14 +260,14 @@
 
 .loginAccountLabel {
   flex-shrink: 0;
-  color: #667085;
+  color: $cert-text-secondary;
   font-size: 23px;
 }
 
 .loginAccountValue {
   flex: 1;
   min-width: 0;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 26px;
   font-weight: 700;
   text-align: right;
@@ -271,7 +287,7 @@
 .qrcodeTitle {
   display: block;
   margin-top: 24px;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 26px;
   font-weight: 700;
 }
@@ -298,14 +314,14 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #98a2b3;
+  color: $cert-text-muted;
   font-size: 24px;
 }
 
 .qrcodeHint {
   display: block;
   margin-top: 12px;
-  color: #667085;
+  color: $cert-text-secondary;
   font-size: 22px;
   line-height: 1.5;
 }

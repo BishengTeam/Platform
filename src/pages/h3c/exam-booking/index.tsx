@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -16,6 +16,9 @@ import type {
 } from '@/types/h3c'
 import { serverNow } from '@/utils/timeSync'
 import { resolveUrl } from '@/utils/request'
+import { createLatestGuard } from '@/utils/latestRequest'
+import { applyBookingOverview } from '@/utils/examBookingOverview'
+import { bookingSubmitState } from '@/utils/bookingSubmit'
 import styles from './index.module.scss'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -62,20 +65,32 @@ export default function H3cExamBookingPage() {
   const [slotId, setSlotId] = useState(0)
   const [notice, setNotice] = useState('')
   const [attachments, setAttachments] = useState<H3cExamAttachment[]>([])
+  const [downloadingAttachment, setDownloadingAttachment] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [bookingLoading, setBookingLoading] = useState(false)
   const [datesLoading, setDatesLoading] = useState(false)
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
+  const [scheduleError, setScheduleError] = useState('')
+  const [bookingError, setBookingError] = useState('')
+  const [datesError, setDatesError] = useState('')
+  const [slotsError, setSlotsError] = useState('')
+  const [noticeError, setNoticeError] = useState('')
+  const [actionError, setActionError] = useState('')
   const [optimisticBooking, setOptimisticBooking] = useState<H3cExamBooking | null>(null)
   const [justBooked, setJustBooked] = useState(false)
+  const datesGuard = useRef(createLatestGuard())
+  const slotsGuard = useRef(createLatestGuard())
+  const noticeGuard = useRef(createLatestGuard())
+  const attachmentsGuard = useRef(createLatestGuard())
+  const overviewGuard = useRef(createLatestGuard())
 
   useLoad(options => {
     const vendorParam = options?.vendor === 'sangfor' ? 'sangfor' : 'h3c'
     setVendor(vendorParam)
     const id = Number(options?.registration_id || 0)
     if (Number.isSafeInteger(id) && id > 0) setRegistrationId(id)
-    else setError('报名记录参数无效，请返回我的报名重试')
+    else setScheduleError('报名记录参数无效，请返回我的报名重试')
   })
 
   const schedule = schedules.find(item => item.id === scheduleId) || null
@@ -93,50 +108,126 @@ export default function H3cExamBookingPage() {
     ? null
     : bookings.find(item => item.status === 'booked') || null
   const currentBooking = exactBooking || optimisticBooking || legacyActiveBooking
+  const submitState = bookingSubmitState({
+    hasSelectedSlot: Boolean(selectedSlot),
+    hasCurrentBooking: Boolean(currentBooking),
+    submitting,
+    bookingError,
+    bookingLoading,
+  })
 
   const loadOverview = useCallback(async () => {
     if (!registrationId) return
+    const token = overviewGuard.current.next()
     setLoading(true)
-    setError('')
-    try {
-      const [scheduleRows, bookingRows] = await Promise.all([
-        h3cService.listExamSchedules(registrationId, vendor),
-        h3cService.listExamBookings(vendor),
-      ])
+    setBookingLoading(true)
+    setScheduleError('')
+    setBookingError('')
+    const [scheduleResult, bookingResult] = await Promise.allSettled([
+      h3cService.listExamSchedules(registrationId, vendor),
+      h3cService.listExamBookings(vendor),
+    ])
+    if (!overviewGuard.current.isCurrent(token)) return
+    if (scheduleResult.status === 'fulfilled') {
+      const scheduleRows = scheduleResult.value
       setSchedules(scheduleRows)
-      setBookings(bookingRows)
-      const rowsHaveRegistrationIds = bookingRows.some(
-        item => Number.isSafeInteger(item.registration_id)
-      )
-      const hasActiveBookingForThisRegistration = bookingRows.some(
-        item => item.registration_id === registrationId && item.status === 'booked'
-      )
-      if (rowsHaveRegistrationIds && !hasActiveBookingForThisRegistration) {
-        setOptimisticBooking(null)
-      }
       setScheduleId(old => (scheduleRows.some(item => item.id === old) ? old : 0))
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '考场计划加载失败')
-    } finally {
-      setLoading(false)
+    } else {
+      const reason = scheduleResult.reason
+      setScheduleError(reason instanceof Error ? reason.message : '考场计划加载失败')
     }
-  }, [registrationId, vendor])
+    if (bookingResult.status === 'fulfilled') {
+      const next = applyBookingOverview(
+        bookingResult.value,
+        registrationId,
+        optimisticBooking,
+      )
+      setBookings(next.bookings)
+      setOptimisticBooking(next.optimistic)
+    } else {
+      // 预约记录是次要数据：失败只影响当前预约卡片，不阻断选择考场。
+      setBookingError('预约记录加载失败，可继续选择考场或稍后重试')
+    }
+    setLoading(false)
+    setBookingLoading(false)
+  }, [registrationId, vendor, optimisticBooking])
 
   useEffect(() => { void loadOverview() }, [loadOverview])
 
+  const noticeScheduleId = scheduleId || currentBooking?.schedule_id || 0
+
+  const loadNotice = useCallback(async () => {
+    const token = noticeGuard.current.next()
+    if (!noticeScheduleId) {
+      setNotice('')
+      setNoticeError('')
+      return
+    }
+    setNoticeError('')
+    try {
+      const value = await h3cService.getExamNotice(noticeScheduleId, vendor)
+      if (noticeGuard.current.isCurrent(token)) setNotice(value)
+    } catch {
+      if (!noticeGuard.current.isCurrent(token)) return
+      // 须知是次要信息，失败不清空日期或阻断预约。
+      setNoticeError('考前注意事项加载失败，可稍后重试')
+    }
+  }, [noticeScheduleId, vendor])
+
+  const loadDates = useCallback(async () => {
+    if (!scheduleId) return
+    const token = datesGuard.current.next()
+    setDatesLoading(true)
+    setDatesError('')
+    try {
+      const rows = await h3cService.listExamDates(scheduleId, vendor)
+      if (datesGuard.current.isCurrent(token)) setDates(rows)
+    } catch (reason) {
+      if (!datesGuard.current.isCurrent(token)) return
+      setDates([])
+      setDatesError(reason instanceof Error ? reason.message : '可预约日期加载失败')
+    } finally {
+      if (datesGuard.current.isCurrent(token)) setDatesLoading(false)
+    }
+  }, [scheduleId, vendor])
+
+  const loadSlots = useCallback(async () => {
+    if (!scheduleId || !examDate || !registrationId) return
+    const token = slotsGuard.current.next()
+    setSlotsLoading(true)
+    setSlotsError('')
+    try {
+      const rows = await h3cService.listExamSlots(scheduleId, examDate, registrationId, vendor)
+      if (slotsGuard.current.isCurrent(token)) setSlots(rows)
+    } catch (reason) {
+      if (!slotsGuard.current.isCurrent(token)) return
+      setSlots([])
+      setSlotsError(reason instanceof Error ? reason.message : '考试时段加载失败')
+    } finally {
+      if (slotsGuard.current.isCurrent(token)) setSlotsLoading(false)
+    }
+  }, [scheduleId, examDate, registrationId, vendor])
+
+  const loadAttachments = useCallback(async () => {
+    const token = attachmentsGuard.current.next()
+    if (!scheduleId) {
+      setAttachments([])
+      return
+    }
+    try {
+      const rows = await h3cService.listExamAttachments(scheduleId, vendor)
+      if (attachmentsGuard.current.isCurrent(token)) setAttachments(rows)
+    } catch {
+      if (attachmentsGuard.current.isCurrent(token)) setAttachments([])
+    }
+  }, [scheduleId, vendor])
+
   useEffect(() => {
-    const bookedScheduleId = currentBooking?.schedule_id
-    if (!bookedScheduleId) return
-    let cancelled = false
-    h3cService.getExamNotice(bookedScheduleId)
-      .then(value => {
-        if (!cancelled) setNotice(value)
-      })
-      .catch(reason => {
-        if (!cancelled) setError(reason instanceof Error ? reason.message : '考前注意事项加载失败')
-      })
-    return () => { cancelled = true }
-  }, [currentBooking?.schedule_id])
+    // 切换计划立即清空旧须知，避免新请求返回前展示上一计划的注意事项。
+    setNotice('')
+    setNoticeError('')
+    void loadNotice()
+  }, [loadNotice])
 
   useEffect(() => {
     if (!justBooked) return
@@ -145,82 +236,48 @@ export default function H3cExamBookingPage() {
   }, [justBooked])
 
   useEffect(() => {
+    attachmentsGuard.current.invalidate()
+    setAttachments([])
     setDates([])
     setExamDate('')
     setSlots([])
     setSlotId(0)
-    setNotice('')
-    if (!scheduleId) return
+    void loadDates()
+  }, [loadDates])
 
-    let cancelled = false
-    setDatesLoading(true)
-    Promise.all([
-      h3cService.listExamDates(scheduleId, vendor),
-      h3cService.getExamNotice(scheduleId),
-    ]).then(([dateRows, noticeText]) => {
-      if (cancelled) return
-      setDates(dateRows)
-      setNotice(noticeText)
-    }).catch(reason => {
-      if (!cancelled) setError(reason instanceof Error ? reason.message : '可预约日期加载失败')
-    }).finally(() => {
-      if (!cancelled) setDatesLoading(false)
-    })
-    return () => { cancelled = true }
-  }, [scheduleId, vendor])
-
-  useEffect(() => {
-    setAttachments([])
-    if (!scheduleId) return
-    let cancelled = false
-    h3cService.listExamAttachments(scheduleId)
-      .then(rows => { if (!cancelled) setAttachments(rows) })
-      .catch(() => { if (!cancelled) setAttachments([]) })
-    return () => { cancelled = true }
-  }, [scheduleId])
+  useEffect(() => { void loadAttachments() }, [loadAttachments])
 
   useEffect(() => {
     setSlots([])
     setSlotId(0)
-    if (!scheduleId || !examDate || !registrationId) return
-
-    let cancelled = false
-    setSlotsLoading(true)
-    h3cService.listExamSlots(scheduleId, examDate, registrationId, vendor)
-      .then(rows => {
-        if (!cancelled) setSlots(rows)
-      })
-      .catch(reason => {
-        if (!cancelled) setError(reason instanceof Error ? reason.message : '考试时段加载失败')
-      })
-      .finally(() => {
-        if (!cancelled) setSlotsLoading(false)
-      })
-    return () => { cancelled = true }
-  }, [scheduleId, examDate, registrationId, vendor])
+    void loadSlots()
+  }, [loadSlots])
 
   const chooseSchedule = (id: number) => {
     if (submitting || id === scheduleId) return
     setScheduleId(id)
-    setError('')
+    setActionError('')
   }
 
   const chooseDate = (value: string) => {
     if (submitting || value === examDate) return
     setExamDate(value)
-    setError('')
+    setActionError('')
   }
 
   const chooseSlot = (id: number, remaining: number) => {
     if (submitting || remaining === 0) return
     setSlotId(id)
-    setError('')
+    setActionError('')
   }
 
   const book = async () => {
-    if (!registrationId || !scheduleId || !examDate || !slotId || submitting || currentBooking) return
+    if (
+      !registrationId || !scheduleId || !examDate || !slotId
+      || submitting || currentBooking || bookingError || bookingLoading
+    ) return
     setSubmitting(true)
-    setError('')
+    setActionError('')
     try {
       const result = await h3cService.bookExamSeat(
         scheduleId,
@@ -241,6 +298,8 @@ export default function H3cExamBookingPage() {
         exam_date: result.exam_date || examDate,
         status: 'booked',
       }
+      // 让仍在途的旧总览响应失效，避免成功预约被回滚成“未预约”。
+      overviewGuard.current.invalidate()
       setBookings(previous => [
         ...previous.filter(item => item.id !== booked.id),
         booked,
@@ -252,7 +311,7 @@ export default function H3cExamBookingPage() {
       setSlotId(0)
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : '预约失败，请重试'
-      setError(message)
+      setActionError(message)
       Taro.showToast({ title: message, icon: 'none', duration: 3000 })
     } finally {
       setSubmitting(false)
@@ -270,7 +329,7 @@ export default function H3cExamBookingPage() {
     if (!confirmed.confirm) return
 
     setSubmitting(true)
-    setError('')
+    setActionError('')
     try {
       await h3cService.cancelExamBooking(
         booking.id,
@@ -283,7 +342,7 @@ export default function H3cExamBookingPage() {
       await loadOverview()
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : '取消失败，请重试'
-      setError(message)
+      setActionError(message)
       Taro.showToast({ title: message, icon: 'none', duration: 3000 })
     } finally {
       setSubmitting(false)
@@ -302,12 +361,19 @@ export default function H3cExamBookingPage() {
         scrollIntoView={justBooked ? 'booking-summary' : ''}
       >
         {loading && <Text className={styles.hint}>正在加载考场计划…</Text>}
-        {error && (
+        {scheduleError && (
           <View className={styles.errorCard}>
-            <Text className={styles.error}>{error}</Text>
-            <Button size='sm' variant='secondary' onClick={() => void loadOverview()}>重新加载</Button>
+            <Text className={styles.error}>{scheduleError}</Text>
+            <Button size='sm' variant='secondary' onClick={() => void loadOverview()}>重新加载考场计划</Button>
           </View>
         )}
+        {bookingError && (
+          <View className={styles.noticeCard}>
+            <Text className={styles.noticeText}>{bookingError}</Text>
+            <Button size='sm' variant='secondary' onClick={() => void loadOverview()}>重试预约记录</Button>
+          </View>
+        )}
+        {actionError && <Text className={styles.error}>{actionError}</Text>}
 
         {currentBooking ? (
           <View
@@ -316,7 +382,7 @@ export default function H3cExamBookingPage() {
           >
             <View className={styles.bookingSuccessHeader}>
               <Text className={styles.successIcon}>✅</Text>
-              <Text className={styles.successTitle}>预约成功</Text>
+              <Text className={styles.successTitle}>{justBooked ? '预约成功' : '已预约'}</Text>
             </View>
             <View className={styles.detailRow}>
               <Text className={styles.detailLabel}>考试科目</Text>
@@ -352,6 +418,12 @@ export default function H3cExamBookingPage() {
                 <Text className={styles.noticeText}>{notice}</Text>
               </View>
             )}
+            {noticeError && (
+              <View className={styles.noticeCard}>
+                <Text className={styles.noticeText}>{noticeError}</Text>
+                <Button size='sm' variant='secondary' onClick={() => void loadNotice()}>重试注意事项</Button>
+              </View>
+            )}
 
             {canCancelBooking(currentBooking.exam_date) ? (
               <>
@@ -381,21 +453,28 @@ export default function H3cExamBookingPage() {
                     <View
                       key={item.id}
                       className={styles.attachmentItem}
+                      aria-role='button'
+                      aria-label={`下载${item.title}`}
                       onClick={() => {
+                        if (downloadingAttachment) return
+                        setDownloadingAttachment(item.id)
                         void Taro.downloadFile({ url: resolveUrl(item.file_url) })
                           .then(result => Taro.openDocument({ filePath: result.tempFilePath }))
                           .catch(() => Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' }))
+                          .finally(() => setDownloadingAttachment(0))
                       }}
                     >
                       <Text>{item.title}</Text>
-                      <Text className={styles.hint}>点击下载</Text>
+                      <Text className={styles.hint}>
+                        {downloadingAttachment === item.id ? '下载中…' : '点击下载'}
+                      </Text>
                     </View>
                   ))}
                 </View>
               )}
             </View>
 
-            {!loading && !error && schedules.length === 0 && (
+            {!loading && !scheduleError && schedules.length === 0 && (
               <View className={styles.card}>
                 <EmptyState title='暂无可预约考场计划' />
               </View>
@@ -408,6 +487,9 @@ export default function H3cExamBookingPage() {
                   <View
                     key={item.id}
                     className={`${styles.option} ${item.id === scheduleId ? styles.active : ''}`}
+                    aria-role='button'
+                    aria-label={`选择考场计划 ${item.name}`}
+                    aria-selected={item.id === scheduleId}
                     onClick={() => chooseSchedule(item.id)}
                   >
                     <Text className={styles.optionTitle}>{item.name}</Text>
@@ -426,7 +508,13 @@ export default function H3cExamBookingPage() {
               <View className={styles.card}>
                 <Text className={styles.stepTitle}>② 选择考试日期</Text>
                 {datesLoading && <Text className={styles.hint}>正在加载可预约日期…</Text>}
-                {!datesLoading && dates.length === 0 && (
+                {!datesLoading && datesError && (
+                  <View>
+                    <Text className={styles.error}>{datesError}</Text>
+                    <Button size='sm' variant='secondary' onClick={() => void loadDates()}>重试日期</Button>
+                  </View>
+                )}
+                {!datesLoading && !datesError && dates.length === 0 && (
                   <Text className={styles.hint}>当前考场计划暂无可预约日期。</Text>
                 )}
                 <View className={styles.dateGrid}>
@@ -434,6 +522,9 @@ export default function H3cExamBookingPage() {
                     <View
                       key={item}
                       className={`${styles.dateItem} ${item === examDate ? styles.active : ''}`}
+                      aria-role='button'
+                      aria-label={`选择考试日期 ${displayDate(item)}`}
+                      aria-selected={item === examDate}
                       onClick={() => chooseDate(item)}
                     >
                       <Text>{displayDate(item)}</Text>
@@ -447,7 +538,13 @@ export default function H3cExamBookingPage() {
               <View className={styles.card}>
                 <Text className={styles.stepTitle}>③ 选择考试时段</Text>
                 {slotsLoading && <Text className={styles.hint}>正在加载时段与剩余机位…</Text>}
-                {!slotsLoading && slots.length === 0 && (
+                {!slotsLoading && slotsError && (
+                  <View>
+                    <Text className={styles.error}>{slotsError}</Text>
+                    <Button size='sm' variant='secondary' onClick={() => void loadSlots()}>重试时段</Button>
+                  </View>
+                )}
+                {!slotsLoading && !slotsError && slots.length === 0 && (
                   <Text className={styles.hint}>该日期暂无可预约时段，请更换日期或考场计划。</Text>
                 )}
                 {slots.map(item => {
@@ -456,6 +553,10 @@ export default function H3cExamBookingPage() {
                     <View
                       key={item.slot_id}
                       className={`${styles.option} ${item.slot_id === slotId ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
+                      aria-role='button'
+                      aria-label={`选择考试时段 ${item.label}`}
+                      aria-selected={item.slot_id === slotId}
+                      aria-disabled={disabled}
                       onClick={() => chooseSlot(item.slot_id, item.remaining)}
                     >
                       <Text className={styles.optionTitle}>
@@ -470,11 +571,11 @@ export default function H3cExamBookingPage() {
                 {!slotsLoading && slots.length > 0 && (
                   <Button
                     variant='gradient'
-                    disabled={!selectedSlot || Boolean(currentBooking) || submitting}
+                    disabled={submitState.disabled}
                     loading={submitting}
                     onClick={() => void book()}
                   >
-                    {selectedSlot ? '确认预约' : '请选择考试时段'}
+                    {submitState.label}
                   </Button>
                 )}
               </View>
@@ -484,6 +585,13 @@ export default function H3cExamBookingPage() {
               <View className={styles.card}>
                 <Text className={styles.stepTitle}>📋 考前注意事项</Text>
                 <Text className={styles.text}>{notice}</Text>
+              </View>
+            )}
+            {scheduleId > 0 && noticeError && (
+              <View className={styles.card}>
+                <Text className={styles.stepTitle}>📋 考前注意事项</Text>
+                <Text className={styles.error}>{noticeError}</Text>
+                <Button size='sm' variant='secondary' onClick={() => void loadNotice()}>重试注意事项</Button>
               </View>
             )}
           </>

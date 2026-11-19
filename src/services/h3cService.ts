@@ -97,12 +97,22 @@ export const h3cService = {
       { date: examDate, registration_id: registrationId, vendor },
     )).data.slots
   },
-  async getExamNotice(scheduleId: number): Promise<string> {
-    return (await get<{ notice: string }>(`/api/exam/schedules/${scheduleId}/notice`)).data.notice
+  async getExamNotice(
+    scheduleId: number,
+    vendor: CertificationVendor = 'h3c',
+  ): Promise<string> {
+    return (await get<{ notice: string }>(
+      `/api/exam/schedules/${scheduleId}/notice`,
+      { vendor },
+    )).data.notice
   },
-  async listExamAttachments(scheduleId: number): Promise<H3cExamAttachment[]> {
+  async listExamAttachments(
+    scheduleId: number,
+    vendor: CertificationVendor = 'h3c',
+  ): Promise<H3cExamAttachment[]> {
     return (await get<H3cExamAttachment[]>(
       `/api/exam/schedules/${scheduleId}/attachments`,
+      { vendor },
     )).data
   },
   async bookExamSeat(

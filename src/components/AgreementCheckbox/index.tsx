@@ -12,8 +12,13 @@ interface Props {
 
 export function AgreementCheckbox({ agreed, onChange, className, children }: Props) {
   return (
-    <View className={`${styles.agreement} ${className ?? ''}`}>
-      <View className={styles.checkbox} onClick={() => onChange(!agreed)}>
+    <View
+      className={`${styles.agreement} ${className ?? ''}`}
+      aria-role='checkbox'
+      aria-checked={agreed}
+      onClick={() => onChange(!agreed)}
+    >
+      <View className={styles.checkbox}>
         <Icon name={agreed ? 'check-circle-2' : 'circle'} size={16} color={agreed ? '#1677FF' : '#999'} />
       </View>
       <Text className={styles.text}>{children}</Text>

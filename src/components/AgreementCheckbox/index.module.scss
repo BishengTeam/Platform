@@ -4,6 +4,14 @@
   display: flex;
   align-items: flex-start;
   gap: $spacing-xs;
+  min-height: $touch-min;
+  padding: $spacing-xs 0;
+  box-sizing: border-box;
+  transition: opacity 0.12s ease;
+}
+
+.agreement:active {
+  opacity: 0.75;
 }
 
 .checkbox {

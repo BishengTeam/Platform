@@ -1,0 +1,21 @@
+@use '../../styles/variables' as *;
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: $touch-min;
+  padding: 0 8rpx;
+  color: $color-primary;
+  font-size: 26rpx;
+  box-sizing: border-box;
+  transition: opacity 0.12s ease;
+}
+
+.link:active {
+  opacity: 0.65;
+}
+
+.disabled {
+  color: $cert-text-muted;
+  pointer-events: none;
+}

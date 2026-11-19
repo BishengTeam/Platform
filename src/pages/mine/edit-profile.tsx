@@ -13,7 +13,6 @@ import {
   submitIdentity, updateIdentity,
   submitStudent, updateStudent,
   submitEnterprise, updateEnterprise,
-  uploadFile,
   uploadIdentityMaterial,
   hasAcceptedLatest,
 } from '@/services/dataService'
@@ -391,7 +390,10 @@ export default function EditProfilePage() {
     // 上传学生证（如果有新选的）
     let cardOss = studentCardOss
     try {
-      if (studentCardFile) { Taro.showLoading({ title: '上传学生证...' }); const r = await uploadFile(studentCardFile); cardOss = r.url }
+      if (studentCardFile) {
+        Taro.showLoading({ title: '上传学生证...' })
+        cardOss = (await uploadIdentityMaterial(studentCardFile, 'student_card')).storage_key
+      }
     } catch {
       Taro.showToast({ title: '图片上传失败，请重试', icon: 'none' })
       return
@@ -400,13 +402,19 @@ export default function EditProfilePage() {
     // 上传学信网电子注册表
     let pdfOss = enrollmentPdfOss
     try {
-      if (enrollmentPdfFile) { Taro.showLoading({ title: '上传学信网电子注册表...' }); const r = await uploadFile(enrollmentPdfFile); pdfOss = r.url }
+      if (enrollmentPdfFile) {
+        Taro.showLoading({ title: '上传学信网电子注册表...' })
+        pdfOss = (await uploadIdentityMaterial(enrollmentPdfFile, 'xuexin_registration')).storage_key
+      }
     } catch { Taro.showToast({ title: '学信网电子注册表上传失败', icon: 'none' }); return } finally { Taro.hideLoading() }
 
     // 上传学信网学历证明
     let certOss = degreeCertOss
     try {
-      if (degreeCertFile) { Taro.showLoading({ title: '上传学信网学历证明...' }); const r = await uploadFile(degreeCertFile); certOss = r.url }
+      if (degreeCertFile) {
+        Taro.showLoading({ title: '上传学信网学历证明...' })
+        certOss = (await uploadIdentityMaterial(degreeCertFile, 'education_proof')).storage_key
+      }
     } catch { Taro.showToast({ title: '学信网学历证明上传失败', icon: 'none' }); return } finally { Taro.hideLoading() }
     if (!cardOss || !pdfOss || !certOss) {
       return Taro.showToast({ title: '学生证、学信网电子注册表和学历证明均为必填材料', icon: 'none' })

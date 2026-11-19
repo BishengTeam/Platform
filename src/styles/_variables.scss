@@ -17,6 +17,17 @@ $color-warning: #FA8C16;
 $color-purple: #722ED1;
 $color-teal: #13C2C2;
 
+// Certification business semantic tokens — all certification pages share these.
+$cert-page-bg: #f5f7fb;
+$cert-text-primary: #1d2129;
+$cert-text-secondary: #4e5969;
+$cert-text-muted: #5f6b7a;
+$cert-card-radius: 20rpx;
+$cert-card-shadow: 0 8rpx 28rpx rgba(15, 23, 42, 0.05);
+$cert-section-gap: 24rpx;
+$cert-danger: #d4380d;
+$cert-danger-strong: #b42318;
+
 // Zone-specific colors
 $color-exam-blue: #1677FF;
 $color-study-green: #52C41A;
@@ -83,8 +94,8 @@ $icon-sm: 32px;
 $icon-md: 64px;
 $icon-lg: 80px;
 
-// Touch target
-$touch-min: 44px;
+// Touch target：设计稿 750 基准，88rpx 在 375px 设备上约等于 44 CSS px。
+$touch-min: 88rpx;
 
 // Shadows
 $shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.06);

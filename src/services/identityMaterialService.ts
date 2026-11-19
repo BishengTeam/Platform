@@ -1,7 +1,13 @@
 import Taro from '@tarojs/taro'
 import { get, getToken } from '../utils/request.ts'
 
-export type IdentityMaterialKind = 'id_card_front' | 'id_card_back' | 'portrait'
+export type IdentityMaterialKind =
+  | 'id_card_front'
+  | 'id_card_back'
+  | 'portrait'
+  | 'student_card'
+  | 'xuexin_registration'
+  | 'education_proof'
 
 export interface IdentityMaterialUploadResult {
   kind: IdentityMaterialKind

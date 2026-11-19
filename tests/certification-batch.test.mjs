@@ -91,7 +91,7 @@ function clockDriver(t, initialBatches, initialTime, deadlines = []) {
   new Function('require', 'module', 'exports', 'setTimeout', 'clearTimeout', source)(name => {
     if (name === 'react') return react
     if (name === '@tarojs/taro') return { useDidShow(callback) { show = callback }, useDidHide(callback) { hide = callback } }
-    return { nextCertificationTransition }
+    return { nextCertificationTransition, serverNow: () => current }
   }, module, module.exports, (callback, delay) => { timers.set(++timerId, { callback, at: current + delay }); return timerId }, id => timers.delete(id))
   function render() {
     do { dirty = false; cursor = 0; value = module.exports.useCertificationBatchClock(data, () => { refreshes++ }, true, deadlines); while (effects.length) effects.shift()() } while (dirty)

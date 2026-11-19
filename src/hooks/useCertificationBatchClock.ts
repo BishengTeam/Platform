@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDidHide, useDidShow } from '@tarojs/taro'
 import { nextCertificationTransition, type CertificationBatchWindow } from '../utils/certificationBatch.ts'
+import { serverNow } from '../utils/timeSync.ts'
 
 /** Refresh on return and at time boundaries. Never reset registration form fields here. */
 export function useCertificationBatchClock(
@@ -9,7 +10,7 @@ export function useCertificationBatchClock(
   enabled = true,
   deadlines: readonly (string | null | undefined)[] = [],
 ) {
-  const [now, setNow] = useState(() => Date.now())
+  const [now, setNow] = useState(() => serverNow())
   const [visible, setVisible] = useState(true)
   const firstShow = useRef(true)
   const refreshRef = useRef(onRefresh)
@@ -19,7 +20,7 @@ export function useCertificationBatchClock(
   }
   useDidShow(() => {
     setVisible(true)
-    setNow(Date.now())
+    setNow(serverNow())
     if (enabled && !firstShow.current) refresh()
     firstShow.current = false
   })
@@ -28,10 +29,10 @@ export function useCertificationBatchClock(
   useEffect(() => {
     if (!enabled || !visible || next === null) return
     const timer = setTimeout(() => {
-      const current = Date.now()
+      const current = serverNow()
       setNow(current)
       if (current >= next) refresh()
-    }, Math.min(2147483647, Math.max(0, next - Date.now() + 1)))
+    }, Math.min(2147483647, Math.max(0, next - serverNow() + 1)))
     return () => clearTimeout(timer)
   }, [enabled, visible, next, now])
   return now

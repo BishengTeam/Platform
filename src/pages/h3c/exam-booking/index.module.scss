@@ -1,26 +1,30 @@
+@use '../../../styles/variables' as *;
+
 .page {
   min-height: 100vh;
-  background: #f2f6fc;
+  min-height: 100dvh;
+  background: $cert-page-bg;
 }
 
 .body {
   height: calc(100vh - 132px);
+  height: calc(100dvh - 132px);
   padding: 20rpx 28rpx 48rpx;
   box-sizing: border-box;
 }
 
 .card {
   padding: 28rpx;
-  margin-bottom: 22rpx;
+  margin-bottom: $cert-section-gap;
   background: #fff;
-  border-radius: 22rpx;
-  box-shadow: 0 8rpx 28rpx rgba(15, 23, 42, 0.05);
+  border-radius: $cert-card-radius;
+  box-shadow: $cert-card-shadow;
 }
 
 .title {
   display: block;
   margin-bottom: 18rpx;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 32rpx;
   font-weight: 700;
 }
@@ -28,13 +32,13 @@
 .stepTitle {
   display: block;
   margin-bottom: 18rpx;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 30rpx;
   font-weight: 700;
 }
 
 .text {
-  color: #526176;
+  color: $cert-text-secondary;
   font-size: 26rpx;
   line-height: 1.7;
   white-space: pre-line;
@@ -43,7 +47,7 @@
 .hint {
   display: block;
   margin-top: 12rpx;
-  color: #76809a;
+  color: $cert-text-muted;
   font-size: 24rpx;
   line-height: 1.6;
 }
@@ -51,14 +55,22 @@
 .option {
   padding: 24rpx;
   margin-top: 16rpx;
+  min-height: $touch-min;
+  box-sizing: border-box;
   border: 2rpx solid #e2e8f3;
   border-radius: 16rpx;
   background: #f9fbff;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.option:active {
+  transform: scale(0.99);
+  background: #eef4ff;
 }
 
 .optionTitle {
   display: block;
-  color: #22314d;
+  color: $cert-text-primary;
   font-size: 28rpx;
   font-weight: 600;
 }
@@ -66,7 +78,7 @@
 .optionText {
   display: block;
   margin-top: 8rpx;
-  color: #68738d;
+  color: $cert-text-muted;
   font-size: 24rpx;
 }
 
@@ -88,13 +100,22 @@
 .dateItem {
   min-width: 176rpx;
   padding: 18rpx 14rpx;
-  color: #35435d;
+  min-height: $touch-min;
+  color: $cert-text-secondary;
   font-size: 24rpx;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 2rpx solid #e2e8f3;
   border-radius: 14rpx;
   background: #f9fbff;
   box-sizing: border-box;
+  transition: background 0.12s ease;
+}
+
+.dateItem:active {
+  background: #eef4ff;
 }
 
 .bookingHighlight {
@@ -106,6 +127,19 @@
   0% { transform: scale(1); }
   50% { transform: scale(1.02); }
   100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bookingHighlight {
+    animation: none;
+  }
+  .option,
+  .dateItem {
+    transition: none;
+  }
+  .option:active {
+    transform: none;
+  }
 }
 
 .bookingSuccessHeader {
@@ -142,13 +176,13 @@
 
 .detailLabel {
   flex-shrink: 0;
-  color: #76809a;
+  color: $cert-text-muted;
   font-size: 26rpx;
 }
 
 .detailValue {
   max-width: 68%;
-  color: #17233d;
+  color: $cert-text-primary;
   font-size: 28rpx;
   font-weight: 600;
   text-align: right;

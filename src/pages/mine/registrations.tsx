@@ -5,6 +5,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
+import { PressableLink } from '@/components/PressableLink'
 import { ROUTES } from '@/constants/routes'
 import { h3cService } from '@/services/h3cService'
 import { sangforService, type SangforRegistration } from '@/services/sangforService'
@@ -78,7 +79,7 @@ const STATUS_GROUPS: Record<string, StatusGroup> = {
   external_rejected: 'active',
   pending_refund_confirmation: 'active',
   refund_processing: 'active',
-  approved: 'passed',
+  approved: 'active',
   final_approved: 'passed',
   external_approved: 'passed',
   refunded_closed: 'closed',
@@ -92,6 +93,10 @@ const CATEGORY_LABELS: Record<RegistrationCategory, string> = {
   renshe: '人社',
   sangfor: '深信服',
   competition: '竞赛',
+}
+
+const SOURCE_LABELS: Record<string, string> = {
+  h3c: 'H3C', nisp: 'NISP', renshe: '职业技能等级认证', sangfor: '深信服', competition: '竞赛',
 }
 
 const CATEGORY_ORDER: RegistrationCategory[] = [
@@ -174,6 +179,11 @@ function rensheCard(item: RensheApplicationListItem): RegistrationCard {
 
 function sangforCard(item: SangforRegistration): RegistrationCard {
   const status = statusDisplay(item.status)
+  const offline = item.payment_summary?.offline_status
+  const paymentLabel = offline === 'under_review' ? '凭证待核账'
+    : offline === 'returned' ? '凭证待补交'
+      : offline === 'confirmed' ? '已核账'
+        : offline === 'exception' ? '资金异常' : ''
   return {
     key: `sangfor-${item.id}`,
     category: 'sangfor',
@@ -181,11 +191,14 @@ function sangforCard(item: SangforRegistration): RegistrationCard {
     title: item.batch_snapshot.name,
     status: item.status,
     statusGroup: STATUS_GROUPS[item.status] || 'active',
-    statusLabel: SANGFOR_STATUS[item.status] || status.label,
+    statusLabel: paymentLabel
+      ? `${SANGFOR_STATUS[item.status] || status.label} · ${paymentLabel}`
+      : SANGFOR_STATUS[item.status] || status.label,
     statusClass: status.cls,
     detailUrl: registrationDetailUrl('sangfor', item.id),
     extraRows: [
       { label: '报考方向', value: item.batch_snapshot.exam_direction },
+      ...(paymentLabel ? [{ label: '核账状态', value: paymentLabel }] : []),
       { label: '金额', value: `${(item.price_cents / 100).toFixed(2)} 元` },
     ],
   }
@@ -218,36 +231,44 @@ export default function MyRegistrationsPage() {
   const [compRegs, setCompRegs] = useState<CompetitionMyRegistration[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [sourceErrors, setSourceErrors] = useState<Record<string, boolean>>({})
   const [activeCategory, setActiveCategory] = useState<'all' | RegistrationCategory>('all')
   const [activeStatus, setActiveStatus] = useState<'all' | StatusGroup>('all')
   const [openingKey, setOpeningKey] = useState('')
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true)
     setError(false)
-    return Promise.all([
+    const results = await Promise.allSettled([
       h3cService.listRegistrations()
-        .then(r => r.items.map((item): H3cRegistrationCard => ({ ...item, type: 'H3C' })))
-        .catch(() => [] as H3cRegistrationCard[]),
+        .then(r => r.items.map((item): H3cRegistrationCard => ({ ...item, type: 'H3C' }))),
       nispService.listRegistrations()
         .then(r => r.items.map((item): NispRegistrationCard => ({
           ...item,
           type: 'NISP',
           levelLabel: item.level === '1' ? '一级' : '二级',
-        })))
-        .catch(() => [] as NispRegistrationCard[]),
-      getMyCompetitionRegistrations().catch(() => [] as CompetitionMyRegistration[]),
-      rensheService.listApplications().then(page => page.items).catch(() => [] as RensheApplicationListItem[]),
-      sangforService.registrations().then(page => page.items).catch(() => [] as SangforRegistration[]),
+        }))),
+      getMyCompetitionRegistrations(),
+      rensheService.listApplications().then(page => page.items),
+      sangforService.registrations().then(page => page.items),
     ])
-      .then(([h3cItems, nispItems, competitionItems, rensheApplicationItems, sangforRegistrations]) => {
-        setItems([...h3cItems, ...nispItems])
-        setCompRegs(competitionItems)
-        setRensheItems(rensheApplicationItems)
-        setSangforItems(sangforRegistrations)
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
+
+    const [h3cResult, nispResult, competitionResult, rensheResult, sangforResult] = results
+    setItems([
+      ...(h3cResult.status === 'fulfilled' ? h3cResult.value : []),
+      ...(nispResult.status === 'fulfilled' ? nispResult.value : []),
+    ])
+    setCompRegs(competitionResult.status === 'fulfilled' ? competitionResult.value : [])
+    setRensheItems(rensheResult.status === 'fulfilled' ? rensheResult.value : [])
+    setSangforItems(sangforResult.status === 'fulfilled' ? sangforResult.value : [])
+    setSourceErrors({
+      h3c: h3cResult.status === 'rejected',
+      nisp: nispResult.status === 'rejected',
+      competition: competitionResult.status === 'rejected',
+      renshe: rensheResult.status === 'rejected',
+      sangfor: sangforResult.status === 'rejected',
+    })
+    setLoading(false)
   }, [])
 
   useDidShow(() => {
@@ -356,6 +377,12 @@ export default function MyRegistrationsPage() {
         <RefreshableScrollView className={styles.body} onRefresh={load}>
           {loading && <View className={styles.loading}>加载中...</View>}
 
+          {!loading && Object.entries(sourceErrors).filter(([, failed]) => failed).map(([source]) => (
+            <PressableLink key={source} className={styles.sourceError} onClick={load} ariaLabel={`${SOURCE_LABELS[source] || source}报名加载失败，点击重试`}>
+              <Text>{SOURCE_LABELS[source] || source}报名加载失败，点击重试</Text>
+            </PressableLink>
+          ))}
+
           {error && (
             <View className={styles.empty}>
               <Text>加载失败</Text>
@@ -366,7 +393,7 @@ export default function MyRegistrationsPage() {
             </View>
           )}
 
-          {!loading && !error && allCards.length === 0 && (
+          {!loading && !error && allCards.length === 0 && !Object.values(sourceErrors).some(Boolean) && (
             <View className={styles.empty}>
               <Text>暂无报名记录</Text>
               <Text className={styles.emptyHint}>去认证专区选择认证开始报名</Text>
