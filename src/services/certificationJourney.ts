@@ -23,6 +23,7 @@ export interface EnrollmentNotice {
 }
 export interface EnrollmentJourney {
   vendor: CertificationVendor; registration_id: number; registration_no: string; order_id: number; subject: string; batch_name: string
+  registration_code?: string | null
   stages: string[]; progress: { stage: number | null; exception: boolean; label: string; description: string; action: string }
   apply_end: string | null; proof_due_at: string | null; correction_due_at: string | null; reason: string | null
   events: Array<{ at: string; label: string; reason?: string }>

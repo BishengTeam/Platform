@@ -14,4 +14,5 @@
 .label { flex-shrink: 0; color: $color-text-secondary; }
 .value { color: $color-text; text-align: right; word-break: break-all; }
 .actions { display: flex; flex-wrap: wrap; gap: $spacing-md; margin-top: $spacing-lg; }
+
 @media (max-width: 340px) { .fields { grid-template-columns: minmax(0, 1fr); } }

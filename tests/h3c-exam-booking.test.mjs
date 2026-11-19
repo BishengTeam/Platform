@@ -10,8 +10,8 @@ test('H3C booking page follows schedule, date, slot order and scopes slots to re
   assert.match(page, /① 选择考场计划/)
   assert.match(page, /② 选择考试日期/)
   assert.match(page, /③ 选择考试时段/)
-  assert.match(page, /h3cService\.listExamSlots\(scheduleId, examDate, registrationId\)/)
-  assert.match(page, /h3cService\.bookExamSeat\(\s*scheduleId,\s*registrationId,\s*slotId,\s*examDate,?\s*\)/)
+  assert.match(page, /h3cService\.listExamSlots\(scheduleId, examDate, registrationId, vendor\)/)
+  assert.match(page, /h3cService\.bookExamSeat\(\s*scheduleId,\s*registrationId,\s*slotId,\s*examDate,\s*vendor,?\s*\)/)
   assert.match(page, /剩余 \$\{item\.remaining\} 位/)
   assert.match(page, /考前 3 天内不可自助取消/)
   assert.match(detail, /findCurrentBooking\(rows, certRegistration\.id\)/)
@@ -24,6 +24,10 @@ test('H3C booking page follows schedule, date, slot order and scopes slots to re
   assert.equal(
     safeLoginTarget('/pages/h3c/exam-booking/index?registration_id=12'),
     '/pages/h3c/exam-booking/index?registration_id=12',
+  )
+  assert.equal(
+    safeLoginTarget('/pages/h3c/exam-booking/index?vendor=sangfor&registration_id=12'),
+    '/pages/h3c/exam-booking/index?vendor=sangfor&registration_id=12',
   )
 })
 
@@ -40,7 +44,7 @@ test('H3C booking success keeps the current booking visible immediately', async 
   assert.match(page, /setOptimisticBooking\(booked\)/)
   assert.match(page, /setJustBooked\(true\)/)
   assert.match(page, /scrollIntoView=\{justBooked \? 'booking-summary' : ''\}/)
-  assert.match(page, /title=\{currentBooking \? '考试安排' : 'H3C 考试预约'\}/)
+  assert.match(page, /title=\{currentBooking \? '考试安排' : `\$\{VENDOR_LABELS\[vendor\]\} 考试预约`\}/)
   assert.match(page, /<Text className=\{styles\.successIcon\}>✅<\/Text>/)
   assert.match(page, /<Text className=\{styles\.successTitle\}>预约成功<\/Text>/)
   for (const label of ['考试科目', '考试日期', '考试时段', '考场计划']) {
@@ -53,4 +57,24 @@ test('H3C booking success keeps the current booking visible immediately', async 
   assert.match(page, /getExamNotice\(bookedScheduleId\)/)
   assert.match(style, /\.bookingHighlight\s*\{[\s\S]*?border: 3rpx solid #22c55e;[\s\S]*?animation: booking-pulse/)
   assert.match(style, /@keyframes booking-pulse\s*\{[\s\S]*?transform: scale\(1\.02\)/)
+})
+
+test('exam booking page is vendor-aware and shows schedule attachments', async () => {
+  const [page, service, detail] = await Promise.all([
+    readFile('src/pages/h3c/exam-booking/index.tsx', 'utf8'),
+    readFile('src/services/h3cService.ts', 'utf8'),
+    readFile('src/pages/sangfor/detail.tsx', 'utf8'),
+  ])
+
+  assert.match(page, /options\?\.vendor === 'sangfor' \? 'sangfor' : 'h3c'/)
+  assert.match(page, /h3cService\.listExamSchedules\(registrationId, vendor\)/)
+  assert.match(page, /h3cService\.listExamBookings\(vendor\)/)
+  assert.match(page, /h3cService\.listExamAttachments\(scheduleId\)/)
+  assert.match(service, /'\/api\/exam\/schedules'/)
+  assert.match(service, /`\/api\/exam\/schedules\/\$\{scheduleId\}\/book\?vendor=\$\{vendor\}&registration_id=\$\{registrationId\}`/)
+  assert.match(detail, /vendor=sangfor&registration_id=\$\{record\.id\}/)
+
+  const journey = await readFile('src/components/CertificationEnrollment/JourneyPanel.tsx', 'utf8')
+  assert.match(journey, /journey\.registration_code &&/)
+  assert.match(journey, /复制报名码/)
 })

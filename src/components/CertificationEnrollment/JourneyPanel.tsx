@@ -29,6 +29,11 @@ export function JourneyPanel({ vendor, id }: { vendor: CertificationVendor; id: 
         <Text className={styles.paragraph}>{journey.subject} · {journey.batch_name}</Text><Text className={styles.hint}>报名编号：{journey.registration_no}</Text>
         <View className={styles.stages}>{journey.stages.map((stage, index) => <View key={stage} className={`${styles.stage} ${journey.progress.stage !== null && index < journey.progress.stage ? styles.stageDone : ''} ${index === journey.progress.stage ? styles.stageCurrent : ''}`}><Text>{stage}</Text></View>)}</View>
         <Text className={journey.progress.exception ? styles.error : styles.title}>{journey.progress.label}</Text><Text className={styles.paragraph}>{journey.progress.description}</Text>
+        {journey.registration_code && <>
+          <Text className={styles.title}>报名码：{journey.registration_code}</Text>
+          <Button size='sm' variant='secondary' onClick={() => void Taro.setClipboardData({ data: journey.registration_code! })
+            .then(() => Taro.showToast({ title: '报名码已复制', icon: 'success' }))}>复制报名码</Button>
+        </>}
         {journey.reason && <Text className={styles.error}>处理原因：{journey.reason}</Text>}
         {journey.proof_due_at && <Text className={styles.deadline}>转账凭证提交截止：{enrollmentDeadline(journey.proof_due_at)}</Text>}
         {journey.correction_due_at && journey.progress.action === 'correct' && <Text className={styles.deadline}>补正截止：{enrollmentDeadline(journey.correction_due_at)}</Text>}

@@ -7,6 +7,8 @@ import { Button } from '@/components/Button'
 import { JourneyPanel } from '@/components/CertificationEnrollment/JourneyPanel'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { sangforService, type SangforRegistration } from '@/services/sangforService'
+import { h3cService } from '@/services/h3cService'
+import type { H3cExamBooking } from '@/types/h3c'
 import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/constants/routes'
 import { SANGFOR_LABELS, SANGFOR_STATUS } from '@/utils/sangforForm'
@@ -17,6 +19,7 @@ import styles from './sangfor.module.scss'
 export default function SangforDetailPage() {
   const id = Number(useRouter().params?.id), { isLoggedIn, sessionId } = useAuth()
   const [record, setRecord] = useState<SangforRegistration | null>(null), [error, setError] = useState(''), [loading, setLoading] = useState(true)
+  const [examBooking, setExamBooking] = useState<H3cExamBooking | null>(null)
   const [preview, setPreview] = useState<RegistrationPreview | null>(() => (
     Number.isSafeInteger(id) && id > 0 ? readRegistrationPreview(`sangfor-${id}`) : null
   ))
@@ -25,7 +28,20 @@ export default function SangforDetailPage() {
     if (!isLoggedIn) return
     const seq = ++generation.current
     setLoading(true); setError('')
-    try { if (!Number.isSafeInteger(id) || id <= 0) throw new Error('报名记录无效'); const value = await sangforService.registration(id); if (seq === generation.current) { setRecord(value); setPreview(null) } }
+      try {
+        if (!Number.isSafeInteger(id) || id <= 0) throw new Error('报名记录无效')
+        const value = await sangforService.registration(id)
+        if (seq === generation.current) { setRecord(value); setPreview(null) }
+        h3cService.listExamBookings('sangfor')
+          .then(rows => {
+            if (seq === generation.current) {
+              setExamBooking(
+                rows.find(item => item.registration_id === id && item.status === 'booked') || null,
+              )
+            }
+          })
+          .catch(() => { if (seq === generation.current) setExamBooking(null) })
+      }
     catch (reason) { if (seq === generation.current) setError(reason instanceof Error ? reason.message : '报名详情加载失败') }
     finally { if (seq === generation.current) setLoading(false) }
   }, [id, isLoggedIn, sessionId])
@@ -47,6 +63,9 @@ export default function SangforDetailPage() {
           <View className={styles.row}><Text className={styles.label}>报名状态</Text><Text className={styles.value}>{SANGFOR_STATUS[record.status] || record.status}</Text></View>
           <Text className={styles.hint}>报名编号：{record.registration_no}</Text><Text className={styles.hint}>当前资料：第{record.current_version}版</Text>
           <View className={styles.actions}><Button variant='secondary' onClick={() => Taro.navigateTo({ url: `/${ROUTES.ORDER_DETAIL}?order_id=${record.order_id}` })}>查看订单／付款进度</Button>
+            {(record.status === 'approved' || record.status === 'final_approved') && <Button variant='gradient' onClick={() => Taro.navigateTo({ url: `/${ROUTES.H3C_EXAM_BOOKING}?vendor=sangfor&registration_id=${record.id}` })}>
+              {examBooking ? `📅 ${examBooking.exam_date.slice(0, 10)} ${examBooking.slot_label}` : '预约考试日期'}
+            </Button>}
             {record.status === 'returned' && record.correction_due_at && Date.parse(record.correction_due_at) >= Date.now() && <Button variant='gradient' onClick={() => Taro.navigateTo({ url: `/${ROUTES.SANGFOR_FORM}?registration_id=${record.id}` })}>修改并提交补正</Button>}</View></View>
         <View className={styles.card}><Text className={styles.title}>报名资料</Text><View className={styles.row}><Text className={styles.label}>姓名</Text><Text>{record.candidate_snapshot.name}</Text></View>
           {Object.entries(SANGFOR_LABELS).map(([key, label]) => <View className={styles.row} key={key}><Text className={styles.label}>{label}</Text><Text className={styles.value}>{record.candidate_snapshot[key] || '—'}</Text></View>)}</View>

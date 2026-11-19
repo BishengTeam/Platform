@@ -11,6 +11,7 @@ export interface SangforValues {
 }
 export interface SangforRegistration {
   id: number; order_id: number; batch_id: number; registration_no: string; status: string; order_status: string
+  registration_code?: string | null
   revision: number; current_version: number; price_cents: number; created_at: string; correction_due_at: string | null
   candidate_snapshot: SangforValues & Record<string, string> & { name: string; id_card: string; exam_direction: string; exam_date: string }
   batch_snapshot: { name: string; product_code: string; exam_direction: string; exam_date: string; exam_location: string | null }

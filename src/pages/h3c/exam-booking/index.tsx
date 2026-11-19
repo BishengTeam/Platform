@@ -7,12 +7,25 @@ import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { h3cService } from '@/services/h3cService'
-import type { H3cExamBooking, H3cExamScheduleOption, H3cExamTimeSlot } from '@/types/h3c'
+import type { CertificationVendor } from '@/services/certificationJourney'
+import type {
+  H3cExamAttachment,
+  H3cExamBooking,
+  H3cExamScheduleOption,
+  H3cExamTimeSlot,
+} from '@/types/h3c'
 import { serverNow } from '@/utils/timeSync'
+import { resolveUrl } from '@/utils/request'
 import styles from './index.module.scss'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const WEEKDAY_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+const VENDOR_LABELS: Record<CertificationVendor, string> = {
+  h3c: 'H3C',
+  sangfor: '深信服',
+  nisp: 'NISP',
+  renshe: '职业技能等级认证',
+}
 
 function displayDate(value: string) {
   return value.slice(0, 10)
@@ -38,6 +51,7 @@ function canCancelBooking(examDate: string) {
 }
 
 export default function H3cExamBookingPage() {
+  const [vendor, setVendor] = useState<CertificationVendor>('h3c')
   const [registrationId, setRegistrationId] = useState(0)
   const [schedules, setSchedules] = useState<H3cExamScheduleOption[]>([])
   const [bookings, setBookings] = useState<H3cExamBooking[]>([])
@@ -47,6 +61,7 @@ export default function H3cExamBookingPage() {
   const [slots, setSlots] = useState<H3cExamTimeSlot[]>([])
   const [slotId, setSlotId] = useState(0)
   const [notice, setNotice] = useState('')
+  const [attachments, setAttachments] = useState<H3cExamAttachment[]>([])
   const [loading, setLoading] = useState(false)
   const [datesLoading, setDatesLoading] = useState(false)
   const [slotsLoading, setSlotsLoading] = useState(false)
@@ -56,6 +71,8 @@ export default function H3cExamBookingPage() {
   const [justBooked, setJustBooked] = useState(false)
 
   useLoad(options => {
+    const vendorParam = options?.vendor === 'sangfor' ? 'sangfor' : 'h3c'
+    setVendor(vendorParam)
     const id = Number(options?.registration_id || 0)
     if (Number.isSafeInteger(id) && id > 0) setRegistrationId(id)
     else setError('报名记录参数无效，请返回我的报名重试')
@@ -83,8 +100,8 @@ export default function H3cExamBookingPage() {
     setError('')
     try {
       const [scheduleRows, bookingRows] = await Promise.all([
-        h3cService.listExamSchedules(registrationId),
-        h3cService.listExamBookings(),
+        h3cService.listExamSchedules(registrationId, vendor),
+        h3cService.listExamBookings(vendor),
       ])
       setSchedules(scheduleRows)
       setBookings(bookingRows)
@@ -103,7 +120,7 @@ export default function H3cExamBookingPage() {
     } finally {
       setLoading(false)
     }
-  }, [registrationId])
+  }, [registrationId, vendor])
 
   useEffect(() => { void loadOverview() }, [loadOverview])
 
@@ -138,7 +155,7 @@ export default function H3cExamBookingPage() {
     let cancelled = false
     setDatesLoading(true)
     Promise.all([
-      h3cService.listExamDates(scheduleId),
+      h3cService.listExamDates(scheduleId, vendor),
       h3cService.getExamNotice(scheduleId),
     ]).then(([dateRows, noticeText]) => {
       if (cancelled) return
@@ -150,6 +167,16 @@ export default function H3cExamBookingPage() {
       if (!cancelled) setDatesLoading(false)
     })
     return () => { cancelled = true }
+  }, [scheduleId, vendor])
+
+  useEffect(() => {
+    setAttachments([])
+    if (!scheduleId) return
+    let cancelled = false
+    h3cService.listExamAttachments(scheduleId)
+      .then(rows => { if (!cancelled) setAttachments(rows) })
+      .catch(() => { if (!cancelled) setAttachments([]) })
+    return () => { cancelled = true }
   }, [scheduleId])
 
   useEffect(() => {
@@ -159,7 +186,7 @@ export default function H3cExamBookingPage() {
 
     let cancelled = false
     setSlotsLoading(true)
-    h3cService.listExamSlots(scheduleId, examDate, registrationId)
+    h3cService.listExamSlots(scheduleId, examDate, registrationId, vendor)
       .then(rows => {
         if (!cancelled) setSlots(rows)
       })
@@ -170,7 +197,7 @@ export default function H3cExamBookingPage() {
         if (!cancelled) setSlotsLoading(false)
       })
     return () => { cancelled = true }
-  }, [scheduleId, examDate, registrationId])
+  }, [scheduleId, examDate, registrationId, vendor])
 
   const chooseSchedule = (id: number) => {
     if (submitting || id === scheduleId) return
@@ -200,6 +227,7 @@ export default function H3cExamBookingPage() {
         registrationId,
         slotId,
         examDate,
+        vendor,
       )
       const booked: H3cExamBooking = {
         id: result.booking_id,
@@ -244,7 +272,11 @@ export default function H3cExamBookingPage() {
     setSubmitting(true)
     setError('')
     try {
-      await h3cService.cancelExamBooking(booking.id, booking.registration_id)
+      await h3cService.cancelExamBooking(
+        booking.id,
+        booking.registration_id,
+        vendor,
+      )
       setOptimisticBooking(previous => previous?.id === booking.id ? null : previous)
       setJustBooked(false)
       Taro.showToast({ title: '已取消预约', icon: 'success' })
@@ -260,7 +292,10 @@ export default function H3cExamBookingPage() {
 
   return <AuthGuard>
     <View className={styles.page}>
-      <PageHeader title={currentBooking ? '考试安排' : 'H3C 考试预约'} shouldShowBack />
+      <PageHeader
+        title={currentBooking ? '考试安排' : `${VENDOR_LABELS[vendor]} 考试预约`}
+        shouldShowBack
+      />
       <RefreshableScrollView
         className={styles.body}
         onRefresh={loadOverview}
@@ -339,6 +374,25 @@ export default function H3cExamBookingPage() {
               <Text className={styles.text}>
                 报名审核通过后可在此选择考场计划、考试日期和时段。预约成功后，下方显示的日期与时段即为最终考试时间。
               </Text>
+              {attachments.length > 0 && (
+                <View className={styles.attachmentList}>
+                  <Text className={styles.stepTitle}>📎 考试资料</Text>
+                  {attachments.map(item => (
+                    <View
+                      key={item.id}
+                      className={styles.attachmentItem}
+                      onClick={() => {
+                        void Taro.downloadFile({ url: resolveUrl(item.file_url) })
+                          .then(result => Taro.openDocument({ filePath: result.tempFilePath }))
+                          .catch(() => Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' }))
+                      }}
+                    >
+                      <Text>{item.title}</Text>
+                      <Text className={styles.hint}>点击下载</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
 
             {!loading && !error && schedules.length === 0 && (

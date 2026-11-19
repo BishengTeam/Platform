@@ -80,6 +80,13 @@ export interface H3cExamTimeSlot {
   remaining: number
 }
 
+export interface H3cExamAttachment {
+  id: number
+  title: string
+  file_url: string
+  file_size: number | null
+}
+
 export interface H3cExamBooking {
   id: number
   registration_id: number
