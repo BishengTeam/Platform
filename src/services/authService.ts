@@ -39,9 +39,13 @@ export interface AuthTokens {
   expires_in: number
 }
 
-export async function wxLogin(code: string): Promise<AuthTokens> {
+/**
+ * @param phoneCode 微信 getPhoneNumber 授权返回的 code，登录时顺带绑定手机号（可选）
+ */
+export async function wxLogin(code: string, phoneCode?: string): Promise<AuthTokens> {
   if (USE_MOCK) throw new Error('认证模块禁止使用 mock 登录')
-  const res = await request<AuthTokens>({ url: '/api/auth/login', method: 'POST', data: { code }, auth: 'public' })
+  const data = phoneCode ? { code, phone_code: phoneCode } : { code }
+  const res = await request<AuthTokens>({ url: '/api/auth/login', method: 'POST', data, auth: 'public' })
   return res.data
 }
 

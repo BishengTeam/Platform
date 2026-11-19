@@ -91,6 +91,10 @@ $auth-button-shadow: 0 12px 28px rgba($auth-primary, 0.28);
   gap: $spacing-xs;
   width: 100%;
   height: 104px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  line-height: normal;
   color: $color-white;
   background: linear-gradient(135deg, $auth-primary 0%, $auth-primary-deep 100%);
   border-radius: $radius-lg;
@@ -99,6 +103,10 @@ $auth-button-shadow: 0 12px 28px rgba($auth-primary, 0.28);
     transform $motion-duration-press $motion-ease-out,
     box-shadow $motion-duration-state $motion-ease-out,
     opacity $motion-duration-state $motion-ease-out;
+
+  &::after {
+    border: none;
+  }
 
   &:active {
     transform: scale(0.98);

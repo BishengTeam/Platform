@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Image } from '@tarojs/components'
+import { View, Text, Image, Button } from '@tarojs/components'
 import Taro, { useUnload } from '@tarojs/taro'
 import { wxLogin, acceptLoginAgreements } from '@/services/dataService'
 import { setAuthTokens } from '@/utils/request'
@@ -17,7 +17,7 @@ export default function AuthPage() {
   const purpose = pendingLogin()?.purpose || '登录后查看报名、订单及个人服务'
   useUnload(loginPageClosed)
 
-  const handleLogin = () => {
+  const handleLogin = (phoneCode?: string) => {
     if (!isAgreed) {
       setIsShaking(true)
       setTimeout(() => setIsShaking(false), 500)
@@ -29,7 +29,7 @@ export default function AuthPage() {
     Taro.login({
       success: (loginRes) => {
         if (loginRes.code) {
-          wxLogin(loginRes.code)
+          wxLogin(loginRes.code, phoneCode)
             .then((data) => {
               // A new explicit WeChat login may represent a different account.
               clearQuizCache()
@@ -57,6 +57,26 @@ export default function AuthPage() {
     })
   }
 
+  /** 微信手机号授权回调：拿到 code 则登录并顺带绑定手机号；拒绝授权则降级为普通登录 */
+  const handleGetPhoneNumber = (phoneCode?: string) => {
+    if (!isAgreed) return
+    if (phoneCode) {
+      handleLogin(phoneCode)
+      return
+    }
+    // 用户取消授权或组件不可用：不阻断登录，后续可在报名/个人资料中补填
+    handleLogin()
+  }
+
+  const handleButtonClick = () => {
+    if (!isAgreed) {
+      setIsShaking(true)
+      setTimeout(() => setIsShaking(false), 500)
+      return
+    }
+    // 已勾选协议时由 openType='getPhoneNumber' 的授权回调接管登录
+  }
+
   return (
     <View className={styles.page}>
       <View className={styles.bgDecor} />
@@ -70,13 +90,15 @@ export default function AuthPage() {
 
         <View className={`${styles.actions} fade-in-up delay-1`}>
           <Text className={styles.loginPurpose}>{purpose}</Text>
-          <View
+          <Button
             className={`${styles.wechatBtn} ${isLoggingIn ? styles.wechatBtnLoading : ''}`}
-            onClick={handleLogin}
+            openType={isAgreed && !isLoggingIn ? 'getPhoneNumber' : undefined}
+            onGetPhoneNumber={(e) => handleGetPhoneNumber(e.detail?.code)}
+            onClick={handleButtonClick}
           >
             <Icon name='message-circle' size={20} color='#ffffff' />
             <Text className={styles.wechatBtnText}>{isLoggingIn ? '登录中...' : STRINGS.AUTH_WECHAT_BTN}</Text>
-          </View>
+          </Button>
           <Text className={styles.browseLink} onClick={() => { if (!isLoggingIn) void cancelLogin() }}>暂不登录，继续浏览</Text>
 
           <View className={`${styles.agreementRow} ${isShaking ? 'shake' : ''} fade-in delay-2`}>
