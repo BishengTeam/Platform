@@ -13,6 +13,7 @@ import type { QuizLibraryProgress, QuizPracticeScopePreview, QuizPracticeScopeTy
 import { createQuizExam, getCurrentQuizExam, getQuizLibrary, getQuizLibraryProgress, previewPracticeScope, redeemLibraryCode } from '@/services/dataService'
 import { rememberScope } from '@/utils/practiceScope'
 import { ApiError } from '@/utils/request'
+import { ensureStudentName } from '@/utils/studentName'
 import styles from './prepare.module.scss'
 
 const QUESTION_COUNTS = [10, 20, 50, 100] as const
@@ -219,7 +220,7 @@ export default function QuizPreparePage() {
     }
   }, [scopeQuestionCount, questionCount])
 
-  const start = () => {
+  const start = async () => {
     if (loading || starting || !preview) return
     if (!reciteMode && !examEnabled) return
     if (reciteMode) {
@@ -228,38 +229,39 @@ export default function QuizPreparePage() {
       })
       return
     }
+    if (!(await ensureStudentName())) return
     setStarting(true)
-    createQuizExam({
-      scope_type: preview.scope_type,
-      scope_id: preview.scope_id,
-      question_count: questionCount,
-    })
-      .then(exam => {
-        Taro.navigateTo({ url: `/${ROUTES.QUIZ_MOCK}?examId=${exam.id}` })
+    try {
+      const exam = await createQuizExam({
+        scope_type: preview.scope_type,
+        scope_id: preview.scope_id,
+        question_count: questionCount,
       })
-      .catch(async error => {
-        if (!isConflict(error)) {
-          Taro.showToast({ title: messageOf(error), icon: 'none', duration: 2500 })
-          return
-        }
-        const current = await getCurrentQuizExam().catch(() => null)
-        if (!current || current.status !== 'in_progress') {
-          Taro.showToast({ title: '已有进行中的考试，请稍后重试', icon: 'none', duration: 2500 })
-          return
-        }
-        Taro.showModal({
-          title: '已有一场进行中的考试',
-          content: '同一时间只能有一场考试。可以继续未完成的考试，也可以先交卷或放弃后再开新考试。',
-          confirmText: '继续考试',
-          cancelText: '取消',
-          success: result => {
-            if (result.confirm) {
-              Taro.navigateTo({ url: `/${ROUTES.QUIZ_MOCK}?examId=${current.id}` })
-            }
-          },
-        })
+      Taro.navigateTo({ url: `/${ROUTES.QUIZ_MOCK}?examId=${exam.id}` })
+    } catch (error) {
+      if (!isConflict(error)) {
+        Taro.showToast({ title: messageOf(error), icon: 'none', duration: 2500 })
+        return
+      }
+      const current = await getCurrentQuizExam().catch(() => null)
+      if (!current || current.status !== 'in_progress') {
+        Taro.showToast({ title: '已有进行中的考试，请稍后重试', icon: 'none', duration: 2500 })
+        return
+      }
+      Taro.showModal({
+        title: '已有一场进行中的考试',
+        content: '同一时间只能有一场考试。可以继续未完成的考试，也可以先交卷或放弃后再开新考试。',
+        confirmText: '继续考试',
+        cancelText: '取消',
+        success: result => {
+          if (result.confirm) {
+            Taro.navigateTo({ url: `/${ROUTES.QUIZ_MOCK}?examId=${current.id}` })
+          }
+        },
       })
-      .finally(() => setStarting(false))
+    } finally {
+      setStarting(false)
+    }
   }
 
   const lastRound = preview?.last_completed_session ?? null

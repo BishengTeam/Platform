@@ -37,6 +37,7 @@ import {
   getCachedPracticeSessionId,
   getOrCreateAttemptKey,
 } from '@/utils/quizRuntime'
+import { ensureStudentName } from '@/utils/studentName'
 import { ApiError } from '@/utils/request'
 import { alignedAnswerLines, answerIncludes, correctAnswerText, fillBlankBlankResults, fillBlankCount, isEssay, isFillBlank, isMatching, isMultipleChoice, isOrdering, quizImageUrls, quizOptions, relabeledAnswerText, relabeledQuizOptions, quizTypeLabel } from '@/utils/quizView'
 import { safeNavigateBack } from '@/utils/navigation'
@@ -168,6 +169,10 @@ export default function QuizPracticePage() {
     setStarting(true)
     setLoadError('')
     try {
+      if (!(await ensureStudentName())) {
+        setLoadError('请先填写姓名后再开始练习')
+        return
+      }
       const nextPreview = await previewPracticeScope({ scope_type: scope, scope_id: id, mode })
       setPreview(nextPreview)
       if (nextPreview.question_count === 0) {
@@ -227,6 +232,10 @@ export default function QuizPracticePage() {
     setStarting(true)
     setLoadError('')
     try {
+      if (!(await ensureStudentName())) {
+        setLoadError('请先填写姓名后再开始练习')
+        return
+      }
       const created = await createPracticeSession(mode === 'wrong'
         ? { mode: 'wrong' }
         : { mode: 'normal', category_id: selectedCategory!, question_count: count })

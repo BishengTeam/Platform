@@ -19,6 +19,7 @@ import {
 } from '@/services/dataService'
 import type { UserProfileAggregated, UserRealnameL2, UserStudentL2, UserEnterpriseL2 } from '@/types/profile'
 import { validateIdCard } from '@/utils/validator'
+import { isValidStudentName, resetCachedStudentName } from '@/utils/studentName'
 import styles from './edit-profile.module.scss'
 
 // ---- 省/市选项数据（前端静态常量） ----
@@ -98,6 +99,7 @@ export default function EditProfilePage() {
 
   // ---- Level 1 ----
   const [nickname, setNickname] = useState('')
+  const [declaredName, setDeclaredName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   // L1 新增 — 地址
@@ -161,6 +163,7 @@ export default function EditProfilePage() {
       setProfile(p)
       // L1
       setNickname(p.profile.nickname || '')
+      setDeclaredName(p.profile.declared_name || '')
       setEmail(p.profile.email || '')
       setPhone(p.profile.phone || '')
       // L1 地址
@@ -235,15 +238,22 @@ export default function EditProfilePage() {
   // Level 1 保存
   // ================================================================
   const handleSaveL1 = async () => {
+    const trimmedName = declaredName.trim()
+    if (trimmedName && !isValidStudentName(trimmedName)) {
+      Taro.showToast({ title: '姓名需为 2-32 个字，且不能是纯数字', icon: 'none' })
+      return
+    }
     setSavingL1(true)
     try {
       await updateUserProfile({
         nickname: nickname.trim() || undefined,
+        declared_name: trimmedName || undefined,
         email: email.trim() || undefined,
         province: province.trim() || undefined,
         city: city.trim() || undefined,
         address: address.trim() || undefined,
       })
+      resetCachedStudentName()
       Taro.showToast({ title: '基础资料已保存', icon: 'success' })
     } catch {
       Taro.showToast({ title: '保存失败', icon: 'none' })
@@ -486,6 +496,7 @@ export default function EditProfilePage() {
               <Text className={styles.sectionTitle}>基础资料</Text>
             </View>
             <FormInput label='昵称' placeholder='请输入昵称' value={nickname} onChange={setNickname} />
+            <FormInput label='姓名' placeholder='用于练习与考试成绩统计' value={declaredName} onChange={setDeclaredName} />
             <FormInput label={STRINGS.FORM_EMAIL} placeholder={STRINGS.FORM_EMAIL_PLACEHOLDER} value={email} onChange={setEmail} />
             <FormInput label={STRINGS.FORM_PHONE} placeholder='手机号通过微信授权获取' value={phone} disabled onChange={() => undefined} />
             <Text className={styles.subTitle}>通讯地址</Text>

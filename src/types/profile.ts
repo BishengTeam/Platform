@@ -63,6 +63,8 @@ export interface UserProfileUpdatePayload {
   province?: string
   city?: string
   address?: string
+  /** 用户自填姓名：练习/考试成绩统计归属用（非实名） */
+  declared_name?: string
 }
 
 // ================================================================
@@ -77,6 +79,8 @@ export interface UserProfileL1 {
   province: string | null
   city: string | null
   address: string | null
+  /** 自填姓名：练习/考试成绩统计归属用（非实名） */
+  declared_name?: string | null
 }
 
 /** Level 2 — 实名信息（需审核） */

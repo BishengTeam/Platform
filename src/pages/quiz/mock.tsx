@@ -21,6 +21,7 @@ import {
 } from '@/services/dataService'
 import { ApiError } from '@/utils/request'
 import { safeNavigateBack } from '@/utils/navigation'
+import { ensureStudentName } from '@/utils/studentName'
 import {
   cacheExamId,
   cachePendingExamAbandonId,
@@ -274,6 +275,10 @@ export default function QuizMockPage() {
     setLoadError('')
     try {
       if (!await retryPendingAbandon()) return
+      if (!(await ensureStudentName())) {
+        setLoadError('请先填写姓名后再开始考试')
+        return
+      }
       const created = await createQuizExam({
         scopes: selectedNodes.map(node => ({ scope_type: node.type, scope_id: node.id })),
         question_count: questionCount,

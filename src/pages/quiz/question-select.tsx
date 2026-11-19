@@ -10,6 +10,7 @@ import type { QuizPickerNode } from '@/components/QuizCategoryPicker'
 import type { PageData, QuizLibraryCatalogDetail, QuizPublicQuestion, QuizQuestionType } from '@/contracts/quiz'
 import { createManualQuizExam, getQuizLibrary, listQuizLibraryQuestions, listQuizLibraries } from '@/services/dataService'
 import { quizImageUrls, quizOptions, quizTypeLabel } from '@/utils/quizView'
+import { ensureStudentName } from '@/utils/studentName'
 import styles from './question-select.module.scss'
 
 const PAGE_SIZE = 20
@@ -201,6 +202,7 @@ export default function QuizQuestionSelectPage() {
       cancelText: '再选选',
       success: async result => {
         if (!result.confirm) return
+        if (!(await ensureStudentName())) return
         setCreating(true)
         try {
           const exam = await createManualQuizExam({ question_ids: basket.map(item => item.id) })
