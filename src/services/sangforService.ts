@@ -3,6 +3,7 @@ import { get, getPublic, post } from '../utils/request.ts'
 export interface SangforBatch {
   id: number; product_code: string; product_name: string; name: string; status: string
   exam_direction: string; description: string | null; exam_date: string | null; exam_location: string | null
+  registration_notice?: string | null
   apply_start: string | null; apply_end: string | null; price_cents: number; capacity: number; enrolled: number; remaining_count: number
 }
 export interface SangforValues {
@@ -14,7 +15,7 @@ export interface SangforRegistration {
   registration_code?: string | null
   revision: number; current_version: number; price_cents: number; created_at: string; correction_due_at: string | null
   candidate_snapshot: SangforValues & Record<string, string> & { name: string; id_card: string; exam_direction: string; exam_date: string }
-  batch_snapshot: { name: string; product_code: string; exam_direction: string; exam_date: string; exam_location: string | null }
+  batch_snapshot: { name: string; product_code: string; exam_direction: string; exam_date: string; exam_location: string | null; registration_notice?: string }
   reviews: Array<{ action: string; reason: string; version: number; created_at: string; correction_due_at: string | null }>
   payment_summary: { order_id: number; payment_channel: string; offline_status: string | null; review_payment_allowed: boolean; review_block_reason: string | null }
 }

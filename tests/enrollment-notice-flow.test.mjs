@@ -20,12 +20,14 @@ function driver({ vendor = 'nisp', catalog, getNotice }) {
     '@tarojs/components': { View: 'View', Text: 'Text', Checkbox: 'Checkbox', Picker: 'Picker' },
     '@tarojs/taro': { __esModule: true, default: { getCurrentPages: () => [], navigateBack: async () => calls.push('back') }, useLoad: callback => { loader = callback } },
     '@/components/PageHeader': { PageHeader: 'PageHeader' }, '@/components/Button': { Button: 'Button' }, '@/components/CertificationEnrollment': { NoticeBlocks: 'NoticeBlocks' },
-    '@/services/certificationJourney': { certificationJourneyService: { catalog: async () => catalog, notice: getNotice } },
+    '@/components/CertAttachmentList': { CertAttachmentList: 'CertAttachmentList' },
+    '@/services/certificationJourney': { certificationJourneyService: { catalog: async () => catalog, notice: getNotice, planAttachments: async () => [] } },
     '@/utils/enrollment': { VENDOR_KEYS: { nisp: 'nisp', h3c: 'h3c' }, currentNotice: () => null, enrollmentBatchLabel: batch => batch.name, enrollmentDeadline: value => value,
       enrollmentCountdown: () => '', enrollmentFormUrl: (vendor, batch, type) => `${vendor}:${batch.id}:${type}`, rememberNotice: value => remembered.push(value) },
     '@/utils/certificationBatch': { certificationBatchState: batch => ({ canApply: batch.can_apply }) },
     '@/utils/loginCoordinator': { navigateWithLogin: async target => calls.push(target), requireLogin: async () => true },
     '@/utils/navigation': { safeNavigateBack: async () => { calls.push('back'); return 'back' } },
+    '@/utils/latestRequest': { createLatestGuard: () => ({ next: () => 1, isCurrent: () => true, invalidate() {} }) },
     '@/hooks/useCertificationBatchClock': { useCertificationBatchClock: () => Date.parse('2026-11-04') },
   }
   const source = ts.transpileModule(readFileSync('src/pages/registration/notice.tsx', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText

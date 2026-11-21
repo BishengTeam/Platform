@@ -55,11 +55,34 @@ export function JourneyPanel({ vendor, id }: { vendor: CertificationVendor; id: 
         <Text className={styles.paragraph}>{journey.subject} · {journey.batch_name}</Text><Text className={styles.hint}>报名编号：{journey.registration_no}</Text>
         <View className={styles.stages}>{journey.stages.map((stage, index) => <View key={stage} className={`${styles.stage} ${journey.progress.stage !== null && index < journey.progress.stage ? styles.stageDone : ''} ${index === journey.progress.stage ? styles.stageCurrent : ''}`}><Text>{stage}</Text></View>)}</View>
         <Text className={journey.progress.exception ? styles.error : styles.title}>{journey.progress.label}</Text><Text className={styles.paragraph}>{journey.progress.description}</Text>
-        {journey.registration_code && <>
-          <Text className={styles.title}>报名码：{journey.registration_code}</Text>
-          <Button size='sm' variant='secondary' onClick={() => void Taro.setClipboardData({ data: journey.registration_code! })
-            .then(() => Taro.showToast({ title: '报名码已复制', icon: 'success' }))}>复制报名码</Button>
-        </>}
+        {journey.registration_code_info?.revoked && <View className={styles.codeCardRevoked}>
+          <Text className={styles.codeRevokedTitle}>报名码已失效（退款关闭）</Text>
+          <Text className={styles.hint}>如仍需参加考试，请重新报名并完成缴费。</Text>
+        </View>}
+        {!journey.registration_code_info?.revoked && journey.registration_code_info?.code && <View className={styles.codeCard}>
+          <Text className={styles.codeTitle}>报名码</Text>
+          <View className={styles.codeBox} onClick={() => void Taro.setClipboardData({ data: journey.registration_code_info!.code! })
+            .then(() => Taro.showToast({ title: '报名码已复制', icon: 'success' }))}>
+            <Text className={styles.codeValue}>{journey.registration_code_info.code}</Text>
+          </View>
+          {journey.registration_code_info.generated_at && <Text className={styles.hint}>生成时间：{formatCertificationTime(journey.registration_code_info.generated_at)}</Text>}
+          <Text className={styles.codeTitle}>激活步骤</Text>
+          {journey.registration_code_info.instructions.map((step, index) => (
+            <View key={step} className={styles.codeStep}>
+              <Text className={styles.codeStepIndex}>{index + 1}</Text>
+              <Text className={styles.codeStepText}>{step}</Text>
+            </View>
+          ))}
+          <View className={styles.actions}>
+            {journey.registration_code_info.activation_url && <Button size='sm' variant='gradient' onClick={() => {
+              const url = journey.registration_code_info!.activation_url!
+              void Taro.setClipboardData({ data: url }).then(() => Taro.showToast({ title: '官网地址已复制，请在浏览器打开', icon: 'none' }))
+            }}>复制官网地址</Button>}
+            <Button size='sm' variant='secondary' onClick={() => void Taro.setClipboardData({ data: journey.registration_code_info!.code! })
+              .then(() => Taro.showToast({ title: '报名码已复制', icon: 'success' }))}>复制报名码</Button>
+          </View>
+          <Text className={styles.hint}>报名码仅限本人使用，请勿转发。</Text>
+        </View>}
         {journey.reason && <Text className={styles.error}>处理原因：{journey.reason}</Text>}
         {journey.proof_due_at && <Text className={styles.deadline}>转账凭证提交截止：{enrollmentDeadline(journey.proof_due_at)}</Text>}
         {journey.correction_due_at && journey.progress.action === 'correct' && <Text className={styles.deadline}>补正截止：{enrollmentDeadline(journey.correction_due_at)}</Text>}

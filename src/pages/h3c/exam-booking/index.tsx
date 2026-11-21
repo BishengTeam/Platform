@@ -15,7 +15,7 @@ import type {
   H3cExamTimeSlot,
 } from '@/types/h3c'
 import { serverNow } from '@/utils/timeSync'
-import { resolveUrl } from '@/utils/request'
+import { CertAttachmentList } from '@/components/CertAttachmentList'
 import { createLatestGuard } from '@/utils/latestRequest'
 import { applyBookingOverview } from '@/utils/examBookingOverview'
 import { bookingSubmitState } from '@/utils/bookingSubmit'
@@ -65,7 +65,6 @@ export default function H3cExamBookingPage() {
   const [slotId, setSlotId] = useState(0)
   const [notice, setNotice] = useState('')
   const [attachments, setAttachments] = useState<H3cExamAttachment[]>([])
-  const [downloadingAttachment, setDownloadingAttachment] = useState(0)
   const [loading, setLoading] = useState(false)
   const [bookingLoading, setBookingLoading] = useState(false)
   const [datesLoading, setDatesLoading] = useState(false)
@@ -446,33 +445,8 @@ export default function H3cExamBookingPage() {
               <Text className={styles.text}>
                 报名审核通过后可在此选择考场计划、考试日期和时段。预约成功后，下方显示的日期与时段即为最终考试时间。
               </Text>
-              {attachments.length > 0 && (
-                <View className={styles.attachmentList}>
-                  <Text className={styles.stepTitle}>📎 考试资料</Text>
-                  {attachments.map(item => (
-                    <View
-                      key={item.id}
-                      className={styles.attachmentItem}
-                      aria-role='button'
-                      aria-label={`下载${item.title}`}
-                      onClick={() => {
-                        if (downloadingAttachment) return
-                        setDownloadingAttachment(item.id)
-                        void Taro.downloadFile({ url: resolveUrl(item.file_url) })
-                          .then(result => Taro.openDocument({ filePath: result.tempFilePath }))
-                          .catch(() => Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' }))
-                          .finally(() => setDownloadingAttachment(0))
-                      }}
-                    >
-                      <Text>{item.title}</Text>
-                      <Text className={styles.hint}>
-                        {downloadingAttachment === item.id ? '下载中…' : '点击下载'}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
             </View>
+            <CertAttachmentList attachments={attachments} />
 
             {!loading && !scheduleError && schedules.length === 0 && (
               <View className={styles.card}>

@@ -19,11 +19,22 @@ export interface EnrollmentNotice {
   vendor: CertificationVendor; subject: EnrollmentCatalog['subjects'][number]; batch: EnrollmentBatch
   price: EnrollmentBatch['prices'][number]; notice: { title: string; blocks: NoticeBlock[] }
   supplement: { title: string; blocks: NoticeBlock[] }; batch_description: string; notice_hash: string
+  registration_notice?: string | null
   requirements_summary?: string[]
+}
+export interface CertAttachmentItem {
+  id: number; title: string; file_url: string; file_size: number | null; sort_order?: number
 }
 export interface EnrollmentJourney {
   vendor: CertificationVendor; registration_id: number; registration_no: string; order_id: number; subject: string; batch_name: string
   registration_code?: string | null
+  registration_code_info?: {
+    code: string | null
+    generated_at: string | null
+    revoked: boolean
+    activation_url: string | null
+    instructions: string[]
+  } | null
   stages: string[]; progress: { stage: number | null; exception: boolean; label: string; description: string; action: string }
   apply_end: string | null; proof_due_at: string | null; correction_due_at: string | null; reason: string | null
   events: Array<{ at: string; label: string; reason?: string }>
@@ -34,5 +45,8 @@ export const certificationJourneyService = {
   async catalog(vendor: CertificationVendor): Promise<EnrollmentCatalog> { return (await getPublic<EnrollmentCatalog>(`/api/cert/enrollment/${vendor}/catalog`)).data },
   async notice(vendor: CertificationVendor, id: number, type?: string): Promise<EnrollmentNotice> { return (await getPublic<EnrollmentNotice>(`/api/cert/enrollment/${vendor}/notice/${id}`, type ? { registration_type: type } : undefined)).data },
   async journey(vendor: CertificationVendor, id: number): Promise<EnrollmentJourney> { return (await get<EnrollmentJourney>(`/api/cert/enrollment/${vendor}/registrations/${id}`)).data },
+  async planAttachments(vendor: CertificationVendor, planId: number): Promise<CertAttachmentItem[]> {
+    return (await getPublic<CertAttachmentItem[]>(`/api/cert/enrollment/${vendor}/plans/${planId}/attachments`)).data
+  },
   async order(orderId: number): Promise<{ vendor: CertificationVendor; id: number } | null> { return (await get<{ vendor: CertificationVendor; id: number } | null>(`/api/cert/enrollment/orders/${orderId}`)).data },
 }

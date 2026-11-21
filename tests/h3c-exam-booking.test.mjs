@@ -78,6 +78,7 @@ test('exam booking page is vendor-aware and shows schedule attachments', async (
   assert.match(detail, /const firstShow = useRef\(true\)/)
 
   const journey = await readFile('src/components/CertificationEnrollment/JourneyPanel.tsx', 'utf8')
-  assert.match(journey, /journey\.registration_code &&/)
+  assert.match(journey, /journey\.registration_code_info/)
+  assert.match(journey, /报名码已失效（退款关闭）/)
   assert.match(journey, /复制报名码/)
 })

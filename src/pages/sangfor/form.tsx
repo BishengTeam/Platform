@@ -10,15 +10,18 @@ import { PageHeader } from '@/components/PageHeader'
 import { FormInput } from '@/components/FormInput'
 import { Button } from '@/components/Button'
 import { AgreementCheckbox } from '@/components/AgreementCheckbox'
+import { CertAttachmentList } from '@/components/CertAttachmentList'
 import { RegistrationSubmitBar, RegistrationSummary } from '@/components/RegistrationParts'
 import { useAuth } from '@/hooks/useAuth'
 import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
 import { assertCertificationBatchOpen, certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
 import { getUserProfile } from '@/services/userService'
 import { sangforService, type SangforBatch, type SangforRegistration, type SangforValues } from '@/services/sangforService'
+import { certificationJourneyService, type CertAttachmentItem } from '@/services/certificationJourney'
 import { SANGFOR_LABELS, validateSangforForm, canApplySangfor } from '@/utils/sangforForm'
 import { correctionAvailability } from '@/utils/correction'
 import { serverNow } from '@/utils/timeSync'
+import { createLatestGuard } from '@/utils/latestRequest'
 import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { ROUTES } from '@/constants/routes'
 import { formatDateTime } from '@/utils/format'
@@ -30,6 +33,9 @@ export default function SangforFormPage() {
   const { isLoggedIn, sessionId } = useAuth()
   const [batchId, setBatchId] = useState(0), [registrationId, setRegistrationId] = useState(0), [routeReady, setRouteReady] = useState(false)
   const [batch, setBatch] = useState<SangforBatch | null>(null), [registration, setRegistration] = useState<SangforRegistration | null>(null)
+  const [attachments, setAttachments] = useState<CertAttachmentItem[]>([])
+  const [attachmentsLoading, setAttachmentsLoading] = useState(false)
+  const [attachmentsError, setAttachmentsError] = useState('')
   const [form, setForm] = useState<SangforValues>(INITIAL), [identity, setIdentity] = useState({ name: '', id: '', verified: false })
   const [loading, setLoading] = useState(true), [loadError, setLoadError] = useState(''), [retry, setRetry] = useState(0)
   const [errors, setErrors] = useState<Partial<Record<keyof SangforValues, string>>>({}), [submitError, setSubmitError] = useState('')
@@ -38,6 +44,7 @@ export default function SangforFormPage() {
   const draftReady = useRef(false)
   const [batchChecking, setBatchChecking] = useState(false), [batchCheckError, setBatchCheckError] = useState('')
   const statusRequest = useRef(0)
+  const attachmentsGuard = useRef(createLatestGuard())
   const confirmation = useEnrollmentConfirmation('sangfor', batchId)
   useEffect(() => { setForm(INITIAL); setRegistration(null); setErrors({}); setSubmitError(''); setAgreed(false) }, [sessionId])
   useLoad(params => { setBatchId(Number(params?.batch_id || 0)); setRegistrationId(Number(params?.registration_id || 0)); setRouteReady(true) })
@@ -109,6 +116,24 @@ export default function SangforFormPage() {
     return () => { statusRequest.current++ }
   }, [sessionId, batchId, registrationId])
   const now = useCertificationBatchClock(batch ? [batch] : [], refreshAvailability, isLoggedIn && routeReady && !loading, [registration?.correction_due_at])
+  const fetchAttachments = useCallback(async () => {
+    const targetPlan = batchId || batch?.id || registration?.batch_id
+    const token = attachmentsGuard.current.next()
+    if (!targetPlan) { setAttachments([]); return }
+    setAttachmentsLoading(true)
+    setAttachmentsError('')
+    try {
+      const rows = await certificationJourneyService.planAttachments('sangfor', targetPlan)
+      if (attachmentsGuard.current.isCurrent(token)) setAttachments(rows)
+    } catch {
+      if (!attachmentsGuard.current.isCurrent(token)) return
+      setAttachments([])
+      setAttachmentsError('附件加载失败，可稍后重试')
+    } finally {
+      if (attachmentsGuard.current.isCurrent(token)) setAttachmentsLoading(false)
+    }
+  }, [batchId, batch?.id, registration?.batch_id])
+  useEffect(() => { void fetchAttachments() }, [fetchAttachments])
   const availability = certificationBatchState(batch ? { ...batch, can_apply: !!batch.exam_date } : null, now)
   const correction = correctionAvailability(
     registration?.status,
@@ -116,6 +141,11 @@ export default function SangforFormPage() {
     now,
   )
   const correctionAllowed = correction.open
+  const registrationNotice = batch?.registration_notice
+    || registration?.batch_snapshot?.registration_notice
+    || (registration?.candidate_snapshot as unknown as {
+      enrollment_notice?: { registration_notice?: string }
+    } | undefined)?.enrollment_notice?.registration_notice
   const canSubmit = identity.verified && !loading && !loadError && !batchChecking && !batchCheckError && (registrationId ? correctionAllowed : !!batch && canApplySangfor(batch, now))
   const terminalBlocked = registrationId
     ? Boolean(registration) && !correctionAllowed
@@ -181,6 +211,10 @@ export default function SangforFormPage() {
           </View>
         </View>}
         <ConfirmationSummary vendor='sangfor' batchId={batchId} notice={confirmation.notice} correcting={Boolean(registrationId)} contact={{ phone: form.phone, email: form.email, address: form.mailing_address }} disabled={submitting} />
+        {registrationNotice && <View className={styles.card}>
+          <Text className={styles.title}>报名注意事项</Text>
+          <Text className={styles.hint}>{registrationNotice}</Text>
+        </View>}
         <RegistrationSummary title={batch?.name || summary?.name || '深信服报名'} badge='深信服' subtitle={batch?.exam_direction || summary?.exam_direction} priceCents={batch?.price_cents ?? registration?.price_cents}
           items={[...(batch ? [{ label: '报名时间', value: formatCertificationApplyRange(batch), wide: true }] : []), { label: '考试时间', value: (batch?.exam_date || summary?.exam_date) ? formatDateTime(batch?.exam_date || summary?.exam_date || '') : '以通知为准', wide: true }, { label: '考试地点', value: batch?.exam_location || summary?.exam_location || '以通知为准', wide: true }]} />
         {batchCheckError && <View className={styles.card}><Text className={styles.error}>{batchCheckError}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
@@ -191,6 +225,7 @@ export default function SangforFormPage() {
         <View className={styles.card}><Text className={styles.title}>报考信息</Text><Text className={styles.hint}>firstName填写名字拼音，lastName填写姓氏拼音。考试券码由考生提供，管理员核验后报送。</Text>
           <View className={styles.fields}>{field('first_name', true, false, 64)}{field('last_name', true, false, 64)}{field('organization', true, true)}{field('exam_voucher_code', true, true)}</View></View>
         <View className={styles.card}><Text className={styles.title}>联系信息</Text><View className={styles.fields}>{field('phone', true, false, 11)}{field('email')}{field('mailing_address', false, true, 256)}</View></View>
+        <CertAttachmentList attachments={attachments} loading={attachmentsLoading} error={attachmentsError} onRetry={() => void fetchAttachments()} compact />
         <View className={styles.card}><Text className={styles.title}>补充说明</Text>{field('remark1', false, true, 500)}{field('remark2', false, true, 500)}</View>
         <View className={styles.card}><AgreementCheckbox agreed={agreed} onChange={setAgreed}>我已阅读并同意<Text onClick={event => { event.stopPropagation(); void ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读认证报名信息处理授权协议') }}>《认证报名信息处理授权协议》</Text></AgreementCheckbox>
           {!canSubmit && <Text className={styles.error}>{batchChecking ? '正在核验批次状态…' : !identity.verified ? '请先完成本人实名认证' : registrationId ? '当前报名不在有效补正期内' : availability.message || batchCheckError}</Text>}
