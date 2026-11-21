@@ -25,6 +25,8 @@ test('sangfor form surfaces registration notice and compact attachments', async 
   const page = await readFile('src/pages/sangfor/form.tsx', 'utf8')
 
   assert.match(page, /batch\?\.registration_notice/)
+  assert.match(page, /registration\?\.registration_notice/)
+  assert.match(page, /registration\?\.batch_snapshot\?\.registration_notice/)
   assert.match(page, /certificationJourneyService\.planAttachments\('sangfor'/)
   assert.match(page, /attachmentsGuard\.current\.isCurrent\(token\)/)
   assert.match(page, /registration\?\.batch_id/)

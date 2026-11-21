@@ -42,8 +42,17 @@ export default function EnrollmentNoticePage() {
       const value = await certificationJourneyService.catalog(vendor)
       if (seq !== generation.current) return
       setCatalog(value)
-      setSubject(old => value.subjects.some(item => item.id === old) ? old : value.batches.find(item => item.id === initialBatch.current)?.subject_id || (value.subjects.length === 1 ? value.subjects[0].id : ''))
-      if (initialBatch.current) { setBatch(initialBatch.current); initialBatch.current = 0 }
+      // 函数式 updater 延迟到渲染期执行，必须先把 ref 读进局部变量，
+      // 否则紧随其后的 ref 清零会让深链批次永远选不中科目。
+      const targetBatchId = initialBatch.current
+      const matched = value.batches.find(item => item.id === targetBatchId)
+      const nextSubject = matched?.subject_id
+        || (value.subjects.length === 1 ? value.subjects[0].id : '')
+      setSubject(old => value.subjects.some(item => item.id === old) ? old : nextSubject)
+      if (targetBatchId) {
+        setBatch(targetBatchId)
+        initialBatch.current = 0
+      }
     } catch (reason) { if (seq === generation.current) { setCatalog(null); setError(reason instanceof Error ? reason.message : '科目与批次加载失败') } }
     finally { if (seq === generation.current) setLoading(false) }
   }, [vendor])

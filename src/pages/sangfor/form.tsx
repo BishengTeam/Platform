@@ -142,6 +142,7 @@ export default function SangforFormPage() {
   )
   const correctionAllowed = correction.open
   const registrationNotice = batch?.registration_notice
+    || registration?.registration_notice
     || registration?.batch_snapshot?.registration_notice
     || (registration?.candidate_snapshot as unknown as {
       enrollment_notice?: { registration_notice?: string }

@@ -4,7 +4,7 @@ import test from 'node:test'
 import ts from 'typescript'
 
 const deferred = () => { let resolve; return { promise: new Promise(done => { resolve = done }), resolve: value => resolve(value) } }
-function driver({ vendor = 'nisp', catalog, getNotice }) {
+function driver({ vendor = 'nisp', catalog, getNotice, options = {} }) {
   let cursor = 0, dirty = true, tree, loader
   const slots = [], effects = [], calls = [], remembered = []
   const same = (a, b) => a && b && a.length === b.length && a.every((value, index) => Object.is(value, b[index]))
@@ -37,7 +37,7 @@ function driver({ vendor = 'nisp', catalog, getNotice }) {
   async function settle() { for (let turn = 0; turn < 40; turn++) { if (dirty) render(); await Promise.resolve() } }
   const walk = node => !node ? [] : Array.isArray(node) ? node.flatMap(walk) : typeof node !== 'object' ? [] : [node, ...walk(node.props?.children)]
   const nodes = () => walk(tree)
-  render(); loader({ type: vendor })
+  render(); loader({ type: vendor, ...options })
   return { settle, nodes, calls, remembered, dispose: () => slots.forEach(slot => slot?.cleanup?.()), pick: async (index, value) => { nodes().filter(node => node.type === 'Picker')[index].props.onChange({ detail: { value: String(value) } }); await settle() },
     agree: async () => { nodes().find(node => node.props?.className === 'agreement').props.onClick(); await settle() },
     proceed: async () => { await nodes().find(node => node.type === 'Button' && node.props.children === '继续填写报名信息').props.onClick(); await settle() },
@@ -45,6 +45,22 @@ function driver({ vendor = 'nisp', catalog, getNotice }) {
 }
 const batch = (id, subject, price = 1000) => ({ id, plan_id: id + 100, subject_id: subject, name: `批次${id}`, can_apply: true, status: 'published', apply_end: '2026-11-20T15:59:00Z', exam_date: '2026-12-01', prices: [{ value: '1', label: '一级', price_cents: price }] })
 const notice = (batch, hash = String(batch.id)) => ({ vendor: 'nisp', subject: { id: batch.subject_id, name: batch.subject_id }, batch, price: batch.prices[0], notice: { title: '须知', blocks: [] }, supplement: { title: '补充', blocks: [] }, notice_hash: hash })
+
+test('deep link batch preselects its subject before the initial ref is reset', async t => {
+  const b = batch(54, 'A')
+  const seen = []
+  const runtime = driver({
+    vendor: 'h3c',
+    options: { batch_id: '54' },
+    catalog: { subjects: [{ id: 'A', name: 'A' }], batches: [b] },
+    getNotice: async (_vendor, id) => { seen.push(id); return notice(b) },
+  })
+  t.after(runtime.dispose)
+  await runtime.settle()
+
+  assert.deepEqual(seen, [54])
+  assert.ok(runtime.nodes().some(node => node.type === 'NoticeBlocks'))
+})
 
 test('changing subjects isolates late notice responses, auto-selects a sole batch and resumes only the confirmed target', async t => {
   const first = deferred(), a = batch(1, 'A'), b = batch(2, 'B')
