@@ -127,11 +127,14 @@ export default function EnrollmentNoticePage() {
       {notice && <><View className={styles.card}>
         <Text className={styles.deadline}>报名截止：{enrollmentDeadline(notice.batch.apply_end)}</Text>
         {enrollmentCountdown(notice.batch.apply_end, Math.max(now, countdownNow)) && <Text className={styles.hint}>{enrollmentCountdown(notice.batch.apply_end, Math.max(now, countdownNow))}</Text>}
-        <View className={styles.row}><Text>考试时间</Text><Text className={styles.rowValue}>{vendor === 'h3c' || vendor === 'sangfor' ? '报名审核通过后预约' : enrollmentDeadline(notice.batch.exam_date)}</Text></View>
+        <View className={styles.row}><Text>考试时间</Text><Text className={styles.rowValue}>
+          {`${vendor === 'h3c' || vendor === 'sangfor' ? '报名审核通过后预约' : enrollmentDeadline(notice.batch.exam_date)}${notice.exam_date_note ? `（${notice.exam_date_note}）` : ''}`}
+        </Text></View>
         {batch?.time_segments?.length ? batch.time_segments.map(seg => (
           <View key={seg.id} className={styles.row}><Text>{seg.label}</Text><Text className={styles.rowValue}>{seg.start_time.slice(11, 16)} – {seg.end_time.slice(11, 16)}</Text></View>
         )) : null}
         <View className={styles.row}><Text>考试地点</Text><Text className={styles.rowValue}>{vendor === 'h3c' || vendor === 'sangfor' ? '考场地址以预约结果为准' : (notice.batch.exam_location || '待公布')}</Text></View>
+        {notice.exam_org_name && <View className={styles.row}><Text>考试机构</Text><Text className={styles.rowValue}>{notice.exam_org_name}</Text></View>}
         <View className={styles.row}><Text>报名费用</Text><Text className={styles.rowValue}>¥{(notice.price.price_cents / 100).toFixed(2)}</Text></View>
       </View>{notice.registration_notice && <View className={styles.card}>
         <Text className={styles.title}>报名注意事项</Text>

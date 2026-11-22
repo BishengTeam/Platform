@@ -20,6 +20,9 @@ export interface EnrollmentNotice {
   price: EnrollmentBatch['prices'][number]; notice: { title: string; blocks: NoticeBlock[] }
   supplement: { title: string; blocks: NoticeBlock[] }; batch_description: string; notice_hash: string
   registration_notice?: string | null
+  exam_org_name?: string | null
+  exam_org_code?: string | null
+  exam_date_note?: string | null
   requirements_summary?: string[]
 }
 export interface CertAttachmentItem {
@@ -35,6 +38,9 @@ export interface EnrollmentJourney {
     activation_url: string | null
     instructions: string[]
   } | null
+  exam_org_name?: string | null
+  exam_org_code?: string | null
+  exam_date_note?: string | null
   stages: string[]; progress: { stage: number | null; exception: boolean; label: string; description: string; action: string }
   apply_end: string | null; proof_due_at: string | null; correction_due_at: string | null; reason: string | null
   events: Array<{ at: string; label: string; reason?: string }>

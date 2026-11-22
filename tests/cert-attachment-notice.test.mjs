@@ -11,6 +11,8 @@ test('registration notice shows batch and vendor attachments before the notice b
   assert.match(page, /\}, \[vendor, batch\]\)/)
   assert.match(page, /报名注意事项/)
   assert.match(page, /notice\.registration_notice/)
+  assert.match(page, /notice\.exam_org_name/)
+  assert.match(page, /notice\.exam_date_note/)
   // 深信服与 H3C 一样由预约决定考试时间/地点
   assert.match(page, /vendor === 'h3c' \|\| vendor === 'sangfor' \? '报名审核通过后预约'/)
   assert.match(page, /vendor === 'h3c' \|\| vendor === 'sangfor' \? '考场地址以预约结果为准'/)

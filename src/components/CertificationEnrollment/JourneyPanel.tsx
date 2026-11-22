@@ -53,6 +53,8 @@ export function JourneyPanel({ vendor, id }: { vendor: CertificationVendor; id: 
       <Text className={styles.title}>报名办理</Text>
       {error ? <><Text className={styles.error}>{error}</Text><Button variant='secondary' onClick={() => void load()}>重新加载办理进度</Button></> : !journey ? <Text className={styles.hint}>正在加载办理进度…</Text> : <>
         <Text className={styles.paragraph}>{journey.subject} · {journey.batch_name}</Text><Text className={styles.hint}>报名编号：{journey.registration_no}</Text>
+        {journey.exam_org_name && <Text className={styles.hint}>考试机构：{journey.exam_org_name}</Text>}
+        {journey.exam_date_note && <Text className={styles.hint}>考试时间备注：{journey.exam_date_note}</Text>}
         <View className={styles.stages}>{journey.stages.map((stage, index) => <View key={stage} className={`${styles.stage} ${journey.progress.stage !== null && index < journey.progress.stage ? styles.stageDone : ''} ${index === journey.progress.stage ? styles.stageCurrent : ''}`}><Text>{stage}</Text></View>)}</View>
         <Text className={journey.progress.exception ? styles.error : styles.title}>{journey.progress.label}</Text><Text className={styles.paragraph}>{journey.progress.description}</Text>
         {journey.registration_code_info?.revoked && <View className={styles.codeCardRevoked}>
