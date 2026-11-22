@@ -161,3 +161,25 @@ test('my registrations shows offline reconciliation next to the Sangfor status',
   assert.match(page, /凭证待核账/)
   assert.match(page, /payment_summary\?\.offline_status/)
 })
+
+test('sangfor form opens the agreement preview directly', async () => {
+  const form = await readFile('src/pages/sangfor/form.tsx', 'utf8')
+  const agreementLine = form.split('\n').find(line => line.includes('《认证报名信息处理授权协议》'))
+
+  assert.ok(agreementLine, 'agreement link missing')
+  // 点击协议文字必须直接进协议页；签署闸门在已签署/查询失败时会静默返回，表现为点击无反应
+  assert.match(agreementLine, /Taro\.navigateTo/)
+  assert.match(agreementLine, /AGREEMENT_VIEW\}\?type=cert_registration&requireSign=1/)
+  assert.doesNotMatch(agreementLine, /ensureAgreementSigned/)
+  // 提交前的签署闸门保留
+  assert.match(form, /await ensureAgreementSigned\('cert_registration'/)
+})
+
+test('sangfor form keeps the page still when a field gets focus', async () => {
+  const form = await readFile('src/pages/sangfor/form.tsx', 'utf8')
+
+  // 关掉系统整体上推页面，改为滚动内部 ScrollView
+  assert.match(form, /adjustPosition=\{false\}/)
+  assert.match(form, /onFocus=\{\(\) => focusField\(key\)\}/)
+  assert.match(form, /setScrollTarget\(`sangfor-\$\{key\}`\)/)
+})

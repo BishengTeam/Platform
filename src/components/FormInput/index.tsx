@@ -13,6 +13,9 @@ interface FormInputProps {
   error?: ValidationResult
   onChange: (value: string) => void
   onBlur?: () => void
+  onFocus?: () => void
+  /** 关掉系统自动上推页面；配合页面自身滚动（scroll-into-view）使用，避免整页跳动 */
+  adjustPosition?: boolean
   compact?: boolean
   /** 提供后整个输入框渲染为可点击视图（用于「点击跳转实名认证」等引导），不再响应输入 */
   onFieldClick?: () => void
@@ -29,6 +32,8 @@ export function FormInput({
   error,
   onChange,
   onBlur,
+  onFocus,
+  adjustPosition,
   compact = false,
   onFieldClick,
 }: FormInputProps) {
@@ -52,7 +57,9 @@ export function FormInput({
         type={type}
         maxlength={maxlength}
         disabled={disabled}
+        adjustPosition={adjustPosition}
         onInput={e => onChange(e.detail.value)}
+        onFocus={onFocus}
         onBlur={onBlur}
       />}
       {showError && <Text className={styles.error}>{error.message}</Text>}

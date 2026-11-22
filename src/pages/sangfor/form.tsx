@@ -194,8 +194,14 @@ export default function SangforFormPage() {
     } catch (reason) { setSubmitError(reason instanceof Error ? reason.message : '提交失败，请重试') }
     finally { lock.current = false; setSubmitting(false) }
   }
+  // 键盘弹出时不让系统整体上推页面，改为滚动内部 ScrollView 让输入框露出
+  const focusField = (key: keyof SangforValues) => {
+    setScrollTarget('')
+    Taro.nextTick(() => setScrollTarget(`sangfor-${key}`))
+  }
   const field = (key: keyof SangforValues, required = false, wide = false, maxLength = 128) => <View key={key} id={`sangfor-${key}`} className={wide ? styles.wide : undefined}>
     <FormInput compact label={SANGFOR_LABELS[key]} required={required} value={form[key]} placeholder={`请填写${SANGFOR_LABELS[key]}`} maxlength={maxLength} disabled={submitting || terminalBlocked}
+      adjustPosition={false} onFocus={() => focusField(key)}
       onChange={value => { setForm(old => ({ ...old, [key]: value })); setErrors(old => ({ ...old, [key]: undefined })) }} error={errors[key] ? { valid: false, message: errors[key]! } : undefined} />
   </View>
   const summary = registration?.batch_snapshot
@@ -228,7 +234,7 @@ export default function SangforFormPage() {
         <View className={styles.card}><Text className={styles.title}>联系信息</Text><View className={styles.fields}>{field('phone', true, false, 11)}{field('email')}{field('mailing_address', false, true, 256)}</View></View>
         <CertAttachmentList attachments={attachments} loading={attachmentsLoading} error={attachmentsError} onRetry={() => void fetchAttachments()} compact />
         <View className={styles.card}><Text className={styles.title}>补充说明</Text>{field('remark1', false, true, 500)}{field('remark2', false, true, 500)}</View>
-        <View className={styles.card}><AgreementCheckbox agreed={agreed} onChange={setAgreed}>我已阅读并同意<Text onClick={event => { event.stopPropagation(); void ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读认证报名信息处理授权协议') }}>《认证报名信息处理授权协议》</Text></AgreementCheckbox>
+        <View className={styles.card}><AgreementCheckbox agreed={agreed} onChange={setAgreed}>我已阅读并同意<Text onClick={event => { event.stopPropagation(); void Taro.navigateTo({ url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1` }) }}>《认证报名信息处理授权协议》</Text></AgreementCheckbox>
           {!canSubmit && <Text className={styles.error}>{batchChecking ? '正在核验批次状态…' : !identity.verified ? '请先完成本人实名认证' : registrationId ? '当前报名不在有效补正期内' : availability.message || batchCheckError}</Text>}
           {submitError && <Text className={styles.error}>{submitError}</Text>}</View>
       </>}
