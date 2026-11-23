@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Checkbox, Picker, Text, View } from '@tarojs/components'
+import { Checkbox, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
+import { SelectSheet } from '@/components/SelectSheet'
 import { NoticeDetail } from '@/components/CertificationEnrollment/NoticeDetail'
 import { certificationJourneyService, type CertificationVendor, type EnrollmentCatalog, type EnrollmentNotice } from '@/services/certificationJourney'
 import { VENDOR_KEYS, currentNotice, enrollmentBatchLabel, enrollmentCountdown, enrollmentFormUrl, rememberNotice } from '@/utils/enrollment'
@@ -17,6 +18,9 @@ export default function EnrollmentNoticePage() {
   const [catalog, setCatalog] = useState<EnrollmentCatalog | null>(null), [subjectId, setSubject] = useState(''), [batchId, setBatch] = useState(0), [type, setType] = useState('')
   const [notice, setNotice] = useState<EnrollmentNotice | null>(null), [agreedHash, setAgreedHash] = useState('')
   const [error, setError] = useState(''), [loading, setLoading] = useState(false), [busy, setBusy] = useState(false)
+  // 原生 <picker> 的弹层由客户端绘制：PC 微信会把它画在窗口正中、不跟随触发元素，
+  // 双栏视图下还会压到另一栏，因此这里改用自绘弹层。
+  const [sheet, setSheet] = useState<'' | 'subject' | 'batch' | 'type'>('')
   const generation = useRef(0), noticeGeneration = useRef(0), operation = useRef(false)
   const initialBatch = useRef(0)
   useLoad(options => {
@@ -88,15 +92,17 @@ export default function EnrollmentNoticePage() {
     } catch (reason) { setError(reason instanceof Error ? reason.message : '批次状态核对失败，请重试') }
     finally { operation.current = false; setBusy(false) }
   }
+  const subjectDisabled = busy || !catalog?.subjects.length
+  const batchDisabled = busy || !batches.length
   return <View className={styles.page}><PageHeader title='报名须知' shouldShowBack />
     <View className={styles.body}>
       <View className={styles.card}>
-        <View className={styles.field}><Text className={styles.label}>报考科目</Text><Picker mode='selector' range={catalog?.subjects || []} rangeKey='name' value={Math.max(0, (catalog?.subjects || []).findIndex(item => item.id === subjectId))} disabled={busy || !catalog?.subjects.length}
-          onChange={event => { setSubject(catalog!.subjects[Number(event.detail.value)].id); setBatch(0); setType(''); setNotice(null); setAgreedHash('') }}><View className={styles.picker}>{catalog?.subjects.find(item => item.id === subjectId)?.name || '请选择科目'} ▾</View></Picker></View>
-        <View className={styles.field}><Text className={styles.label}>报名批次</Text><Picker mode='selector' range={batches.map(enrollmentBatchLabel)} value={Math.max(0, batches.findIndex(item => item.id === batchId))} disabled={busy || !batches.length}
-          onChange={event => { setBatch(batches[Number(event.detail.value)].id); setType(''); setNotice(null); setAgreedHash('') }}><View className={styles.picker}>{batch ? enrollmentBatchLabel(batch) : subjectId ? batches.length ? '请选择批次' : '该科目暂无可报名批次' : '请先选择科目'} ▾</View></Picker></View>
-        {vendor === 'h3c' && batch && <View className={styles.field}><Text className={styles.label}>报名方式</Text><Picker mode='selector' range={batch.prices.map(item => item.label)} value={Math.max(0, batch.prices.findIndex(item => item.value === type))} disabled={busy}
-          onChange={event => { setType(batch.prices[Number(event.detail.value)].value); setNotice(null); setAgreedHash('') }}><View className={styles.picker}>{batch.prices.find(item => item.value === type)?.label || '请选择考券／学生／全额报名方式'} ▾</View></Picker></View>}
+        <View className={styles.field}><Text className={styles.label}>报考科目</Text>
+          <View className={styles.picker} aria-role='button' aria-label='选择报考科目' onClick={() => { if (!subjectDisabled) setSheet('subject') }}>{catalog?.subjects.find(item => item.id === subjectId)?.name || '请选择科目'} ▾</View></View>
+        <View className={styles.field}><Text className={styles.label}>报名批次</Text>
+          <View className={styles.picker} aria-role='button' aria-label='选择报名批次' onClick={() => { if (!batchDisabled) setSheet('batch') }}>{batch ? enrollmentBatchLabel(batch) : subjectId ? batches.length ? '请选择批次' : '该科目暂无可报名批次' : '请先选择科目'} ▾</View></View>
+        {vendor === 'h3c' && batch && <View className={styles.field}><Text className={styles.label}>报名方式</Text>
+          <View className={styles.picker} aria-role='button' aria-label='选择报名方式' onClick={() => { if (!busy) setSheet('type') }}>{batch.prices.find(item => item.value === type)?.label || '请选择考券／学生／全额报名方式'} ▾</View></View>}
         {batch?.skill_level && <Text className={styles.hint}>{batch.skill_level} · {batch.application_type}</Text>}
       </View>
       {loading && <Text className={styles.hint}>正在加载…</Text>}
@@ -107,5 +113,15 @@ export default function EnrollmentNoticePage() {
       </View></>}
     </View>
     <View className={styles.sticky}><Button variant='gradient' loading={busy} disabled={!notice || !batch || loading || busy || agreedHash !== notice.notice_hash} onClick={() => void proceed()}>继续填写报名信息</Button></View>
+    <SelectSheet visible={sheet === 'subject'} title='报考科目' value={subjectId} onClose={() => setSheet('')}
+      options={(catalog?.subjects || []).map(item => ({ value: item.id, label: item.name }))}
+      onSelect={value => { setSubject(value); setBatch(0); setType(''); setNotice(null); setAgreedHash('') }} />
+    <SelectSheet visible={sheet === 'batch'} title='报名批次' value={batchId ? String(batchId) : ''} onClose={() => setSheet('')}
+      options={batches.map(item => ({ value: String(item.id), label: enrollmentBatchLabel(item) }))}
+      emptyText='该科目暂无可报名批次'
+      onSelect={value => { setBatch(Number(value)); setType(''); setNotice(null); setAgreedHash('') }} />
+    <SelectSheet visible={sheet === 'type'} title='报名方式' value={type} onClose={() => setSheet('')}
+      options={batch ? batch.prices.map(item => ({ value: item.value, label: item.label })) : []}
+      onSelect={value => { setType(value); setNotice(null); setAgreedHash('') }} />
   </View>
 }

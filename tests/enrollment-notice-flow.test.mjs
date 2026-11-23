@@ -20,6 +20,7 @@ function driver({ vendor = 'nisp', catalog, getNotice, options = {} }) {
     '@tarojs/components': { View: 'View', Text: 'Text', Checkbox: 'Checkbox', Picker: 'Picker' },
     '@tarojs/taro': { __esModule: true, default: { getCurrentPages: () => [], navigateBack: async () => calls.push('back') }, useLoad: callback => { loader = callback } },
     '@/components/PageHeader': { PageHeader: 'PageHeader' }, '@/components/Button': { Button: 'Button' }, '@/components/CertificationEnrollment': { NoticeBlocks: 'NoticeBlocks' },
+    '@/components/SelectSheet': { SelectSheet: 'SelectSheet' },
     '@/components/CertificationEnrollment/NoticeDetail': { NoticeDetail: 'NoticeDetail' },
     '@/components/CertAttachmentList': { CertAttachmentList: 'CertAttachmentList' },
     '@/services/certificationJourney': { certificationJourneyService: { catalog: async () => catalog, notice: getNotice, planAttachments: async () => [] } },
@@ -39,7 +40,16 @@ function driver({ vendor = 'nisp', catalog, getNotice, options = {} }) {
   const walk = node => !node ? [] : Array.isArray(node) ? node.flatMap(walk) : typeof node !== 'object' ? [] : [node, ...walk(node.props?.children)]
   const nodes = () => walk(tree)
   render(); loader({ type: vendor, ...options })
-  return { settle, nodes, calls, remembered, dispose: () => slots.forEach(slot => slot?.cleanup?.()), pick: async (index, value) => { nodes().filter(node => node.type === 'Picker')[index].props.onChange({ detail: { value: String(value) } }); await settle() },
+  return { settle, nodes, calls, remembered, dispose: () => slots.forEach(slot => slot?.cleanup?.()),
+    pick: async (index, optionIndex) => {
+      // 选择器是页面内自绘弹层：先点触发框，再从展开的弹层里选第 N 项
+      nodes().filter(node => typeof node.props?.['aria-label'] === 'string' && node.props['aria-label'].startsWith('选择'))[index].props.onClick()
+      await settle()
+      const sheet = nodes().find(node => node.type === 'SelectSheet' && node.props.visible)
+      sheet.props.onSelect(sheet.props.options[optionIndex].value)
+      sheet.props.onClose()
+      await settle()
+    },
     agree: async () => { nodes().find(node => node.props?.className === 'agreement').props.onClick(); await settle() },
     proceed: async () => { await nodes().find(node => node.type === 'Button' && node.props.children === '继续填写报名信息').props.onClick(); await settle() },
     get continueDisabled() { return nodes().find(node => node.type === 'Button' && node.props.children === '继续填写报名信息').props.disabled } }
