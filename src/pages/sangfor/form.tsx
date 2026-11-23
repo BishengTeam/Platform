@@ -4,7 +4,7 @@ import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
 import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '@/utils/enrollmentFormDraft'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro, { useDidShow, useLoad } from '@tarojs/taro'
+import Taro, { useLoad } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { FormInput } from '@/components/FormInput'
@@ -48,18 +48,6 @@ export default function SangforFormPage() {
   const confirmation = useEnrollmentConfirmation('sangfor', batchId)
   useEffect(() => { setForm(INITIAL); setRegistration(null); setErrors({}); setSubmitError(''); setAgreed(false) }, [sessionId])
   useLoad(params => { setBatchId(Number(params?.batch_id || 0)); setRegistrationId(Number(params?.registration_id || 0)); setRouteReady(true) })
-  // 从「个人资料」页返回时只重新拉实名状态（不动表单与草稿）；首次展示由主加载流程负责
-  const shownOnce = useRef(false)
-  useDidShow(() => {
-    if (!shownOnce.current) { shownOnce.current = true; return }
-    if (!isLoggedIn || !routeReady) return
-    getUserProfile()
-      .then(profile => {
-        const realname = profile.realname
-        setIdentity({ name: realname?.real_name || '', id: realname?.id_card_raw || '', verified: realname?.identity_status === 'verified' })
-      })
-      .catch(() => { /* 保持原状态，考生可再点「去实名」 */ })
-  })
   useEffect(() => {
     if (!isLoggedIn || !routeReady) return
     let active = true
@@ -226,9 +214,7 @@ export default function SangforFormPage() {
           <Text className={styles.blockReason}>{blockReason}</Text>
           <View className={styles.blockActions}>
             {registrationId && <Button variant='secondary' onClick={() => void Taro.redirectTo({ url: `/${ROUTES.SANGFOR_DETAIL}?id=${registrationId}` })}>返回报名详情</Button>}
-            {!identity.verified
-              ? <Button variant='secondary' onClick={() => void Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` })}>去实名</Button>
-              : !terminalBlocked && <Button variant='secondary' onClick={() => void refreshAvailability()}>刷新状态</Button>}
+            {!terminalBlocked && <Button variant='secondary' onClick={() => void refreshAvailability()}>刷新状态</Button>}
           </View>
         </View>}
         <ConfirmationSummary vendor='sangfor' batchId={batchId} notice={confirmation.notice} correcting={Boolean(registrationId)} contact={{ phone: form.phone, email: form.email, address: form.mailing_address }} disabled={submitting} onNoticeConfirmed={confirmation.acceptNotice} />
@@ -241,7 +227,7 @@ export default function SangforFormPage() {
         {batchCheckError && <View className={styles.card}><Text className={styles.error}>{batchCheckError}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
         <View className={styles.card}><Text className={styles.title}>本人身份</Text><View className={styles.row}><Text className={styles.label}>姓名</Text><Text className={styles.value}>{identity.name || '未实名'}</Text></View>
           <View className={styles.row}><Text className={styles.label}>身份证号</Text><Text className={styles.value}>{identity.id ? `${identity.id.slice(0, 3)}***********${identity.id.slice(-4)}` : '未实名'}</Text></View>
-          {!identity.verified && <Button variant='secondary' onClick={() => Taro.navigateTo({ url: `/${ROUTES.MINE_EDIT_PROFILE}` })}>完成本人实名认证</Button>}</View>
+          {!identity.verified && <Button variant='secondary' onClick={() => Taro.navigateTo({ url: '/pages/mine/edit-profile' })}>完成本人实名认证</Button>}</View>
         {registration && <View className={styles.card}><Text className={styles.title}>补正要求</Text><Text className={styles.hint}>{registration.reviews.slice(-1)[0]?.reason}</Text><Text className={styles.hint}>截止时间：{registration.correction_due_at ? formatDateTime(registration.correction_due_at) : '未设置'}。已付款报名补正无需重复付款。</Text></View>}
         <View className={styles.card}><Text className={styles.title}>报考信息</Text><Text className={styles.hint}>firstName填写名字拼音，lastName填写姓氏拼音。考试券码由考生提供，管理员核验后报送。</Text>
           <View className={styles.fields}>{field('first_name', true, false, 64)}{field('last_name', true, false, 64)}{field('organization', true, true)}{field('exam_voucher_code', true, true)}</View></View>

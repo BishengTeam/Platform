@@ -89,16 +89,13 @@ test('registration pages no longer submit lightweight identity without materials
   const gate = await readFile('src/pages/registration/components/IdentityCheckGate.tsx', 'utf8')
   const sangfor = await readFile('src/pages/sangfor/form.tsx', 'utf8')
   const renshe = await readFile('src/pages/renshe/form.tsx', 'utf8')
-  const routes = await readFile('src/constants/routes.ts', 'utf8')
 
   assert.doesNotMatch(hook, /submitIdentity/)
   assert.doesNotMatch(hook, /'submitting'/)
   assert.match(gate, /pages\/mine\/edit-profile/)
-  // 跳转目标允许用路由常量，但常量值仍必须是个人资料页
-  assert.match(routes, /MINE_EDIT_PROFILE: 'pages\/mine\/edit-profile'/)
   for (const source of [sangfor, renshe]) {
     assert.doesNotMatch(source, /identity\.submit\(/)
-    assert.match(source, /pages\/mine\/edit-profile|MINE_EDIT_PROFILE/)
+    assert.match(source, /pages\/mine\/edit-profile/)
   }
 })
 
