@@ -382,7 +382,7 @@ export default function NispFormPage() {
       <View className={styles.page}>
         <PageHeader title={`NISP${level === '1' ? '一级' : '二级'}报名`} shouldShowBack />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY scrollIntoView={scrollTarget} scrollWithAnimation>
-          <ConfirmationSummary vendor='nisp' batchId={batchId} notice={confirmation.notice} contact={form} disabled={submitting || Boolean(uploading)} />
+          <ConfirmationSummary vendor='nisp' batchId={batchId} type={level} notice={confirmation.notice} contact={form} disabled={submitting || Boolean(uploading)} onNoticeConfirmed={confirmation.acceptNotice} />
           <RegistrationSummary badge={`NISP${level === '1' ? '一级' : '二级'}`} title={batch?.name || (batchState === 'loading' ? '加载考试批次中…' : batchState === 'missing' ? '批次不存在或已下架' : '批次加载失败')}
             priceCents={batch ? Math.round(price * 100) : null}
             items={[{ label: '报名时间', value: batch ? formatNispApplyRange(batch) : '以批次安排为准', wide: true }, { label: '考试时间', value: batch?.exam_date ? formatDate(batch.exam_date) : '以批次安排为准' }, { label: '考试地点', value: batch?.exam_location || '以批次安排为准' }]}>

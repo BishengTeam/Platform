@@ -3,27 +3,21 @@ import { Checkbox, Picker, Text, View } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
-import { NoticeBlocks } from '@/components/CertificationEnrollment'
-import { CertAttachmentList } from '@/components/CertAttachmentList'
-import { certificationJourneyService, type CertAttachmentItem, type CertificationVendor, type EnrollmentCatalog, type EnrollmentNotice } from '@/services/certificationJourney'
-import { VENDOR_KEYS, currentNotice, enrollmentBatchLabel, enrollmentCountdown, enrollmentDeadline, enrollmentFormUrl, rememberNotice } from '@/utils/enrollment'
+import { NoticeDetail } from '@/components/CertificationEnrollment/NoticeDetail'
+import { certificationJourneyService, type CertificationVendor, type EnrollmentCatalog, type EnrollmentNotice } from '@/services/certificationJourney'
+import { VENDOR_KEYS, currentNotice, enrollmentBatchLabel, enrollmentCountdown, enrollmentFormUrl, rememberNotice } from '@/utils/enrollment'
 import { certificationBatchState } from '@/utils/certificationBatch'
 import { navigateWithLogin, requireLogin } from '@/utils/loginCoordinator'
 import { safeNavigateBack } from '@/utils/navigation'
 import { useCertificationBatchClock } from '@/hooks/useCertificationBatchClock'
-import { createLatestGuard } from '@/utils/latestRequest'
 import styles from '@/components/CertificationEnrollment/index.module.scss'
 
 export default function EnrollmentNoticePage() {
   const [vendor, setVendor] = useState<CertificationVendor | null>(null), [editing, setEditing] = useState(false)
   const [catalog, setCatalog] = useState<EnrollmentCatalog | null>(null), [subjectId, setSubject] = useState(''), [batchId, setBatch] = useState(0), [type, setType] = useState('')
   const [notice, setNotice] = useState<EnrollmentNotice | null>(null), [agreedHash, setAgreedHash] = useState('')
-  const [attachments, setAttachments] = useState<CertAttachmentItem[]>([])
-  const [attachmentsLoading, setAttachmentsLoading] = useState(false)
-  const [attachmentsError, setAttachmentsError] = useState('')
   const [error, setError] = useState(''), [loading, setLoading] = useState(false), [busy, setBusy] = useState(false)
   const generation = useRef(0), noticeGeneration = useRef(0), operation = useRef(false)
-  const attachmentsGuard = useRef(createLatestGuard())
   const initialBatch = useRef(0)
   useLoad(options => {
     const selectedVendor = VENDOR_KEYS[options?.type || ''] || null
@@ -75,23 +69,6 @@ export default function EnrollmentNoticePage() {
     finally { if (seq === noticeGeneration.current) setLoading(false) }
   }, [vendor, batchId, type, JSON.stringify(batch)])
   useEffect(() => { void fetchNotice(); return () => { noticeGeneration.current++ } }, [fetchNotice])
-  const fetchAttachments = useCallback(async () => {
-    const token = attachmentsGuard.current.next()
-    if (!vendor || !batch) { setAttachments([]); return }
-    setAttachmentsLoading(true)
-    setAttachmentsError('')
-    try {
-      const rows = await certificationJourneyService.planAttachments(vendor, batch.plan_id)
-      if (attachmentsGuard.current.isCurrent(token)) setAttachments(rows)
-    } catch {
-      if (!attachmentsGuard.current.isCurrent(token)) return
-      setAttachments([])
-      setAttachmentsError('附件加载失败，可稍后重试')
-    } finally {
-      if (attachmentsGuard.current.isCurrent(token)) setAttachmentsLoading(false)
-    }
-  }, [vendor, batch])
-  useEffect(() => { void fetchAttachments() }, [fetchAttachments])
   const proceed = async () => {
     if (!vendor || !notice || !batch || !type || agreedHash !== notice.notice_hash || operation.current) return
     operation.current = true; setBusy(true); setError('')
@@ -124,25 +101,7 @@ export default function EnrollmentNoticePage() {
       </View>
       {loading && <Text className={styles.hint}>正在加载…</Text>}
       {error && <View className={styles.card}><Text className={styles.error}>{error}</Text><Button variant='secondary' onClick={() => { void load(); void fetchNotice() }}>重新加载</Button></View>}
-      {notice && <><View className={styles.card}>
-        <Text className={styles.deadline}>报名截止：{enrollmentDeadline(notice.batch.apply_end)}</Text>
-        {enrollmentCountdown(notice.batch.apply_end, Math.max(now, countdownNow)) && <Text className={styles.hint}>{enrollmentCountdown(notice.batch.apply_end, Math.max(now, countdownNow))}</Text>}
-        <View className={styles.row}><Text>考试时间</Text><Text className={styles.rowValue}>
-          {`${vendor === 'h3c' || vendor === 'sangfor' ? '报名审核通过后预约' : enrollmentDeadline(notice.batch.exam_date)}${notice.exam_date_note ? `（${notice.exam_date_note}）` : ''}`}
-        </Text></View>
-        {batch?.time_segments?.length ? batch.time_segments.map(seg => (
-          <View key={seg.id} className={styles.row}><Text>{seg.label}</Text><Text className={styles.rowValue}>{seg.start_time.slice(11, 16)} – {seg.end_time.slice(11, 16)}</Text></View>
-        )) : null}
-        <View className={styles.row}><Text>考试地点</Text><Text className={styles.rowValue}>{vendor === 'h3c' || vendor === 'sangfor' ? '考场地址以预约结果为准' : (notice.batch.exam_location || '待公布')}</Text></View>
-        {notice.exam_org_name && <View className={styles.row}><Text>考试机构</Text><Text className={styles.rowValue}>{notice.exam_org_name}</Text></View>}
-        <View className={styles.row}><Text>报名费用</Text><Text className={styles.rowValue}>¥{(notice.price.price_cents / 100).toFixed(2)}</Text></View>
-      </View>{notice.registration_notice && <View className={styles.card}>
-        <Text className={styles.title}>报名注意事项</Text>
-        <Text className={styles.paragraph}>{notice.registration_notice}</Text>
-      </View>}<CertAttachmentList attachments={attachments} loading={attachmentsLoading} error={attachmentsError} onRetry={() => void fetchAttachments()} /><View className={styles.card}><Text className={styles.title}>{notice.notice.title}</Text><NoticeBlocks blocks={notice.notice.blocks} />
-        {notice.requirements_summary?.map((text, index) => <Text key={index} className={styles.paragraph}>{text}</Text>)}
-        {notice.batch_description && <><Text className={styles.title}>批次说明</Text><Text className={styles.paragraph}>{notice.batch_description}</Text></>}
-        {notice.supplement.blocks.length > 0 && <><Text className={styles.title}>{notice.supplement.title}</Text><NoticeBlocks blocks={notice.supplement.blocks} /></>}
+      {notice && vendor && <><NoticeDetail vendor={vendor} notice={notice} countdown={enrollmentCountdown(notice.batch.apply_end, Math.max(now, countdownNow))} /><View className={styles.card}>
         <View className={styles.agreement} onClick={() => { if (!busy) setAgreedHash(old => old === notice.notice_hash ? '' : notice.notice_hash) }}><Checkbox value='notice' checked={agreedHash === notice.notice_hash} disabled={busy} /><Text>我已阅读并了解本次报名须知</Text></View>
         <Text className={styles.hint}>继续后填写报名信息；报名授权协议将在填写页单独确认。</Text>
       </View></>}

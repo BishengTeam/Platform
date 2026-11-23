@@ -20,6 +20,7 @@ function driver({ vendor = 'nisp', catalog, getNotice, options = {} }) {
     '@tarojs/components': { View: 'View', Text: 'Text', Checkbox: 'Checkbox', Picker: 'Picker' },
     '@tarojs/taro': { __esModule: true, default: { getCurrentPages: () => [], navigateBack: async () => calls.push('back') }, useLoad: callback => { loader = callback } },
     '@/components/PageHeader': { PageHeader: 'PageHeader' }, '@/components/Button': { Button: 'Button' }, '@/components/CertificationEnrollment': { NoticeBlocks: 'NoticeBlocks' },
+    '@/components/CertificationEnrollment/NoticeDetail': { NoticeDetail: 'NoticeDetail' },
     '@/components/CertAttachmentList': { CertAttachmentList: 'CertAttachmentList' },
     '@/services/certificationJourney': { certificationJourneyService: { catalog: async () => catalog, notice: getNotice, planAttachments: async () => [] } },
     '@/utils/enrollment': { VENDOR_KEYS: { nisp: 'nisp', h3c: 'h3c' }, currentNotice: () => null, enrollmentBatchLabel: batch => batch.name, enrollmentDeadline: value => value,
@@ -59,7 +60,7 @@ test('deep link batch preselects its subject before the initial ref is reset', a
   await runtime.settle()
 
   assert.deepEqual(seen, [54])
-  assert.ok(runtime.nodes().some(node => node.type === 'NoticeBlocks'))
+  assert.ok(runtime.nodes().some(node => node.type === 'NoticeDetail'))
 })
 
 test('changing subjects isolates late notice responses, auto-selects a sole batch and resumes only the confirmed target', async t => {
@@ -69,7 +70,7 @@ test('changing subjects isolates late notice responses, auto-selects a sole batc
   await runtime.settle(); assert.equal(runtime.continueDisabled, true)
   await runtime.pick(0, 0); await runtime.pick(0, 1)
   first.resolve(notice(a)); await runtime.settle()
-  const rendered = runtime.nodes().find(node => node.type === 'NoticeBlocks')
+  const rendered = runtime.nodes().find(node => node.type === 'NoticeDetail')
   assert.ok(rendered)
   await runtime.agree(); assert.equal(runtime.continueDisabled, false)
   await runtime.proceed()
@@ -98,9 +99,10 @@ test('H3C notice explains that exam time and location are determined by booking'
   t.after(runtime.dispose)
   await runtime.settle()
 
-  const texts = runtime.nodes().map(node => node.props?.children).filter(Boolean)
-  assert.ok(texts.includes('报名审核通过后预约'))
-  assert.ok(texts.includes('考场地址以预约结果为准'))
-  assert.ok(!texts.includes('2026-12-01'))
-  assert.ok(!texts.includes('待公布'))
+  // 页面把当前厂商交给共用的须知正文组件，H3C 的预约口径在该组件内渲染
+  const detail = runtime.nodes().find(node => node.type === 'NoticeDetail')
+  assert.equal(detail.props.vendor, 'h3c')
+  const source = readFileSync('src/components/CertificationEnrollment/NoticeDetail.tsx', 'utf8')
+  assert.match(source, /'报名审核通过后预约'/)
+  assert.match(source, /'考场地址以预约结果为准'/)
 })

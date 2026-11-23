@@ -22,12 +22,14 @@ test('all four vendors have one registration channel rather than a product CTA p
 
 test('notice keeps subject, batch, H3C method and real fees in a single selection flow', async () => {
   const page = await readFile('src/pages/registration/notice.tsx', 'utf8')
+  // 费用行由须知页与表单页弹窗共用的正文组件渲染
+  const detail = await readFile('src/components/CertificationEnrollment/NoticeDetail.tsx', 'utf8')
   assert.match(page, /报考科目/)
   assert.match(page, /报名批次/)
   assert.match(page, /报名方式/)
   assert.match(page, /subject_id === subjectId/)
   assert.match(page, /batch\.prices\.map/)
-  assert.match(page, /notice\.price\.price_cents/)
+  assert.match(detail, /notice\.price\.price_cents/)
   assert.match(page, /setAgreedHash\(''\)/)
   assert.match(page, /latest\.notice_hash !== notice\.notice_hash/)
 })

@@ -329,7 +329,7 @@ export default function H3CFormPage() {
       <View className={styles.page}>
         <PageHeader title='H3C 报名表单' shouldShowBack />
         <View className={styles.body}>
-          <ConfirmationSummary vendor='h3c' batchId={batchId} type={type} notice={confirmation.notice} contact={form} disabled={submitting || uploading} />
+          <ConfirmationSummary vendor='h3c' batchId={batchId} type={type} notice={confirmation.notice} contact={form} disabled={submitting || uploading} onNoticeConfirmed={confirmation.acceptNotice} />
           <View className={styles.card}>
             <Text className={styles.title}>{batch?.name || (batchChecking ? '加载考试批次中...' : '批次不可用')}</Text>
             {batch && <Text className={styles.remark}>{formatCertificationApplyRange(batch)}</Text>}

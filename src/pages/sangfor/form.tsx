@@ -217,7 +217,7 @@ export default function SangforFormPage() {
             {!terminalBlocked && <Button variant='secondary' onClick={() => void refreshAvailability()}>刷新状态</Button>}
           </View>
         </View>}
-        <ConfirmationSummary vendor='sangfor' batchId={batchId} notice={confirmation.notice} correcting={Boolean(registrationId)} contact={{ phone: form.phone, email: form.email, address: form.mailing_address }} disabled={submitting} />
+        <ConfirmationSummary vendor='sangfor' batchId={batchId} notice={confirmation.notice} correcting={Boolean(registrationId)} contact={{ phone: form.phone, email: form.email, address: form.mailing_address }} disabled={submitting} onNoticeConfirmed={confirmation.acceptNotice} />
         {registrationNotice && <View className={styles.card}>
           <Text className={styles.title}>报名注意事项</Text>
           <Text className={styles.hint}>{registrationNotice}</Text>

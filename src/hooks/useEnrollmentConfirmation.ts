@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useDidShow } from '@tarojs/taro'
-import { certificationJourneyService, type CertificationVendor } from '@/services/certificationJourney'
+import { certificationJourneyService, type CertificationVendor, type EnrollmentNotice } from '@/services/certificationJourney'
 import { currentNotice, rememberNotice } from '@/utils/enrollment'
 
 export function useEnrollmentConfirmation(vendor: CertificationVendor, batchId: number, type?: string) {
@@ -8,6 +8,8 @@ export function useEnrollmentConfirmation(vendor: CertificationVendor, batchId: 
   const refresh = useCallback(() => setNotice(currentNotice(vendor, batchId, type)), [vendor, batchId, type])
   useEffect(refresh, [refresh])
   useDidShow(refresh)
+  // 表单页须知弹窗确认后直接落在本页状态，无需再跳报名须知页往返
+  const acceptNotice = useCallback((value: EnrollmentNotice) => { rememberNotice(value); setNotice(value) }, [])
   const requireConfirmation = async () => {
     const confirmed = currentNotice(vendor, batchId, type)
     if (!confirmed) throw new Error('请先阅读并确认本次科目和批次的报名须知')
@@ -16,5 +18,5 @@ export function useEnrollmentConfirmation(vendor: CertificationVendor, batchId: 
     rememberNotice(latest); setNotice(latest)
     return latest.notice_hash
   }
-  return { notice, requireConfirmation }
+  return { notice, acceptNotice, requireConfirmation }
 }

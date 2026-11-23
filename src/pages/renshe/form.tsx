@@ -274,7 +274,7 @@ export default function RensheFormPage() {
       <View className={styles.page}>
         <PageHeader title='职业技能等级认证报名' shouldShowBack />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY>
-          <ConfirmationSummary vendor='renshe' batchId={planId} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={submitting} />
+          <ConfirmationSummary vendor='renshe' batchId={planId} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={submitting} onNoticeConfirmed={confirmation.acceptNotice} />
           {(batchCheckError || batchChecking || !applicationEditable) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : batchCheckError || (correcting ? '当前报名不在有效补正期内' : availability.message || '请在我的报名查看已提交的报名')}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
           <View className={styles.card}>
             <View className={styles.cardHeader}>

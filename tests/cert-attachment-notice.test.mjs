@@ -3,24 +3,38 @@ import test from 'node:test'
 import { readFile } from 'node:fs/promises'
 
 test('registration notice shows batch and vendor attachments before the notice body', async () => {
-  const page = await readFile('src/pages/registration/notice.tsx', 'utf8')
+  const detail = await readFile('src/components/CertificationEnrollment/NoticeDetail.tsx', 'utf8')
 
-  assert.match(page, /certificationJourneyService\.planAttachments\(vendor, batch\.plan_id\)/)
-  assert.match(page, /<CertAttachmentList attachments=\{attachments\}/)
-  assert.match(page, /attachmentsGuard\.current\.isCurrent\(token\)/)
-  assert.match(page, /\}, \[vendor, batch\]\)/)
-  assert.match(page, /报名注意事项/)
-  assert.match(page, /notice\.registration_notice/)
-  assert.match(page, /notice\.exam_org_name/)
-  assert.match(page, /notice\.exam_date_note/)
+  assert.match(detail, /certificationJourneyService\.planAttachments\(vendor, planId\)/)
+  assert.match(detail, /<CertAttachmentList attachments=\{attachments\}/)
+  assert.match(detail, /attachmentsGuard\.current\.isCurrent\(token\)/)
+  assert.match(detail, /\}, \[vendor, planId\]\)/)
+  assert.match(detail, /报名注意事项/)
+  assert.match(detail, /notice\.registration_notice/)
+  assert.match(detail, /notice\.exam_org_name/)
+  assert.match(detail, /notice\.exam_date_note/)
   // 深信服与 H3C 一样由预约决定考试时间/地点
-  assert.match(page, /vendor === 'h3c' \|\| vendor === 'sangfor' \? '报名审核通过后预约'/)
-  assert.match(page, /vendor === 'h3c' \|\| vendor === 'sangfor' \? '考场地址以预约结果为准'/)
+  assert.match(detail, /vendor === 'h3c' \|\| vendor === 'sangfor' \? '报名审核通过后预约'/)
+  assert.match(detail, /vendor === 'h3c' \|\| vendor === 'sangfor' \? '考场地址以预约结果为准'/)
   // 附件卡位置必须在须知正文之前
   assert.ok(
-    page.indexOf('<CertAttachmentList') < page.indexOf('{notice.notice.title}'),
+    detail.indexOf('<CertAttachmentList') < detail.indexOf('{notice.notice.title}'),
     'attachment card should render before the notice body',
   )
+})
+
+test('notice page and form-page dialog share the same notice body', async () => {
+  const page = await readFile('src/pages/registration/notice.tsx', 'utf8')
+  const dialog = await readFile('src/components/CertificationEnrollment/NoticeDialog.tsx', 'utf8')
+
+  assert.match(page, /<NoticeDetail vendor=\{vendor\} notice=\{notice\}/)
+  assert.match(dialog, /<NoticeDetail vendor=\{vendor\} notice=\{notice\}/)
+  // 表单页已锁定批次，再确认须知走弹窗而不是再跳一次报名须知页
+  const summary = await readFile('src/components/CertificationEnrollment/ConfirmationSummary.tsx', 'utf8')
+  assert.match(summary, /<NoticeDialog[\s>]/)
+  assert.doesNotMatch(summary, /Taro\.navigateTo\(\{ url: `\/pages\/registration\/notice/)
+  // 弹窗内仍保留换科目／批次的入口，回真正会重建表单的报名须知页
+  assert.match(dialog, /\/pages\/registration\/notice\?type=\$\{vendor\}/)
 })
 
 test('sangfor form surfaces registration notice and compact attachments', async () => {

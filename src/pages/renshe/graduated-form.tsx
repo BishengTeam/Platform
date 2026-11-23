@@ -221,7 +221,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   return <AuthGuard><View className={styles.page}>
     <PageHeader title={levelThree ? '三级报名' : employment ? '工龄及证书路径报名' : '已毕业学历型报名'} shouldShowBack />
     <ScrollView scrollY className={`${styles.body} ${styles.bodyWithFooter}`}>
-      <ConfirmationSummary vendor='renshe' batchId={plan.id} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={Boolean(busy)} />
+      <ConfirmationSummary vendor='renshe' batchId={plan.id} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={Boolean(busy)} onNoticeConfirmed={confirmation.acceptNotice} />
       <RegistrationSummary title={plan.name} subtitle={`${plan.occupation_name} · ${plan.skill_level}`} badge={plan.application_type} priceCents={plan.price_cents}
         items={[{ label: '报名时间', value: formatCertificationApplyRange(plan), wide: true }, { label: '考试时间', value: formatDateTime(plan.exam_date, '待公布') }, { label: '考试地点', value: plan.exam_location || '以批次安排为准' }]}>
         <RequirementDisclosure title='查看报考要求'>

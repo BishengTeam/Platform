@@ -4,17 +4,19 @@ import test from 'node:test'
 import { certificationBatchState } from '../src/utils/certificationBatch.ts'
 
 test('H3C notice separates registration methods and preserves the common summary design', async () => {
-  const [page, shared, stylesheet] = await Promise.all([
+  const [page, detail, shared, stylesheet] = await Promise.all([
     readFile('src/pages/registration/notice.tsx', 'utf8'),
+    readFile('src/components/CertificationEnrollment/NoticeDetail.tsx', 'utf8'),
     readFile('src/components/CertBatchCard/index.tsx', 'utf8'),
     readFile('src/components/CertBatchCard/index.module.scss', 'utf8'),
   ])
 
   assert.match(page, /请选择考券／学生／全额报名方式/)
   assert.match(page, /batch\.prices\.map/)
-  assert.match(page, /price_cents \/ 100/)
-  assert.match(page, /考试时间/)
-  assert.match(page, /报名截止/)
+  // 费用与考试时间行在须知页与表单页弹窗共用的正文组件里
+  assert.match(detail, /price_cents \/ 100/)
+  assert.match(detail, /考试时间/)
+  assert.match(detail, /报名截止/)
   assert.match(shared, /badgeTone/)
   assert.match(stylesheet, /\.card\s*\{/)
   assert.match(stylesheet, /border-radius: 20px;/)

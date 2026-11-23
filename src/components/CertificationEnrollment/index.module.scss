@@ -28,6 +28,15 @@
 .consultation { position: fixed; right: 24rpx; bottom: calc(144rpx + env(safe-area-inset-bottom)); z-index: 10; box-shadow: 0 6rpx 24rpx rgba(22,119,255,.15); border-radius: $cert-card-radius; }
 .mask { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 999; display: flex; align-items: flex-end; }
 .sheet { background: #fff; border-radius: 24rpx 24rpx 0 0; padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom)); width: 100%; height: 75vh; box-sizing: border-box; }
+.dialogMask { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 1000; display: flex; align-items: flex-end; }
+.dialog { display: flex; flex-direction: column; width: 100%; height: 85vh; background: #fff; border-radius: 24rpx 24rpx 0 0; box-sizing: border-box; overflow: hidden; }
+.dialogHeader { display: flex; align-items: center; justify-content: space-between; padding: 24rpx 28rpx; border-bottom: 1rpx solid #f2f3f5; }
+.dialogTitle { font-size: 32rpx; font-weight: 600; color: $cert-text-primary; }
+.dialogClose { color: $cert-text-muted; font-size: 26rpx; padding: 12rpx 0 12rpx 24rpx; }
+.dialogBody { flex: 1; min-height: 0; padding: 24rpx 24rpx 0; box-sizing: border-box; }
+.dialogFooter { display: flex; gap: 20rpx; padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom)); border-top: 1rpx solid #f2f3f5; }
+.dialogCancel { flex: 1; }
+.dialogConfirm { flex: 2; }
 .actions { display: flex; gap: 20rpx; margin: 20rpx 0; flex-wrap: wrap; }
 
 .codeCard {
