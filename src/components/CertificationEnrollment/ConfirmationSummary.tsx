@@ -7,8 +7,8 @@ import styles from './index.module.scss'
 import { PressableLink } from '../PressableLink'
 import { NoticeDialog } from './NoticeDialog'
 
-export function ConfirmationSummary({ vendor, batchId, type, notice, contact, disabled, correcting, onNoticeConfirmed }: {
-  vendor: CertificationVendor; batchId: number; type?: string; notice: EnrollmentNotice | null
+export function ConfirmationSummary({ vendor, batchId, type, batchProjectId, notice, contact, disabled, correcting, onNoticeConfirmed }: {
+  vendor: CertificationVendor; batchId: number; type?: string; batchProjectId?: number; notice: EnrollmentNotice | null
   contact?: EnrollmentContactDraft; disabled?: boolean; correcting?: boolean
   /** 须知弹窗确认后回写表单页的须知状态（useEnrollmentConfirmation.acceptNotice） */
   onNoticeConfirmed?: (value: EnrollmentNotice) => void
@@ -32,7 +32,7 @@ export function ConfirmationSummary({ vendor, batchId, type, notice, contact, di
       </PressableLink>
     </View>
     {dialogOpen && batchId > 0 && <NoticeDialog
-      vendor={vendor} batchId={batchId} type={type}
+      vendor={vendor} batchId={batchId} type={type} batchProjectId={batchProjectId}
       onClose={() => setDialogOpen(false)}
       onConfirm={value => { onNoticeConfirmed?.(value); setDialogOpen(false); void Taro.showToast({ title: '已确认本次报名须知', icon: 'none' }).catch(() => {}) }}
     />}

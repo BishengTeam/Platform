@@ -4,6 +4,7 @@ export interface EnrollmentBatch {
   id: number; plan_id: number; subject_id: string; name: string; status: string
   plan_product_id?: number
   batch_product_id?: number
+  batch_project_id?: number
   apply_start: string | null; apply_end: string | null; exam_date: string | null; exam_location: string | null
   time_segments?: Array<{ id: number; label: string; start_time: string; end_time: string }>
   remaining_count: number; can_apply: boolean; capacity: number; level: '1' | '2' | null
@@ -49,7 +50,12 @@ export interface EnrollmentJourney {
 }
 export const certificationJourneyService = {
   async catalog(vendor: CertificationVendor): Promise<EnrollmentCatalog> { return (await getPublic<EnrollmentCatalog>(`/api/cert/enrollment/${vendor}/catalog`)).data },
-  async notice(vendor: CertificationVendor, id: number, type?: string): Promise<EnrollmentNotice> { return (await getPublic<EnrollmentNotice>(`/api/cert/enrollment/${vendor}/notice/${id}`, type ? { registration_type: type } : undefined)).data },
+  async notice(vendor: CertificationVendor, id: number, type?: string, batchProjectId?: number): Promise<EnrollmentNotice> {
+    const params: Record<string, string> = {}
+    if (type) params.registration_type = type
+    if (batchProjectId) params.batch_project_id = String(batchProjectId)
+    return (await getPublic<EnrollmentNotice>(`/api/cert/enrollment/${vendor}/notice/${id}`, Object.keys(params).length ? params : undefined)).data
+  },
   async journey(vendor: CertificationVendor, id: number): Promise<EnrollmentJourney> { return (await get<EnrollmentJourney>(`/api/cert/enrollment/${vendor}/registrations/${id}`)).data },
   async planAttachments(vendor: CertificationVendor, planId: number): Promise<CertAttachmentItem[]> {
     return (await getPublic<CertAttachmentItem[]>(`/api/cert/enrollment/${vendor}/plans/${planId}/attachments`)).data

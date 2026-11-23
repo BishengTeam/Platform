@@ -30,17 +30,17 @@ import { validateLevelThreeInfo } from '@/utils/rensheLevelThree'
 import TitleCertificateFields from './title-certificate-fields'
 import { levelFiveAgeBasis, validateLevelFiveAge } from '@/utils/rensheLevelFive'
 
-interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; application: RensheApplicationDetail | null; now?: number; batchChecking?: boolean; batchCheckError?: string; onRefreshBatch?: () => void }
+interface Props { plan: RenshePlan; profile: UserProfileAggregated | null; application: RensheApplicationDetail | null; now?: number; batchChecking?: boolean; batchCheckError?: string; onRefreshBatch?: () => void; batchProjectId?: number }
 
-export default function GraduatedForm({ plan, profile, application, now = Date.now(), batchChecking = false, batchCheckError = '', onRefreshBatch }: Props) {
-  const confirmation = useEnrollmentConfirmation('renshe', plan.id)
+export default function GraduatedForm({ plan, profile, application, now = Date.now(), batchChecking = false, batchCheckError = '', onRefreshBatch, batchProjectId }: Props) {
+  const confirmation = useEnrollmentConfirmation('renshe', plan.id, undefined, batchProjectId)
   const draft = application?.draft_data
   // 本地暂存优先于服务端 draft_data：本机最近一次未提交的填写内容最接近用户意图
   const localDraft = loadEnrollmentDraft<{
     qualification?: RensheEmploymentInfo; education?: Partial<RensheEducationInfo>; graduated?: boolean
     phone?: string; email?: string; address?: string
     materials?: Record<string, RensheUploadedMaterial>; reporting?: Partial<RensheReportingInfo>
-  }>(`renshe_grad:${plan.id}`)
+  }>(`renshe_grad:${plan.id}:${batchProjectId || 0}`)
   const employment = isEmploymentRule(plan.renshe_config?.qualification_rule)
   const levelThree = plan.renshe_config?.qualification_rule === LEVEL_THREE_RULE
   const levelFive = plan.renshe_config?.qualification_rule === LEVEL_FIVE_EMPLOYMENT_RULE
@@ -70,9 +70,9 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   useEffect(() => {
     let active = true
     setOptions(null); setOptionsError('')
-    rensheService.getReportingOptions(plan.id).then(value => { if (active) setOptions(value) }).catch(value => { if (active) setOptionsError(value instanceof Error ? value.message : '报送要求加载失败，请重试') })
+    rensheService.getReportingOptions(plan.id, batchProjectId).then(value => { if (active) setOptions(value) }).catch(value => { if (active) setOptionsError(value instanceof Error ? value.message : '报送要求加载失败，请重试') })
     return () => { active = false }
-  }, [plan.id, retry])
+  }, [plan.id, batchProjectId, retry])
   const admissionPaths = options?.rule_profile?.admission_paths || plan.renshe_config?.rule_profile?.admission_paths || []
   const branch = admissionPaths.find(item => item.id === qualification.admission_path)
   const educationRequired = levelThree ? Boolean(branch?.education) : !employment
@@ -81,12 +81,14 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   const identityReady = realname?.identity_status === 'verified'
   const correcting = Boolean(application && ['initial_rejected', 'external_rejected'].includes(application.status))
   const availability = certificationBatchState(rensheBatchWindow(plan), now)
-  const editable = ((!application || application.status === 'draft') && availability.canApply) || (correcting && correctionAvailable(application!, plan, now))
+  const activeProject = batchProjectId ? plan.projects?.find(item => item.id === batchProjectId) : undefined
+  const newRegistrationBlocked = Boolean(activeProject && !activeProject.is_active && !application)
+  const editable = (((!application || application.status === 'draft') && availability.canApply) || (correcting && correctionAvailable(application!, plan, now))) && !newRegistrationBlocked
   const locked = !editable || Boolean(application?.frozen_at)
   // 本地暂存：锁定（已提交/冻结）时不写入；初始值已在 useState 恢复，无覆盖风险
   useEffect(() => {
     if (locked) return
-    saveEnrollmentDraft(`renshe_grad:${plan.id}`, { qualification, education, graduated, phone, email, address, materials, reporting })
+    saveEnrollmentDraft(`renshe_grad:${plan.id}:${batchProjectId || 0}`, { qualification, education, graduated, phone, email, address, materials, reporting })
   }, [locked, plan.id, qualification, education, graduated, phone, email, address, materials, reporting])
   const assertAvailable = () => {
     if (correcting) {
@@ -124,7 +126,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
       const validation = validateGraduatedFile(kind, filename, size, extensions)
       if (validation) { setMaterialErrors(previous => ({ ...previous, [kind]: validation })); return }
       setBusy(kind)
-      const uploaded = await rensheService.uploadMaterial(plan.id, kind, path)
+      const uploaded = await rensheService.uploadMaterial(plan.id, kind, path, batchProjectId)
       setMaterials(previous => ({ ...previous, [kind]: uploaded }))
     } catch (value) {
       if (!/cancel/i.test(String((value as { errMsg?: string })?.errMsg || (value as Error)?.message || ''))) setMaterialErrors(previous => ({ ...previous, [kind]: value instanceof Error ? value.message : '材料上传失败，请重试' }))
@@ -144,7 +146,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
     operationLock.current = true
     setBusy(`template-${action}`)
     try {
-      const file = await rensheService.getCommitmentTemplateFile(plan.id, options.commitment_template.filename)
+      const file = await rensheService.getCommitmentTemplateFile(plan.id, options.commitment_template.filename, batchProjectId)
       if (action === 'preview') await rensheService.previewCommitmentTemplate(file)
       else await rensheService.sendCommitmentTemplate(file)
     } catch (value) { setTemplateError(value instanceof Error ? value.message : '模板操作失败，请重试') }
@@ -189,10 +191,10 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
     try {
       if (!(await ensureAgreementSigned('cert_registration', '认证报名信息处理授权协议', '请阅读并同意认证报名信息处理授权协议'))) return
       assertAvailable()
-      const saved = await rensheService.saveDraft({ plan_id: plan.id, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), ...(employment ? { qualification_info: qualification } : {}), ...(educationRequired ? { education_info: { ...education, graduated: true } as RensheEducationInfo } : {}), reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
+      const saved = await rensheService.saveDraft({ plan_id: plan.id, batch_project_id: batchProjectId, contact_phone: phone.trim(), email: email.trim(), mailing_address: address.trim(), ...(employment ? { qualification_info: qualification } : {}), ...(educationRequired ? { education_info: { ...education, graduated: true } as RensheEducationInfo } : {}), reporting_info: { ...reporting, work_start_date: reporting.has_work_experience ? workDate || null : null, enrollment_date: enrollmentDate || null, occupation_years: years === '' || years == null ? null : years } as RensheReportingInfo })
       assertAvailable()
       const result = await rensheService.submit(saved.id, correcting ? undefined : await confirmation.requireConfirmation())
-      clearEnrollmentDraft(`renshe_grad:${plan.id}`)
+      clearEnrollmentDraft(`renshe_grad:${plan.id}:${batchProjectId || 0}`)
       if (result.payment_required) await Taro.navigateTo({ url: `/${ROUTES.REGISTRATION_CONFIRM}?order_id=${result.order_id}` })
       else if (!correcting) await Taro.redirectTo({ url: enrollmentDetailUrl('renshe', saved.id) })
       else await Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${saved.id}` })
@@ -221,7 +223,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   return <AuthGuard><View className={styles.page}>
     <PageHeader title={levelThree ? '三级报名' : employment ? '工龄及证书路径报名' : '已毕业学历型报名'} shouldShowBack />
     <ScrollView scrollY className={`${styles.body} ${styles.bodyWithFooter}`}>
-      <ConfirmationSummary vendor='renshe' batchId={plan.id} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={Boolean(busy)} onNoticeConfirmed={confirmation.acceptNotice} />
+      <ConfirmationSummary vendor='renshe' batchId={plan.id} batchProjectId={batchProjectId} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={Boolean(busy)} onNoticeConfirmed={confirmation.acceptNotice} />
       <RegistrationSummary title={plan.name} subtitle={`${plan.occupation_name} · ${plan.skill_level}`} badge={plan.application_type} priceCents={plan.price_cents}
         items={[{ label: '报名时间', value: formatCertificationApplyRange(plan), wide: true }, { label: '考试时间', value: formatDateTime(plan.exam_date, '待公布') }, { label: '考试地点', value: plan.exam_location || '以批次安排为准' }]}>
         <RequirementDisclosure title='查看报考要求'>
@@ -240,7 +242,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
       {!options && <View className={styles.warning}><Text>{optionsError || '正在加载本批次填报要求…'}</Text>{optionsError && <Button variant='secondary' onClick={() => setRetry(value => value + 1)}>重新加载</Button>}</View>}
       {(batchCheckError || batchChecking) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : batchCheckError}</Text>{onRefreshBatch && <Button variant='secondary' onClick={onRefreshBatch}>刷新批次状态</Button>}</View>}
       {locked && <View className={styles.warning}>
-        <Text>{application?.frozen_at ? '退款处理中，资料已冻结。' : correcting ? '补正期限或批次状态不允许修改，请联系管理员。' : (!application || application.status === 'draft') && !availability.canApply ? availability.message : '报名已提交，可在报名详情查看进度、查看付款进度或取消待支付订单。'}</Text>
+        <Text>{newRegistrationBlocked ? '当前报考项目已下架，不能新建报名；已有报名仍可继续办理。' : application?.frozen_at ? '退款处理中，资料已冻结。' : correcting ? '补正期限或批次状态不允许修改，请联系管理员。' : (!application || application.status === 'draft') && !availability.canApply ? availability.message : '报名已提交，可在报名详情查看进度、查看付款进度或取消待支付订单。'}</Text>
         {application && <Button variant='secondary' onClick={() => Taro.redirectTo({ url: `/${ROUTES.MINE_REGISTRATION_DETAIL}?type=renshe&id=${application.id}` })}>查看报名详情</Button>}
       </View>}
       <View className={styles.card}>
@@ -334,6 +336,6 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
     </ScrollView>
     <RegistrationSubmitBar priceCents={plan.price_cents} priceLabel={correcting ? '本次补正' : '报名费'} priceText={correcting ? '无需重复支付' : undefined}
       disabled={locked || batchChecking || Boolean(batchCheckError) || Boolean(busy) || !identityReady || !options} loading={busy === 'submit'} onSubmit={() => void submit()}
-      label={correcting ? '提交补正' : !availability.canApply ? availability.action : batchChecking || batchCheckError ? '请先核验批次状态' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
+      label={newRegistrationBlocked ? '报考项目已下架' : correcting ? '提交补正' : !availability.canApply ? availability.action : batchChecking || batchCheckError ? '请先核验批次状态' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
   </View></AuthGuard>
 }

@@ -89,6 +89,12 @@ export interface RenshePlan {
   project_name?: string | null
   renshe_config_id?: number | null
   renshe_config?: {
+    occupation_name?: string
+    occupation_code?: string
+    skill_level?: string
+    export_skill_level?: string
+    exam_types?: string[]
+    application_types?: string[]
     rule_profile?: { source_conditions?: string[]; admission_paths?: RensheAdmissionPath[] }
     qualification_rule?: string
     institution_types?: string[]
@@ -111,11 +117,24 @@ export interface RenshePlan {
   description: string | null
   enrolled: number
   status: string
+  projects?: Array<{
+    id: number
+    product_id: number
+    product_code: string
+    product_name: string
+    skill_level: string | null
+    config_id: number | null
+    config: RenshePlan['renshe_config']
+    price_cents: number
+    sort_order: number
+    is_active: boolean
+  }>
 }
 
 export interface RensheDraftPayload {
   qualification_info?: RensheEmploymentInfo
   plan_id: number
+  batch_project_id?: number
   contact_phone: string
   mailing_address: string
   email: string
@@ -142,6 +161,7 @@ export interface RensheProject {
 export interface RensheApplication {
   id: number
   plan_id: number
+  batch_project_id?: number | null
   user_id: number
   current_version_id: number | null
   status: RensheApplicationStatus
@@ -230,18 +250,23 @@ export const TEMPLATE_SHARE_UNSUPPORTED = FILE_SHARE_UNSUPPORTED
 export const canSendCommitmentTemplate = canSendDocumentFile
 
 export const rensheService = {
-  async getReportingOptions(planId: number): Promise<RensheReportingOptions> {
-    return (await get<RensheReportingOptions>(`/api/renshe/batches/${planId}/reporting-options`)).data
+  async getReportingOptions(planId: number, batchProjectId?: number): Promise<RensheReportingOptions> {
+    return (await get<RensheReportingOptions>(`/api/renshe/batches/${planId}/reporting-options`, batchProjectId ? { batch_project_id: batchProjectId } : undefined)).data
   },
-  async findActiveApplication(planId: number): Promise<RensheApplicationDetail | null> {
-    const result = await get<PageData<RensheApplicationListItem>>('/api/renshe/applications', { plan_id: planId, page_size: 20 })
+  async findActiveApplication(planId: number, batchProjectId?: number): Promise<RensheApplicationDetail | null> {
+    const result = await get<PageData<RensheApplicationListItem>>('/api/renshe/applications', {
+      plan_id: planId,
+      ...(batchProjectId ? { batch_project_id: batchProjectId } : {}),
+      page_size: 20,
+    })
     const item = result.data.items.find(application => application.status !== 'closed')
     return item ? this.getApplication(item.id) : null
   },
-  async uploadMaterial(planId: number, kind: string, filePath: string): Promise<RensheUploadedMaterial> {
+  async uploadMaterial(planId: number, kind: string, filePath: string, batchProjectId?: number): Promise<RensheUploadedMaterial> {
     const token = getToken()
+    const query = batchProjectId ? `?batch_project_id=${batchProjectId}` : ''
     const response = await Taro.uploadFile({
-      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/materials/${kind}`,
+      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/materials/${kind}${query}`,
       filePath, name: 'file', header: { Authorization: token ? `Bearer ${token}` : '' },
     })
     let payload: { code: number; data: RensheUploadedMaterial; message?: string }
@@ -249,11 +274,12 @@ export const rensheService = {
     if (response.statusCode !== 200 || payload.code !== 0 || !payload.data?.storage_key) throw new Error(payload.message || '材料上传失败')
     return payload.data
   },
-  async getCommitmentTemplateFile(planId: number, filename?: string): Promise<RensheTemplateFile> {
+  async getCommitmentTemplateFile(planId: number, filename?: string, batchProjectId?: number): Promise<RensheTemplateFile> {
     const token = getToken()
     if (!token) throw new Error('登录已失效，请重新登录后重试')
+    const query = batchProjectId ? `?batch_project_id=${batchProjectId}` : ''
     return downloadDocumentFile({
-      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template`,
+      url: `${(process.env.TARO_APP_API_BASE || '').replace(/\/+$/, '')}/api/renshe/batches/${planId}/commitment-template${query}`,
       header: { Authorization: `Bearer ${token}` }, filename,
       fallbackName: '承诺书模板', failureMessage: '模板获取失败，请重试',
       missingMessage: '暂无可用承诺书模板，请联系管理员',
@@ -265,8 +291,8 @@ export const rensheService = {
   async sendCommitmentTemplate(file: RensheTemplateFile): Promise<void> {
     await sendDocumentFile({ ...file, filename: `承诺书模板.${file.fileType}` })
   },
-  async downloadCommitmentTemplate(planId: number, filename?: string): Promise<void> {
-    await this.previewCommitmentTemplate(await this.getCommitmentTemplateFile(planId, filename))
+  async downloadCommitmentTemplate(planId: number, filename?: string, batchProjectId?: number): Promise<void> {
+    await this.previewCommitmentTemplate(await this.getCommitmentTemplateFile(planId, filename, batchProjectId))
   },
   async listProjects(): Promise<RensheProject[]> {
     return (await getPublic<RensheProject[]>('/api/renshe/projects')).data ?? []

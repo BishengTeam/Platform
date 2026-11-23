@@ -6,9 +6,9 @@ export const CERTIFICATION_LABELS = { h3c: 'H3C认证', nisp: '国家信息安�
 export const VENDOR_KEYS: Record<string, CertificationVendor> = { H3C: 'h3c', NISP: 'nisp', 人社: 'renshe', 深信服: 'sangfor', h3c: 'h3c', nisp: 'nisp', renshe: 'renshe', sangfor: 'sangfor' }
 export function enrollmentFormUrl(vendor: CertificationVendor, batch: EnrollmentBatch, type: string) {
   const base = `/pages/${vendor}/form?${vendor === 'renshe' ? 'plan_id' : 'batch_id'}=${batch.id}${vendor === 'nisp' ? `&level=${batch.level}` : vendor === 'h3c' ? `&registration_type=${type}` : ''}`
-  return vendor === 'h3c' && batch.batch_product_id
-    ? `${base}&batch_product_id=${batch.batch_product_id}`
-    : base
+  if (vendor === 'h3c' && batch.batch_product_id) return `${base}&batch_product_id=${batch.batch_product_id}`
+  if (vendor === 'renshe' && batch.batch_project_id) return `${base}&batch_project_id=${batch.batch_project_id}`
+  return base
 }
 export function enrollmentDetailUrl(vendor: CertificationVendor, id: number) {
   return vendor === 'sangfor' ? `/pages/sangfor/detail?id=${id}` : `/pages/mine/registration-detail?type=${vendor}&id=${id}`
@@ -30,9 +30,13 @@ export function enrollmentBatchLabel(batch: EnrollmentBatch) {
 // Page-lifetime handoff only: no identity/material/form contents in route parameters or storage.
 const confirmations = new Map<CertificationVendor, EnrollmentNotice>()
 export function rememberNotice(value: EnrollmentNotice) { confirmations.set(value.vendor, value) }
-export function currentNotice(vendor: CertificationVendor, batchId: number, type?: string) {
+export function currentNotice(vendor: CertificationVendor, batchId: number, type?: string, batchProjectId?: number) {
   const value = confirmations.get(vendor)
-  return value?.batch.id === batchId && (!type || value.price.value === type) ? value : null
+  return value?.batch.id === batchId
+    && (!type || value.price.value === type)
+    && (batchProjectId === undefined || (value.batch.batch_project_id ?? 0) === batchProjectId)
+    ? value
+    : null
 }
 export function clearNotice(vendor: CertificationVendor) { confirmations.delete(vendor) }
 export interface EnrollmentContactDraft { phone?: string; email?: string; address?: string }

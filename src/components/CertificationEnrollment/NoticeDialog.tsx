@@ -11,8 +11,8 @@ import styles from './index.module.scss'
  * 报名须知弹窗：表单页已锁定科目与批次，再阅读须知时不必跳转报名须知页往返。
  * 需要换科目／批次时仍回报名须知页选择（保留原有能力），不在此弹窗内重选。
  */
-export function NoticeDialog({ vendor, batchId, type, onClose, onConfirm }: {
-  vendor: CertificationVendor; batchId: number; type?: string
+export function NoticeDialog({ vendor, batchId, type, batchProjectId, onClose, onConfirm }: {
+  vendor: CertificationVendor; batchId: number; type?: string; batchProjectId?: number
   onClose: () => void; onConfirm: (notice: EnrollmentNotice) => void
 }) {
   const [notice, setNotice] = useState<EnrollmentNotice | null>(null)
@@ -21,16 +21,16 @@ export function NoticeDialog({ vendor, batchId, type, onClose, onConfirm }: {
   useEffect(() => {
     let active = true
     setNotice(null); setAgreed(false); setLoading(true); setError('')
-    certificationJourneyService.notice(vendor, batchId, type)
+    certificationJourneyService.notice(vendor, batchId, type, batchProjectId)
       .then(value => { if (active) setNotice(value) })
       .catch(reason => { if (active) setError(reason instanceof Error ? reason.message : '须知加载失败') })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [vendor, batchId, type, retry])
+  }, [vendor, batchId, type, batchProjectId, retry])
   const changeTarget = () => {
     // 换批次会改变表单绑定的报名对象，必须回真正会重建表单的报名须知页
     onClose()
-    void Taro.navigateTo({ url: `/pages/registration/notice?type=${vendor}&batch_id=${batchId}&editing=1${vendor === 'h3c' && type ? `&registration_type=${type}` : ''}` })
+    void Taro.navigateTo({ url: `/pages/registration/notice?type=${vendor}&batch_id=${batchId}&editing=1${vendor === 'h3c' && type ? `&registration_type=${type}` : ''}${batchProjectId ? `&batch_project_id=${batchProjectId}` : ''}` })
   }
   return <View className={styles.dialogMask} onClick={onClose}>
     <View className={styles.dialog} onClick={event => event.stopPropagation()}>

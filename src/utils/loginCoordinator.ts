@@ -97,6 +97,7 @@ async function validResumeTarget(target: string, origin?: string): Promise<strin
     return target
   }
   const id = Number(/(?:^|&)batch_id=(\d+)/.exec(query)?.[1] || /(?:^|&)plan_id=(\d+)/.exec(query)?.[1])
+  const batchProjectId = Number(/(?:^|&)batch_project_id=(\d+)/.exec(query)?.[1] || 0)
   const api = path === '/pages/h3c/form' ? '/api/h3c/exam-batches'
     : path === '/pages/nisp/form' ? '/api/nisp/batches'
       : path === '/pages/sangfor/form' ? '/api/sangfor/batches'
@@ -106,10 +107,12 @@ async function validResumeTarget(target: string, origin?: string): Promise<strin
   const level = /(?:^|&)level=([12])(?:&|$)/.exec(query)?.[1]
   const fallback = origin?.split('?')[0] === listPath ? origin
     : listPath + (path === '/pages/nisp/form' && level ? `?level=${level}` : '')
-  const rows = (await getPublic<Array<{ id: number; status: string; level?: string; can_apply?: boolean; capacity?: number; enrolled?: number; apply_start?: string | null; apply_end?: string | null; remaining_count?: number }>>(api, undefined, false)).data
+  const rows = (await getPublic<Array<{ id: number; status: string; level?: string; can_apply?: boolean; capacity?: number; enrolled?: number; apply_start?: string | null; apply_end?: string | null; remaining_count?: number; projects?: Array<{ id: number; is_active: boolean; can_apply?: boolean }> }>>(api, undefined, false)).data
   const row = rows.find(item => item.id === id)
+  const project = batchProjectId ? row?.projects?.find(item => item.id === batchProjectId) : undefined
+  const projectBlocked = batchProjectId > 0 && (!project || !project.is_active || project.can_apply === false)
   const now = Date.now()
-  if (!row || row.status !== 'published' || row.remaining_count === 0 || row.can_apply === false
+  if (!row || row.status !== 'published' || row.remaining_count === 0 || row.can_apply === false || projectBlocked
     || (row.capacity && row.enrolled !== undefined && row.enrolled >= row.capacity)
     || (path === '/pages/nisp/form' && level && row.level && row.level !== level)
     || (row.apply_start && Date.parse(row.apply_start) > now) || (row.apply_end && Date.parse(row.apply_end) < now)) {

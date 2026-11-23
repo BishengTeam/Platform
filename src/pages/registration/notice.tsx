@@ -22,14 +22,15 @@ export default function EnrollmentNoticePage() {
   // 双栏视图下还会压到另一栏，因此这里改用自绘弹层。
   const [sheet, setSheet] = useState<'' | 'subject' | 'batch' | 'type'>('')
   const generation = useRef(0), noticeGeneration = useRef(0), operation = useRef(false)
-  const initialBatch = useRef(0)
+  const initialBatch = useRef(0), initialProject = useRef(0)
   useLoad(options => {
     const selectedVendor = VENDOR_KEYS[options?.type || ''] || null
     if (!selectedVendor) setError('认证类型无效，请返回认证专区重新选择')
     setVendor(selectedVendor); setEditing(options?.editing === '1')
     initialBatch.current = Number(options?.batch_id || 0)
+    initialProject.current = Number(options?.batch_project_id || 0)
     if (selectedVendor) {
-      const selected = currentNotice(selectedVendor, initialBatch.current)
+      const selected = currentNotice(selectedVendor, initialBatch.current, undefined, initialProject.current || undefined)
       if (selected) { setSubject(selected.subject.id); setBatch(selected.batch.id); setType(options?.registration_type || selected.price.value) }
     }
   })
@@ -43,13 +44,15 @@ export default function EnrollmentNoticePage() {
       // 函数式 updater 延迟到渲染期执行，必须先把 ref 读进局部变量，
       // 否则紧随其后的 ref 清零会让深链批次永远选不中科目。
       const targetBatchId = initialBatch.current
-      const matched = value.batches.find(item => item.id === targetBatchId)
+      const targetProjectId = initialProject.current
+      const matched = value.batches.find(item => item.id === targetBatchId && (!targetProjectId || item.batch_project_id === targetProjectId))
       const nextSubject = matched?.subject_id
         || (value.subjects.length === 1 ? value.subjects[0].id : '')
       setSubject(old => value.subjects.some(item => item.id === old) ? old : nextSubject)
       if (targetBatchId) {
         setBatch(targetBatchId)
         initialBatch.current = 0
+        initialProject.current = 0
       }
     } catch (reason) { if (seq === generation.current) { setCatalog(null); setError(reason instanceof Error ? reason.message : '科目与批次加载失败') } }
     finally { if (seq === generation.current) setLoading(false) }
@@ -68,21 +71,22 @@ export default function EnrollmentNoticePage() {
     setNotice(null); setAgreedHash('')
     if (!vendor || !batch || !type) return
     setError(''); setLoading(true)
-    try { const value = await certificationJourneyService.notice(vendor, batch.id, type); if (seq === noticeGeneration.current) setNotice(value) }
+    try { const value = await certificationJourneyService.notice(vendor, batch.id, type, batch.batch_project_id); if (seq === noticeGeneration.current) setNotice(value) }
     catch (reason) { if (seq === noticeGeneration.current) setError(reason instanceof Error ? reason.message : '须知加载失败') }
     finally { if (seq === noticeGeneration.current) setLoading(false) }
-  }, [vendor, batchId, type, JSON.stringify(batch)])
+  }, [vendor, batchId, type, batch?.batch_project_id, JSON.stringify(batch)])
   useEffect(() => { void fetchNotice(); return () => { noticeGeneration.current++ } }, [fetchNotice])
   const proceed = async () => {
     if (!vendor || !notice || !batch || !type || agreedHash !== notice.notice_hash || operation.current) return
     operation.current = true; setBusy(true); setError('')
     try {
-      const latest = await certificationJourneyService.notice(vendor, batch.id, type)
+      const latest = await certificationJourneyService.notice(vendor, batch.id, type, batch.batch_project_id)
       if (latest.notice_hash !== notice.notice_hash) { setNotice(latest); setAgreedHash(''); setError('须知、费用或批次要求已更新，请重新阅读并确认'); return }
       rememberNotice(latest)
       const target = enrollmentFormUrl(vendor, batch, type)
       const pages = Taro.getCurrentPages(), previous = pages[pages.length - 2] as { route?: string; options?: Record<string, string> } | undefined
       const same = previous?.route === `pages/${vendor}/form` && Number(previous.options?.[vendor === 'renshe' ? 'plan_id' : 'batch_id']) === batch.id
+        && (vendor !== 'renshe' || Number(previous.options?.batch_project_id || 0) === (batch.batch_project_id || 0))
         && (vendor !== 'h3c' || (previous.options?.registration_type || 'full') === type)
       if (editing && same) await safeNavigateBack({ fallbackUrl: target })
       else if (editing && previous?.route === `pages/${vendor}/form`) {

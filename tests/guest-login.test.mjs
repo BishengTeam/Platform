@@ -107,6 +107,30 @@ test('successful login rechecks the selected batch, restores only the page, and 
   assert.deepEqual(calls.at(-1), ['switchTab', { url: '/pages/index/index' }])
 })
 
+test('renshe multi-project login keeps the selected project through the resume check', async () => {
+  const { calls } = setup()
+  await requireLogin('/pages/renshe/form?plan_id=8&batch_project_id=12')
+  setAuthTokens('access', 'refresh')
+  Taro.request = async options => {
+    calls.push(['request', options])
+    return { statusCode: 200, data: { code: 0, data: [{ id: 8, status: 'published', remaining_count: -1, can_apply: true, projects: [{ id: 12, is_active: true, can_apply: true }] }] } }
+  }
+  await completeLogin()
+  assert.deepEqual(calls.at(-1), ['redirectTo', { url: '/pages/renshe/form?plan_id=8&batch_project_id=12' }])
+})
+
+test('renshe login returns to the public list when the selected project is stopped', async () => {
+  const { calls } = setup()
+  await requireLogin('/pages/renshe/form?plan_id=8&batch_project_id=12')
+  setAuthTokens('access', 'refresh')
+  Taro.request = async options => {
+    calls.push(['request', options])
+    return { statusCode: 200, data: { code: 0, data: [{ id: 8, status: 'published', remaining_count: -1, can_apply: true, projects: [{ id: 12, is_active: false, can_apply: false }] }] } }
+  }
+  await completeLogin()
+  assert.deepEqual(calls.at(-1), ['redirectTo', { url: '/pages/renshe/index' }])
+})
+
 test('expired or offline batch returns to its public list without creating a registration', async () => {
   const { calls } = setup()
   await requireLogin('/pages/h3c/form?batch_id=7')

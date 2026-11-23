@@ -1076,7 +1076,7 @@ export default function RegistrationDetailPage() {
               <View
                 className={`${sharedStyles.actionBtn} ${sharedStyles.actionPrimary}`}
                 onClick={() => Taro.navigateTo({
-                  url: `/${ROUTES.RENSHE_FORM}?plan_id=${rensheRegistration.plan_id}&application_id=${rensheRegistration.id}`,
+                  url: `/${ROUTES.RENSHE_FORM}?plan_id=${rensheRegistration.plan_id}&application_id=${rensheRegistration.id}${rensheRegistration.batch_project_id ? `&batch_project_id=${rensheRegistration.batch_project_id}` : ''}`,
                 })}
               >
                 <Text>重新提交审核</Text>

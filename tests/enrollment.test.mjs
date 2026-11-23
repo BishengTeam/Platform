@@ -21,6 +21,18 @@ test('an H3C subject handoff survives the notice-to-form navigation', () => {
   assert.equal(safeLoginTarget(target), target)
   assert.equal(safeLoginTarget(`${target}x`), null)
 })
+test('a renshe multi-project handoff carries the selected project to the form', () => {
+  const target = enrollmentFormUrl('renshe', { ...batch, batch_project_id: 12 }, 'default')
+  assert.equal(target, '/pages/renshe/form?plan_id=7&batch_project_id=12')
+  assert.equal(safeLoginTarget(target), target)
+  assert.equal(safeLoginTarget('/pages/renshe/form?plan_id=7&batch_project_id=abc'), null)
+})
+test('confirmation is scoped to the selected renshe project', () => {
+  rememberNotice({ vendor: 'renshe', batch: { ...batch, plan_id: 7, batch_project_id: 12 }, price: { value: 'default' }, notice_hash: 'project-confirmed' })
+  assert.equal(currentNotice('renshe', 7, 'default', 12).notice_hash, 'project-confirmed')
+  assert.equal(currentNotice('renshe', 7, 'default', 13), null)
+  assert.equal(currentNotice('renshe', 7, 'default').notice_hash, 'project-confirmed')
+})
 test('confirmation is scoped to vendor, batch and H3C registration method', () => {
   rememberNotice({ vendor: 'h3c', batch, price: { value: 'student' }, notice_hash: 'confirmed' })
   assert.equal(currentNotice('h3c', 7, 'student').notice_hash, 'confirmed')

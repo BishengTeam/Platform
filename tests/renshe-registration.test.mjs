@@ -63,6 +63,20 @@ test('graduated Renshe form reads batch materials and retains historical profile
   assert.match(form, /承诺书/)
 })
 
+test('Renshe forms keep the selected project through refreshes and isolate local drafts', async () => {
+  const [form, graduated] = await Promise.all([
+    readFile('src/pages/renshe/form.tsx', 'utf8'),
+    readFile('src/pages/renshe/graduated-form.tsx', 'utf8'),
+  ])
+  assert.match(form, /function applyProjectPlan/)
+  assert.match(form, /applyProjectPlan\(latestPlan/)
+  assert.match(form, /loadRequest/)
+  assert.match(form, /renshe:\$\{planDetail\.id\}:\$\{resolvedProjectId\}/)
+  assert.match(form, /newRegistrationBlocked/)
+  assert.match(graduated, /renshe_grad:\$\{plan\.id\}:\$\{batchProjectId \|\| 0\}/)
+  assert.match(graduated, /newRegistrationBlocked/)
+})
+
 test('My registrations and the standalone detail page include Renshe records', async () => {
   const [list, detail] = await Promise.all([
     readFile('src/pages/mine/registrations.tsx', 'utf8'),
@@ -76,6 +90,7 @@ test('My registrations and the standalone detail page include Renshe records', a
   assert.match(detail, /rensheService\.getApplication\(registrationId\)/)
   assert.match(detail, /setRenshePlan\(detail\.plan\)/)
   assert.match(detail, /renshePlan\?\.skill_level/)
+  assert.match(detail, /batch_project_id=\$\{rensheRegistration\.batch_project_id\}/)
   assert.match(detail, /cancelRenshePayment/)
   assert.match(detail, /requestRensheRefund/)
   assert.match(detail, /ROUTES\.RENSHE_FORM/)

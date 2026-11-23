@@ -33,8 +33,28 @@ import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '
 import ReportingFields from './reporting-fields'
 import { correctionAvailable, validateReportingInfo, isSelfReportedRule, rensheBatchWindow } from '@/utils/rensheGraduated'
 
+/** 多项目批次的 Plan 不带项目属性；每次拿到原始 Plan 后都必须重新合并所选项目。 */
+function applyProjectPlan(plan: RenshePlan, projectId: number): RenshePlan {
+  const project = projectId
+    ? plan.projects?.find(item => item.id === projectId)
+    : undefined
+  if (!project) return plan
+  const config = project.config ?? plan.renshe_config
+  return {
+    ...plan,
+    product_type: project.product_code,
+    occupation_name: config?.occupation_name || plan.occupation_name,
+    occupation_code: config?.occupation_code || plan.occupation_code,
+    skill_level: project.skill_level || config?.skill_level || plan.skill_level,
+    application_type: config?.application_types?.[0] || plan.application_type,
+    price_cents: project.price_cents,
+    renshe_config: config,
+  }
+}
+
 export default function RensheFormPage() {
   const [planId, setPlanId] = useState(0)
+  const [batchProjectId, setBatchProjectId] = useState(0)
   const [applicationId, setApplicationId] = useState<number | null>(null)
   const [plan, setPlan] = useState<RenshePlan | null>(null)
   const [application, setApplication] = useState<RensheApplicationDetail | null>(null)
@@ -54,15 +74,20 @@ export default function RensheFormPage() {
   const [batchCheckError, setBatchCheckError] = useState('')
   const statusRequest = useRef(0)
   const draftReady = useRef(false)
-  const confirmation = useEnrollmentConfirmation('renshe', planId)
+  const loadRequest = useRef(0)
+  const resolvedProjectRef = useRef(0)
+  const activeProjectId = batchProjectId || application?.batch_project_id || 0
+  const confirmation = useEnrollmentConfirmation('renshe', planId, undefined, activeProjectId || undefined)
 
   useLoad((options) => {
     setPlanId(Number(options?.plan_id || 0))
+    setBatchProjectId(Number(options?.batch_project_id || 0))
     setApplicationId(Number(options?.application_id || 0) || null)
   })
 
   const load = useCallback(async () => {
     if (!planId) return
+    const request = ++loadRequest.current
     setLoading(true)
     setLoadError('')
     try {
@@ -71,44 +96,59 @@ export default function RensheFormPage() {
         getUserProfile(),
         applicationId
           ? rensheService.getApplication(applicationId)
-          : rensheService.findActiveApplication(planId),
+          : rensheService.findActiveApplication(planId, activeProjectId || undefined),
       ])
+      if (request !== loadRequest.current) return
       if (applicationDetail && applicationDetail.plan_id !== planDetail.id) throw new Error('报名与批次不一致，请从我的报名重新进入')
-      setPlan(planDetail)
+      const resolvedProjectId = activeProjectId || applicationDetail?.batch_project_id || 0
+      resolvedProjectRef.current = resolvedProjectId
+      if (!batchProjectId && applicationDetail?.batch_project_id) setBatchProjectId(applicationDetail.batch_project_id)
+      const effectivePlan = applyProjectPlan(planDetail, resolvedProjectId)
+      const resolvedConfig = effectivePlan.renshe_config
+      setPlan(effectivePlan)
       setProfile(profileDetail)
       setApplication(applicationDetail)
       const draft = applicationDetail?.draft_data
       setPhone(draft?.contact_phone || enrollmentContactDraft().phone || profileDetail?.profile.phone || '')
       setEmail(draft?.email || enrollmentContactDraft().email || profileDetail?.profile.email || '')
       setAddress(draft?.mailing_address || enrollmentContactDraft().address || profileDetail?.profile.address || '')
-      if (!isSelfReportedRule(planDetail.renshe_config?.qualification_rule)) {
-        setReportingOptions(await rensheService.getReportingOptions(planDetail.id))
+      if (!isSelfReportedRule(resolvedConfig?.qualification_rule)) {
+        if (planDetail.product_type === null && !resolvedProjectId) {
+          throw new Error('多项目批次缺少报考项目，请从报名须知重新进入')
+        }
+        const options = await rensheService.getReportingOptions(planDetail.id, resolvedProjectId || undefined)
+        if (request !== loadRequest.current) return
+        setReportingOptions(options)
         setReporting(draft?.reporting_info || { ethnicity: profileDetail?.realname?.ethnicity || '', political_status: profileDetail?.realname?.political_status || '' })
       }
       // 本地暂存最后覆盖：考生明确填过的内容不被服务端/资料带出覆盖
-      const local = loadEnrollmentDraft<{ phone?: string; email?: string; address?: string; reporting?: Partial<RensheReportingInfo> }>(`renshe:${planDetail.id}`)
+      const local = loadEnrollmentDraft<{ phone?: string; email?: string; address?: string; reporting?: Partial<RensheReportingInfo> }>(`renshe:${planDetail.id}:${resolvedProjectId}`)
       if (local) {
         setPhone(old => local.phone || old)
         setEmail(old => local.email || old)
         setAddress(old => local.address || old)
-        if (local.reporting && !isSelfReportedRule(planDetail.renshe_config?.qualification_rule)) setReporting(old => ({ ...old, ...local.reporting }))
+        if (local.reporting && !isSelfReportedRule(resolvedConfig?.qualification_rule)) setReporting(old => ({ ...old, ...local.reporting }))
       }
     } catch (error) {
-      setPlan(null)
-      setLoadError(error instanceof Error ? error.message : '报名信息加载失败，请重试')
+      if (request === loadRequest.current) {
+        setPlan(null)
+        setLoadError(error instanceof Error ? error.message : '报名信息加载失败，请重试')
+      }
     } finally {
-      setLoading(false)
-      draftReady.current = true
+      if (request === loadRequest.current) {
+        setLoading(false)
+        draftReady.current = true
+      }
     }
-  }, [applicationId, planId])
+  }, [applicationId, batchProjectId, planId, activeProjectId])
 
-  useEffect(() => { void load() }, [load])
+  useEffect(() => { void load(); return () => { loadRequest.current++ } }, [load])
 
   // 本地暂存：初始恢复完成前不写入，避免空表单覆盖已存草稿
   useEffect(() => {
     if (!planId || !draftReady.current) return
-    saveEnrollmentDraft(`renshe:${planId}`, { phone, email, address, reporting })
-  }, [planId, phone, email, address, reporting])
+    saveEnrollmentDraft(`renshe:${planId}:${activeProjectId || 0}`, { phone, email, address, reporting })
+  }, [planId, activeProjectId, phone, email, address, reporting])
   const refreshAvailability = useCallback(async () => {
     if (!planId) return
     const request = ++statusRequest.current
@@ -120,16 +160,19 @@ export default function RensheFormPage() {
       ])
       if (request !== statusRequest.current) return
       if (latestApplication && latestApplication.current_version_id !== application?.current_version_id) { setBatchCheckError('报名版本已变化，请返回报名详情重新进入'); return }
-      setPlan(latestPlan)
+      // 已发布/多项目刷新时也必须重新合并项目配置，不能把有效 Plan 覆盖成空的原始 Plan。
+      setPlan(applyProjectPlan(latestPlan, activeProjectId || application?.batch_project_id || resolvedProjectRef.current || 0))
       if (latestApplication) setApplication(latestApplication)
     } catch (error) { if (request === statusRequest.current) setBatchCheckError(error instanceof Error ? error.message : '批次状态核验失败，请重试') }
     finally { if (request === statusRequest.current) setBatchChecking(false) }
-  }, [planId, application?.id, application?.current_version_id])
+  }, [planId, activeProjectId, application?.id, application?.batch_project_id, application?.current_version_id])
   useEffect(() => () => { statusRequest.current++ }, [])
   const now = useCertificationBatchClock(plan ? [plan] : [], refreshAvailability, Boolean(plan), [application?.correction_due_at])
   const availability = certificationBatchState(plan ? rensheBatchWindow(plan) : null, now)
   const correcting = Boolean(application && ['initial_rejected', 'external_rejected'].includes(application.status))
-  const applicationEditable = correcting ? Boolean(plan && application && correctionAvailable(application, plan, now)) : (!application || application.status === 'draft') && availability.canApply
+  const activeProject = activeProjectId ? plan?.projects?.find(item => item.id === activeProjectId) : undefined
+  const newRegistrationBlocked = Boolean(activeProject && !activeProject.is_active && !application)
+  const applicationEditable = (correcting ? Boolean(plan && application && correctionAvailable(application, plan, now)) : (!application || application.status === 'draft') && availability.canApply) && !newRegistrationBlocked
   const assertAvailable = () => {
     if (correcting) {
       if (!plan || !application || !correctionAvailable(application, plan, Date.now())) throw new Error('当前报名不在有效补正期内')
@@ -184,6 +227,7 @@ export default function RensheFormPage() {
       assertAvailable()
       const saved = await rensheService.saveDraft({
         plan_id: plan.id,
+        batch_project_id: activeProjectId || undefined,
         contact_phone: phone.trim(),
         mailing_address: address.trim(),
         email: email.trim(),
@@ -191,7 +235,7 @@ export default function RensheFormPage() {
       })
       assertAvailable()
       const submitted = await rensheService.submit(saved.id, correcting ? undefined : await confirmation.requireConfirmation())
-      clearEnrollmentDraft(`renshe:${plan.id}`)
+      clearEnrollmentDraft(`renshe:${plan.id}:${activeProjectId || 0}`)
       Taro.showToast({ title: '报名信息已提交', icon: 'success' })
       if (submitted.payment_required) {
         Taro.navigateTo({
@@ -240,7 +284,7 @@ export default function RensheFormPage() {
   }
 
   if (isSelfReportedRule(plan.renshe_config?.qualification_rule)) {
-    return <GraduatedForm key={`${plan.id}-${application?.id || 0}`} plan={plan} profile={profile} application={application} now={now} batchChecking={batchChecking} batchCheckError={batchCheckError} onRefreshBatch={refreshAvailability} />
+    return <GraduatedForm key={`${plan.id}-${activeProjectId || 0}-${application?.id || 0}`} plan={plan} profile={profile} application={application} now={now} batchChecking={batchChecking} batchCheckError={batchCheckError} onRefreshBatch={refreshAvailability} batchProjectId={activeProjectId || undefined} />
   }
 
   if (identity.phase !== 'verified') {
@@ -274,8 +318,8 @@ export default function RensheFormPage() {
       <View className={styles.page}>
         <PageHeader title='职业技能等级认证报名' shouldShowBack />
         <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY>
-          <ConfirmationSummary vendor='renshe' batchId={planId} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={submitting} onNoticeConfirmed={confirmation.acceptNotice} />
-          {(batchCheckError || batchChecking || !applicationEditable) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : batchCheckError || (correcting ? '当前报名不在有效补正期内' : availability.message || '请在我的报名查看已提交的报名')}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
+          <ConfirmationSummary vendor='renshe' batchId={planId} batchProjectId={activeProjectId || undefined} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={submitting} onNoticeConfirmed={confirmation.acceptNotice} />
+          {(batchCheckError || batchChecking || !applicationEditable) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : newRegistrationBlocked ? '当前报考项目已下架，不能新建报名；已有报名仍可继续办理' : batchCheckError || (correcting ? '当前报名不在有效补正期内' : availability.message || '请在我的报名查看已提交的报名')}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
           <View className={styles.card}>
             <View className={styles.cardHeader}>
               <Text className={styles.title}>{plan.name}</Text>
@@ -405,7 +449,7 @@ export default function RensheFormPage() {
         </ScrollView>
 
         <RegistrationSubmitBar priceCents={plan.price_cents} loading={submitting} disabled={!canSubmit}
-          onSubmit={() => { void handleSubmit() }} label={!correcting && !availability.canApply ? availability.action : applicationId ? '重新提交审核' : '提交报名'} />
+          onSubmit={() => { void handleSubmit() }} label={newRegistrationBlocked ? '报考项目已下架' : !correcting && !availability.canApply ? availability.action : applicationId ? '重新提交审核' : '提交报名'} />
       </View>
     </AuthGuard>
   )

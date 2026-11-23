@@ -13,7 +13,7 @@ const SUPPORTED_PAGES = new Set<string>([...Object.values(ROUTES), ...PUBLIC_PAG
   'pages/classroom/join', 'pages/classroom/detail', 'pages/classroom/quiz', 'pages/classroom/result',
   'pages/mine/contact-teachers',
 ])
-const NUMERIC_PARAMS = new Set(['id', 'plan_id', 'certId', 'batch_id', 'batch_product_id', 'project_id', 'order_id', 'registration_id', 'cert_id',
+const NUMERIC_PARAMS = new Set(['id', 'plan_id', 'certId', 'batch_id', 'batch_product_id', 'batch_project_id', 'project_id', 'order_id', 'registration_id', 'cert_id',
   'libraryId', 'library_id', 'scopeId', 'scope_id', 'exam_id', 'session_id', 'classroom_id'])
 const ENUM_PARAMS: Record<string, readonly string[]> = {
   level: ['1', '2'], vendor: ['H3C', 'NISP', '人社', '深信服', 'h3c', 'nisp', 'renshe', 'sangfor'],
