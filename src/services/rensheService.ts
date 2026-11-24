@@ -162,6 +162,7 @@ export interface RensheApplication {
   id: number
   plan_id: number
   batch_project_id?: number | null
+  reused?: boolean
   user_id: number
   current_version_id: number | null
   status: RensheApplicationStatus
