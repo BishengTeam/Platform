@@ -14,7 +14,14 @@ interface Props {
   compact?: boolean
 }
 
-const OPENABLE = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt']
+/**
+ * 微信 openDocument 支持的 fileType 白名单。
+ * downloadFile 的临时路径没有可靠后缀，不显式传 fileType 时 doc/docx/xls 等会打开失败
+ * （表现为「文件已损坏」）。txt 不在 openDocument 支持范围内，只能复制链接。
+ */
+const OPENABLE: Record<string, 'pdf' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'ppt' | 'pptx'> = {
+  pdf: 'pdf', doc: 'doc', docx: 'docx', xls: 'xls', xlsx: 'xlsx', ppt: 'ppt', pptx: 'pptx',
+}
 
 function extensionOf(url: string) {
   return (url.split('?')[0].split('.').pop() || '').toLowerCase()
@@ -46,7 +53,8 @@ export function CertAttachmentList({ attachments, loading, error, onRetry, compa
     </View>}
     {!loading && !error && attachments.map(item => {
       const ext = extensionOf(item.file_url)
-      const openable = OPENABLE.includes(ext)
+      const fileType = OPENABLE[ext]
+      const openable = Boolean(fileType)
       return <View
         key={item.id}
         className={styles.row}
@@ -56,15 +64,26 @@ export function CertAttachmentList({ attachments, loading, error, onRetry, compa
           if (downloading) return
           setDownloading(item.id)
           const url = resolveUrl(item.file_url)
-          if (!openable) {
+          if (!fileType) {
             void Taro.setClipboardData({ data: url })
               .then(() => Taro.showToast({ title: '下载链接已复制，请在浏览器打开', icon: 'none' }))
               .finally(() => setDownloading(0))
             return
           }
           void Taro.downloadFile({ url })
-            .then(result => Taro.openDocument({ filePath: result.tempFilePath }))
-            .catch(() => Taro.showToast({ title: '下载失败，请稍后重试', icon: 'none' }))
+            .then(async result => {
+              // downloadFile 遇到 404/500 也会 resolve，必须自己看 statusCode，否则会把错误页当附件打开。
+              if (result.statusCode !== 200 || !result.tempFilePath) {
+                Taro.showToast({ title: '附件下载失败，请稍后重试', icon: 'none' })
+                return
+              }
+              try {
+                await Taro.openDocument({ filePath: result.tempFilePath, fileType, showMenu: true })
+              } catch {
+                Taro.showToast({ title: '文件无法打开，请联系管理员确认附件内容', icon: 'none' })
+              }
+            })
+            .catch(() => Taro.showToast({ title: '附件下载失败，请稍后重试', icon: 'none' }))
             .finally(() => setDownloading(0))
         }}
       >

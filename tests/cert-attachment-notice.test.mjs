@@ -62,8 +62,18 @@ test('journey panel renders activation guidance and revoked state', async () => 
 test('attachment list copies links for non-previewable files and guards duplicate taps', async () => {
   const component = await readFile('src/components/CertAttachmentList/index.tsx', 'utf8')
 
-  assert.match(component, /const OPENABLE = \['pdf'/)
+  // txt 不在微信 openDocument 支持范围内，必须走复制链接，不能被当成可预览
+  assert.doesNotMatch(component, /txt: 'txt'/)
   assert.match(component, /if \(downloading\) return/)
   assert.match(component, /下载链接已复制，请在浏览器打开/)
   assert.match(component, /aria-role='button'/)
+})
+
+test('attachment downloads pass an explicit fileType and reject failed responses', async () => {
+  const component = await readFile('src/components/CertAttachmentList/index.tsx', 'utf8')
+
+  // 临时文件路径没有可靠后缀，openDocument 必须显式传 fileType
+  assert.match(component, /openDocument\(\{ filePath: result\.tempFilePath, fileType, showMenu: true \}\)/)
+  // downloadFile 对 404/500 也会 resolve，必须自己校验 statusCode
+  assert.match(component, /result\.statusCode !== 200/)
 })
