@@ -72,6 +72,12 @@ export default function RensheFormPage() {
   const identity = useIdentityCheck()
   const [batchChecking, setBatchChecking] = useState(false)
   const [batchCheckError, setBatchCheckError] = useState('')
+  const [scrollTarget, setScrollTarget] = useState('')
+  // 键盘弹出时不交给系统上推整页，改为滚动内部 ScrollView 聚焦当前输入框（与深信服表单一致）
+  const focusField = useCallback((id: string) => {
+    setScrollTarget('')
+    Taro.nextTick(() => setScrollTarget(id))
+  }, [])
   const statusRequest = useRef(0)
   const draftReady = useRef(false)
   const loadRequest = useRef(0)
@@ -199,7 +205,6 @@ export default function RensheFormPage() {
     && realname?.identity_status === 'verified'
     && student?.student_status === 'verified'
   const materialsReady = materialChecks.every(item => !item.required || Boolean(item.value))
-  const canSubmit = identityReady && materialsReady && applicationEditable && !batchChecking && !batchCheckError && !submitting
 
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
@@ -210,11 +215,26 @@ export default function RensheFormPage() {
     setErrors(next)
     const reportingMessage = reportingOptions ? validateReportingInfo(reporting, reportingOptions) : '报送信息尚未加载，请重试'
     setReportingError(reportingMessage || '')
+    // 固定底栏可在任意滚动位置点击；校验失败必须给可见反馈，否则表现为「点了没反应」。
+    const invalid = (['phone', 'email', 'address'] as const).find(key => !next[key].valid)
+    const firstError = invalid ? next[invalid].message : reportingMessage
+    if (firstError) {
+      Taro.showToast({ title: firstError, icon: 'none', duration: 3000 })
+      focusField(invalid ? `renshe-form-${invalid}` : 'renshe-submit-error')
+    }
     return Object.values(next).every(item => item.valid) && !reportingMessage
-  }, [address, email, phone, reporting, reportingOptions])
+  }, [address, email, phone, reporting, reportingOptions, focusField])
 
   const handleSubmit = async () => {
-    if (!plan || !canSubmit || !handleValidate()) return
+    if (!plan || submitting) return
+    const blocked = batchChecking ? '正在核验批次状态，请稍候'
+      : batchCheckError ? batchCheckError
+        : !applicationEditable ? (newRegistrationBlocked ? '当前报考项目已下架，不能新建报名' : availability.message || '当前批次或报名状态不允许提交')
+          : !identityReady ? '实名或学生信息尚未审核通过，请先前往「我的-编辑资料」补齐'
+            : !materialsReady ? '本批次必填材料不完整，请先在「我的-编辑资料」补齐'
+              : ''
+    if (blocked) { Taro.showToast({ title: blocked, icon: 'none', duration: 3000 }); return }
+    if (!handleValidate()) return
     try { assertAvailable() } catch (error) { Taro.showToast({ title: (error as Error).message, icon: 'none' }); return }
     if (!(await ensureAgreementSigned(
       'cert_registration',
@@ -317,7 +337,7 @@ export default function RensheFormPage() {
     <AuthGuard>
       <View className={styles.page}>
         <PageHeader title='职业技能等级认证报名' shouldShowBack />
-        <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY>
+        <ScrollView className={`${styles.body} ${styles.bodyWithFooter}`} scrollY scrollIntoView={scrollTarget} scrollWithAnimation>
           <ConfirmationSummary vendor='renshe' batchId={planId} batchProjectId={activeProjectId || undefined} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={submitting} onNoticeConfirmed={confirmation.acceptNotice} />
           {(batchCheckError || batchChecking || !applicationEditable) && <View className={styles.warning}><Text>{batchChecking ? '正在核验批次状态…' : newRegistrationBlocked ? '当前报考项目已下架，不能新建报名；已有报名仍可继续办理' : batchCheckError || (correcting ? '当前报名不在有效补正期内' : availability.message || '请在我的报名查看已提交的报名')}</Text><Button variant='secondary' onClick={() => void refreshAvailability()}>刷新批次状态</Button></View>}
           <View className={styles.card}>
@@ -408,11 +428,12 @@ export default function RensheFormPage() {
             </View>
           )}
 
-          <ReportingFields value={reporting} onChange={setReporting} options={reportingOptions} disabled={submitting} />
-          {reportingError && <View className={styles.warning}>{reportingError}</View>}
+          <ReportingFields value={reporting} onChange={setReporting} options={reportingOptions} disabled={submitting} fieldIdPrefix='renshe-form-reporting' onFieldFocus={focusField} />
+          {reportingError && <View className={styles.warning} id='renshe-submit-error'>{reportingError}</View>}
           <View className={styles.card}>
             <Text className={styles.sectionTitle}>报名联系信息</Text>
             <FormInput compact
+              id='renshe-form-phone'
               label='联系电话'
               required
               placeholder='请输入手机号'
@@ -420,23 +441,31 @@ export default function RensheFormPage() {
               type='number'
               maxlength={11}
               error={errors.phone}
+              adjustPosition={false}
+              onFocus={() => focusField('renshe-form-phone')}
               onChange={setPhone}
             />
             <FormInput compact
+              id='renshe-form-email'
               label='电子邮箱'
               required
               placeholder='用于接收报名和证书信息'
               value={email}
               error={errors.email}
+              adjustPosition={false}
+              onFocus={() => focusField('renshe-form-email')}
               onChange={setEmail}
             />
             <FormInput compact
+              id='renshe-form-address'
               label='通讯地址'
               required
               placeholder='请填写证书邮寄地址'
               value={address}
               maxlength={256}
               error={errors.address}
+              adjustPosition={false}
+              onFocus={() => focusField('renshe-form-address')}
               onChange={setAddress}
             />
           </View>
@@ -448,7 +477,7 @@ export default function RensheFormPage() {
           </View>
         </ScrollView>
 
-        <RegistrationSubmitBar priceCents={plan.price_cents} loading={submitting} disabled={!canSubmit}
+        <RegistrationSubmitBar priceCents={plan.price_cents} loading={submitting} disabled={submitting}
           onSubmit={() => { void handleSubmit() }} label={newRegistrationBlocked ? '报考项目已下架' : !correcting && !availability.canApply ? availability.action : applicationId ? '重新提交审核' : '提交报名'} />
       </View>
     </AuthGuard>

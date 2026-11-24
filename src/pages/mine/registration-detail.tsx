@@ -670,6 +670,8 @@ export default function RegistrationDetailPage() {
     rensheRegistration
     && renshePlan && correctionAvailable(rensheRegistration, renshePlan),
   )
+  // 草稿不是"补正"：填到一半退出后必须有回到表单继续填写的入口，否则报名详情是死路。
+  const showRensheDraft = rensheRegistration?.status === 'draft'
   const showRensheCancel = rensheRegistration?.status === 'pending_payment' && cancellable
   const showRenshePay = rensheRegistration?.status === 'pending_payment'
     && Boolean(rensheRegistration.current_order_id)
@@ -687,6 +689,7 @@ export default function RegistrationDetailPage() {
     || showCancelAction
     || showCompetitionSave
     || showRensheCorrection
+    || showRensheDraft
     || showRensheCancel
     || showRenshePay
     || showRensheRefund,
@@ -1080,6 +1083,17 @@ export default function RegistrationDetailPage() {
                 })}
               >
                 <Text>重新提交审核</Text>
+              </View>
+            )}
+
+            {showRensheDraft && rensheRegistration && (
+              <View
+                className={`${sharedStyles.actionBtn} ${sharedStyles.actionPrimary}`}
+                onClick={() => Taro.navigateTo({
+                  url: `/${ROUTES.RENSHE_FORM}?plan_id=${rensheRegistration.plan_id}&application_id=${rensheRegistration.id}${rensheRegistration.batch_project_id ? `&batch_project_id=${rensheRegistration.batch_project_id}` : ''}`,
+                })}
+              >
+                <Text>继续填写报名</Text>
               </View>
             )}
 

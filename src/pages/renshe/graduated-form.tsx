@@ -2,7 +2,7 @@ import { useEnrollmentConfirmation } from '@/hooks/useEnrollmentConfirmation'
 import { ConfirmationSummary } from '@/components/CertificationEnrollment/ConfirmationSummary'
 import { enrollmentContactDraft, enrollmentDetailUrl } from '@/utils/enrollment'
 import { clearEnrollmentDraft, loadEnrollmentDraft, saveEnrollmentDraft } from '@/utils/enrollmentFormDraft'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Checkbox, Picker, ScrollView, Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
@@ -56,6 +56,12 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   const [materials, setMaterials] = useState<Record<string, RensheUploadedMaterial>>(localDraft?.materials || draft?.materials || {})
   const [busy, setBusy] = useState('')
   const operationLock = useRef(false)
+  const [scrollTarget, setScrollTarget] = useState('')
+  // 键盘弹出时不交给系统上推整页，改为滚动内部 ScrollView 聚焦当前输入框（与深信服表单一致）
+  const focusField = useCallback((id: string) => {
+    setScrollTarget('')
+    Taro.nextTick(() => setScrollTarget(id))
+  }, [])
   const [fileShareSupported, setFileShareSupported] = useState(canSendCommitmentTemplate)
   const [error, setError] = useState('')
   const [materialErrors, setMaterialErrors] = useState<Record<string, string>>({})
@@ -99,7 +105,14 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   const uploadRequirements = requirements.filter(item => !['id_card_front', 'id_card_back', 'portrait'].includes(item.kind))
   const uploadedCount = uploadRequirements.filter(item => materials[item.kind]).length
   const setField = (field: keyof RensheEducationInfo, value: string) => setEducation(previous => ({ ...previous, [field]: value }))
-  const fail = (value: unknown) => setError(value instanceof Error ? value.message : '操作失败，请重试')
+  // 提交前的阻断必须可见：错误写到页面最底部时，固定底栏可以在任意滚动位置被点到，
+  // 只 setError 会出现「点了没反应」。统一补 toast + 滚到错误卡片。
+  const reject = (message: string) => {
+    setError(message)
+    Taro.showToast({ title: message, icon: 'none', duration: 3000 })
+    focusField('renshe-submit-error')
+  }
+  const fail = (value: unknown) => reject(value instanceof Error ? value.message : '操作失败，请重试')
 
   const upload = async (kind: string, extensions: string[]) => {
     if (busy || operationLock.current || locked || !identityReady || !options) return
@@ -154,38 +167,48 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   }
 
   const submit = async () => {
-    if (busy || operationLock.current || locked || batchChecking || batchCheckError) return
+    if (busy || operationLock.current) return
+    const blocked = locked
+      ? (newRegistrationBlocked ? '当前报考项目已下架，不能新建报名'
+        : application?.frozen_at ? '退款处理中，资料已冻结'
+          : application && application.status !== 'draft' ? '报名已提交，请在报名详情查看进度'
+            : '当前批次或补正期限不允许提交')
+      : batchChecking ? '正在核验批次状态，请稍候'
+        : batchCheckError ? batchCheckError
+          : !identityReady ? '请先完成本人实名认证'
+            : !options ? (optionsError || '正在加载本批次报送要求，请稍候')
+              : ''
+    if (blocked) { reject(blocked); return }
     setError('')
     try { assertAvailable() } catch (value) { fail(value); return }
-    if (!identityReady) { setError('请先完成本人实名认证'); return }
     if (levelFive) {
       const ageError = validateLevelFiveAge(realname?.birth_date, application?.versions)
-      if (ageError) { setError(ageError); return }
+      if (ageError) { reject(ageError); return }
     }
-    if (!options) { setError(optionsError || '正在加载本批次报送要求，请稍候'); return }
+    if (!options) { reject(optionsError || '正在加载本批次报送要求，请稍候'); return }
     const reportingError = validateReportingInfo(reporting, options)
-    if (reportingError) { setError(reportingError); return }
+    if (reportingError) { reject(reportingError); return }
     const workDate = reporting.work_start_date
     const enrollmentDate = reporting.enrollment_date
     const years = reporting.occupation_years
     if (levelThree) {
       const qualificationError = validateLevelThreeInfo(qualification, branch, reporting, education)
-      if (qualificationError) { setError(qualificationError); return }
+      if (qualificationError) { reject(qualificationError); return }
     } else if (employment) {
       const qualificationError = validateEmploymentInfo(qualification, compound, reporting, levelFive)
-      if (qualificationError) { setError(qualificationError); return }
+      if (qualificationError) { reject(qualificationError); return }
     }
     if (educationRequired) {
-    if (!graduated) { setError('本期仅接受已取得毕业证的申请人，请确认毕业情况'); return }
-    if (['school', 'institution_type', 'education', 'major', 'graduation_date', 'certificate_number'].some(key => !String(education[key as keyof RensheEducationInfo] || '').trim())) { setError('请完整填写毕业学历信息'); return }
-    if (education.graduation_date! > chinaDate() || education.graduation_date! < '1900-01-01') { setError('毕业日期不得晚于今天'); return }
+    if (!graduated) { reject('本期仅接受已取得毕业证的申请人，请确认毕业情况'); return }
+    if (['school', 'institution_type', 'education', 'major', 'graduation_date', 'certificate_number'].some(key => !String(education[key as keyof RensheEducationInfo] || '').trim())) { reject('请完整填写毕业学历信息'); return }
+    if (education.graduation_date! > chinaDate() || education.graduation_date! < '1900-01-01') { reject('毕业日期不得晚于今天'); return }
     const educationError = validateDegreeEducation(education, options)
-    if (educationError) { setError(educationError); return }
+    if (educationError) { reject(educationError); return }
     }
-    if (!validatePhone(phone).valid || !validateEmail(email).valid || !address.trim()) { setError('请填写有效手机号、邮箱和通讯地址'); return }
+    if (!validatePhone(phone).valid || !validateEmail(email).valid || !address.trim()) { reject('请填写有效手机号、邮箱和通讯地址'); return }
     const missing = uploadRequirements.filter(item => item.required && !materials[item.kind])
-    if (missing.length) { setMaterialErrors(Object.fromEntries(missing.map(item => [item.kind, `请上传${item.name}`]))); setError('请补齐标记为必填的报名材料'); return }
-    if (!realname?.id_card_front_oss || !realname?.id_card_back_oss || (requirements.some(item => item.kind === 'portrait' && item.required) && !realname?.avatar_oss)) { setError('实名材料不完整，请通过实名更正流程补齐'); return }
+    if (missing.length) { setMaterialErrors(Object.fromEntries(missing.map(item => [item.kind, `请上传${item.name}`]))); reject('请补齐标记为必填的报名材料'); return }
+    if (!realname?.id_card_front_oss || !realname?.id_card_back_oss || (requirements.some(item => item.kind === 'portrait' && item.required) && !realname?.avatar_oss)) { reject('实名材料不完整，请通过实名更正流程补齐'); return }
     operationLock.current = true
     setBusy('submit')
     try {
@@ -204,7 +227,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
   const picker = (field: 'institution_type' | 'education', label: string, values: string[], labels: Record<string, string>) => (
     <View className={styles.pickerField}>
       <Text className={styles.label}>{label} *</Text>
-      <Picker mode='selector' range={values.map(value => labels[value] || value)} disabled={locked || Boolean(busy)} onChange={event => setField(field, values[Number(event.detail.value)])}>
+      <Picker mode='selector' range={values.map(value => labels[value] || value)} disabled={locked || Boolean(busy) || !options} onChange={event => setField(field, values[Number(event.detail.value)])}>
         <View className={styles.readonlyValue}>{labels[education[field] || ''] || '请选择'} ›</View>
       </Picker>
     </View>
@@ -222,7 +245,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
 
   return <AuthGuard><View className={styles.page}>
     <PageHeader title={levelThree ? '三级报名' : employment ? '工龄及证书路径报名' : '已毕业学历型报名'} shouldShowBack />
-    <ScrollView scrollY className={`${styles.body} ${styles.bodyWithFooter}`}>
+    <ScrollView scrollY className={`${styles.body} ${styles.bodyWithFooter}`} scrollIntoView={scrollTarget} scrollWithAnimation>
       <ConfirmationSummary vendor='renshe' batchId={plan.id} batchProjectId={batchProjectId} notice={confirmation.notice} correcting={correcting} contact={{ phone, email, address }} disabled={Boolean(busy)} onNoticeConfirmed={confirmation.acceptNotice} />
       <RegistrationSummary title={plan.name} subtitle={`${plan.occupation_name} · ${plan.skill_level}`} badge={plan.application_type} priceCents={plan.price_cents}
         items={[{ label: '报名时间', value: formatCertificationApplyRange(plan), wide: true }, { label: '考试时间', value: formatDateTime(plan.exam_date, '待公布') }, { label: '考试地点', value: plan.exam_location || '以批次安排为准' }]}>
@@ -263,22 +286,22 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
         }}><View className={styles.readonlyValue}>{branch?.condition || '请选择符合本人情况的一条条件'} ›</View></Picker>
         <Text className={styles.sectionDesc}>切换路径会清空资格字段，必交材料随当前路径变化；请按当前条件核对材料。</Text>
       </View>}
-      {employment && (!levelThree || branch) && <EmploymentFields value={qualification} onChange={setQualification} compound={levelThree ? Boolean(branch?.skill) : compound} levelFive={levelFive} skillGrade={levelThree ? 4 : 5} requiredYears={levelThree ? branch?.years : undefined} showWork={!levelThree || Boolean(branch?.work)} educationRequired={educationRequired} options={options} disabled={locked || Boolean(busy)} />}
-      {levelThree && branch?.title && <TitleCertificateFields value={qualification} onChange={setQualification} disabled={locked || Boolean(busy)} />}
+      {employment && (!levelThree || branch) && <EmploymentFields value={qualification} onChange={setQualification} compound={levelThree ? Boolean(branch?.skill) : compound} levelFive={levelFive} skillGrade={levelThree ? 4 : 5} requiredYears={levelThree ? branch?.years : undefined} showWork={!levelThree || Boolean(branch?.work)} educationRequired={educationRequired} options={options} disabled={locked || Boolean(busy)} fieldIdPrefix='renshe-grad-employment' onFieldFocus={focusField} />}
+      {levelThree && branch?.title && <TitleCertificateFields value={qualification} onChange={setQualification} disabled={locked || Boolean(busy)} fieldIdPrefix='renshe-grad-title' onFieldFocus={focusField} />}
       {educationRequired && <View className={styles.card}>
         <Text className={styles.sectionTitle}>毕业学历信息</Text>
         <Text className={styles.sectionDesc}>已有院校、专业可预填，请按毕业证核对；预填不代表资格审核通过。</Text>
         <View className={styles.declaration} onClick={() => { if (!locked && !busy) setGraduated(!graduated) }}><Checkbox value='graduated' checked={graduated} disabled={locked || Boolean(busy)} color='#3366ff' /><Text>本人已取得本次申报学历的毕业证</Text></View>
-        <FormInput compact label='毕业院校' required placeholder='按毕业证填写完整院校名称' value={education.school || ''} disabled={locked || Boolean(busy)} onChange={value => setField('school', value)} maxlength={128} />
+        <FormInput compact id='renshe-edu-school' label='毕业院校' required placeholder='按毕业证填写完整院校名称' value={education.school || ''} disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-edu-school')} onChange={value => setField('school', value)} maxlength={128} />
         <View className={styles.fieldGrid}>
         {picker('institution_type', '院校类型', options?.institution_types || [], INSTITUTION_LABELS)}
         {picker('education', '学历层次', options?.education_levels || [], options?.education_labels || EDUCATION_LABELS)}
         </View>
-        <FormInput compact label='所学专业' required placeholder='按毕业证原文填写，不可自行认定相关专业' value={education.major || ''} disabled={locked || Boolean(busy)} onChange={value => setField('major', value)} maxlength={128} />
+        <FormInput compact id='renshe-edu-major' label='所学专业' required placeholder='按毕业证原文填写，不可自行认定相关专业' value={education.major || ''} disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-edu-major')} onChange={value => setField('major', value)} maxlength={128} />
         <View className={styles.pickerField}><Text className={styles.label}>毕业日期 *</Text><Picker mode='date' start='1900-01-01' end={chinaDate()} disabled={locked || Boolean(busy)} value={education.graduation_date || ''} onChange={event => setField('graduation_date', event.detail.value)}><View className={styles.readonlyValue}>{education.graduation_date || '请选择毕业日期'} ›</View></Picker></View>
         {levelThree && branch?.id === 'technical_senior' && <View className={styles.pickerField}><Text className={styles.label}>技工院校培养层次 *</Text><Picker mode='selector' range={['高级工班', '预备技师班', '技师班']} disabled={locked || Boolean(busy)} onChange={event => setField('training_level', ['senior_worker', 'preparatory_technician', 'technician'][Number(event.detail.value)])}><View className={styles.readonlyValue}>{education.training_level ? { senior_worker: '高级工班', preparatory_technician: '预备技师班', technician: '技师班' }[education.training_level] : '请选择毕业证对应培养层次'} ›</View></Picker></View>}
-        {levelThree && branch?.id === 'evaluated_college' && <FormInput compact label='院校评估论证依据' required value={education.evaluation_reference || ''} placeholder='填写备案等级认定评价机构相关依据，初审核验' disabled={locked || Boolean(busy)} onChange={value => setField('evaluation_reference', value)} maxlength={256} />}
-        <FormInput compact label='毕业证书编号' required placeholder='按毕业证填写' value={education.certificate_number || ''} disabled={locked || Boolean(busy)} onChange={value => setField('certificate_number', value)} maxlength={128} />
+        {levelThree && branch?.id === 'evaluated_college' && <FormInput compact id='renshe-edu-evaluation' label='院校评估论证依据' required value={education.evaluation_reference || ''} placeholder='填写备案等级认定评价机构相关依据，初审核验' disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-edu-evaluation')} onChange={value => setField('evaluation_reference', value)} maxlength={256} />}
+        <FormInput compact id='renshe-edu-certificate' label='毕业证书编号' required placeholder='按毕业证填写' value={education.certificate_number || ''} disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-edu-certificate')} onChange={value => setField('certificate_number', value)} maxlength={128} />
       </View>}
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>个人补充信息</Text>
@@ -294,20 +317,20 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
         <View className={styles.pickerField}><Text className={styles.label}>是否参加过工作 *</Text><Picker mode='selector' range={['参加过工作', '尚未参加工作']} disabled={locked || Boolean(busy)} onChange={event => setReporting(previous => ({ ...previous, has_work_experience: Number(event.detail.value) === 0, work_start_date: Number(event.detail.value) === 0 ? previous.work_start_date : null }))}><View className={styles.readonlyValue}>{reporting.has_work_experience === undefined ? '请选择' : reporting.has_work_experience ? '参加过工作' : '尚未参加工作'} ›</View></Picker></View>
         {reporting.has_work_experience && reportDatePicker('work_start_date', options?.employment_reporting.work_date_required === false ? '参加工作日期（选填）' : '参加工作日期 *')}
         <Text className={styles.sectionDesc}>{workDateHint(options?.employment_reporting, reporting.has_work_experience)}</Text>
-        <FormInput compact label='实际职业年限（年）' required={options?.employment_reporting.years_rule === 'required'} placeholder='如实填写，可保留两位小数' value={String(reporting.occupation_years ?? '')} disabled={locked || Boolean(busy)} onChange={value => reportField('occupation_years', value)} maxlength={7} />
+        <FormInput compact id='renshe-years' label='实际职业年限（年）' required={options?.employment_reporting.years_rule === 'required'} placeholder='如实填写，可保留两位小数' value={String(reporting.occupation_years ?? '')} disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-years')} onChange={value => reportField('occupation_years', value)} maxlength={7} />
         <Text className={styles.sectionDesc}>{options?.employment_reporting.work_date_required === false ? '职业年限如实填写，不作为学历型报考的工龄门槛。' : '职业年限须符合当前路径要求；涉及工作年限时按实际经历核算，重叠时间不重复累计。'}</Text>
-        <FormInput compact required={requiresWorkInfo} label={requiresWorkInfo ? '工作单位' : '工作单位（选填）'} value={reporting.work_unit || ''} placeholder='按实际情况填写' disabled={locked || Boolean(busy)} onChange={value => reportField('work_unit', value)} maxlength={128} />
+        <FormInput compact id='renshe-work-unit' required={requiresWorkInfo} label={requiresWorkInfo ? '工作单位' : '工作单位（选填）'} value={reporting.work_unit || ''} placeholder='按实际情况填写' disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-work-unit')} onChange={value => reportField('work_unit', value)} maxlength={128} />
         {unitSuggestion && !reporting.work_unit?.trim() && <Text className={styles.agreementLink} onClick={() => { if (!locked && !busy) reportField('work_unit', unitSuggestion) }}>使用当前工作经历单位：{unitSuggestion}（请核对）</Text>}
-        <FormInput compact required={requiresWorkInfo} label={requiresWorkInfo ? '社保参保单位' : '社保参保单位（选填）'} value={reporting.social_insurance_unit || ''} placeholder='按实际情况填写' disabled={locked || Boolean(busy)} onChange={value => reportField('social_insurance_unit', value)} maxlength={128} />
+        <FormInput compact id='renshe-social-unit' required={requiresWorkInfo} label={requiresWorkInfo ? '社保参保单位' : '社保参保单位（选填）'} value={reporting.social_insurance_unit || ''} placeholder='按实际情况填写' disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-social-unit')} onChange={value => reportField('social_insurance_unit', value)} maxlength={128} />
 
       </View>
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>联系信息</Text>
         <View className={styles.fieldGrid}>
-        <FormInput compact label='手机号' required placeholder='接收报名及补正通知' value={phone} maxlength={11} disabled={locked || Boolean(busy)} onChange={setPhone} />
-        <FormInput compact label='邮箱' required placeholder='请输入常用邮箱' value={email} maxlength={128} disabled={locked || Boolean(busy)} onChange={setEmail} />
+        <FormInput compact id='renshe-phone' label='手机号' required placeholder='接收报名及补正通知' value={phone} maxlength={11} disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-phone')} onChange={setPhone} />
+        <FormInput compact id='renshe-email' label='邮箱' required placeholder='请输入常用邮箱' value={email} maxlength={128} disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-email')} onChange={setEmail} />
         </View>
-        <FormInput compact label='通讯地址' required placeholder='请输入完整通讯地址' value={address} maxlength={256} disabled={locked || Boolean(busy)} onChange={setAddress} />
+        <FormInput compact id='renshe-address' label='通讯地址' required placeholder='请输入完整通讯地址' value={address} maxlength={256} disabled={locked || Boolean(busy)} adjustPosition={false} onFocus={() => focusField('renshe-address')} onChange={setAddress} />
       </View>
       <View className={styles.card}>
         <Text className={styles.sectionTitle}>报名材料</Text>
@@ -317,7 +340,10 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
           {uploadRequirements.map(item => {
             const file = materials[item.kind]
             return <MaterialItem key={item.kind} id={`renshe-material-${item.kind}`} title={item.name} required={item.required}
-              requirement={`${item.extensions.join(' / ')}，${item.kind === 'registration_portrait' ? '一寸白底近期照，≤500 KB' : item.extensions.every(ext => ext.toLowerCase() === '.pdf') ? 'PDF≤20 MB' : item.extensions.every(ext => ['.jpg', '.jpeg', '.png'].includes(ext.toLowerCase())) ? '图片≤10 MB' : '图片≤10 MB，PDF≤20 MB'}`}
+              requirement={item.kind === 'commitment_letter'
+                // 模板是 Word 文档，回传的是签字按手印后的扫描/拍照件；必须在上传前把格式写清楚。
+                ? `签署后回传：${item.extensions.join(' / ')}（图片≤10 MB、PDF≤20 MB）。模板为 Word 文档，请勿直接回传 docx`
+                : `${item.extensions.join(' / ')}，${item.kind === 'registration_portrait' ? '一寸白底近期照，≤500 KB' : item.extensions.every(ext => ext.toLowerCase() === '.pdf') ? 'PDF≤20 MB' : item.extensions.every(ext => ['.jpg', '.jpeg', '.png'].includes(ext.toLowerCase())) ? '图片≤10 MB' : '图片≤10 MB，PDF≤20 MB'}`}
               file={file ? { name: file.original_filename, size: file.size_bytes } : undefined} uploading={busy === item.kind}
               disabled={locked || Boolean(busy) || !identityReady || !options} error={materialErrors[item.kind]} onUpload={() => void upload(item.kind, item.extensions)} uploadLabel={item.kind === 'commitment_letter' ? '上传已签署承诺书' : undefined}>
               {item.kind === 'commitment_letter' && <>
@@ -328,14 +354,14 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
           })}
         </View>
       </View>
-      <View className={styles.card}>
+      <View className={styles.card} id='renshe-submit-error'>
         <Text className={styles.sectionTitle}>协议与提交</Text>
         <Text className={styles.sectionDesc}>提交前需签署<Text className={styles.agreementLink} onClick={() => Taro.navigateTo({ url: `/${ROUTES.AGREEMENT_VIEW}?type=cert_registration&requireSign=1` })}>《认证报名信息处理授权协议》</Text>。请核对资料后提交；填写内容会在本机自动暂存，退出后再次进入可恢复，提交成功后清除。</Text>
         {error && <Text className={styles.submissionError}>{error}</Text>}
       </View>
     </ScrollView>
     <RegistrationSubmitBar priceCents={plan.price_cents} priceLabel={correcting ? '本次补正' : '报名费'} priceText={correcting ? '无需重复支付' : undefined}
-      disabled={locked || batchChecking || Boolean(batchCheckError) || Boolean(busy) || !identityReady || !options} loading={busy === 'submit'} onSubmit={() => void submit()}
-      label={newRegistrationBlocked ? '报考项目已下架' : correcting ? '提交补正' : !availability.canApply ? availability.action : batchChecking || batchCheckError ? '请先核验批次状态' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
+      disabled={locked || batchChecking || Boolean(busy)} loading={busy === 'submit'} onSubmit={() => void submit()}
+      label={newRegistrationBlocked ? '报考项目已下架' : correcting ? '提交补正' : !availability.canApply ? availability.action : batchChecking || batchCheckError ? '请先核验批次状态' : application && application.status !== 'draft' ? '报名已提交' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
   </View></AuthGuard>
 }

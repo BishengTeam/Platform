@@ -3,6 +3,8 @@ import type { ValidationResult } from '@/utils/validator'
 import styles from './index.module.scss'
 
 interface FormInputProps {
+  /** 外层容器 id，供页面 ScrollView 的 scroll-into-view 聚焦定位 */
+  id?: string
   label: string
   required?: boolean
   placeholder: string
@@ -22,6 +24,7 @@ interface FormInputProps {
 }
 
 export function FormInput({
+  id,
   label,
   required = false,
   placeholder,
@@ -40,7 +43,7 @@ export function FormInput({
   const showError = error && !error.valid
 
   return (
-    <View className={`${styles.wrap} ${compact ? styles.compactField : ''}`}>
+    <View id={id} className={`${styles.wrap} ${compact ? styles.compactField : ''}`}>
       <View className={styles.labelRow}>
         {required && <Text className={styles.asterisk}>*</Text>}
         <Text className={styles.label}>{label}</Text>

@@ -95,3 +95,60 @@ test('My registrations and the standalone detail page include Renshe records', a
   assert.match(detail, /requestRensheRefund/)
   assert.match(detail, /ROUTES\.RENSHE_FORM/)
 })
+
+test('Renshe form inputs scroll the inner view instead of pushing the page up', async () => {
+  const [form, graduated, employment, title, reporting] = await Promise.all([
+    readFile('src/pages/renshe/form.tsx', 'utf8'),
+    readFile('src/pages/renshe/graduated-form.tsx', 'utf8'),
+    readFile('src/pages/renshe/employment-fields.tsx', 'utf8'),
+    readFile('src/pages/renshe/title-certificate-fields.tsx', 'utf8'),
+    readFile('src/pages/renshe/reporting-fields.tsx', 'utf8'),
+  ])
+
+  for (const source of [form, graduated]) {
+    assert.match(source, /scrollIntoView=\{scrollTarget\}/)
+    assert.match(source, /Taro\.nextTick\(\(\) => setScrollTarget\(id\)\)/)
+  }
+  // 原生输入框不再由系统上推整页，改为聚焦时滚到字段
+  assert.match(form, /adjustPosition=\{false\}/)
+  assert.match(graduated, /adjustPosition=\{false\}/)
+  assert.match(employment, /adjustPosition: false/)
+  assert.match(title, /adjustPosition: false/)
+  assert.match(reporting, /adjustPosition: false/)
+})
+
+test('Renshe submit failures are visible even when the form is scrolled away', async () => {
+  const [form, graduated] = await Promise.all([
+    readFile('src/pages/renshe/form.tsx', 'utf8'),
+    readFile('src/pages/renshe/graduated-form.tsx', 'utf8'),
+  ])
+
+  // 固定底栏任意位置可点：阻断原因必须 toast，并滚到错误卡片
+  assert.match(graduated, /const reject = \(message: string\)/)
+  assert.match(graduated, /Taro\.showToast\(\{ title: message, icon: 'none', duration: 3000 \}\)/)
+  assert.match(graduated, /focusField\('renshe-submit-error'\)/)
+  assert.match(graduated, /id='renshe-submit-error'/)
+  assert.match(form, /Taro\.showToast\(\{ title: firstError, icon: 'none', duration: 3000 \}\)/)
+  assert.match(form, /id='renshe-submit-error'/)
+})
+
+test('Draft Renshe applications can resume from the detail page', async () => {
+  const detail = await readFile('src/pages/mine/registration-detail.tsx', 'utf8')
+
+  assert.match(detail, /const showRensheDraft = rensheRegistration\?\.status === 'draft'/)
+  assert.match(detail, /showRensheDraft && rensheRegistration/)
+  assert.match(detail, /继续填写报名/)
+})
+
+test('Commitment letter states the upload format before the user picks a file', async () => {
+  const form = await readFile('src/pages/renshe/graduated-form.tsx', 'utf8')
+
+  assert.match(form, /item\.kind === 'commitment_letter'/)
+  assert.match(form, /请勿直接回传 docx/)
+})
+
+test('Education pickers stay disabled until reporting options load', async () => {
+  const form = await readFile('src/pages/renshe/graduated-form.tsx', 'utf8')
+
+  assert.match(form, /disabled=\{locked \|\| Boolean\(busy\) \|\| !options\}/)
+})
