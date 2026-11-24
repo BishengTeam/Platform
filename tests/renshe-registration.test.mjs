@@ -75,6 +75,10 @@ test('Renshe forms keep the selected project through refreshes and isolate local
   assert.match(form, /newRegistrationBlocked/)
   assert.match(graduated, /renshe_grad:\$\{plan\.id\}:\$\{batchProjectId \|\| 0\}/)
   assert.match(graduated, /newRegistrationBlocked/)
+  assert.match(form, /adjustPosition=\{false\}/)
+  assert.match(graduated, /adjustPosition=\{false\}/)
+  assert.match(graduated, /scrollIntoView=\{scrollTarget\}/)
+  assert.match(graduated, /disabledReason=\{submitBlockedReason\}/)
 })
 
 test('My registrations and the standalone detail page include Renshe records', async () => {
@@ -90,10 +94,13 @@ test('My registrations and the standalone detail page include Renshe records', a
   assert.match(detail, /rensheService\.getApplication\(registrationId\)/)
   assert.match(detail, /setRenshePlan\(detail\.plan\)/)
   assert.match(detail, /renshePlan\?\.skill_level/)
-  assert.match(detail, /batch_project_id=\$\{rensheRegistration\.batch_project_id\}/)
+  assert.match(detail, /batch_project_id=\$\{registration\.batch_project_id\}/)
   assert.match(detail, /cancelRenshePayment/)
   assert.match(detail, /requestRensheRefund/)
   assert.match(detail, /ROUTES\.RENSHE_FORM/)
+  assert.match(detail, /showRensheDraft/)
+  assert.match(detail, /继续填写报名/)
+  assert.match(detail, /页面打开失败，请重试/)
 })
 
 test('Renshe form inputs scroll the inner view instead of pushing the page up', async () => {
@@ -140,11 +147,14 @@ test('Draft Renshe applications can resume from the detail page', async () => {
   assert.match(detail, /继续填写报名/)
 })
 
-test('Commitment letter states the upload format before the user picks a file', async () => {
+test('Commitment letter accepts signed DOCX and advertises the format before file selection', async () => {
   const form = await readFile('src/pages/renshe/graduated-form.tsx', 'utf8')
 
   assert.match(form, /item\.kind === 'commitment_letter'/)
-  assert.match(form, /请勿直接回传 docx/)
+  assert.match(form, /rensheMaterialExtensions\(item\.kind, item\.extensions\)/)
+  assert.match(form, /PDF／DOCX≤20 MB/)
+  assert.match(form, /onUpload=\{\(\) => void upload\(item\.kind, extensions\)\}/)
+  assert.doesNotMatch(form, /请勿直接回传 docx/)
 })
 
 test('Education pickers stay disabled until reporting options load', async () => {

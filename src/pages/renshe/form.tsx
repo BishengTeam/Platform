@@ -205,6 +205,14 @@ export default function RensheFormPage() {
     && realname?.identity_status === 'verified'
     && student?.student_status === 'verified'
   const materialsReady = materialChecks.every(item => !item.required || Boolean(item.value))
+  const canSubmit = identityReady && materialsReady && applicationEditable && !batchChecking && !batchCheckError && !submitting
+  const submitBlockedReason = submitting ? '' :
+    newRegistrationBlocked ? '当前报考项目已下架，不能新建报名；已有报名仍可继续办理' :
+      batchChecking ? '正在核验批次状态，请稍候' :
+        batchCheckError ? batchCheckError :
+          !applicationEditable ? (correcting ? '当前报名不在有效补正期内' : availability.message || '当前批次暂不可提交报名') :
+            !identityReady ? '请先完成本人实名认证及学生信息核验' :
+              !materialsReady ? '请先补齐本批次必填材料' : ''
 
   const handleValidate = useCallback(() => {
     const next: Record<string, ValidationResult> = {
@@ -477,7 +485,7 @@ export default function RensheFormPage() {
           </View>
         </ScrollView>
 
-        <RegistrationSubmitBar priceCents={plan.price_cents} loading={submitting} disabled={submitting}
+        <RegistrationSubmitBar priceCents={plan.price_cents} loading={submitting} disabled={!canSubmit} disabledReason={submitBlockedReason}
           onSubmit={() => { void handleSubmit() }} label={newRegistrationBlocked ? '报考项目已下架' : !correcting && !availability.canApply ? availability.action : applicationId ? '重新提交审核' : '提交报名'} />
       </View>
     </AuthGuard>

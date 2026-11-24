@@ -24,6 +24,14 @@
 .registrationSubmitBar { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; display: flex; align-items: center; gap: 20px; padding: 20px 28px calc(20px + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -4px 20px rgba(15, 23, 42, .06); }
 .registrationSubmitFee { flex: 0 1 36%; min-width: 0; }
 .registrationSubmitAmount { display: block; margin-top: 4px; color: #ef4444; font-size: 30px; font-weight: 700; word-break: break-all; }
-.registrationSubmitAction { flex: 1; min-width: 0; }
+.registrationSubmitAction { position: relative; flex: 1; min-width: 0; }
 .registrationSubmitAction .registrationSubmitButton { width: 100%; max-width: 100%; min-height: 84px; }
+.registrationSubmitBlockedHitArea {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
 @media (max-width: 340px) { .registrationSummaryGrid { grid-template-columns: minmax(0, 1fr); } }

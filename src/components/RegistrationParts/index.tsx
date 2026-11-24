@@ -40,9 +40,9 @@ export function MaterialItem({ id, title, required, requirement, file, uploading
   </View>
 }
 
-export function RegistrationSubmitBar({ priceCents, priceLabel = '报名费', priceText, label, disabled, loading, onSubmit }: {
+export function RegistrationSubmitBar({ priceCents, priceLabel = '报名费', priceText, label, disabled, disabledReason, loading, onSubmit }: {
   priceCents?: number | null; priceLabel?: string; priceText?: string; label: string
-  disabled?: boolean; loading?: boolean; onSubmit: () => void
+  disabled?: boolean; disabledReason?: string; loading?: boolean; onSubmit: () => void
 }) {
   const [keyboardOpen, setKeyboardOpen] = useState(false)
   useEffect(() => {
@@ -54,6 +54,14 @@ export function RegistrationSubmitBar({ priceCents, priceLabel = '报名费', pr
   if (keyboardOpen) return null
   return <View className={styles.registrationSubmitBar}>
     <View className={styles.registrationSubmitFee}><Text className={styles.registrationSmallLabel}>{priceLabel}</Text><Text className={styles.registrationSubmitAmount}>{priceText || (priceCents == null ? '—' : `¥${(priceCents / 100).toFixed(2)}`)}</Text></View>
-    <View className={styles.registrationSubmitAction}><Button variant='gradient' className={styles.registrationSubmitButton} disabled={disabled} loading={loading} onClick={onSubmit}>{label}</Button></View>
+    <View className={styles.registrationSubmitAction}>
+      <Button variant='gradient' className={styles.registrationSubmitButton} disabled={disabled} loading={loading} onClick={onSubmit}>{label}</Button>
+      {disabled && !loading && disabledReason && <View
+        className={styles.registrationSubmitBlockedHitArea}
+        aria-role='button'
+        aria-label={`暂不能提交：${disabledReason}`}
+        onClick={() => { void Taro.showToast({ title: disabledReason, icon: 'none', duration: 3000 }) }}
+      />}
+    </View>
   </View>
 }

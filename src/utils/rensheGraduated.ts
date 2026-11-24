@@ -10,6 +10,11 @@ export function isEmploymentRule(rule?: string): boolean {
 export function isSelfReportedRule(rule?: string): boolean {
   return rule === GRADUATED_RULE || isEmploymentRule(rule)
 }
+export function rensheMaterialExtensions(kind: string, extensions: string[]): string[] {
+  const values = extensions.map(value => value.toLowerCase())
+  if (kind === 'commitment_letter' && !values.includes('.docx')) values.push('.docx')
+  return [...new Set(values)]
+}
 export function rensheBatchWindow(plan: RenshePlan) {
   return { ...plan, can_apply: plan.can_apply ?? (isSelfReportedRule(plan.renshe_config?.qualification_rule) && plan.renshe_config?.reporting_policy?.contract_version === 2) }
 }
@@ -81,8 +86,12 @@ export function validateReportingInfo(info: Partial<RensheReportingInfo>, option
 export function validateGraduatedFile(kind: string, filename: string, size: number, extensions: string[]): string | null {
   const extension = filename.toLowerCase().match(/\.[^.]+$/)?.[0] || ''
   if (!extensions.includes(extension)) return `请使用 ${extensions.join(' / ')} 格式`
-  const maximum = kind === 'registration_portrait' ? 500 * 1024 : extension === '.pdf' ? 20 * 1024 * 1024 : 10 * 1024 * 1024
-  if (size <= 0 || size > maximum) return kind === 'registration_portrait' ? '一寸白底证件照须不超过500 KB' : '文件为空或超过大小限制（图片10 MB、PDF20 MB）'
+  const maximum = kind === 'registration_portrait'
+    ? 500 * 1024
+    : ['.pdf', '.docx'].includes(extension)
+      ? 20 * 1024 * 1024
+      : 10 * 1024 * 1024
+  if (size <= 0 || size > maximum) return kind === 'registration_portrait' ? '一寸白底证件照须不超过500 KB' : '文件为空或超过大小限制（图片10 MB、PDF／DOCX20 MB）'
   return null
 }
 export function correctionAvailable(application: { status: string; frozen_at: string | null; correction_due_at?: string | null }, plan: { status: string; renshe_config?: { qualification_rule?: string } | null }, now = Date.now()): boolean {

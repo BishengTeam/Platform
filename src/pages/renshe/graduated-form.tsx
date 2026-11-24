@@ -20,7 +20,7 @@ import { ensureAgreementSigned } from '@/utils/agreementGate'
 import { validatePhone, validateEmail } from '@/utils/validator'
 import { formatDateTime } from '@/utils/format'
 import { assertCertificationBatchOpen, certificationBatchState, formatCertificationApplyRange } from '@/utils/certificationBatch'
-import { CHANGE_LABELS, INSTITUTION_LABELS, EDUCATION_LABELS, chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation, workDateHint, rensheBatchWindow } from '@/utils/rensheGraduated'
+import { CHANGE_LABELS, INSTITUTION_LABELS, EDUCATION_LABELS, chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation, workDateHint, rensheBatchWindow, rensheMaterialExtensions } from '@/utils/rensheGraduated'
 import styles from './renshe.module.scss'
 import EmploymentFields, { emptyExperience } from './employment-fields'
 import { validateEmploymentInfo } from '@/utils/rensheEmployment'
@@ -113,6 +113,16 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
     focusField('renshe-submit-error')
   }
   const fail = (value: unknown) => reject(value instanceof Error ? value.message : '操作失败，请重试')
+  const submitBlockedReason = busy ? '' :
+    locked ? (newRegistrationBlocked ? '当前报考项目已下架，不能新建报名'
+      : application?.frozen_at ? '退款处理中，资料已冻结'
+        : application && application.status !== 'draft' ? '报名已提交，请在报名详情查看进度'
+          : '当前批次或补正期限不允许提交')
+      : batchChecking ? '正在核验批次状态，请稍候'
+        : batchCheckError ? batchCheckError
+          : !identityReady ? '请先完成本人实名认证'
+            : !options ? (optionsError || '正在加载本批次报送要求，请稍候')
+              : ''
 
   const upload = async (kind: string, extensions: string[]) => {
     if (busy || operationLock.current || locked || !identityReady || !options) return
@@ -339,15 +349,16 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
         <View className={styles.materialList}>
           {uploadRequirements.map(item => {
             const file = materials[item.kind]
+            const extensions = rensheMaterialExtensions(item.kind, item.extensions)
             return <MaterialItem key={item.kind} id={`renshe-material-${item.kind}`} title={item.name} required={item.required}
               requirement={item.kind === 'commitment_letter'
-                // 模板是 Word 文档，回传的是签字按手印后的扫描/拍照件；必须在上传前把格式写清楚。
-                ? `签署后回传：${item.extensions.join(' / ')}（图片≤10 MB、PDF≤20 MB）。模板为 Word 文档，请勿直接回传 docx`
-                : `${item.extensions.join(' / ')}，${item.kind === 'registration_portrait' ? '一寸白底近期照，≤500 KB' : item.extensions.every(ext => ext.toLowerCase() === '.pdf') ? 'PDF≤20 MB' : item.extensions.every(ext => ['.jpg', '.jpeg', '.png'].includes(ext.toLowerCase())) ? '图片≤10 MB' : '图片≤10 MB，PDF≤20 MB'}`}
+                // 模板源文件是 Word；签署后可直接回传 DOCX，也可上传扫描件或照片。
+                ? `签署后回传：${extensions.join(' / ')}（图片≤10 MB、PDF／DOCX≤20 MB）`
+                : `${extensions.join(' / ')}，${item.kind === 'registration_portrait' ? '一寸白底近期照，≤500 KB' : extensions.every(ext => ext === '.pdf') ? 'PDF≤20 MB' : extensions.every(ext => ['.jpg', '.jpeg', '.png'].includes(ext)) ? '图片≤10 MB' : extensions.includes('.docx') ? '图片≤10 MB，PDF／DOCX≤20 MB' : '图片≤10 MB，PDF≤20 MB'}`}
               file={file ? { name: file.original_filename, size: file.size_bytes } : undefined} uploading={busy === item.kind}
-              disabled={locked || Boolean(busy) || !identityReady || !options} error={materialErrors[item.kind]} onUpload={() => void upload(item.kind, item.extensions)} uploadLabel={item.kind === 'commitment_letter' ? '上传已签署承诺书' : undefined}>
+              disabled={locked || Boolean(busy) || !identityReady || !options} error={materialErrors[item.kind]} onUpload={() => void upload(item.kind, extensions)} uploadLabel={item.kind === 'commitment_letter' ? '上传已签署承诺书' : undefined}>
               {item.kind === 'commitment_letter' && <>
-                <Text className={styles.sectionDesc}>打印后由本人亲笔签名并按手印，再上传清晰扫描件或照片。</Text>
+                <Text className={styles.sectionDesc}>打印后由本人亲笔签名并按手印，可上传签署后的 DOCX、PDF，或清晰扫描件、照片。</Text>
                 <DocumentActions scene='renshe-commitment' title='承诺书模板' controller={commitmentActions} disabled={Boolean(busy) || !options} />
               </>}
             </MaterialItem>
@@ -361,7 +372,7 @@ export default function GraduatedForm({ plan, profile, application, now = Date.n
       </View>
     </ScrollView>
     <RegistrationSubmitBar priceCents={plan.price_cents} priceLabel={correcting ? '本次补正' : '报名费'} priceText={correcting ? '无需重复支付' : undefined}
-      disabled={locked || batchChecking || Boolean(busy)} loading={busy === 'submit'} onSubmit={() => void submit()}
+      disabled={Boolean(submitBlockedReason)} disabledReason={submitBlockedReason} loading={busy === 'submit'} onSubmit={() => void submit()}
       label={newRegistrationBlocked ? '报考项目已下架' : correcting ? '提交补正' : !availability.canApply ? availability.action : batchChecking || batchCheckError ? '请先核验批次状态' : application && application.status !== 'draft' ? '报名已提交' : plan.price_cents === 0 ? '提交报名' : '提交报名，前往付款'} />
   </View></AuthGuard>
 }

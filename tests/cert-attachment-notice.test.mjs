@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readFile } from 'node:fs/promises'
+import {
+  attachmentBytesMatchType,
+  attachmentDocumentType,
+} from '../src/utils/attachmentFile.ts'
 
 test('registration notice shows batch and vendor attachments before the notice body', async () => {
   const detail = await readFile('src/components/CertificationEnrollment/NoticeDetail.tsx', 'utf8')
@@ -64,6 +68,15 @@ test('attachment list copies links for non-previewable files and guards duplicat
 
   // txt 不在微信 openDocument 支持范围内，必须走复制链接，不能被当成可预览
   assert.doesNotMatch(component, /txt: 'txt'/)
+  assert.equal(attachmentDocumentType('/api/media/cert-attachments/guide.pdf?download=1'), 'pdf')
+  assert.equal(attachmentDocumentType('/api/media/cert-attachments/template.DOCX'), 'docx')
+  assert.equal(attachmentDocumentType('/api/media/cert-attachments/archive.zip'), null)
+  assert.equal(attachmentBytesMatchType('pdf', new TextEncoder().encode('%PDF-1.7')), true)
+  assert.equal(attachmentBytesMatchType('docx', new Uint8Array([0x50, 0x4b, 0x03, 0x04])), true)
+  assert.equal(attachmentBytesMatchType('pdf', new TextEncoder().encode('<html>error</html>')), false)
+  assert.match(component, /fileType,[\s\S]*showMenu: true/)
+  assert.match(component, /result\.statusCode !== 200/)
+  assert.match(component, /附件内容无效或已损坏/)
   assert.match(component, /if \(downloading\) return/)
   assert.match(component, /下载链接已复制，请在浏览器打开/)
   assert.match(component, /aria-role='button'/)
@@ -73,7 +86,7 @@ test('attachment downloads pass an explicit fileType and reject failed responses
   const component = await readFile('src/components/CertAttachmentList/index.tsx', 'utf8')
 
   // 临时文件路径没有可靠后缀，openDocument 必须显式传 fileType
-  assert.match(component, /openDocument\(\{ filePath: result\.tempFilePath, fileType, showMenu: true \}\)/)
+  assert.match(component, /openDocument\(\{[\s\S]*?filePath: result\.tempFilePath,[\s\S]*?fileType,[\s\S]*?showMenu: true,[\s\S]*?\}\)/)
   // downloadFile 对 404/500 也会 resolve，必须自己校验 statusCode
   assert.match(component, /result\.statusCode !== 200/)
 })

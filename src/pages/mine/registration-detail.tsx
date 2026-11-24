@@ -684,6 +684,21 @@ export default function RegistrationDetailPage() {
     && !['requested', 'approved', 'processing', 'failed']
       .includes(rensheRegistration.current_refund_status || ''),
   )
+  const openRensheForm = async (
+    registration: RensheApplicationDetail,
+    failureLabel: string,
+  ) => {
+    const project = registration.batch_project_id
+      ? `&batch_project_id=${registration.batch_project_id}`
+      : ''
+    try {
+      await Taro.navigateTo({
+        url: `/${ROUTES.RENSHE_FORM}?plan_id=${registration.plan_id}&application_id=${registration.id}${project}`,
+      })
+    } catch {
+      Taro.showToast({ title: `${failureLabel}页面打开失败，请重试`, icon: 'none' })
+    }
+  }
   const showActionFooter = Boolean(
     showCorrectionAction
     || showCancelAction
@@ -1075,25 +1090,21 @@ export default function RegistrationDetailPage() {
               </View>
             )}
 
-            {showRensheCorrection && rensheRegistration && (
-              <View
-                className={`${sharedStyles.actionBtn} ${sharedStyles.actionPrimary}`}
-                onClick={() => Taro.navigateTo({
-                  url: `/${ROUTES.RENSHE_FORM}?plan_id=${rensheRegistration.plan_id}&application_id=${rensheRegistration.id}${rensheRegistration.batch_project_id ? `&batch_project_id=${rensheRegistration.batch_project_id}` : ''}`,
-                })}
-              >
-                <Text>重新提交审核</Text>
-              </View>
-            )}
-
             {showRensheDraft && rensheRegistration && (
               <View
                 className={`${sharedStyles.actionBtn} ${sharedStyles.actionPrimary}`}
-                onClick={() => Taro.navigateTo({
-                  url: `/${ROUTES.RENSHE_FORM}?plan_id=${rensheRegistration.plan_id}&application_id=${rensheRegistration.id}${rensheRegistration.batch_project_id ? `&batch_project_id=${rensheRegistration.batch_project_id}` : ''}`,
-                })}
+                onClick={() => { void openRensheForm(rensheRegistration, '继续填写报名') }}
               >
                 <Text>继续填写报名</Text>
+              </View>
+            )}
+
+            {showRensheCorrection && rensheRegistration && (
+              <View
+                className={`${sharedStyles.actionBtn} ${sharedStyles.actionPrimary}`}
+                onClick={() => { void openRensheForm(rensheRegistration, '重新提交审核') }}
+              >
+                <Text>重新提交审核</Text>
               </View>
             )}
 

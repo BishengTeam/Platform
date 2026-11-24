@@ -46,6 +46,9 @@ test('correction and free-registration footers display the supplied action witho
   assert.match(correction, /无需重复支付/)
   assert.doesNotMatch(correction, /¥100/)
   assert.match(render(RegistrationSubmitBar, { priceCents: 0, label: '提交报名', onSubmit() {} }), /¥0\.00/)
+  assert.match(source, /registrationSubmitBlockedHitArea/)
+  assert.match(source, /aria-label=\{`暂不能提交：\$\{disabledReason\}`\}/)
+  assert.match(source, /Taro\.showToast\(\{ title: disabledReason/)
 })
 
 test('long requirements are initially collapsed while the form retains their contents for expansion', () => {
@@ -58,6 +61,7 @@ test('PDF-only and image-only materials never offer incompatible file sources', 
   assert.deepEqual(materialSources(['.pdf']), ['file'])
   assert.deepEqual(materialSources(['.JPG', '.jpeg']), ['image'])
   assert.deepEqual(materialSources(['.pdf', '.jpg']), ['file', 'image'])
+  assert.deepEqual(materialSources(['.pdf', '.docx', '.jpg']), ['file', 'image'])
   assert.deepEqual(materialSources([]), [])
 })
 

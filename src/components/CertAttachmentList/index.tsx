@@ -3,6 +3,11 @@ import { Text, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import type { CertAttachmentItem } from '@/services/certificationJourney'
 import { resolveUrl } from '@/utils/request'
+import {
+  attachmentBytesMatchType,
+  attachmentDocumentType,
+  attachmentExtension,
+} from '@/utils/attachmentFile'
 import { PressableLink } from '../PressableLink'
 import styles from './index.module.scss'
 
@@ -12,19 +17,6 @@ interface Props {
   error?: string
   onRetry?: () => void
   compact?: boolean
-}
-
-/**
- * 微信 openDocument 支持的 fileType 白名单。
- * downloadFile 的临时路径没有可靠后缀，不显式传 fileType 时 doc/docx/xls 等会打开失败
- * （表现为「文件已损坏」）。txt 不在 openDocument 支持范围内，只能复制链接。
- */
-const OPENABLE: Record<string, 'pdf' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'ppt' | 'pptx'> = {
-  pdf: 'pdf', doc: 'doc', docx: 'docx', xls: 'xls', xlsx: 'xlsx', ppt: 'ppt', pptx: 'pptx',
-}
-
-function extensionOf(url: string) {
-  return (url.split('?')[0].split('.').pop() || '').toLowerCase()
 }
 
 function typeLabel(ext: string) {
@@ -52,8 +44,8 @@ export function CertAttachmentList({ attachments, loading, error, onRetry, compa
       {onRetry && <PressableLink onClick={onRetry} ariaLabel='重试加载附件'>重试</PressableLink>}
     </View>}
     {!loading && !error && attachments.map(item => {
-      const ext = extensionOf(item.file_url)
-      const fileType = OPENABLE[ext]
+      const ext = attachmentExtension(item.file_url)
+      const fileType = attachmentDocumentType(item.file_url)
       const openable = Boolean(fileType)
       return <View
         key={item.id}
@@ -73,17 +65,30 @@ export function CertAttachmentList({ attachments, loading, error, onRetry, compa
           void Taro.downloadFile({ url })
             .then(async result => {
               // downloadFile 遇到 404/500 也会 resolve，必须自己看 statusCode，否则会把错误页当附件打开。
-              if (result.statusCode !== 200 || !result.tempFilePath) {
-                Taro.showToast({ title: '附件下载失败，请稍后重试', icon: 'none' })
-                return
+              if (result.statusCode !== 200 || !result.tempFilePath || !fileType) {
+                throw new Error('附件下载失败，请稍后重试')
               }
-              try {
-                await Taro.openDocument({ filePath: result.tempFilePath, fileType, showMenu: true })
-              } catch {
-                Taro.showToast({ title: '文件无法打开，请联系管理员确认附件内容', icon: 'none' })
+              const bytes = await new Promise<Uint8Array>((resolve, reject) => {
+                Taro.getFileSystemManager().readFile({
+                  filePath: result.tempFilePath,
+                  success: value => resolve(new Uint8Array(value.data as ArrayBuffer)),
+                  fail: reject,
+                })
+              })
+              if (!attachmentBytesMatchType(fileType, bytes)) {
+                throw new Error('附件内容无效或已损坏，请重新下载或联系管理员')
               }
+              return Taro.openDocument({
+                filePath: result.tempFilePath,
+                fileType,
+                showMenu: true,
+              })
             })
-            .catch(() => Taro.showToast({ title: '附件下载失败，请稍后重试', icon: 'none' }))
+            .catch((error: unknown) => Taro.showToast({
+              title: error instanceof Error ? error.message : '附件下载或打开失败，请稍后重试',
+              icon: 'none',
+              duration: 3000,
+            }))
             .finally(() => setDownloading(0))
         }}
       >

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation, GRADUATED_RULE } from '../src/utils/rensheGraduated.ts'
+import { chinaDate, correctionAvailable, validateGraduatedFile, validateReportingInfo, validateDegreeEducation, GRADUATED_RULE, rensheMaterialExtensions } from '../src/utils/rensheGraduated.ts'
 
 test('standard package materials enforce declared formats and size boundaries', () => {
   assert.equal(validateGraduatedFile('registration_portrait', 'photo.jpeg', 500 * 1024, ['.jpg', '.jpeg']), null)
@@ -10,6 +10,10 @@ test('standard package materials enforce declared formats and size boundaries', 
   assert.match(validateGraduatedFile('social_security_proof', '社保证明.pdf', 20 * 1024 * 1024 + 1, ['.pdf']), /大小/)
   assert.equal(validateGraduatedFile('vocational_qualification_certificate', '职业资格证书.jpeg', 10 * 1024 * 1024, ['.jpg', '.jpeg']), null)
   assert.match(validateGraduatedFile('professional_title_certificate', '职称证书.pdf', 1000, ['.jpg', '.jpeg']), /格式/)
+  assert.equal(validateGraduatedFile('commitment_letter', '已签署承诺书.docx', 20 * 1024 * 1024, ['.pdf', '.docx', '.jpg']), null)
+  assert.match(validateGraduatedFile('commitment_letter', '已签署承诺书.docx', 20 * 1024 * 1024 + 1, ['.pdf', '.docx', '.jpg']), /大小/)
+  assert.deepEqual(rensheMaterialExtensions('commitment_letter', ['.PDF', '.jpg']), ['.pdf', '.jpg', '.docx'])
+  assert.deepEqual(rensheMaterialExtensions('work_proof', ['.pdf', '.jpg']), ['.pdf', '.jpg'])
 })
 
 test('graduation date uses the China date across UTC midnight', () => {
