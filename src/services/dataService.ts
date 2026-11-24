@@ -85,7 +85,7 @@ export {
   getOrders, getOrderDetail, cancelOrder, getPointsBalance, getPointRecords,
   getAgreements,
   getMyCollections, getRegisteredExams,
-  createOrder, prepayOrder,
+  createOrder,
   addFavorite, removeFavorite,
   validateCoupon,
   getUserProfile, updateUserProfile,

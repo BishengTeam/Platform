@@ -236,41 +236,8 @@ export async function createOrder(data: {
   return res.data
 }
 
-/** POST /api/payment/prepay — 预支付（获取微信支付参数） */
-export async function prepayOrder(orderId: number): Promise<{
-  prepay_id: string
-  time_stamp: string
-  nonce_str: string
-  sign_type: string
-  pay_sign: string
-  package: string
-}> {
-  if (USE_MOCK) {
-    return {
-      ...MOCK_PROFILE_META,
-      prepay_id: 'prepay_mock_' + orderId,
-      time_stamp: String(Math.floor(Date.now() / 1000)),
-      nonce_str: Math.random().toString(36).slice(2),
-      sign_type: 'RSA',
-      pay_sign: 'mock_sign',
-      package: 'prepay_id=prepay_mock_' + orderId,
-    }
-  }
-  const res = await post<{ prepay_id: string; time_stamp: string; nonce_str: string; sign_type: string; pay_sign: string; package: string }>('/api/payment/prepay', { order_id: orderId })
-  const data = res.data
-  if (!data) {
-    throw new Error('微信支付参数获取失败')
-  }
-  // 后端返回 snake_case，显式映射确保字段一致
-  return {
-    prepay_id: data.prepay_id,
-    time_stamp: data.time_stamp,
-    nonce_str: data.nonce_str,
-    sign_type: data.sign_type,
-    pay_sign: data.pay_sign,
-    package: data.package,
-  }
-}
+// 微信支付已停用：不再提供 /api/payment/prepay 封装。所有订单走银行转账，
+// 付款信息与凭证以 `/api/orders/{id}/offline-payment` 为准。
 
 // ================================================================
 // 收藏
