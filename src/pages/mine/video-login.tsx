@@ -1,19 +1,26 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Text, View } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { AuthGuard } from '@/components/AuthGuard'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/Button'
-import { EmptyState } from '@/components/EmptyState'
 import { STRINGS } from '@/constants/strings'
 import { createVideoWebLoginCode } from '@/services/videoWebService'
 import styles from './video-login.module.scss'
 
 export default function VideoLoginCodePage() {
   const [loginCode, setLoginCode] = useState('')
-  const [remaining, setRemaining] = useState(0)
+  // 用截止时间戳算剩余秒数，不用自减：切后台/掉帧后回到前台仍是正确倒计时
+  const [expiresAt, setExpiresAt] = useState(0)
+  const [now, setNow] = useState(() => Date.now())
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
+
+  const remaining = useMemo(
+    () => (expiresAt > 0 ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : 0),
+    [expiresAt, now],
+  )
+  const expired = expiresAt > 0 && remaining <= 0
 
   const generate = useCallback(async () => {
     if (generating) return
@@ -21,8 +28,10 @@ export default function VideoLoginCodePage() {
     setError('')
     try {
       const result = await createVideoWebLoginCode()
+      const issuedAt = Date.now()
       setLoginCode(result.login_code)
-      setRemaining(result.expires_in)
+      setExpiresAt(issuedAt + Math.max(1, result.expires_in) * 1000)
+      setNow(issuedAt)
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : STRINGS.MINE_VIDEO_LOGIN_FAILED)
     } finally {
@@ -30,19 +39,29 @@ export default function VideoLoginCodePage() {
     }
   }, [generating])
 
+  // 小程序端没有 window，必须用全局 setInterval（Taro 的 window 垫片不含 setInterval）
   useEffect(() => {
-    if (remaining <= 0) return
-    const timer = window.setInterval(() => {
-      setRemaining(value => Math.max(0, value - 1))
+    if (expiresAt <= 0) return
+    const timer = setInterval(() => {
+      const current = Date.now()
+      setNow(current)
+      if (current >= expiresAt) clearInterval(timer)
     }, 1000)
-    return () => window.clearInterval(timer)
-  }, [remaining > 0])
+    return () => clearInterval(timer)
+  }, [expiresAt])
+
+  useDidShow(() => setNow(Date.now()))
 
   const copy = () => {
-    if (!loginCode || remaining <= 0) return
+    if (!loginCode) return
+    if (expired) {
+      Taro.showToast({ title: STRINGS.MINE_VIDEO_LOGIN_EXPIRED, icon: 'none' })
+      return
+    }
     Taro.setClipboardData({
       data: loginCode,
       success: () => Taro.showToast({ title: STRINGS.MINE_VIDEO_LOGIN_COPIED, icon: 'success' }),
+      fail: () => Taro.showToast({ title: STRINGS.MINE_VIDEO_LOGIN_COPY_FAILED, icon: 'none' }),
     })
   }
 
@@ -57,7 +76,7 @@ export default function VideoLoginCodePage() {
             {loginCode ? (
               <>
                 <View className={styles.codeWrap}>
-                  <Text className={`${styles.code} ${remaining <= 0 ? styles.codeExpired : ''}`}>
+                  <Text className={`${styles.code} ${expired ? styles.codeExpired : ''}`}>
                     {loginCode}
                   </Text>
                   <Text className={`${styles.status} ${remaining > 0 ? styles.statusActive : ''}`}>
@@ -70,7 +89,7 @@ export default function VideoLoginCodePage() {
                   <Button
                     variant='primary'
                     size='lg'
-                    disabled={remaining <= 0}
+                    disabled={expired}
                     onClick={copy}
                   >
                     {STRINGS.MINE_VIDEO_LOGIN_COPY}
@@ -82,15 +101,15 @@ export default function VideoLoginCodePage() {
                     disabled={generating}
                     onClick={() => { void generate() }}
                   >
-                    {remaining > 0
-                      ? STRINGS.MINE_VIDEO_LOGIN_REGENERATE
-                      : STRINGS.MINE_VIDEO_LOGIN_GENERATE}
+                    {expired
+                      ? STRINGS.MINE_VIDEO_LOGIN_GENERATE
+                      : STRINGS.MINE_VIDEO_LOGIN_REGENERATE}
                   </Button>
                 </View>
+                {error && <Text className={styles.error}>{error}</Text>}
               </>
             ) : (
               <View className={styles.actions}>
-                {error && <EmptyState title={error} />}
                 <Button
                   variant='gradient'
                   size='lg'
@@ -102,6 +121,7 @@ export default function VideoLoginCodePage() {
                     ? STRINGS.MINE_VIDEO_LOGIN_GENERATING
                     : STRINGS.MINE_VIDEO_LOGIN_GENERATE}
                 </Button>
+                {error && <Text className={styles.error}>{error}</Text>}
               </View>
             )}
             <Text className={styles.tip}>{STRINGS.MINE_VIDEO_LOGIN_TIP}</Text>

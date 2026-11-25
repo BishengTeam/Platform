@@ -21,7 +21,9 @@
   padding: $spacing-xl $spacing-lg;
 }
 
+// 小程序 text 默认 inline：不显式 block 时标题与副标题会挤在同一行
 .title {
+  display: block;
   font-size: $font-xl;
   font-weight: 700;
   color: $color-text;
@@ -29,6 +31,7 @@
 }
 
 .desc {
+  display: block;
   margin-top: $spacing-sm;
   font-size: $font-sm;
   color: $color-text-tertiary;
@@ -44,6 +47,7 @@
 }
 
 .code {
+  display: block;
   font-size: 48px;
   font-weight: 700;
   letter-spacing: 8px;
@@ -57,6 +61,7 @@
 }
 
 .status {
+  display: block;
   margin-top: $spacing-sm;
   font-size: $font-sm;
   color: $color-text-tertiary;
@@ -74,7 +79,17 @@
   gap: $spacing-sm;
 }
 
+.error {
+  display: block;
+  margin-top: $spacing-md;
+  font-size: $font-sm;
+  color: $color-price;
+  text-align: center;
+  line-height: 1.6;
+}
+
 .tip {
+  display: block;
   margin-top: $spacing-md;
   font-size: $font-sm;
   color: $color-warning;
