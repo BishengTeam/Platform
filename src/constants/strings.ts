@@ -20,7 +20,6 @@ export const STRINGS = {
   INDEX_AI_COMPETITION: '为您查询到近期竞赛信息，参与竞赛可获得实践经验和证书加分：',
   INDEX_AI_ACTIVITY: '活动专区正在筹备中，上线后第一时间通知你。可以先看看正在报名的竞赛或认证课程',
   INDEX_AI_DEFAULT: '收到您的问题，我正在为您整理相关信息。\n\n您也可以直接访问下方专区获取更详细的内容，或继续向我提问。',
-  INDEX_ONLINE_COURSES: '在线练习',
   INDEX_TRAINING_ACTIVITIES: '在线培训',
   INDEX_YINGCAI_TAB: '英才计划',
   INDEX_VIEW_ALL: '全部',

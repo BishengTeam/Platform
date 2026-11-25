@@ -19,7 +19,7 @@ import { CustomTabBar } from '@/components/TabBar'
 import { RefreshableScrollView } from '@/components/RefreshableScrollView'
 import { STRINGS } from '@/constants/strings'
 import { ROUTES, TAB_BAR_CONFIG } from '@/constants/routes'
-import { FEATURES, homeCertEntryVisible, studyCoursesVisible } from '@/constants/features'
+import { FEATURES, homeCertEntryVisible } from '@/constants/features'
 import { getHomeQuickEntries } from '@/constants/homeEntries'
 import { getHomeAggregation } from '@/services/dataService'
 import { resolveMediaUrl } from '@/utils/media'
@@ -140,10 +140,6 @@ export default function IndexPage() {
     }
   }
 
-  const handleGoStudyZone = () => {
-    Taro.switchTab({ url: '/pages/training/index' })
-  }
-
   const handleGoActivityZone = () => {
     const path = `/${ROUTES.ACTIVITY}`
     Taro.switchTab({ url: path })
@@ -169,8 +165,6 @@ export default function IndexPage() {
   // 活动内容按 FEATURES.activityTab 门控（TARO_APP_ACTIVITY_VISIBLE=false）：首页板块/金刚区入口与活动页「活动」子tab 同开关。
   const activities = FEATURES.activityTab ? homeData?.zones['activity']?.activities ?? [] : []
   const yingcaiActivities = homeData?.zones['yingcai']?.yingcai_activities ?? []
-  // 在线课程同为主页内容驱动板块：后台配置了课程才显示；TARO_APP_STUDY_COURSES_VISIBLE=false 时整块屏蔽（学习 tab 不受影响）
-  const studyCourses = studyCoursesVisible ? homeData?.zones['study']?.courses ?? [] : []
   const competitionList = homeData?.zones['competition']?.competitions ?? []
   // 资讯：后端同步到公众号推文才显示；无数据（含接口失败）ticker 整条隐藏、新闻 tab 不出现。
   // 新闻内容保留在瀑布流（2026-11-11 口径）
@@ -190,14 +184,13 @@ export default function IndexPage() {
   const sectionTabs = useMemo(() => {
     const tabs: { key: string; label: string }[] = []
     if (FEATURES.certRegistration && certificationCards.length > 0) tabs.push({ key: 'cert', label: STRINGS.ZONE_NAMES[0] })
-    if (studyCoursesVisible && studyCourses.length > 0) tabs.push({ key: 'study', label: STRINGS.INDEX_ONLINE_COURSES })
     if (competitionList.length > 0) tabs.push({ key: 'competition', label: STRINGS.ZONE_NAMES[2] })
     if (activities.length > 0) tabs.push({ key: 'activity', label: STRINGS.INDEX_TRAINING_ACTIVITIES })
     if (FEATURES.yingcaiZone && yingcaiActivities.length > 0) tabs.push({ key: 'yingcai', label: STRINGS.INDEX_YINGCAI_TAB })
     // 新闻资讯固定排最右：同步到公众号推文才出现
     if (gzhArticles.length > 0) tabs.push({ key: 'news', label: STRINGS.INDEX_NEWS_TAB })
     return tabs
-  }, [certificationCards.length, studyCourses.length, competitionList.length, activities.length, yingcaiActivities.length, gzhArticles.length])
+  }, [certificationCards.length, competitionList.length, activities.length, yingcaiActivities.length, gzhArticles.length])
 
   // 后台下架导致当前 tab 消失时回落到第一个 tab
   useEffect(() => {
@@ -273,9 +266,6 @@ export default function IndexPage() {
               {/* 渲染同样认开关：数据先到、回落 effect 后至的一帧里，避免无 tab 却闪现认证卡 */}
               {activeSection === 'cert' && FEATURES.certRegistration && (
                 <HomeCard items={certificationCards} onCardClick={handleCertCardClick} />
-              )}
-              {activeSection === 'study' && studyCoursesVisible && (
-                <HomeCard items={studyCourses} onCardClick={handleGoStudyZone} />
               )}
               {activeSection === 'competition' && (
                 <HomeCard

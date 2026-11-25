@@ -67,9 +67,8 @@ test('home waterfall replaced by content-driven section tabs', async () => {
   assert.ok(kingKongAt !== -1, 'KingKongZone should render')
   assert.ok(tabsAt > kingKongAt, 'section tabs must sit below the KingKong zone grid')
   assert.ok(tabContentAt > tabsAt, 'tab content must sit below the section tabs')
-  // 五个板块全部内容驱动：无内容不出现 tab，顺序与原瀑布流一致。
+  // 四个板块全部内容驱动：无内容不出现 tab，顺序与原瀑布流一致（在线练习板块 2026-11-25 已收掉）。
   assert.match(source, /certificationCards\.length > 0\) tabs\.push\(\{ key: 'cert'/)
-  assert.match(source, /studyCourses\.length > 0\) tabs\.push\(\{ key: 'study'/)
   assert.match(source, /competitionList\.length > 0\) tabs\.push\(\{ key: 'competition'/)
   assert.match(source, /activities\.length > 0\) tabs\.push\(\{ key: 'activity'/)
   assert.match(source, /FEATURES\.yingcaiZone && yingcaiActivities\.length > 0\) tabs\.push\(\{ key: 'yingcai'/)
