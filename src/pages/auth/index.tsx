@@ -57,15 +57,15 @@ export default function AuthPage() {
     })
   }
 
-  /** 微信手机号授权回调：拿到 code 则登录并顺带绑定手机号；拒绝授权则降级为普通登录 */
+  /** 微信手机号授权回调：手机号是登录必要条件，拒绝授权则保持游客（不登录）。 */
   const handleGetPhoneNumber = (phoneCode?: string) => {
     if (!isAgreed) return
     if (phoneCode) {
       handleLogin(phoneCode)
       return
     }
-    // 用户取消授权或组件不可用：不阻断登录，后续可在报名/个人资料中补填
-    handleLogin()
+    // 拒绝/取消失败：不创建登录态，停留在游客模式，可稍后重试
+    void Taro.showToast({ title: '需授权手机号后才能使用业务功能', icon: 'none', duration: 2500 })
   }
 
   const handleButtonClick = () => {

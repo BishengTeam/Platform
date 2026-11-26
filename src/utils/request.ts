@@ -176,6 +176,17 @@ export async function request<T = unknown>(options: RequestOptions, allowRefresh
       }
       throw new ApiError(result?.message || '登录已过期，请重新登录', 40100, 401)
     }
+    // 手机号闸门（后端 40301? 统一 40101）：未授权手机号 = 游客，清登录态并提示重新授权
+    if (
+      res.statusCode === 403
+      && result?.code === 40101
+      && typeof result?.message === 'string'
+      && result.message.includes('手机号')
+    ) {
+      if (getAuthSessionId() === session) clearAuthTokens()
+      void Taro.showToast({ title: result.message, icon: 'none', duration: 2500 })
+      throw new ApiError(result.message, 40101, 403)
+    }
     if ((res.statusCode < 200 || res.statusCode >= 300) && !hasBusinessCode) {
       throw new ApiError(result?.message || '服务器开小差了，请稍后重试', res.statusCode, res.statusCode)
     }
