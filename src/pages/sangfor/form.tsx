@@ -102,7 +102,12 @@ export default function SangforFormPage() {
       if (registrationId) {
         const latest = await sangforService.registration(registrationId)
         if (request !== statusRequest.current) return
-        if (registration && latest.revision !== registration.revision) { setBatchCheckError('报名版本已变化，请返回报名详情重新进入'); return }
+        // 版本变化（例如上一次补正已经生效）直接采纳服务端最新状态。
+        // 旧逻辑只 setBatchCheckError 后 return，而「刷新批次状态」永远清不掉该错误，
+        // 用户改完资料也提交不了，只能退出页面重新进入。
+        if (registration && latest.revision !== registration.revision) {
+          Taro.showToast({ title: '报名版本已更新，已载入最新状态', icon: 'none', duration: 2500 })
+        }
         setRegistration(latest)
       } else {
         const latest = await sangforService.batch(batchId)

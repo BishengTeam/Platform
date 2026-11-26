@@ -165,10 +165,17 @@ export default function RensheFormPage() {
         application?.id ? rensheService.getApplication(application.id) : Promise.resolve(null),
       ])
       if (request !== statusRequest.current) return
-      if (latestApplication && latestApplication.current_version_id !== application?.current_version_id) { setBatchCheckError('报名版本已变化，请返回报名详情重新进入'); return }
       // 已发布/多项目刷新时也必须重新合并项目配置，不能把有效 Plan 覆盖成空的原始 Plan。
       setPlan(applyProjectPlan(latestPlan, activeProjectId || application?.batch_project_id || resolvedProjectRef.current || 0))
-      if (latestApplication) setApplication(latestApplication)
+      if (latestApplication) {
+        // 版本变化（例如上一次提交/补正已经生效）要直接采纳服务端最新状态。
+        // 旧逻辑在这里只 setBatchCheckError 后 return，而「刷新批次状态」永远清不掉该错误，
+        // 用户改完资料也提交不了，只能退出页面重新进入。
+        if (latestApplication.current_version_id !== application?.current_version_id) {
+          Taro.showToast({ title: '报名版本已更新，已载入最新状态', icon: 'none', duration: 2500 })
+        }
+        setApplication(latestApplication)
+      }
     } catch (error) { if (request === statusRequest.current) setBatchCheckError(error instanceof Error ? error.message : '批次状态核验失败，请重试') }
     finally { if (request === statusRequest.current) setBatchChecking(false) }
   }, [planId, activeProjectId, application?.id, application?.batch_project_id, application?.current_version_id])
